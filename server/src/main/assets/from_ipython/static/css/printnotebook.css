@@ -1,0 +1,32 @@
+
+body { overflow: visible !important; }
+
+div#notebook { overflow: visible !important; width: 100% !important; max-width: 100%; }
+div#notebook_panel { overflow: visible !important; background-color: #FFFFFF; padding: 0px; }
+.option_bar { display: none !important; }
+div:empty { display: none !important; }
+
+.input { opacity:1 !important; }
+.output_stream * { opacity:1 !important; overflow: visible !important; max-height: none !important;}
+.copy-values {display: none !important;}
+
+.ui-widget-content { border: 0px; }
+#save_widget {margin: 0px !important;}
+#header {display: none !important;}
+#expand_header {display: none !important;}
+#menubar_container {display: none !important;}
+#pager_splitter { display:none !important; }
+#pager  { display:none !important; }
+#toolbar {display: none !important;}
+
+div.output_area {
+    page-break-inside: auto !important;
+}
+
+.page_break {
+  page-break-before: always;
+}
+
+.screen_only {
+  display: none !important;
+}

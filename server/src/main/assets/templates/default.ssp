@@ -1,0 +1,60 @@
+<%@ var body: String %>
+<%@ var title: String = "Scala Notebook" %>
+<%@ var stylesheet: String = "" %>
+<%@ var meta: String = "" %>
+<%@ var params: String = "" %>
+<%@ var header: String = "" %>
+<%@ var site: String = "" %>
+<%@ var script: String = "" %>
+<% import com.bwater.notebook.server.LayoutTools._  %>
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="utf-8" />
+
+    <title>${title}</title>
+
+    <link rel="stylesheet" href="${static_url("jquery/css/base/jquery-ui.min.css")}" type="text/css" />
+    <link rel="stylesheet" href="${static_url("css/boilerplate.css")}" type="text/css" />
+    <link rel="stylesheet" href="${static_url("css/fbm.css")}" type="text/css" media="screen"/>
+    <link rel="stylesheet" href="${static_url("css/page.css")}" type="text/css"/>
+    ${unescape(stylesheet)}
+
+    ${unescape(meta)}
+    
+</head>
+
+<body ${unescape(params)}>
+
+    <div id="header">
+       <div>
+        <span id="login_widget"></span>
+
+        ${unescape(header)}
+   
+       <div id="logo">
+       <!-- TODO: External logo hook -->
+        </div>
+        </div>
+        
+    </div>
+    <div id="expand_header"><a href="#"><i class="icon-chevron-down"></i></a></div>
+
+    <div id="site">
+        ${unescape(site)}
+    </div>
+
+    <script src="${static_url("curl/curl.js")}" type="text/javascript" charset="utf-8"></script>
+    <script src="${static_url("jquery/js/jquery.js")}" type="text/javascript" charset="utf-8"></script>
+    <script src="${static_url("jquery/js/jquery-ui.js")}" type="text/javascript" charset="utf-8"></script>
+    <script src="${static_url("js/namespace.js")}" type="text/javascript" charset="utf-8"></script>
+    <script src="${static_url("js/csrf.js")}" type="text/javascript" charset="utf-8"></script>
+    <script src="${static_url("js/page.js")}" type="text/javascript" charset="utf-8"></script>
+    <script src="${static_url("js/loginwidget.js")}" type="text/javascript" charset="utf-8"></script>
+
+    ${unescape(script)}
+
+    </body>
+</html>

@@ -1,0 +1,80 @@
+<% layout("default.ssp") { %>
+<%@ var project: String %>
+
+<% import com.bwater.notebook.server.LayoutTools._  %>
+
+#set(title)
+Scala Dashboard
+#end
+
+#set(stylesheet)
+    <link rel="stylesheet" href="${static_url("css/projectdashboard.css")}" type="text/css" />
+#end
+
+#set(params)
+data-project="${project}"
+data-base-project-url="${base_project_url}"
+data-base-kernel-url="${base_kernel_url}"
+data-read-only="${read_only}"
+#end
+
+
+
+#set(site)
+<div id="main_app">
+
+<div id="tabs">
+    <ul>
+        <li><a href="#tab1">Notebooks</a></li>
+        <!-- <li><a href="#tab2">Clusters</a></li> -->
+    </ul>
+
+    <div id="tab1">
+        <div id="notebook_toolbar">
+            <span id="drag_info">Drag files onto the list to import
+            notebooks.</span>
+
+            <span id="notebook_buttons">
+                <button id="refresh_notebook_list" title="Refresh notebook list">Refresh</button>
+                <button id="new_notebook" title="Create new notebook">New Notebook</button>
+            </span>
+        </div>
+
+        <div id="notebook_list">
+            <div id="project_name"><h2>${project}</h2></div>
+        </div>
+    </div>
+    <!--
+    <div id="tab2">
+
+        <div id="cluster_toolbar">
+            <span id="cluster_list_info">Scala Notebook parallel computing clusters</span>
+
+            <span id="cluster_buttons">
+                <button id="refresh_cluster_list" title="Refresh cluster list">Refresh</button>
+            </span>
+        </div>
+
+        <div id="cluster_list">
+            <div id="cluster_header">
+                <span>profile</span>
+                <span>action</span>
+                <span title="Enter the number of engines to start or empty for default"># of engines</span>
+                <span>status</span>
+            </div>
+        </div>
+
+    </div>
+    -->
+</div>
+
+</div>
+
+#end
+
+#set(script)
+    <script src="${static_url("js/notebooklist.js")}" type="text/javascript" charset="utf-8"></script>
+    <script src="${static_url("js/clusterlist.js")}" type="text/javascript" charset="utf-8"></script>
+    <script src="${static_url("js/projectdashboardmain.js")}" type="text/javascript" charset="utf-8"></script>
+#end
+<%}%>

@@ -1,0 +1,123 @@
+
+@cluster-bg-color: #F2F2F2;
+
+#ribbon {
+
+    /* Tab header elements (Home, File, etc...) */
+    > ul > li {
+        > a {
+            display: block;
+            /* This trickiness between the margin and padding is responsible for the shape of the tab
+               that appears when the tab is selected */
+            margin: 5px 45px 0 20px;
+            padding: 4px 15px 9px 15px;
+
+            color: #505050;
+            font-size: large;
+
+            background-image: -moz-linear-gradient(@cluster-bg-color, #DBDBDB);
+            background-position: 0 -35px;
+            background-repeat: no-repeat;
+            -moz-transition-property: background-position;
+            -moz-transition-duration: 0.35s;
+            -moz-transition-timing-function: ease-in-out;
+        }
+        > a:hover {
+            background-position: 0 0;
+        }
+    }
+
+    /* Clusters inside each ribbon tab */
+    .clusters {
+
+        /* Hide clusters if not selected */
+        display:none;
+
+        position: fixed;
+        left: 0px;
+        right: 0px;
+        background-color: @cluster-bg-color;
+        padding: 15px 20px 10px 20px;
+        overflow-x: auto;
+        white-space: nowrap;
+
+
+
+        ul {
+            display: inline-block;
+
+            padding-right: 20px;
+            padding-left: 20px;
+            
+
+            /* Cluster divider */
+            border-left-style:solid;
+            border-left-width:1px;
+            border-left-color:#CCCCCC;
+
+            /* No divider if there's only one cluster in the tab */
+            &:first-child {
+                padding-left: 0px;
+                border-left-style:none;
+            }
+
+            /* Cluster title */
+            p {
+                text-transform:uppercase;
+                font-size: 0.85em;
+                color: #999999 ;
+                letter-spacing:1.5px;
+            }
+
+            /* Buttons in each cluster */
+            li {
+                padding: 10px 50px 10px 0px;
+
+                a {
+                    font-size: 1em;
+                    color: #909090;
+                }
+            }
+        }
+    }
+
+    /* All the styles when the ribbon is selected */
+    .selected {
+        > a {
+            /* Makes the tab shape behind the tab name, set to same color as cluster div to
+               make it look like it's part of the same shape */
+            background-color: @cluster-bg-color;
+            background-image: none;
+
+            /* Turn the selected ribbon title a different color when selected */
+            color: #53A0C6;
+        }
+
+        /* Show the actual clusters */
+        .clusters {
+            display: block;
+            z-index: 1; /* I don't know why this is necessary, but without it, stuff floats above the cluster scrollbar when it's visible. */
+        }
+    }
+
+    /* Generic stuff for all elements in ribbon */
+    li {
+        list-style: none;
+        float: left;
+    }
+
+    a {
+        font-family: "Segoe UI", Arial, Helvetica, Geneva, sans-serif;
+        text-decoration:none;
+
+        &:hover {
+            text-decoration:underline;
+        }
+    }
+
+    i {
+        /* the default bootstrap icons are a little dark, so lighten them up manually */
+        opacity:0.4;
+        padding-right:5px;
+    }
+}

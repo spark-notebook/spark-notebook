@@ -1,0 +1,11 @@
+.idea/
+.idea_modules/
+.project
+.settings
+.classpath
+.ensime
+.ensime_lucene
+.akka-cookie
+project/target/
+target/
+logs/
