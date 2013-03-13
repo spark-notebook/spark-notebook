@@ -1,8 +1,8 @@
 {
   "metadata":{
     "name":"Welcome",
-    "user_save_timestamp":"2013-03-13T11:09:04.516Z",
-    "auto_save_timestamp":"2013-03-13T11:08:48.804Z"
+    "user_save_timestamp":"2013-03-13T21:55:13.342Z",
+    "auto_save_timestamp":"2013-03-13T21:54:57.794Z"
   },
   "worksheets":[{
     "cells":[{
@@ -38,6 +38,33 @@
       "language":"scala",
       "collapsed":false,
       "prompt_number":11,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// Reactive components allow dynamic communication to Scala and Javascript\nval ib = new InputBox(\"\")",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":1,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val ib2 = new InputBox(\"\")",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":2,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// After running this, type text in the second box and it appears in the first\nib.currentValue <-- ib2.currentValue",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":5,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
       "outputs":[]
     }]
   }],
