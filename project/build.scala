@@ -69,12 +69,10 @@ object NotebookBuild extends Build {
         akkaSlf4j,
         akkaTestkit,
         slf4jLog4j,
-        liftJson,
         unfilteredFilter,
         unfilteredWebsockets,
         unfilteredJson,
         scalaTest,
-        "com.netflix.rxjava" % "rxjava-core" % "0.5.0",
         "com.netflix.rxjava" % "rxjava-scala" % "0.5.3"
       )
     )
@@ -87,7 +85,7 @@ object NotebookBuild extends Build {
 
       libraryDependencies ++= Seq(
         akka,
-        liftJson,
+        unfilteredJson,
         scalaTest,
         "log4j" % "log4j" % "1.2.+",
         "org.scalaz" %% "scalaz-core" % "6.0.4"
@@ -152,7 +150,6 @@ object NotebookBuild extends Build {
 
     val commonsIO = "commons-io" % "commons-io" % "1.4"
     val slf4jLog4j = "org.slf4j" % "slf4j-log4j12" % "1.6.4"
-    val liftJson = "net.liftweb" %% "lift-json" % "2.4"
 
     val scalaTest = "org.scalatest" %% "scalatest" % "1.8" % "test"
   }
