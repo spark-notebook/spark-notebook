@@ -29,6 +29,8 @@ run
 Development
 -----------
 
+[![Build Status](https://secure.travis-ci.org/copumpkin/scala-notebook.png?branch=master)](http://travis-ci.org/copumpkin/scala-notebook)
+
 ### IDE Setup
 
 * If you're using an IntelliJ project, note that by default IntelliJ will not include SSP files resources. Change settings in IntelliJ to to include '*' as resource extension.
