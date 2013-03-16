@@ -10,7 +10,7 @@ package com.bwater.notebook
 import util.ClassUtils
 import xml.{Node, NodeSeq}
 import java.util.UUID
-import scalaz.{Semigroup, Zero}
+import scalaz._
 
 trait Widget extends Iterable[Node] {
   def toHtml: NodeSeq
@@ -38,12 +38,9 @@ object Widget {
     override def toString = "<empty widget>"
   }
 
-  implicit object Zero extends Zero[Widget] {
-    val zero = Empty
-  }
-
-  implicit val Concat = new Semigroup[Widget] {
-    def append(s1: Widget, s2: => Widget) = s1 ++ s2
+  implicit val widgetInstances = new Monoid[Widget] {
+    def zero = Empty
+    def append(s1: Widget, s2: ⇒ Widget) = s1 ++ s2
   }
 
   // We're stripping out dashes because we want these to be valid JS identifiers.

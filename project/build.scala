@@ -19,7 +19,7 @@ object NotebookBuild extends Build {
     organization := "com.bwater",
     version := "0.3.0-SNAPSHOT",
     
-    scalaVersion in ThisBuild := "2.9.1",
+    scalaVersion in ThisBuild := "2.9.2",
 
     fork in Test in ThisBuild := true,
     parallelExecution in Test in ThisBuild := false,
@@ -88,7 +88,7 @@ object NotebookBuild extends Build {
         unfilteredJson,
         scalaTest,
         "log4j" % "log4j" % "1.2.+",
-        "org.scalaz" %% "scalaz-core" % "6.0.4"
+        "org.scalaz" %% "scalaz-core" % "7.0.0-M8"
       )
     )
   
