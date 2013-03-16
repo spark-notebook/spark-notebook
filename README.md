@@ -24,6 +24,8 @@ project server
 run
 ```
 
+![Alt text](http://i.imgur.com/8wnrP34.png)
+
 Development
 -----------
 
