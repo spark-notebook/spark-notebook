@@ -25,9 +25,17 @@ object Server extends Logging {
 
   FileUtils.forceMkdir(new File("logs"))
 
+
+  def openBrowser(url: String) {
+    println("Launching browswer on %s".format(url))
+    unfiltered.util.Browser.open(url) match {
+      case Some(ex) => println("Cannot open browser to %s\n%s".format(url, ex.toString))
+      case None =>
+    }
+  }
   
   def main(args: Array[String]) {
-    startServer(args, ScalaNotebookConfig.withOverrides(ScalaNotebookConfig.defaults))(unfiltered.util.Browser.open)
+    startServer(args, ScalaNotebookConfig.withOverrides(ScalaNotebookConfig.defaults))(openBrowser)
   }
 
   private val preferredPort = 8899
