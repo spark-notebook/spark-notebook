@@ -15,6 +15,7 @@ import com.typesafe.config.ConfigFactory
 import java.io.FileReader
 import com.typesafe.config.ConfigParseOptions
 import com.typesafe.config.ConfigSyntax
+import org.apache.http.util.ExceptionUtils
 
 /**
  * Author: Ken
@@ -29,7 +30,8 @@ object Server extends Logging {
   def openBrowser(url: String) {
     println("Launching browswer on %s".format(url))
     unfiltered.util.Browser.open(url) match {
-      case Some(ex) => println("Cannot open browser to %s\n%s".format(url, ex.toString))
+      case Some(ex) =>
+        logError("Cannot open browser to %s".format(url), ex)
       case None =>
     }
   }
