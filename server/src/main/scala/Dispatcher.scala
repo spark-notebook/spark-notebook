@@ -278,9 +278,14 @@ class ClientAuth(domain: String, port: Int) extends Logging with DispatcherSecur
   override val authIntent: unfiltered.netty.cycle.Plan.Intent = {
     case req@GET(Path(Seg("login" :: `loginToken` :: Nil))) if (loginTokenValid.get) =>
       loginTokenValid.set(false) //Can't use 'getAndSet' above, it is executed before an actual match...
+      val Params(params) = req
+      val dest = for {
+        ds <- params.get("dest")
+        d <- ds.headOption
+      } yield d
       SetCookies(
         sessC,
-        csrfC) ~> Redirect("/")
+        csrfC) ~> Redirect(dest.getOrElse("/"))
     case req@GET(Path(Seg("login" :: token :: Nil))) =>
       PlainTextContent ~> Forbidden ~> ResponseString("Unauthorized")
     case req & Cookies(cookies) =>
