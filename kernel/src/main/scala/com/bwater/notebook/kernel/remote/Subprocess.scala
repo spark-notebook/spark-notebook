@@ -16,9 +16,11 @@ import com.bwater.notebook.kernel.ConfigUtils
 class Subprocess[A : Manifest](config: Config) extends ProcessFork[A] {
 
   // Make sure the custom classpath comes first, so that child processes can override this process' libs (might be cleaner to load the bare minimum of JARs)
-  override lazy val classPathString = 
-    (config getArray("kernel.classpath") getOrElse(Nil) :+ super.classPathString)
-    .mkString(File.pathSeparator)
+  override lazy val classPathString = {
+    val customClasspath = config.getArray("kernel.classpath").getOrElse(Nil)
+    val cpToUse = customClasspath :+ super.classPathString
+    cpToUse.mkString(File.pathSeparator)
+  }
 
   override lazy val workingDirectory = 
     config get "kernel.dir" match {
