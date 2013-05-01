@@ -88,7 +88,7 @@ object NotebookBuild extends Build {
         unfilteredJson,
         scalaTest,
         "log4j" % "log4j" % "1.2.+",
-        "org.scalaz" %% "scalaz-core" % "7.0.0-M8"
+        "org.scalaz" %% "scalaz-core" % "7.0.0"
       )
     )
   
