@@ -8,7 +8,7 @@ import com.bwater.notebook.util.Logging
 import org.apache.log4j.PropertyConfigurator
 import server._
 import java.io.{ IOException, File, Reader }
-import java.net.InetAddress
+import java.net.{ InetAddress, URLEncoder }
 import com.typesafe.config.Config
 import java.io.BufferedReader
 import com.typesafe.config.ConfigFactory
@@ -71,8 +71,17 @@ object Server extends Logging {
     val port = choosePort(host)
     val security = if (secure) new ClientAuth(host, port) else Insecure
 
+    val NotebookArg = "--notebook=(\\S+)".r
+    val notebook = args.collect {
+      case NotebookArg(name) => name
+    }.headOption
+    val queryString =
+      for (name <- notebook)
+      yield "?dest=" + URLEncoder.encode("/view/" + name, "UTF-8")
+
     startServer(config, host, port, security) {
-      (http, app) => startAction("http://%s:%d/%s".format(host, port, security.loginPath))
+      val baseUrl = "http://%s:%d/%s".format(host, port, security.loginPath)
+      (http, app) => startAction((baseUrl ++ queryString).mkString)
     }
   }
 

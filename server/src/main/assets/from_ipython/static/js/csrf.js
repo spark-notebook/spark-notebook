@@ -31,7 +31,7 @@
         if (typeof(Storage) !== "undefined") {
            if (csrfKey) { /* Move the key into local storage */
                sessionStorage.csrfKey = csrfKey
-               document.cookie = CSRFToken + "=invalid; expires=Thu, 01 Jan 1970 00:00:01 GMT"
+               document.cookie = CSRFToken + "=invalid; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT"
            } else if (sessionStorage.csrfKey)
               csrfKey = sessionStorage.csrfKey
            else if (window.opener && window.opener.IPython) csrfKey = window.opener.IPython.CSRF.key
