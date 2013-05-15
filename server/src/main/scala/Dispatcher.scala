@@ -19,6 +19,8 @@ import com.bwater.notebook.util.Logging
 import unfiltered.netty.RequestBinding
 import unfiltered.response._
 import unfiltered.request.Accepts.Accepting
+import java.util.concurrent.ConcurrentHashMap
+import scala.collection.JavaConverters._
 
 /** unfiltered plan */
 class Dispatcher(protected val config: ScalaNotebookConfig,
@@ -26,6 +28,8 @@ class Dispatcher(protected val config: ScalaNotebookConfig,
                  port: Int) extends NotebookSession {
   
   val executionCounter = new AtomicInteger(0)
+
+  val kernelIdToCalcService = collection.mutable.Map[String, CalcWebSocketService]()
 
   // RH: I have no idea why this isn't part of unfiltered or something... unless it is and my Google-fu failed me.
   object Encoded {
@@ -36,62 +40,64 @@ class Dispatcher(protected val config: ScalaNotebookConfig,
     }
   }
 
+
   object WebSockets {
     val intent: unfiltered.netty.websockets.Intent = {
       case req@Path(Seg("kernels" :: kernelId :: channel :: Nil)) => {
         case Open(websock) =>
-          logInfo("Opening Socket " + channel + " for " + kernelId + " to " + websock)
-          if (channel == "iopub")
-            kernelRouter ! Router.Forward(kernelId, IopubChannel(new WebSockWrapper(websock)))
-          else if (channel == "shell")
-            kernelRouter ! Router.Forward(kernelId, ShellChannel(new WebSockWrapper(websock)))
-
+          for (calcService <- kernelIdToCalcService.get(kernelId)) {
+            logInfo("Opening Socket " + channel + " for " + kernelId + " to " + websock)
+            if (channel == "iopub")
+              calcService.ioPubPromise.success(new WebSockWrapperImpl(websock))
+            else if (channel == "shell")
+              calcService.shellPromise.success(new WebSockWrapperImpl(websock))
+          }
         case Message(socket, Text(msg)) =>
-          logDebug("Message for " + kernelId + ":" + msg)
+          for (calcService <- kernelIdToCalcService.get(kernelId)) {
 
-          def sendRequest(request: Any) = kernelRouter ! Router.Forward(kernelId, request)
+            logDebug("Message for " + kernelId + ":" + msg)
 
-          val json = parse(msg)
+            val json = parse(msg)
 
-          for {
-            JField("header", header) <- json
-            JField("session", session) <- header
-            JField("msg_type", msgType) <- header
-            JField("content", content) <- json
-          } {
-            msgType match {
-              case JString("execute_request") => {
-                for (JField("code", JString(code)) <- content) {
-                  val execCounter = executionCounter.incrementAndGet()
-                  sendRequest(SessionRequest(header, session, ExecuteRequest(execCounter, code)))
+            for {
+              JField("header", header) <- json
+              JField("session", session) <- header
+              JField("msg_type", msgType) <- header
+              JField("content", content) <- json
+            } {
+              msgType match {
+                case JString("execute_request") => {
+                  for (JField("code", JString(code)) <- content) {
+                    val execCounter = executionCounter.incrementAndGet()
+                    calcService.calcActor ! SessionRequest(header, session, ExecuteRequest(execCounter, code))
+                  }
                 }
-              }
 
-              case JString("complete_request") => {
-                for (
-                  JField("line", JString(line)) <- content;
-                  JField("cursor_pos", JInt(cursorPos)) <- content
-                ) {
-
-                  sendRequest(SessionRequest(header, session, CompletionRequest(line, cursorPos.toInt)))
+                case JString("complete_request") => {
+                  for (
+                    JField("line", JString(line)) <- content;
+                    JField("cursor_pos", JInt(cursorPos)) <- content
+                  ) {
+                    calcService.calcActor ! SessionRequest(header, session, CompletionRequest(line, cursorPos.toInt))
+                  }
                 }
-              }
 
-              case JString("object_info_request") => {
-                for (JField("oname", JString(oname)) <- content) {
-                  sendRequest(SessionRequest(header, session, ObjectInfoRequest(oname)))
+                case JString("object_info_request") => {
+                  for (JField("oname", JString(oname)) <- content) {
+                    calcService.calcActor ! SessionRequest(header, session, ObjectInfoRequest(oname))
+                  }
                 }
-              }
 
-              case x => logWarn("Unrecognized websocket message: " + msg) //throw new IllegalArgumentException("Unrecognized message type " + x)
+                case x => logWarn("Unrecognized websocket message: " + msg) //throw new IllegalArgumentException("Unrecognized message type " + x)
+              }
             }
           }
 
         case Close(websock) =>
           logInfo("Closing Socket " + websock)
-          vmManager ! VMManager.Kill(kernelId)
-          kernelRouter ! Router.Remove(kernelId)
-
+          for (kernel <- KernelManager.get(kernelId)) {
+            kernel.shutdown()
+          }
         case Error(s, e) =>
           logError("Websocket error", e)
       }
@@ -198,16 +204,13 @@ class Dispatcher(protected val config: ScalaNotebookConfig,
     def startKernel(kernelId: String) = {
       val compilerArgs = config.kernelCompilerArgs
       val initScripts = config.kernelInitScripts
-      // Load the user script from disk every time, so user changes are applied whenever a kernel is started/restarted.
-      def kernelMaker = new Kernel(initScripts, compilerArgs, remoteSpawner(kernelId))
-
-      //TODO: this is a potential memory leak, if the websocket is never opened the router will never be removed...
-      kernelRouter ! Router.Put(kernelId, system.actorOf(Props(kernelMaker).withDispatcher("akka.actor.default-stash-dispatcher")))
+      val kernel = new Kernel(system)
+      KernelManager.add(kernelId, kernel)
+      val service = new CalcWebSocketService(system, initScripts, compilerArgs, kernel.remoteDeployFuture)
+      kernelIdToCalcService += kernelId -> service
       val json = ("kernel_id" -> kernelId) ~ ("ws_url" -> "ws:/%s:%d".format(domain, port))
       JsonContent ~> ResponseString(compact(render(json))) ~> Ok
     }
-
-    def remoteSpawner(key: Any)(props: Props, replyTo: ActorRef) { vmManager.tell(VMManager.Start(key, config.notebooksDir), replyTo); vmManager.tell(VMManager.Spawn(key, props), replyTo)}
 
     val kernelIntent: unfiltered.netty.async.Plan.Intent = {
       case req@POST(Path(Seg("kernels" :: Nil))) =>
@@ -216,13 +219,18 @@ class Dispatcher(protected val config: ScalaNotebookConfig,
 
       case req@POST(Path(Seg("kernels" :: kernelId :: "restart" :: Nil))) =>
         logInfo("Restarting kernel " + kernelId)
-        vmManager ! VMManager.Kill(kernelId)
-        kernelRouter ! Router.Remove(kernelId)
-        req.respond(startKernel(UUID.randomUUID.toString))
+        for (kernel <- KernelManager.get(kernelId)) {
+          kernel.router ! RestartKernel
+        }
+        val json = ("kernel_id" -> kernelId) ~ ("ws_url" -> "ws:/%s:%d".format(domain, port))
+        val resp = JsonContent ~> ResponseString(compact(render(json))) ~> Ok
+        req.respond(resp)
 
       case req@POST(Path(Seg("kernels" :: kernelId :: "interrupt" :: Nil))) =>
         logInfo("Interrupting kernel " + kernelId)
-        kernelRouter ! Router.Forward(kernelId, InterruptKernel)
+        for (calcService <- kernelIdToCalcService.get(kernelId)) {
+          calcService.calcActor ! InterruptCalculator
+        }
         req.respond(PlainTextContent ~> Ok)
     }
 
@@ -329,8 +337,6 @@ trait NotebookSession extends Logging {
   val nbm = new NotebookManager(config.projectName, config.notebooksDir)
   val system = ActorSystem("NotebookServer", AkkaConfigUtils.optSecureCookie(ConfigFactory.load("notebook-server"), akka.util.Crypt.generateSecureCookie))
   logInfo("Notebook session initialized")
-  val vmManager = system.actorOf(Props(new VMManager(new Subprocess(config.kernelVMConfig))))
-  val kernelRouter = system.actorOf(Props[Router])
 
   ifDebugEnabled {
     system.eventStream.subscribe(system.actorOf(Props(new Actor {

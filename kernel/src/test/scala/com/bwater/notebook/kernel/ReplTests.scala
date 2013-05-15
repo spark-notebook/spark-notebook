@@ -95,8 +95,8 @@ class ReplTests extends FunSuite with BeforeAndAfter with ShouldMatchers {
   }
 
   test("completion should set matched text") {
-    val (matchedText, matches) = repl.complete("com.k2s", 7)
-    assert(matchedText === "k2s")
+    val (matchedText, matches) = repl.complete("com.bwa", 7)
+    assert(matchedText === "bwa")
     assert(matches.head.matchedValue === "bwater")
   }
 

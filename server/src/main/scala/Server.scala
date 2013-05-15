@@ -106,7 +106,7 @@ object Server extends Logging {
     val kernelPlan = unfiltered.netty.async.Planify(withCSRFKeyAsync(app.WebServer.kernelIntent))
     val loggerPlan = unfiltered.netty.cycle.Planify(new ReqLogger().intent)
 
-    val obsInt = unfiltered.netty.websockets.Planify(withWSAuth(new ObservableIntent(app.vmManager, app.system).webSocketIntent)).onPass(_.sendUpstream(_))
+    val obsInt = unfiltered.netty.websockets.Planify(withWSAuth(new ObservableIntent(app.system).webSocketIntent)).onPass(_.sendUpstream(_))
 
     val iPythonRes = Resources(getClass.getResource("/from_ipython/"), 3600, true)
     val thirdPartyRes = Resources(getClass.getResource("/thirdparty/"), 3600, true)
@@ -151,6 +151,7 @@ object Server extends Logging {
       }, {
         svr =>
           logInfo("shutting down server")
+          KernelManager.shutdown()
           app.system.shutdown()
       })
   }

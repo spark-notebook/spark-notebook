@@ -9,6 +9,6 @@ package com.bwater.notebook.kernel.pfork;
 
 public final class ChildProcessMain {
     public static void main(String[] args) {
-        ProcessFork$.MODULE$.main(args);
+        BetterFork$.MODULE$.main(args);
     }
 }

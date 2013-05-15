@@ -35,7 +35,7 @@ class SingleVM(fork: ProcessFork[RemoteProcess], location: File) extends Actor w
     fork.execute(port.toString, negotiator.path.toStringWithAddress(externalAddress(context.system)), akkaCookieFile.getAbsolutePath)
   }
 
-  val negotiator = context.actorOf(Props(new Actor with Stash {
+  val negotiator = context.actorOf(Props(new Actor {
 
     private[this] var address: Address = _
 
@@ -43,9 +43,7 @@ class SingleVM(fork: ProcessFork[RemoteProcess], location: File) extends Actor w
     def waiting: Receive = {
       case RemoteProcessReady(a) =>
         address = a
-        unstashAll()
         context.become(ready)
-      case _ => stash()
     }
 
     def ready: Receive = {
@@ -136,9 +134,9 @@ object SingleVM {
 
 class RemoteProcess(port: String, parentPath: String, cookieFile: String, configPath: String) {
 
-  def this(port: String, parentPath: String, cookieFile: String) = this(port, parentPath, cookieFile, configPath = "kernel.conf")
+  def this(port: String, parentPath: String, cookieFile: String) = this(port, parentPath, cookieFile, "kernel.conf")
   
-  def this(port: String, parentPath: String) = this(port, parentPath, cookieFile = "")
+  def this(port: String, parentPath: String) = this(port, parentPath, "")
 
   locally {
     //TODO: This doesn't really belong here?

@@ -11,8 +11,12 @@ import com.bwater.notebook.util.Logging
  * Author: Ken
  */
 
-class WebSockWrapper(sock: WebSocket) extends Logging {
-  def send(msg: String) {
+trait WebSockWrapper {
+  def send(header: JValue, session: JValue, msgType: String, content: JValue)
+}
+
+class WebSockWrapperImpl(sock: WebSocket) extends WebSockWrapper with Logging {
+  private def send(msg: String) {
     logTrace("Sending " + msg)
     sock.send(msg)
   }
