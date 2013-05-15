@@ -29,7 +29,7 @@ run
 Development
 -----------
 
-[![Build Status](https://secure.travis-ci.org/copumpkin/scala-notebook.png?branch=master)](http://travis-ci.org/copumpkin/scala-notebook)
+[![Build Status](https://secure.travis-ci.org/Bridgewater/scala-notebook.png?branch=master)](http://travis-ci.org/Bridgewater/scala-notebook)
 
 ### IDE Setup
 
