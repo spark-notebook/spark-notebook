@@ -32,5 +32,4 @@ class NBSerializerTests extends FlatSpec {
     val data = """{"worksheets":[{"cells":[{"input":"3 * 3","cell_type":"code","prompt_number":1,"outputs":[{"output_type":"stream","text":"res0: Int = 9\n","stream":"stdout"},{"output_type":"pyout","prompt_number":1,"html":"9"}],"language":"python","collapsed":false}]}],"metadata":{"name":"Untitled4"},"nbformat":3}"""
     NBSerializer.read(data)
   }
-
 }

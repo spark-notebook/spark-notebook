@@ -19,14 +19,14 @@ import org.slf4j.LoggerFactory
 */
 class ObservableHandler(proxy: ActorRef) extends Actor {
 
-  JSBusState.setPublisher((id, value) => proxy ! ObservableUpdate(id, value))
+  JSBusState.setPublisher((id, value) => proxy ! ObservableVMToBrowser(id, value))
 
   val log = LoggerFactory.getLogger(getClass())
 
   log.info("Obs handler is ready")
 
   def receive = {
-    case ObservableClientChange(obsId, newValue) =>
+    case ObservableBrowserToVM(obsId, newValue) =>
       try {
         log.info("Forwarding message to " + obsId)
         JSBus.forwardClientUpdateMessage(obsId, newValue)

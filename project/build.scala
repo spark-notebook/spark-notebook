@@ -9,6 +9,7 @@ import sbt._
 import Keys._
 import org.apache.ivy.core.install.InstallOptions
 import com.untyped.sbtjs.Plugin._
+import scala.Some
 
 object NotebookBuild extends Build {
 
@@ -30,7 +31,7 @@ object NotebookBuild extends Build {
       Resolver.typesafeRepo("releases"),
       Resolver.typesafeIvyRepo("releases"),
       Resolver.typesafeIvyRepo("snapshots")
-    ),
+  ),
 
     compileOrder := CompileOrder.Mixed,
     publishMavenStyle := false,
@@ -128,9 +129,11 @@ object NotebookBuild extends Build {
         slf4jLog4j,
         unfilteredFilter,
         unfilteredWebsockets,
+        akkaTestkit,
         unfilteredJson,
         commonsIO,
         scalaTest,
+        scalaMock,
         // note: scalate 1.5.3 leaves sbt's run task hanging
         "org.fusesource.scalate" % "scalate-core" % "1.5.2"
       )
@@ -152,6 +155,7 @@ object NotebookBuild extends Build {
     val slf4jLog4j = "org.slf4j" % "slf4j-log4j12" % "1.6.4"
 
     val scalaTest = "org.scalatest" %% "scalatest" % "1.8" % "test"
+    val scalaMock = "org.scalamock" %% "scalamock-scalatest-support" % "2.4" % "test"
   }
 
   
