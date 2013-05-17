@@ -11,7 +11,7 @@ import concurrent.ops
 import collection.mutable
 import collection.JavaConversions._
 import org.apache.commons.exec._
-import java.io.{ObjectInputStream, ObjectOutputStream, File}
+import java.io.{EOFException, ObjectInputStream, ObjectOutputStream, File}
 import java.net._
 import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicBoolean
@@ -111,6 +111,7 @@ class BetterFork[A <: ForkableProcess : Manifest](executionContext: ExecutionCon
         new ProcessInfo(() => exec.kill(), resp, completion.future)
       } catch {
         case ex:SocketException => throw new ExecuteException("Failed to start process %s".format(cmd), 1, ex)
+        case ex:EOFException =>    throw new ExecuteException("Failed to start process %s".format(cmd), 1, ex)
       }
     }
   }
