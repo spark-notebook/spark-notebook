@@ -125,9 +125,6 @@ var IPython = (function (IPython) {
         console.log("Starting WS:", ws_url);
         this.shell_channel = new this.WebSocket(ws_url + "/shell");
         this.iopub_channel = new this.WebSocket(ws_url + "/iopub");
-        send_cookie = function(){
-            this.send(JSON.stringify({ cookie: document.cookie }));
-        };
         var already_called_onclose = false; // only alert once
         ws_closed_early = function(evt){
             if (already_called_onclose){
@@ -147,9 +144,7 @@ var IPython = (function (IPython) {
                 that._websocket_closed(ws_url, false);
             }
         };
-        this.shell_channel.onopen = send_cookie;
         this.shell_channel.onclose = ws_closed_early;
-        this.iopub_channel.onopen = send_cookie;
         this.iopub_channel.onclose = ws_closed_early;
         // switch from early-close to late-close message after 1s
         setTimeout(function(){
