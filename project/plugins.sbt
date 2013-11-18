@@ -3,4 +3,4 @@ resolvers += Resolver.url(
   url("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/")
 )(Resolver.ivyStylePatterns)
 
-addSbtPlugin("com.untyped" %% "sbt-js" % "0.5")
+addSbtPlugin("com.untyped" %% "sbt-js" % "0.6")
