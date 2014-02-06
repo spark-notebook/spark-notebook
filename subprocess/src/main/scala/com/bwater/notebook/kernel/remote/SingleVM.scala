@@ -135,7 +135,7 @@ object SingleVM {
 class RemoteProcess(port: String, parentPath: String, cookieFile: String, configPath: String) {
 
   def this(port: String, parentPath: String, cookieFile: String) = this(port, parentPath, cookieFile, "kernel.conf")
-  
+
   def this(port: String, parentPath: String) = this(port, parentPath, "")
 
   locally {
@@ -154,7 +154,7 @@ class RemoteProcess(port: String, parentPath: String, cookieFile: String, config
 
   if (log.isTraceEnabled) {
     system.eventStream.subscribe(system.actorOf(Props(new Actor {
-      protected def receive = {
+      def receive = {
         case x => log.trace("Event stream msg: " + x) //Don't use actor logging, messages routed back here...
       }
     })), classOf[AnyRef])

@@ -2,7 +2,7 @@ package com.bwater.notebook
 package server
 
 import akka.actor._
-import akka.dispatch.{Future, Promise, Await}
+import scala.concurrent._
 import com.bwater.notebook.client._
 import net.liftweb.json._
 import JsonDSL._
@@ -16,7 +16,7 @@ import com.bwater.notebook.client.CompletionResponse
 import com.bwater.notebook.client.ErrorResponse
 import com.bwater.notebook.client.ExecuteResponse
 import akka.actor.Terminated
-import akka.util.duration._
+import scala.concurrent.duration._
 
 /**
  * Provides a web-socket interface to the Calcualtor

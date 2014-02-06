@@ -10,12 +10,13 @@ package com.bwater.notebook
 import akka.actor._
 import akka.testkit.{ImplicitSender, TestKit}
 import kernel.remote.{RemoteActorSystem, SingleVM}
-import org.scalatest.{BeforeAndAfterAll, WordSpec}
-import org.scalatest.matchers.MustMatchers
-import akka.util.duration._
-import akka.dispatch.{Future, Await}
-import akka.util.{Duration, Timeout}
+import org.scalatest.{BeforeAndAfterAll, WordSpecLike}
+import org.scalatest.Matchers
+import scala.concurrent.duration._
+import scala.concurrent._
+import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class RemoteActor(state: Int) extends Actor {
   def receive = {
@@ -27,15 +28,15 @@ class RemoteActor(state: Int) extends Actor {
   }
 }
 
-class SingleVMTests extends TestKit(ActorSystem("SingleVMTests", ConfigFactory.load("subprocess-test"))) with ImplicitSender with WordSpec with MustMatchers with BeforeAndAfterAll {
-  
+class SingleVMTests extends TestKit(ActorSystem("SingleVMTests", ConfigFactory.load("subprocess-test"))) with ImplicitSender with WordSpecLike with Matchers with BeforeAndAfterAll {
+
   override def afterAll() {
     system.shutdown()
   }
 
-  "Child process actors" must {
+  "Child process actors" should {
     implicit val timeout: Timeout = 5 seconds
-    
+
     def retryUntilReceive(tries: Int, every: Duration)(action: => Unit): Option[Any] = {
       for (_ <- 0 until tries) {
         action
