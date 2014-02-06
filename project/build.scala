@@ -154,7 +154,7 @@ object NotebookBuild extends Build {
     val akkaSlf4j            = "com.typesafe.akka"         %%         "akka-slf4j"          %    akkaVersion
     val akkaTestkit          = "com.typesafe.akka"         %%        "akka-testkit"         %    akkaVersion    % "test"
     val scalaTest            = "org.scalatest"             %%          "scalatest"          %   "2.0.1-SNAP6"   % "test"
-    val scalaMock            = RootProject(uri("https://github.com/paulp/scala-notebook.git")) % "test"
+    val scalaMock            = RootProject(uri("https://github.com/paulbutcher/ScalaMock.git")) % "test"
   }
 
 
