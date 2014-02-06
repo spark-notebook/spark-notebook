@@ -153,8 +153,8 @@ object NotebookBuild extends Build {
     val akkaRemote           = "com.typesafe.akka"         %%         "akka-remote"         %    akkaVersion
     val akkaSlf4j            = "com.typesafe.akka"         %%         "akka-slf4j"          %    akkaVersion
     val akkaTestkit          = "com.typesafe.akka"         %%        "akka-testkit"         %    akkaVersion    % "test"
-    val scalaTest            = "org.scalatest"             %%          "scalatest"          %   "2.0.1-SNAP6"   % "test"
-    val scalaMock            = RootProject(uri("https://github.com/paulbutcher/ScalaMock.git")) % "test"
+    val scalaTest            = "org.scalatest"             %%          "scalatest"          %       "2.0"       % "test"
+    val scalaMock            = ProjectRef(uri("https://github.com/paulp/ScalaMock.git"), "scalatest") % "test"
   }
 
 
