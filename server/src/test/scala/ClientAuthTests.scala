@@ -12,7 +12,7 @@ import org.apache.http.message.BasicHeaderElementIterator
 import org.apache.http.protocol.HttpContext
 import org.apache.http.{Header, HttpRequest, HttpRequestInterceptor, HttpResponse}
 import org.apache.log4j.PropertyConfigurator
-import org.scalatest.matchers.MustMatchers
+import org.scalatest.Matchers
 import org.scalatest.{BeforeAndAfterAll, WordSpec}
 import scala.concurrent.ops._
 import unfiltered.request.{PUT, POST, GET}
@@ -23,7 +23,7 @@ import java.util.Calendar
 import com.bwater.notebook.server.DispatcherSecurity
 import com.bwater.notebook.server.ScalaNotebookConfig
 
-class ClientAuthTests extends WordSpec with MustMatchers with BeforeAndAfterAll {
+class ClientAuthTests extends WordSpec with Matchers with BeforeAndAfterAll {
 
   val ServerPort = 8898
   val ServerHost = "127.0.0.1"
@@ -93,7 +93,7 @@ class ClientAuthTests extends WordSpec with MustMatchers with BeforeAndAfterAll 
     request.setEntity(new StringEntity(postData))
     httpClient(sessCookie, csrfHeader).execute(request)
   }
-  
+
   def httpDelete(path: String, sessCookie: Boolean = false, csrfHeader:Boolean = false): HttpResponse = {
     val request = new HttpDelete(serverURL(path))
     httpClient(sessCookie, csrfHeader).execute(request)
@@ -129,7 +129,7 @@ class ClientAuthTests extends WordSpec with MustMatchers with BeforeAndAfterAll 
     mBuild.result()
   }
 
-  "An unauthenticated client" must {
+  "An unauthenticated client" should {
     "not access any resource" in {
       assertResponseCode(403, "/") // Template
       assertResponseCode(403, "/static/js/csrf.js") // Static resource
@@ -147,7 +147,7 @@ class ClientAuthTests extends WordSpec with MustMatchers with BeforeAndAfterAll 
     }
   }
 
-  "An authenticated client" must {
+  "An authenticated client" should {
     "have access to resources" in {
       assertResponseCode(200, "/", true)
       assertResponseCode(200, "/static/js/csrf.js", true)
@@ -196,7 +196,7 @@ class ClientAuthTests extends WordSpec with MustMatchers with BeforeAndAfterAll 
     //}
   }
 
-  "Login credentials" must {
+  "Login credentials" should {
     "yield 403 for incorrect credentials" in {
       assertResponseCode(403, "/login/%s".format("Bad-token"))
     }

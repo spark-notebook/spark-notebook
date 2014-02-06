@@ -1,8 +1,8 @@
 package com.bwater.notebook
 
-import akka.dispatch.{Future, Await, Promise}
+import scala.concurrent._
 import akka.actor._
-import akka.util.duration._
+import scala.concurrent.duration._
 import unfiltered.netty.websockets.WebSocket
 import akka.actor.Deploy
 import net.liftweb.json._, JsonDSL._

@@ -3,11 +3,11 @@ package com.bwater.notebook.kernel
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import com.bwater.notebook.Match
 import xml.Text
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import concurrent.ops
 import java.util.concurrent.{TimeUnit, CountDownLatch}
 
-class ReplTests extends FunSuite with BeforeAndAfter with ShouldMatchers {
+class ReplTests extends FunSuite with BeforeAndAfter with Matchers {
 
   var repl: Repl = _
 
@@ -47,14 +47,7 @@ class ReplTests extends FunSuite with BeforeAndAfter with ShouldMatchers {
   test("evaluation should return stack trace when exception is thrown") {
     val (Failure(stackTrace), _) = repl.evaluate("sys.error(\"Error\")")
 
-    stackTrace should startWith(
-      """java.lang.RuntimeException: Error
-        |	at scala.sys.package$.error(package.scala:27)
-        |	at .<init>(<console>:8)
-        |	at .<clinit>(<console>)
-        |	at .<init>(<console>:11)
-        |	at .<clinit>(<console>)
-        |	at $print(<console>)""".stripMargin)
+    stackTrace should startWith("java.lang.RuntimeException: Error")
   }
 
   test("evaluation should capture printlns") {
@@ -68,6 +61,7 @@ class ReplTests extends FunSuite with BeforeAndAfter with ShouldMatchers {
     assert(result === Incomplete)
   }
 
+  /** Facility no longer exists
   test("interrupt should stop current evaluation") {
     // CY: Not thrilled about the complexity/fragility of this unit test, but important
     // behavior to codify
@@ -93,6 +87,7 @@ class ReplTests extends FunSuite with BeforeAndAfter with ShouldMatchers {
 
     assert(complete.await(5, TimeUnit.SECONDS) === true)
   }
+  **/
 
   test("completion should set matched text") {
     val (matchedText, matches) = repl.complete("com.bwa", 7)

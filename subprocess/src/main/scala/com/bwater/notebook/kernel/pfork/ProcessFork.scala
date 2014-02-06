@@ -132,7 +132,7 @@ object ProcessFork {
           conns += conn //TODO: mem/resource leak...
         }
       } catch {
-        case e => e.printStackTrace()
+        case e: Throwable => e.printStackTrace() ; throw e
       }
     }
     ss.getLocalPort

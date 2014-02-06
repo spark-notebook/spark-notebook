@@ -6,6 +6,7 @@ import org.fusesource.scalate.{
 import unfiltered.request.{Path,HttpRequest}
 import unfiltered.response.{ResponseWriter}
 import java.io.{File,OutputStreamWriter,PrintWriter}
+import scala.util.control.NonFatal
 
 object Scalate {
   /** Constructs a ResponseWriter for Scalate templates.
@@ -31,10 +32,10 @@ object Scalate {
         }
         engine.layout(scalateTemplate, context)
       } catch {
-        case e if engine.isDevelopmentMode =>
+        case NonFatal(e) if engine.isDevelopmentMode =>
           printWriter.println("Exception: " + e.getMessage)
           e.getStackTrace.foreach(printWriter.println)
-        case e => throw e
+        case NonFatal(e) => throw e
       }
     }
   }
@@ -43,9 +44,9 @@ object Scalate {
   type ToRenderContext =
     (String, PrintWriter, TemplateEngine) => RenderContext
 
-  private val defaultTemplateDirs = 
+  private val defaultTemplateDirs =
     new File("src/main/resources/templates") :: Nil
-  private val defaultEngine = new TemplateEngine(defaultTemplateDirs)
+  private val defaultEngine = new TemplateEngine(defaultTemplateDirs, "development")
   private val defaultRenderContext: ToRenderContext =
     (path, writer, engine) =>
       new DefaultRenderContext(path, engine, writer)
