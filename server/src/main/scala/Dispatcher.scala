@@ -26,7 +26,7 @@ import scala.collection.JavaConverters._
 class Dispatcher(protected val config: ScalaNotebookConfig,
                  domain: String,
                  port: Int) extends NotebookSession {
-  
+
   val executionCounter = new AtomicInteger(0)
 
   val kernelIdToCalcService = collection.mutable.Map[String, CalcWebSocketService]()
@@ -174,7 +174,7 @@ class Dispatcher(protected val config: ScalaNotebookConfig,
           "notebook_name" -> name,
           "project" -> nbm.name,
           "ws_url" ->  "ws:/%s:%d".format(domain, port))
-        
+
 
       case req@Path(Seg("print" :: Encoded(name) :: Nil)) =>
         val id = req.parameterValues("id").headOption
@@ -282,7 +282,7 @@ class ClientAuth(domain: String, port: Int) extends Logging with DispatcherSecur
   private val csrfC = Cookie(csrfKey_tag, csrfKey, path = Some("/"), domain = Some(domain))
 
   val loginPath = "login/%s".format(loginToken)
-  
+
   override val authIntent: unfiltered.netty.cycle.Plan.Intent = {
     case req@GET(Path(Seg("login" :: `loginToken` :: Nil))) if (loginTokenValid.get) =>
       loginTokenValid.set(false) //Can't use 'getAndSet' above, it is executed before an actual match...
@@ -340,7 +340,7 @@ trait NotebookSession extends Logging {
 
   ifDebugEnabled {
     system.eventStream.subscribe(system.actorOf(Props(new Actor {
-      protected def receive = {
+      def receive = {
         case x => logDebug("Actor Lifecycle event: " + x)
       }
     })), classOf[RemoteClientLifeCycleEvent])

@@ -9,18 +9,18 @@ package com.bwater.notebook
 
 import akka.testkit.TestKit
 import kernel.remote.{RemoteActorSystem, SingleVM, AkkaConfigUtils}, SingleVM._
-import org.scalatest.WordSpec
-import org.scalatest.matchers.MustMatchers
+import org.scalatest.WordSpecLike
+import org.scalatest.Matchers
 import org.scalatest.BeforeAndAfterAll
 import akka.testkit.ImplicitSender
 import akka.actor._
-import akka.util.duration._
+import scala.concurrent.duration._
 import com.typesafe.config.ConfigFactory
-import akka.dispatch.{Await, Future}
+import scala.concurrent._
 import akka.pattern.ask
 import akka.util.Timeout
 
-class SingleVMSecurityTests(_system: ActorSystem) extends TestKit(_system) with ImplicitSender with WordSpec with MustMatchers with BeforeAndAfterAll {
+class SingleVMSecurityTests(_system: ActorSystem) extends TestKit(_system) with ImplicitSender with WordSpecLike with Matchers with BeforeAndAfterAll {
 
   import _system.dispatcher
   def this() = this(ActorSystem("MySpec", AkkaConfigUtils.requireCookie(ConfigFactory.load("subprocess-test"), "Cookie")))
@@ -30,7 +30,7 @@ class SingleVMSecurityTests(_system: ActorSystem) extends TestKit(_system) with 
   }
 
 
-  "A remote actor" must {
+  "A remote actor" should {
 
     implicit val timeout: Timeout = 10 seconds
 

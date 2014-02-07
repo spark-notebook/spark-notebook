@@ -27,9 +27,9 @@ class ObservableIntent(system: ActorSystem) {
           kernelIdToObsService += contextId -> service
         }
 
-      case Message(_, Text(msg)) =>
-        val json = parse(msg)
+      case Message(socket, Text(msg)) =>
         for {
+          json <- parseOpt(msg)
           service <- kernelIdToObsService.get(contextId)
           JField("id", JString(id)) <- json
           JField("new_value", value) <- json

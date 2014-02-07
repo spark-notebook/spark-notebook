@@ -62,12 +62,13 @@ object ScalaNotebookConfig extends Logging {
 
   /*
    * User configuration overrides in the notebook directory (if present).
-   * 
+   *
    * TODO: these are processed on the server, the kernel vm should have its own overrides based on where it is executing.
    */
   def userOverrides(location: File) = {
     val file = new File(location, ".conf")
-    val config = if (file.exists()) {
+    val hasInit = file.exists()
+    val config = if (hasInit) {
       val reader = new BufferedReader(new FileReader(file))
       try ConfigFactory.parseReader(reader, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
       finally {
@@ -78,9 +79,12 @@ object ScalaNotebookConfig extends Logging {
       ConfigFactory.empty()
     }
     val sConfig = ScalaNotebookConfig(config.resolve())
-    sConfig.copy(kernelInit = sConfig.kernelInit :+ ScriptFromFile(new File(location, "init.scala")))
+    if (hasInit)
+      sConfig.copy(kernelInit = sConfig.kernelInit :+ ScriptFromFile(new File(location, "init.scala")))
+    else
+      sConfig
   }
-    
+
 
   /* URL for builtin kernel initialization script */
   lazy val snKernelInit = ScriptFromURL(classOf[ScalaNotebookConfig].getResource("init.sc")).toSource

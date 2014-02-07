@@ -1,6 +1,6 @@
 import akka.actor.ActorSystem
-import akka.dispatch.{Future, Promise, Await}
 import akka.pattern.AskSupport
+import scala.concurrent._
 import akka.testkit.{ImplicitSender, TestKit}
 import akka.util.Timeout
 import com.bwater.notebook.client.ExecuteRequest
@@ -12,18 +12,18 @@ import com.typesafe.config.ConfigFactory
 import java.util.concurrent.{LinkedBlockingQueue, ArrayBlockingQueue, BlockingQueue}
 import net.liftweb.json.JsonAST.JInt
 import net.liftweb.json.JsonAST.{JValue, JInt}
-import org.scalamock.ProxyMockFactory
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.matchers.MustMatchers
-import org.scalatest.{BeforeAndAfterAll, WordSpec}
-import akka.util.duration._
+import org.scalatest.Matchers
+import org.scalatest.{BeforeAndAfterAll, WordSpecLike}
+import scala.concurrent.duration._
 import net.liftweb.json._
 import JsonDSL._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * Author: Ken
  */
-class KernelTests(_system: ActorSystem) extends TestKit(_system) with ImplicitSender with WordSpec with MustMatchers with BeforeAndAfterAll with MockFactory with ProxyMockFactory with AskSupport {
+class KernelTests(_system: ActorSystem) extends TestKit(_system) with ImplicitSender with WordSpecLike with Matchers with BeforeAndAfterAll with MockFactory with AskSupport {
 
   def this() = this(ActorSystem("MySpec", AkkaConfigUtils.requireCookie(ConfigFactory.load("subprocess-test"), "Cookie")))
 
@@ -71,16 +71,16 @@ class KernelTests(_system: ActorSystem) extends TestKit(_system) with ImplicitSe
 
   // Makes a singleton JObject
 
-  "A kernel calculator" must {
+  "A kernel calculator" should {
     "perform simple math" in {
       val calc = new CalcTester
       calc.sendCode("1+1")
-      Await.result(calc.io.response(), 10 seconds) must equal(pair2jvalue("execution_state" -> "busy"))
-      Await.result(calc.io.response(), 10 seconds) must equal(("execution_count"-> 1) ~ ("code" -> "1+1"))
-      Await.result(calc.io.response(), 10 seconds) must equal(("data"-> "res0: Int = 2\n") ~ ("name" -> "stdout"))
-      Await.result(calc.io.response(), 10 seconds) must equal(("execution_count"-> 1) ~ ("data"-> ("text/html"-> "2")))
-      Await.result(calc.io.response(), 10 seconds) must equal(pair2jvalue("execution_state" ->"idle"))
-      Await.result(calc.shell.response(), 10 seconds) must equal(pair2jvalue("execution_count" -> 1))
+      Await.result(calc.io.response(), 10 seconds) should equal(pair2jvalue("execution_state" -> "busy"))
+      Await.result(calc.io.response(), 10 seconds) should equal(("execution_count"-> 1) ~ ("code" -> "1+1"))
+      Await.result(calc.io.response(), 10 seconds) should equal(("data"-> "res0: Int = 2\n") ~ ("name" -> "stdout"))
+      Await.result(calc.io.response(), 10 seconds) should equal(("execution_count"-> 1) ~ ("data"-> ("text/html"-> "2")))
+      Await.result(calc.io.response(), 10 seconds) should equal(pair2jvalue("execution_state" ->"idle"))
+      Await.result(calc.shell.response(), 10 seconds) should equal(pair2jvalue("execution_count" -> 1))
       calc.kernel.shutdown()
     }
 
@@ -92,7 +92,7 @@ class KernelTests(_system: ActorSystem) extends TestKit(_system) with ImplicitSe
       }
       val results = (1 to 21) map { _ => (calc.io.awaitResult() \ "text/html") }
       val expected = (1 to 21) map {i => JString("%s".format(i)) }
-      results must equal(expected)
+      results should equal(expected)
     }
 
 

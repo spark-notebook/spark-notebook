@@ -21,9 +21,10 @@ import com.bwater.notebook.{Widget, Match}
 import xml.{NodeSeq, Text}
 import collection.JavaConversions
 import java.net.{URLDecoder, JarURLConnection}
+import scala.util.control.NonFatal
 
 class Repl(compilerOpts: List[String]) {
-  
+
   def this() = this(Nil)
 
   class MyOutputStream extends ByteArrayOutputStream {
@@ -152,8 +153,9 @@ class Repl(compilerOpts: List[String]) {
           }
 
           Success(evalValue)
-        } catch {
-          case e =>
+        }
+        catch {
+          case NonFatal(e) =>
             val ex = new StringWriter()
             e.printStackTrace(new PrintWriter(ex))
             Failure(ex.toString)
@@ -164,11 +166,6 @@ class Repl(compilerOpts: List[String]) {
     }
 
     (result, stdoutBytes.toString)
-  }
-
-  def interrupt(): Unit = {
-    // http://stackoverflow.com/questions/8340731/interrupting-repl-iloop-programatically
-    interp.lineManager.cancel()
   }
 
   def complete(line: String, cursorPosition: Int): (String, Seq[Match]) = {

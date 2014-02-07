@@ -2,9 +2,9 @@ package com.bwater.notebook
 
 import akka.actor._
 import akka.actor.Deploy
-import akka.dispatch.{Await, Promise}
+import scala.concurrent._
 import kernel.remote.{RemoteActorSystem, RemoteActorProcess}
-import akka.util.duration._
+import scala.concurrent.duration._
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.JavaConverters._
 
