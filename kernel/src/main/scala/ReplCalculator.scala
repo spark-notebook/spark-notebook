@@ -4,7 +4,6 @@ package client
 import akka.actor.{ActorLogging, Props, Actor}
 import kernel._
 import java.io.File
-import org.apache.commons.io.FileUtils
 
 /**
  * Author: Ken
@@ -51,7 +50,7 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
 
   // Make a child actor so we don't block the execution on the main thread, so that interruption can work
   private val executor = context.actorOf(Props(new Actor {
-    protected def receive = {
+    def receive = {
       case ExecuteRequest(_, code) =>
         val (result, _) = repl.evaluate(code, msg => sender ! StreamResponse(msg, "stdout"))
 
@@ -97,10 +96,11 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
 
   def receive = {
     case msgThatShouldBeFromTheKernel =>
-      
+
       msgThatShouldBeFromTheKernel match {
         case InterruptRequest =>
-          repl.interrupt()
+          // facility gone
+          // repl.interrupt()
 
         case req @ ExecuteRequest(_, code) => executor.forward(req)
 

@@ -19,8 +19,9 @@ object NotebookBuild extends Build {
   override def settings = super.settings ++ Seq(
     organization := "com.bwater",
     version := "0.3.0-SNAPSHOT",
-    
-    scalaVersion in ThisBuild := "2.9.2",
+
+    scalaVersion in ThisBuild := "2.10.3",
+    scalaBinaryVersion in ThisBuild := "2.10",
 
     fork in Test in ThisBuild := true,
     parallelExecution in Test in ThisBuild := false,
@@ -56,10 +57,11 @@ object NotebookBuild extends Build {
         akkaTestkit,
         slf4jLog4j,
         scalaTest,
-        "org.apache.commons" % "commons-exec" % "1.1"
+        commonsIO,
+        "org.apache.commons" % "commons-exec" % "1.2"
       )
     )
-	
+
   lazy val observable = Project(id = "observable", base = file("observable"))
     .dependsOn(subprocess)
     .projectDefaults
@@ -77,7 +79,7 @@ object NotebookBuild extends Build {
         "com.netflix.rxjava" % "rxjava-scala" % "0.5.3"
       )
     )
-	
+
   lazy val common = Project(id = "common", base = file("common"))
     .dependsOn(observable)
     .projectDefaults
@@ -89,10 +91,10 @@ object NotebookBuild extends Build {
         unfilteredJson,
         scalaTest,
         "log4j" % "log4j" % "1.2.+",
-        "org.scalaz" %% "scalaz-core" % "7.0.0"
+        "org.scalaz" %% "scalaz-core" % "7.0.5"
       )
     )
-  
+
   lazy val kernel = Project(id = "kernel", base = file("kernel"))
     .dependsOn(common, subprocess, observable)
     .projectDefaults
@@ -108,14 +110,14 @@ object NotebookBuild extends Build {
         scalaTest
       ),
 
-      libraryDependencies <++= (scalaVersion in ThisBuild) { scalaVersion => Seq(
-        "org.scala-lang" % "jline" % scalaVersion,
-        "org.scala-lang" % "scala-compiler" % scalaVersion
-      )}
+      libraryDependencies ++= Seq(
+        "org.scala-lang" % "jline" % scalaVersion.value,
+        "org.scala-lang" % "scala-compiler" % scalaVersion.value
+      )
     )
 
   lazy val server = Project(id = "server", base = file("server"))
-    .dependsOn(common, kernel)
+    .dependsOn(common, kernel).dependsOn(scalaMock)
     .projectDefaults
     .withWebAssets
     .settings(
@@ -132,33 +134,30 @@ object NotebookBuild extends Build {
         akkaTestkit,
         unfilteredJson,
         commonsIO,
+        commonsHttp,
         scalaTest,
-        scalaMock,
-        // note: scalate 1.5.3 leaves sbt's run task hanging
-        "org.fusesource.scalate" % "scalate-core" % "1.5.2"
+        "org.fusesource.scalate" %% "scalate-core" % "1.6.1"
       )
     )
 
   object Dependencies {
-    val unfilteredVersion = "0.6.5"
-    val unfilteredFilter = "net.databinder" %% "unfiltered-filter" % unfilteredVersion
-    val unfilteredWebsockets = "net.databinder" %% "unfiltered-netty-websockets" % unfilteredVersion
-    val unfilteredJson = "net.databinder" %% "unfiltered-json" % unfilteredVersion
-
-    val akkaVersion = "2.0.2"
-    val akka = "com.typesafe.akka" % "akka-actor" % akkaVersion
-    val akkaRemote = "com.typesafe.akka" % "akka-remote" % akkaVersion
-    val akkaSlf4j = "com.typesafe.akka" % "akka-slf4j" % akkaVersion
-    val akkaTestkit = "com.typesafe.akka" % "akka-testkit" % akkaVersion % "test"
-
-    val commonsIO = "commons-io" % "commons-io" % "1.4"
-    val slf4jLog4j = "org.slf4j" % "slf4j-log4j12" % "1.6.4"
-
-    val scalaTest = "org.scalatest" %% "scalatest" % "1.8" % "test"
-    val scalaMock = "org.scalamock" %% "scalamock-scalatest-support" % "2.4" % "test"
+    val unfilteredVersion    = "0.6.7"
+    val akkaVersion          = "2.1.4"
+    val commonsIO            = "org.apache.commons"        %          "commons-io"          %      "1.3.2"
+    val commonsHttp          = "org.apache.httpcomponents" %          "httpclient"          %      "4.3.2"
+    val slf4jLog4j           = "org.slf4j"                 %         "slf4j-log4j12"        %      "1.7.5"
+    val unfilteredFilter     = "net.databinder"            %%      "unfiltered-filter"      % unfilteredVersion
+    val unfilteredWebsockets = "net.databinder"            %% "unfiltered-netty-websockets" % unfilteredVersion
+    val unfilteredJson       = "net.databinder"            %%       "unfiltered-json"       % unfilteredVersion
+    val akka                 = "com.typesafe.akka"         %%         "akka-actor"          %    akkaVersion
+    val akkaRemote           = "com.typesafe.akka"         %%         "akka-remote"         %    akkaVersion
+    val akkaSlf4j            = "com.typesafe.akka"         %%         "akka-slf4j"          %    akkaVersion
+    val akkaTestkit          = "com.typesafe.akka"         %%        "akka-testkit"         %    akkaVersion    % "test"
+    val scalaTest            = "org.scalatest"             %%          "scalatest"          %       "2.0"       % "test"
+    val scalaMock            = ProjectRef(uri("https://github.com/paulp/ScalaMock.git"), "scalatest") % "test"
   }
 
-  
+
   class RichProject(project: Project)  {
     def projectDefaults = project.settings(
       resourceDirectories in Test <++= resourceDirectories in Compile
@@ -169,7 +168,7 @@ object NotebookBuild extends Build {
         .settings(
           (sourceDirectory in (Compile, JsKeys.js)) <<= (sourceDirectory in Compile)(_ / "assets"),
           (resourceGenerators in Compile) <+= (JsKeys.js in Compile),
-          // Disable minification 
+          // Disable minification
           // TODO: make this conditional.  Ideally have minification off when running from SBT, on when packaging/publishing.
           // Might also be useful to publish debug binaries, maybe in an alternate config/classifier?
           (JsKeys.variableRenamingPolicy in (Compile, JsKeys.js)) := VariableRenamingPolicy.OFF,

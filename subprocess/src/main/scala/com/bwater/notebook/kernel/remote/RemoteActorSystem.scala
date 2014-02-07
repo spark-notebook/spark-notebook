@@ -10,7 +10,8 @@ import com.bwater.notebook.kernel.pfork.{ProcessInfo, BetterFork, ForkableProces
 import akka.actor._
 import com.typesafe.config.ConfigFactory
 import akka.remote.{RemoteScope, RemoteActorRefProvider}
-import akka.dispatch.Future
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 import java.io.File
 import org.apache.commons.io.FileUtils
 import java.util.concurrent.atomic.AtomicInteger
@@ -65,7 +66,7 @@ class ShutdownActor extends Actor {
     sys.exit(0)
   }
 
-  protected def receive = Map.empty
+  def receive = Map.empty
 }
 
 /**

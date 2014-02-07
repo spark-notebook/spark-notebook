@@ -17,8 +17,8 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicBoolean
 import scala.Option
 import com.sun.org.apache.xpath.internal.functions.FuncTrue
-import akka.dispatch.{Promise, ExecutionContext, Await, Future}
-import akka.util.Duration
+import scala.concurrent._
+import duration.Duration
 import collection.mutable.ListBuffer
 import java.util.concurrent.Executors
 import org.apache.log4j.PropertyConfigurator
