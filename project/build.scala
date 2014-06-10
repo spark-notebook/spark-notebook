@@ -19,10 +19,7 @@ object NotebookBuild extends Build {
   override def settings = super.settings ++ Seq(
     organization := "com.bwater",
     version := "0.3.0-SNAPSHOT",
-
-    scalaVersion in ThisBuild := "2.10.3",
-    scalaBinaryVersion in ThisBuild := "2.10",
-
+    scalaVersion in ThisBuild := "2.10.4",
     fork in Test in ThisBuild := true,
     parallelExecution in Test in ThisBuild := false,
     // these java options are for the forked test JVMs
@@ -90,8 +87,8 @@ object NotebookBuild extends Build {
         akka,
         unfilteredJson,
         scalaTest,
-        "log4j" % "log4j" % "1.2.+",
-        "org.scalaz" %% "scalaz-core" % "7.0.5"
+        "log4j" % "log4j" % "1.2.17",
+        "org.scalaz" %% "scalaz-core" % "7.0.6"
       )
     )
 
@@ -145,8 +142,8 @@ object NotebookBuild extends Build {
     val unfilteredVersion    = "0.6.7"
     val akkaVersion          = "2.1.4"
     val commonsIO            = "org.apache.commons"        %          "commons-io"          %      "1.3.2"
-    val commonsHttp          = "org.apache.httpcomponents" %          "httpclient"          %      "4.3.2"
-    val slf4jLog4j           = "org.slf4j"                 %         "slf4j-log4j12"        %      "1.7.5"
+    val commonsHttp          = "org.apache.httpcomponents" %          "httpclient"          %      "4.3.4"
+    val slf4jLog4j           = "org.slf4j"                 %         "slf4j-log4j12"        %      "1.7.7"
     val unfilteredFilter     = "net.databinder"            %%      "unfiltered-filter"      % unfilteredVersion
     val unfilteredWebsockets = "net.databinder"            %% "unfiltered-netty-websockets" % unfilteredVersion
     val unfilteredJson       = "net.databinder"            %%       "unfiltered-json"       % unfilteredVersion
@@ -154,7 +151,7 @@ object NotebookBuild extends Build {
     val akkaRemote           = "com.typesafe.akka"         %%         "akka-remote"         %    akkaVersion
     val akkaSlf4j            = "com.typesafe.akka"         %%         "akka-slf4j"          %    akkaVersion
     val akkaTestkit          = "com.typesafe.akka"         %%        "akka-testkit"         %    akkaVersion    % "test"
-    val scalaTest            = "org.scalatest"             %%          "scalatest"          %       "2.0"       % "test"
+    val scalaTest            = "org.scalatest"             %%          "scalatest"          %      "2.2.0"      % "test"
     val scalaMock            = "org.scalamock"             %% "scalamock-scalatest-support" %     "3.1.RC1"     % "test"
   }
 
