@@ -117,7 +117,7 @@ object NotebookBuild extends Build {
     )
 
   lazy val server = Project(id = "server", base = file("server"))
-    .dependsOn(common, kernel).dependsOn(scalaMock)
+    .dependsOn(common, kernel)
     .projectDefaults
     .withWebAssets
     .settings(
@@ -136,6 +136,7 @@ object NotebookBuild extends Build {
         commonsIO,
         commonsHttp,
         scalaTest,
+        scalaMock,
         "org.fusesource.scalate" %% "scalate-core" % "1.6.1"
       )
     )
@@ -154,7 +155,7 @@ object NotebookBuild extends Build {
     val akkaSlf4j            = "com.typesafe.akka"         %%         "akka-slf4j"          %    akkaVersion
     val akkaTestkit          = "com.typesafe.akka"         %%        "akka-testkit"         %    akkaVersion    % "test"
     val scalaTest            = "org.scalatest"             %%          "scalatest"          %       "2.0"       % "test"
-    val scalaMock            = ProjectRef(uri("https://github.com/paulp/ScalaMock.git"), "scalatest") % "test"
+    val scalaMock            = "org.scalamock"             %% "scalamock-scalatest-support" %     "3.1.RC1"     % "test"
   }
 
 
