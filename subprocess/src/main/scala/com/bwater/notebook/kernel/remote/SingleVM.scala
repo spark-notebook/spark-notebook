@@ -10,7 +10,8 @@ package kernel
 package remote
 
 import akka.actor._
-import akka.remote.{RemoteClientStarted, RemoteClientShutdown, RemoteScope}
+import akka.remote.transport.Transport.{InboundAssociation, AssociationEvent}
+import akka.remote.{DisassociatedEvent, RemoteScope}
 import pfork.ProcessFork
 import com.typesafe.config.ConfigFactory
 import collection.JavaConversions._
@@ -50,7 +51,7 @@ class SingleVM(fork: ProcessFork[RemoteProcess], location: File) extends Actor w
       case Spawn(props) =>
         sender ! context.actorOf(Props(new CrashResilientActor(props.withDeploy(Deploy(scope = RemoteScope(address))))))
 
-      case RemoteClientShutdown(_, a) =>
+      case DisassociatedEvent(_, a, _) =>
         if (address == a) {
           procKiller = startVM(address.port.get)
           address = null
@@ -74,7 +75,7 @@ class SingleVM(fork: ProcessFork[RemoteProcess], location: File) extends Actor w
 
   }).withDispatcher("akka.actor.default-stash-dispatcher"))
 
-  context.system.eventStream.subscribe(negotiator, classOf[RemoteClientShutdown])
+  context.system.eventStream.subscribe(negotiator, classOf[DisassociatedEvent])
   private[this] var procKiller = startVM(0)
 
   def receive = {
@@ -97,8 +98,8 @@ object SingleVM {
       private[this] var remote = context.actorOf(props)
 
       def waiting: Receive = {
-        case RemoteClientStarted(transport, address) =>
-          if (remote.path.address == address) {
+        case InboundAssociation(handle) =>
+          if (remote.path.address == handle.remoteAddress) {
             remote = context.actorOf(props)
             unstashAll()
             context.become(forwarding)
@@ -107,8 +108,8 @@ object SingleVM {
       }
 
       def forwarding: Receive = {
-        case RemoteClientShutdown(transport, address) =>
-          if (remote.path.address == address) {
+        case DisassociatedEvent(local, remoteAddress, _) =>
+          if (remote.path.address == remoteAddress) {
             context.become(waiting)
           }
         case Fwd(msg) =>
@@ -119,8 +120,8 @@ object SingleVM {
 
     }).withDispatcher("akka.actor.default-stash-dispatcher"))
 
-    context.system.eventStream.subscribe(negotiator, classOf[RemoteClientStarted])
-    context.system.eventStream.subscribe(negotiator, classOf[RemoteClientShutdown])
+    context.system.eventStream.subscribe(negotiator, classOf[InboundAssociation])
+    context.system.eventStream.subscribe(negotiator, classOf[DisassociatedEvent])
 
     private case class Fwd(msg: Any)
 

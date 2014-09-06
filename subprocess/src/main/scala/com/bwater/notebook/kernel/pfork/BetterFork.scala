@@ -50,7 +50,7 @@ class BetterFork[A <: ForkableProcess : Manifest](executionContext: ExecutionCon
   def permGen: Long = -1
   def reservedCodeCache: Long = -1
   def server: Boolean = true
-  def debug: Boolean = false // If true, then you will likely get address in use errors spawning multiple processes
+  def debug: Boolean = true // If true, then you will likely get address in use errors spawning multiple processes
   def classPath: IndexedSeq[String] = defaultClassPath
   def classPathString = classPath.mkString(File.pathSeparator)
 
@@ -82,7 +82,10 @@ class BetterFork[A <: ForkableProcess : Manifest](executionContext: ExecutionCon
 
   def execute(args: String*): Future[ProcessInfo] = {
     /* DK: Bi-directional liveness can be detected via redirected System.in (child), System.out (parent), avoids need for socket... */
-    val ss = new ServerSocket(0)
+    val port = 3344+serverSockets.size
+    println(port)
+    val ss = new ServerSocket(port)
+    println(ss.getLocalPort.toString)
     val cmd = new CommandLine(javaHome + "/bin/java")
       .addArguments(jvmArgs.toArray)
       .addArgument(classOf[ChildProcessMain].getName)
@@ -103,12 +106,19 @@ class BetterFork[A <: ForkableProcess : Manifest](executionContext: ExecutionCon
         def onProcessFailed(e: ExecuteException) {}
         def onProcessComplete(exitValue: Int) { completion.success(exitValue)}
       })
+      println("start accept")
       val socket = ss.accept()
+      println("stacking socket")
       serverSockets += socket
       try {
+        println("ssss")
         val ois = new ObjectInputStream(socket.getInputStream)
+        println("ois: " + ois)
         val resp = ois.readObject().asInstanceOf[String]
-        new ProcessInfo(() => exec.kill(), resp, completion.future)
+        println("resp: " + resp)
+        val p = new ProcessInfo(() => exec.kill(), resp, completion.future)
+        println("p: " + p)
+        p
       } catch {
         case ex:SocketException => throw new ExecuteException("Failed to start process %s".format(cmd), 1, ex)
         case ex:EOFException =>    throw new ExecuteException("Failed to start process %s".format(cmd), 1, ex)

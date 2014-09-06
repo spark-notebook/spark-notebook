@@ -1,0 +1,27 @@
+{
+  "metadata":{
+    "name":"Untitled1",
+    "user_save_timestamp":"1970-01-01T00:00:00.000Z",
+    "auto_save_timestamp":"1970-01-01T00:00:00.000Z"
+  },
+  "worksheets":[{
+    "cells":[]
+  }],
+  "autosaved":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":"1+1",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":1,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "nbformat":3
+}
