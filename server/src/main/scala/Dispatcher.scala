@@ -1,13 +1,13 @@
 package com.bwater.notebook
 package server
 
+import akka.remote.RemotingLifecycleEvent
 import unfiltered.Cookie
 import unfiltered.netty.websockets.{Pass => _, _}
 import unfiltered.request._
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import akka.actor._
-import akka.remote.RemoteClientLifeCycleEvent
 import java.net.URLDecoder
 import java.io.File
 import java.util.UUID
@@ -343,7 +343,7 @@ trait NotebookSession extends Logging {
       def receive = {
         case x => logDebug("Actor Lifecycle event: " + x)
       }
-    })), classOf[RemoteClientLifeCycleEvent])
+    })), classOf[RemotingLifecycleEvent ])
   }
 
 }

@@ -8,6 +8,8 @@
 package com.bwater.notebook.kernel
 
 import java.io.{StringWriter, PrintWriter, ByteArrayOutputStream}
+import org.apache.spark.repl.{HackSparkILoop, SparkILoop, SparkJLineCompletion}
+
 import tools.nsc.Settings
 import tools.nsc.interpreter._
 import tools.nsc.interpreter.Completion.{Candidates, ScalaCompleter}
@@ -54,22 +56,37 @@ class Repl(compilerOpts: List[String]) {
   private lazy val stdoutBytes = new MyOutputStream
   private lazy val stdout = new PrintWriter(stdoutBytes)
 
+  private var loop:SparkILoop = _
+
   private lazy val interp = {
     val settings = new Settings
     settings.embeddedDefaults[Repl]
-    if (!compilerOpts.isEmpty()) settings.processArguments(compilerOpts, false)
+    if (!compilerOpts.isEmpty) settings.processArguments(compilerOpts, false)
 
     // TODO: This causes tests to fail in SBT, but work in IntelliJ
     // The java CP in SBT contains only a few SBT entries (no project entries), while
     // in intellij it has the full module classpath + some intellij stuff.
     settings.usejavacp.value = true
     // println(System.getProperty("java.class.path"))
-    val i = new HackIMain(settings, stdout)
-    i.initializeSynchronous()
+    //val i = new HackIMain(settings, stdout)
+    loop = new HackSparkILoop(stdout)
+    loop.process(settings)
+    val i = loop.intp
+
+
+
+    //loop.createSparkContext()
+
+
+
+    //i.initializeSynchronous()
     i
   }
 
-  private lazy val completion = new JLineCompletion(interp)
+  private lazy val completion = {
+    //new JLineCompletion(interp)
+    new SparkJLineCompletion(interp)
+  }
 
   private def scalaToJline(tc: ScalaCompleter): Completer = new Completer {
     def complete(_buf: String, cursor: Int, candidates: JList[CharSequence]): Int = {
@@ -124,7 +141,7 @@ class Repl(compilerOpts: List[String]) {
 
     val result = res match {
       case ReplSuccess =>
-        val request = interp.previousRequests.last
+        val request = interp.prevRequestList.last
         val lastHandler: interp.memberHandlers.MemberHandler = request.handlers.last
 
         try {
@@ -139,10 +156,33 @@ class Repl(compilerOpts: List[String]) {
                 |  %s
                 |  val rendered: _root_.com.bwater.notebook.Widget = %s
                 |  %s
-                |}""".stripMargin.format(request.importsPreamble, request.fullPath(lastHandler.definesTerm.get), request.importsTrailer)
+                |}""".stripMargin.format(
+                  request.importsPreamble,
+                  request.fullPath(lastHandler.definesTerm.get),
+                  request.importsTrailer
+                )
             if (line.compile(renderObjectCode)) {
-              val renderedClass = Class.forName(line.pathTo("$rendered") + request.accessPath.replace('.', '$') + "$", true, interp.classLoader)
-              renderedClass.getMethod("rendered").invoke(renderedClass.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get()).asInstanceOf[Widget].toHtml
+              val renderedClass2 = Class.forName(
+                line.pathTo("$rendered")+"$", true, interp.classLoader
+              )
+
+              val o = renderedClass2.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get()
+
+              def iws(o:Any):NodeSeq = {
+                val iw = o.getClass.getMethods.find(_.getName == "$iw")
+                val o2 = iw map { m =>
+                  m.invoke(o)
+                }
+                o2 match {
+                  case Some(o3) => iws(o3)
+                  case None =>
+                    val r = o.getClass.getDeclaredMethod("rendered").invoke(o)
+                    println(r)
+                    val h = r.asInstanceOf[Widget].toHtml
+                    h
+                }
+              }
+              iws(o)
             } else {
               // a line like println(...) is technically a val, but returns null for some reason
               // so wrap it in an option in case that happens...

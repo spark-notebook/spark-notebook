@@ -50,7 +50,7 @@ class RemoteActorProcess extends ForkableProcess{
 
 class FindAddressImpl(system: ExtendedActorSystem) extends Extension {
   def address = system.provider match {
-    case rarp: RemoteActorRefProvider => rarp.transport.address
+    case rarp if rarp.getClass.getSimpleName == "RemoteActorRefProvider" => rarp.getDefaultAddress
     case _ => system.provider.rootPath.address
   }
 }
