@@ -12,11 +12,12 @@ import net.liftweb.json.JsonDSL._
 import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.repl.SparkILoop
 
-val execUri = System.getenv("SPARK_EXECUTOR_URI")
-val jars = SparkILoop.getAddedJars
-val conf = new SparkConf()
-  .setMaster("local[*]")
-  .setAppName("Spark shell")
+@transient val execUri = System.getenv("SPARK_EXECUTOR_URI")
+@transient val sparkMaster = System.getenv("SPARK_MASTER")
+@transient val jars = SparkILoop.getAddedJars
+@transient val conf = new SparkConf()
+  .setMaster(Option(sparkMaster).getOrElse("local[*]"))
+  .setAppName("Notebook")
   .setJars(jars)
   //.set("spark.repl.class.uri", intp.classServer.uri)
 if (execUri != null) {

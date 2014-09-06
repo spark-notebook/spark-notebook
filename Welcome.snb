@@ -1,8 +1,8 @@
 {
   "metadata":{
     "name":"Welcome",
-    "user_save_timestamp":"2013-03-13T21:55:13.342Z",
-    "auto_save_timestamp":"2014-09-06T16:34:48.942Z"
+    "user_save_timestamp":"2014-09-06T17:54:29.799Z",
+    "auto_save_timestamp":"2014-09-06T18:31:22.569Z"
   },
   "worksheets":[{
     "cells":[{
@@ -13,28 +13,48 @@
       "source":"To edit a markdown cell, double-click in the text. "
     },{
       "cell_type":"code",
-      "input":"// Simple expressions\nList(1,2,3).reverse\n ",
+      "input":"// Simple expressions\nList(1,2,3).reverse // show\n ",
       "language":"scala",
       "collapsed":false,
       "prompt_number":2,
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"// Functions\ndef fact(n: Int):Int = if (n == 0) 1 else n*fact(n-1)",
+      "input":"sparkContext",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":3,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val file = sparkContext.textFile(\"hdfs://ec2-54-77-215-229.eu-west-1.compute.amazonaws.com:9000/data/yum.log\")",
+      "language":"scala",
+      "collapsed":false,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val rdd = sparkContext.makeRDD(Array(1, 2))",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":4,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"rdd.count()\n ",
       "language":"scala",
       "collapsed":false,
       "prompt_number":5,
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"// Functions are callable after they are defined. By convention, notebooks evaluate from top to bottom\n// but you must evaluate a cell before it is used\nfact(10)",
+      "input":"case class A(a:String)\nval a:A  = A(\"ok\")",
       "language":"scala",
       "collapsed":false,
       "prompt_number":6,
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"// HTML return types are also suppored\n<table>{ for (row <- 1 to 5) yield \n  <tr>{ for (col <- 1 to 4) yield <td>{row*col}</td> }</tr>\n} </table>",
+      "input":"val signs = sparkContext.makeRDD(Array(\">\", \"<\"))\nval appendedSigns = signs.map(_ + a.a)\n\n  <div>{appendedSigns.collect() map (s => <p>{s}</p>)}</div>\n  ",
       "language":"scala",
       "collapsed":false,
       "prompt_number":11,
@@ -80,28 +100,46 @@
       "input":"// Simple expressions\nList(1,2,3).reverse // show\n ",
       "language":"scala",
       "collapsed":false,
-      "prompt_number":1,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"sparkContext",
-      "language":"scala",
-      "collapsed":false,
       "prompt_number":2,
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"val rdd = sparkContext.makeRDD(Array(1, 2))",
+      "input":"sparkContext.getConf.toDebugString\n ",
       "language":"scala",
       "collapsed":false,
-      "prompt_number":5,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val file = sparkContext.textFile(\"hdfs://localhost:19000/data/yum.log\")\n  val words = file flatMap { _.split(\" \") }\nwords.count()",
+      "language":"scala",
+      "collapsed":false,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":false,
       "outputs":[]
     },{
       "cell_type":"code",
       "input":"rdd.count()\n ",
       "language":"scala",
       "collapsed":false,
+      "prompt_number":5,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"case class A(a:String)\nval a:A  = A(\"ok\")",
+      "language":"scala",
+      "collapsed":false,
       "prompt_number":6,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val signs = sparkContext.makeRDD(Array(\">\", \"<\"))\nval appendedSigns = signs.map(_ + a.a)\n\n  <div>{appendedSigns.collect() map (s => <p>{s}</p>)}</div>\n  ",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":11,
       "outputs":[]
     },{
       "cell_type":"code",

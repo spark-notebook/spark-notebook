@@ -106,19 +106,12 @@ class BetterFork[A <: ForkableProcess : Manifest](executionContext: ExecutionCon
         def onProcessFailed(e: ExecuteException) {}
         def onProcessComplete(exitValue: Int) { completion.success(exitValue)}
       })
-      println("start accept")
       val socket = ss.accept()
-      println("stacking socket")
       serverSockets += socket
       try {
-        println("ssss")
         val ois = new ObjectInputStream(socket.getInputStream)
-        println("ois: " + ois)
         val resp = ois.readObject().asInstanceOf[String]
-        println("resp: " + resp)
-        val p = new ProcessInfo(() => exec.kill(), resp, completion.future)
-        println("p: " + p)
-        p
+        new ProcessInfo(() => exec.kill(), resp, completion.future)
       } catch {
         case ex:SocketException => throw new ExecuteException("Failed to start process %s".format(cmd), 1, ex)
         case ex:EOFException =>    throw new ExecuteException("Failed to start process %s".format(cmd), 1, ex)
