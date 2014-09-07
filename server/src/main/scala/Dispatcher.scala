@@ -212,6 +212,8 @@ class Dispatcher(protected val config: ScalaNotebookConfig,
       JsonContent ~> ResponseString(compact(render(json))) ~> Ok
     }
 
+    def getCalcWebSocketService(kernelId: String):Option[CalcWebSocketService] = kernelIdToCalcService.get(kernelId)
+
     val kernelIntent: unfiltered.netty.async.Plan.Intent = {
       case req@POST(Path(Seg("kernels" :: Nil))) =>
         logInfo("Starting kernel")

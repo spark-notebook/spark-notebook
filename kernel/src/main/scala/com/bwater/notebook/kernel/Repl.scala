@@ -58,7 +58,7 @@ class Repl(compilerOpts: List[String]) {
 
   private var loop:SparkILoop = _
 
-  private lazy val interp = {
+  lazy val interp = {
     val settings = new Settings
     settings.embeddedDefaults[Repl]
     if (!compilerOpts.isEmpty) settings.processArguments(compilerOpts, false)
@@ -72,14 +72,15 @@ class Repl(compilerOpts: List[String]) {
     loop = new HackSparkILoop(stdout)
     loop.process(settings)
     val i = loop.intp
-
-
-
-    //loop.createSparkContext()
-
-
-
     //i.initializeSynchronous()
+
+    val f = new java.io.File("/tmp/very-hackish-spark-classserver-uri")
+    if (f.exists()) {
+      f.renameTo(new java.io.File("/tmp/very-hackish-spark-classserver-uri.old"))
+      f.createNewFile()
+    }
+    new java.io.FileWriter(f).append(i.classServer.uri).close()
+
     i
   }
 

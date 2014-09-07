@@ -33,7 +33,9 @@ object Server extends Logging {
       case None =>
     }
   }
-  
+
+  var app:Dispatcher = _
+
   def main(args: Array[String]) {
     startServer(args, ScalaNotebookConfig.withOverrides(ScalaNotebookConfig.defaults))(openBrowser)
   }
@@ -93,7 +95,7 @@ object Server extends Logging {
       config.notebooksDir.mkdirs()
     }
 
-    val app: Dispatcher = new Dispatcher(config, host, port)
+    val app = new Dispatcher(config, host, port)
     import security.{ withCSRFKey, withCSRFKeyAsync, withWSAuth, authIntent }
 
     val wsPlan = unfiltered.netty.websockets.Planify(withWSAuth(app.WebSockets.intent)).onPass(_.sendUpstream(_))

@@ -5,6 +5,8 @@ import akka.actor.{ActorLogging, Props, Actor}
 import kernel._
 import java.io.File
 
+import org.apache.spark.repl.HackSparkILoop
+
 /**
  * Author: Ken
  */
@@ -12,6 +14,7 @@ sealed trait CalcRequest
 case class ExecuteRequest(counter: Int, code: String) extends CalcRequest
 case class CompletionRequest(line: String, cursorPosition: Int) extends CalcRequest
 case class ObjectInfoRequest(objName: String) extends CalcRequest
+case object SparkClassServerUri extends CalcRequest
 case object InterruptRequest extends CalcRequest
 
 sealed trait CalcResponse
@@ -103,6 +106,12 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
           // repl.interrupt()
 
         case req @ ExecuteRequest(_, code) => executor.forward(req)
+
+        case SparkClassServerUri =>
+          repl.interp match {
+            case i:HackSparkILoop => sender ! Some(i.intp.classServer.uri)
+            case _ => sender ! None
+          }
 
         case CompletionRequest(line, cursorPosition) =>
           val (matched, candidates) = repl.complete(line, cursorPosition)
