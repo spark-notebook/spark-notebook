@@ -113,7 +113,7 @@ object NotebookBuild extends Build {
       ),
 
       libraryDependencies ++= Seq(
-        "org.apache.spark" %% "spark-repl" % "1.0.2"
+        "org.apache.spark" %% "spark-repl" % "1.0.1"
       )
     )
 
@@ -142,7 +142,7 @@ object NotebookBuild extends Build {
       ),
 
       libraryDependencies ++= Seq(
-        "org.apache.spark" %% "spark-repl" % "1.0.2"
+        "org.apache.spark" %% "spark-repl" % "1.0.1"
       )
     )
 

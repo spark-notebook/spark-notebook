@@ -19,7 +19,7 @@ import akka.actor.Terminated
 import scala.concurrent.duration._
 
 /**
- * Provides a web-socket interface to the Calcualtor
+ * Provides a web-socket interface to the Calculator
  */
 class CalcWebSocketService(system: ActorSystem, initScripts: List[String], compilerArgs: List[String], remoteDeployFuture: Future[Deploy]) {
   implicit val executor = system.dispatcher
@@ -55,6 +55,11 @@ class CalcWebSocketService(system: ActorSystem, initScripts: List[String], compi
         for (op <- currentSessionOperation) {
           calculator.tell(InterruptRequest, op)
         }
+
+      case SparkClassServerUri => {
+        calculator forward SparkClassServerUri
+      }
+
       case req@SessionRequest(header, session, request) =>
         val operations = new SessionOperationActors(header, session)
         val operationActor = (request: @unchecked) match {

@@ -82,10 +82,10 @@ class BetterFork[A <: ForkableProcess : Manifest](executionContext: ExecutionCon
 
   def execute(args: String*): Future[ProcessInfo] = {
     /* DK: Bi-directional liveness can be detected via redirected System.in (child), System.out (parent), avoids need for socket... */
-    val port = 3344+serverSockets.size
-    println(port)
-    val ss = new ServerSocket(port)
-    println(ss.getLocalPort.toString)
+    //val port = 3344+serverSockets.size
+    //println(port)
+    val ss = new ServerSocket(0)
+    //println(ss.getLocalPort.toString)
     val cmd = new CommandLine(javaHome + "/bin/java")
       .addArguments(jvmArgs.toArray)
       .addArgument(classOf[ChildProcessMain].getName)
