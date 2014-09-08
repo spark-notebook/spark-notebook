@@ -1,8 +1,8 @@
 {
   "metadata":{
     "name":"Welcome",
-    "user_save_timestamp":"2014-09-06T17:54:29.799Z",
-    "auto_save_timestamp":"2014-09-06T18:31:22.569Z"
+    "user_save_timestamp":"2014-09-08T23:30:54.951Z",
+    "auto_save_timestamp":"2014-09-08T23:38:00.961Z"
   },
   "worksheets":[{
     "cells":[{
@@ -11,6 +11,50 @@
     },{
       "cell_type":"markdown",
       "source":"To edit a markdown cell, double-click in the text. "
+    },{
+      "cell_type":"code",
+      "input":"import com.bwater.notebook.JsonCodec._\nimport net.liftweb.json.JsonAST._\nimport net.liftweb.json.JsonDSL._\nimport com.bwater.notebook.widgets.d3._\n  \n  val script = {\n\t  implicit val sss = strings\n\t  D3(Seq(\"ok\", \"nok\"), 400, 100, \n         \"\"\" \n\t     function(data) {\n\t\t     var text = svg.selectAll(\"text\")\n                        .data(data)\n                        .enter()\n                        .append(\"text\")\n                        .attr(\"x\", 10)\n                        .attr(\"y\", 10)\n                        .attr(\"fill\", \"red\")\n \t\t\t            .text(function(t) {return t;});\n           \n         }\n         \"\"\", \n         \"\"\" function(x) {console.log(\"yop\"); };\"\"\")\n\n  }",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":12,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"script.apply(Seq(\"BOOOM\"))",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":13,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
     },{
       "cell_type":"code",
       "input":"// Simple expressions\nList(1,2,3).reverse // show\n ",
@@ -97,6 +141,50 @@
       "source":"To edit a markdown cell, double-click in the text. "
     },{
       "cell_type":"code",
+      "input":"import com.bwater.notebook.JsonCodec._\nimport net.liftweb.json.JsonAST._\nimport net.liftweb.json.JsonDSL._\nimport com.bwater.notebook.widgets.d3._\n  \n  val script = {\n\t  implicit val sss = strings\n\t  D3(Seq(\"ok\", \"nok\"), 400, 100, \n         \"\"\" \n\t     function(data) {\n\t\t   var text = svg.selectAll(\"text\")\n                        .data(data, function(d) { return d; });\n           text.enter()\n             .append(\"text\")\n             .attr(\"x\", function(d, i) { return (i+1) * 10;})\n             .attr(\"y\", function(d, i) { return (i+1) * 10;})\n             .attr(\"fill\", \"red\")\n             .text(function(t) {return t;});\n           \n           text.exit().remove();\n           \n         }\n         \"\"\", \n         \"\"\" function(x) {console.log(\"yop\"); };\"\"\")\n\n  }",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":13,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"script.apply(Seq(\"BOOOM\", \"BUM\", \"BAM\"))",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":12,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    },{
+      "cell_type":"code",
       "input":"// Simple expressions\nList(1,2,3).reverse // show\n ",
       "language":"scala",
       "collapsed":false,
@@ -104,21 +192,23 @@
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"sparkContext.getConf.toDebugString\n ",
+      "input":"sparkContext",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":3,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val file = sparkContext.textFile(\"hdfs://ec2-54-77-215-229.eu-west-1.compute.amazonaws.com:9000/data/yum.log\")",
       "language":"scala",
       "collapsed":false,
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"val file = sparkContext.textFile(\"hdfs://localhost:19000/data/yum.log\")\n  val words = file flatMap { _.split(\" \") }\nwords.count()",
+      "input":"val rdd = sparkContext.makeRDD(Array(1, 2))",
       "language":"scala",
       "collapsed":false,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"",
-      "language":"scala",
-      "collapsed":false,
+      "prompt_number":4,
       "outputs":[]
     },{
       "cell_type":"code",

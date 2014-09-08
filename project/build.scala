@@ -183,6 +183,9 @@ object NotebookBuild extends Build {
           (JsKeys.variableRenamingPolicy in (Compile, JsKeys.js)) := VariableRenamingPolicy.OFF,
           (JsKeys.prettyPrint in (Compile, JsKeys.js)) := true,
 
+          // avoid injected 'require' function in scopedScript to be renamed, and thus not found at runtime
+          (JsKeys.compilationLevel in (Compile, JsKeys.js)) := CompilationLevel.WHITESPACE_ONLY,
+
           /* Copy all non-compiled assets */
           unmanagedResourceDirectories in Compile <+= (sourceDirectory in Compile) (_ / "assets"),
           excludeFilter in (Compile, unmanagedResources) ~= (filter => filter || "*.js" || "*.coffee" || "*.jsm")
