@@ -25,32 +25,51 @@ trait Codec[A,B] {
 object JsonCodec {
   val log = LoggerFactory.getLogger(getClass())
   implicit val formats = DefaultFormats
-  val ints = new Codec[JValue, Int] {
+
+  implicit val ints = new Codec[JValue, Int] {
     def decode(t: Int) = JInt(t)
     def encode(v: JValue):Int = v.extract[Int]
   }
-  val doubleSeq = new Codec[JValue, Seq[Double]] {
-    def decode(t: Seq[Double]): JValue = t
-    def encode(v: JValue) = for (JDouble(d) <- v) yield d
+  implicit val doubles = new Codec[JValue, Double] {
+    def decode(t: Double) = JDouble(t)
+    def encode(v: JValue):Double = v.extract[Double]
   }
-  val pairSeq = new Codec[JValue, Seq[(Double,Double)]] {
-    def decode(t: Seq[(Double,Double)]): JValue = for ((x,y) <- t) yield Seq(x,y)
-    def encode(v: JValue) = for (JArray(Seq(JDouble(x),JDouble(y))) <- v) yield (x,y)
+  implicit val strings = new Codec[JValue, String] {
+    def decode(t: String):JValue = JString(t)
+    def encode(v: JValue) = v.extract[String]
   }
-  val pair = new Codec[JValue, (Double,Double)] {
+
+  implicit val pair = new Codec[JValue, (Double,Double)] {
     def decode(t: (Double,Double)): JValue = Seq(t._1, t._2)
     def encode(v: JValue) = {
       val JArray(Seq(JDouble(x),JDouble(y))) = v
       (x, y)
     }
   }
-  val strings = new Codec[JValue, String] {
-    def decode(t: String):JValue = JString(t)
-    def encode(v: JValue) = v.extract[String]
+
+  //implicit val doubleSeq = new Codec[JValue, Seq[Double]] {
+  //  def decode(t: Seq[Double]): JValue = t
+  //  def encode(v: JValue) = for (JDouble(d) <- v) yield d
+  //}
+  //implicit val pairSeq = new Codec[JValue, Seq[(Double,Double)]] {
+  //  def decode(t: Seq[(Double,Double)]): JValue = for ((x,y) <- t) yield Seq(x,y)
+  //  def encode(v: JValue) = for (JArray(Seq(JDouble(x),JDouble(y))) <- v) yield (x,y)
+  //}
+
+  implicit def tSeq[T](implicit codec:Codec[JValue, T]):Codec[JValue, Seq[T]] = new Codec[JValue, Seq[T]] {
+    def encode(vs: JValue) = for (JArray(Seq(t)) <- vs) yield codec.encode(t)
+    def decode(ts: Seq[T]): JValue = ts.map(t => codec.decode(t))
   }
 
-  def tSeq[T](implicit codec:Codec[JValue, T]) = new Codec[JValue, Seq[T]] {
-    def decode(ts: Seq[T]): JValue = ts.map(t => codec.decode(t))
-    def encode(vs: JValue) = for (JArray(Seq(t)) <- vs) yield codec.encode(t)
+  implicit def idCodec[T]:Codec[T, T] = new Codec[T, T] {
+    def encode(x: T): T = x
+    def decode(x: T): T = x
   }
+
+
+  implicit def jdouble2jvalueCodec[T](codec:Codec[JDouble, T]):Codec[JValue, T] = new Codec[JValue, T] {
+    def encode(x:JValue):T = codec.encode(x)
+    def decode(x:T):JValue = codec.decode(x)
+  }
+
 }
