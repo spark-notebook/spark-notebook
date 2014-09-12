@@ -5,9 +5,6 @@ define([
     'js!static/topojson.js'
 ], (Observable, ko, d3, tj) ->
   (elem, onData, extension) ->
-    idxf = (idx) -> (d) -> d[idx]
-    xf = idxf(0)
-    yf = idxf(1)
     m =
       t: 4
       r: 4
@@ -19,9 +16,12 @@ define([
     w = Number(svg.attr('width'))
     h = Number(svg.attr('height'))
 
+    m.w = w
+    m.h = h
+
     svg.append('svg:g')
         .attr('class', 'x axis')
-        .attr("transform", "translate(0, #{ h - m.b + 2 })")
+        .attr("transform", "translate(0, #{ m.h - m.b + 2 })")
 
     svg.append('svg:g')
         .attr('class', 'y axis')
@@ -29,11 +29,9 @@ define([
 
     dataO = Observable.makeObservableArray(@dataId)
     dataO.subscribe( (data) =>
-      #eval(@onData)
-      onData(data)
+      onData(data, svg, m)
     )
     dataO(@dataInit)
 
-    #eval(@extension)
-    extension(@)
+    extension(@, svg)
 )

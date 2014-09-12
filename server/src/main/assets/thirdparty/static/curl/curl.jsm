@@ -1,2 +1,2 @@
 # No non-minified versions published, can compile our own if necessary...
-https://raw.github.com/cujojs/curl/0.7.3/src/curl.js
+https://raw.github.com/cujojs/curl/0.8.10/src/curl.js
