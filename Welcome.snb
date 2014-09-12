@@ -2,7 +2,7 @@
   "metadata":{
     "name":"Welcome",
     "user_save_timestamp":"2014-09-08T23:30:54.951Z",
-    "auto_save_timestamp":"2014-09-08T23:38:00.961Z"
+    "auto_save_timestamp":"2014-09-12T09:01:37.264Z"
   },
   "worksheets":[{
     "cells":[{
@@ -155,9 +155,10 @@
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"",
+      "input":"import com.bwater.notebook.JsonCodec._\nimport net.liftweb.json.JsonAST._\nimport net.liftweb.json.JsonDSL._\nimport com.bwater.notebook.widgets.d3._\n\n  \nval script = {\n\t  implicit val sss = strings\n\t  D3(Seq(\"ok\", \"nok\"), 400, 100, \n         \"consoleDir\", \n         \"consoleDir\")\n\n  }\n  ",
       "language":"scala",
-      "collapsed":true,
+      "collapsed":false,
+      "prompt_number":1,
       "outputs":[]
     },{
       "cell_type":"code",

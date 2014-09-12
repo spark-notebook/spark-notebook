@@ -4,7 +4,7 @@ define([
     'd3'
     'js!static/topojson.js'
 ], (Observable, ko, d3, tj) ->
-  (elem) ->
+  (elem, onData, extension) ->
     idxf = (idx) -> (d) -> d[idx]
     xf = idxf(0)
     yf = idxf(1)
@@ -29,11 +29,11 @@ define([
 
     dataO = Observable.makeObservableArray(@dataId)
     dataO.subscribe( (data) =>
-      eval(@onData)
+      #eval(@onData)
       onData(data)
     )
     dataO(@dataInit)
 
-    eval(@extension)
+    #eval(@extension)
     extension(@)
 )
