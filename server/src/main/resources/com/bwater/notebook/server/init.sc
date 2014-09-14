@@ -20,20 +20,8 @@ import scala.concurrent.Await
 
 @transient val sparkContext = {
   val execUri = System.getenv("SPARK_EXECUTOR_URI")
-  val sparkMaster = System.getenv("SPARK_MASTER")
+  val sparkMaster = System.getenv("MASTER")
   val jars = SparkILoop.getAddedJars
-/*  import scala.concurrent.duration._
-  println("before"*1000)
-  val app = Server.app
-  println("after"*1000)
-  println(app)
-  val Some(calc) = app.kernelIdToCalcService.headOption map (_._2.calcActor)
-  println("-------"*1000)
-  println(calc)
-  println("-------"*1000)
-  import akka.pattern.ask
-  implicit val timeout:akka.util.Timeout = 1 minute
-  val uri = Await.result((calc ? SparkClassServerUri).mapTo[String], 1 minute)*/
 
   val f = new java.io.File("/tmp/very-hackish-spark-classserver-uri")
   val b = new BufferedReader(new FileReader(f))
