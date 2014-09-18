@@ -143,6 +143,12 @@ object NotebookBuild extends Build {
 
       libraryDependencies ++= Seq(
         sparkRepl
+      ),
+
+      libraryDependencies ++= Seq(
+        aetherApi,
+        jcabiAether,
+        mavenCore
       )
     )
 
@@ -164,8 +170,10 @@ object NotebookBuild extends Build {
     val scalaTest            = "org.scalatest"             %%          "scalatest"          %      "2.2.0"      % "test"
     val scalaMock            = "org.scalamock"             %% "scalamock-scalatest-support" %     "3.1.RC1"     % "test"
 
-
-
+    // to download deps at runtime
+    val aetherApi            = "org.sonatype.aether"       %          "aether-api"          %     "1.13.1"
+    val jcabiAether          = "com.jcabi"                 %         "jcabi-aether"         %      "0.10"
+    val mavenCore            = "org.apache.maven"          %          "maven-core"          %     "3.0.5"
   }
 
 
