@@ -42,4 +42,39 @@ def reset(assign:Boolean=true):SparkContext = {
   sc
 }
 
+object Repos {
+  import org.sonatype.aether.repository.RemoteRepository
+  val central = new RemoteRepository(
+    "maven-central",
+    "default",
+    "http://repo1.maven.org/maven2/"
+  )
+}
+
+def resolveAndAddToJars(group:String, artifact:String, version:String) = {
+  import com.jcabi.aether.Aether
+  import java.io.File
+  import java.util.Arrays
+  import org.apache.maven.project.MavenProject
+  import org.sonatype.aether.artifact.Artifact
+  import org.sonatype.aether.util.artifact.DefaultArtifact
+  import scala.collection.JavaConversions._
+  //import java.nio.Files
+
+  //val repo = Files.createTempDirectory(s"scala-notebook-aether-$group_$artifact_$version")
+  val repo = new File(System.getProperty("java.io.tmpdir")+ s"/scala-notebook/aether/${group}_${artifact}_${version}/" + java.util.UUID.randomUUID.toString)
+
+  repo.mkdirs
+
+  val remotes = List(Repos.central)
+  val deps:Set[Artifact] =  new Aether(remotes, repo).resolve(
+                              new DefaultArtifact(group, artifact, "", "jar", version), 
+                              "runtime"
+                            ).toSet;
+
+  val newJars = deps.map(_.getFile.getPath).toSet.toList
+
+  jars = (newJars ::: jars.toList).distinct.toArray
+}
+
 @transient var sparkContext:SparkContext = reset(false)
