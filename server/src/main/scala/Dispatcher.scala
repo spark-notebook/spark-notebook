@@ -189,7 +189,11 @@ class Dispatcher(protected val config: ScalaNotebookConfig,
       try {
         val response = for ((lastMod, name, data) <- nbm.getNotebook(id, name))
         yield format match {
-            case "json" => JsonContent ~> ResponseHeader("Content-Disposition", "attachment; filename=\"%s.snb".format(name) :: Nil) ~> ResponseHeader("Last-Modified", lastMod :: Nil) ~> ResponseString(data) ~> Ok
+            case "json" => JsonContent ~> ResponseHeader(
+                                            "Content-Disposition", 
+                                            "attachment; filename=\"%s.snb".format(name) :: Nil
+                                          ) ~> ResponseHeader("Last-Modified", lastMod :: Nil) ~> ResponseString(data) ~> Ok
+
             case _ => PlainTextContent ~> ResponseString("Unsupported format.") ~> NotFound
           }
         response getOrElse PlainTextContent ~> ResponseString("Notebook not found.") ~> NotFound
@@ -337,7 +341,12 @@ trait NotebookSession extends Logging {
   protected def config: ScalaNotebookConfig
 
   val nbm = new NotebookManager(config.projectName, config.notebooksDir)
-  val system = ActorSystem("NotebookServer", AkkaConfigUtils.optSecureCookie(ConfigFactory.load("notebook-server"), akka.util.Crypt.generateSecureCookie))
+  val system = ActorSystem( "NotebookServer", 
+                            AkkaConfigUtils.optSecureCookie(
+                              ConfigFactory.load("notebook-server"), 
+                              akka.util.Crypt.generateSecureCookie
+                            )
+                          )
   logInfo("Notebook session initialized")
 
   ifDebugEnabled {

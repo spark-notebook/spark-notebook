@@ -7,7 +7,7 @@
 
 import java.io.{FileReader, BufferedReader}
 
-import com.bwater.notebook._, widgets._
+import com.bwater.notebook._, widgets._, d3._
 import com.bwater.notebook.client.SparkClassServerUri
 import net.liftweb.json.JsonAST.JArray
 import net.liftweb.json.JsonDSL._
@@ -15,29 +15,31 @@ import net.liftweb.json.JsonDSL._
 import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.repl.SparkILoop
 
-import scala.concurrent.Await
 
+@transient var execUri = System.getenv("SPARK_EXECUTOR_URI")
+@transient var sparkHome = System.getenv("SPARK_HOME")
+@transient var sparkMaster = System.getenv("MASTER")
+@transient var jars = SparkILoop.getAddedJars
 
-@transient val sparkContext = {
-  val execUri = System.getenv("SPARK_EXECUTOR_URI")
-  val sparkMaster = System.getenv("MASTER")
-  val jars = SparkILoop.getAddedJars
+@transient val uri = _5C4L4_N0T3800K_5P4RK_HOOK
 
-  val f = new java.io.File("/tmp/very-hackish-spark-classserver-uri")
-  val b = new BufferedReader(new FileReader(f))
-  val uri = b.readLine()
-  b.close()
+@transient var conf = new SparkConf()
 
-  val conf = new SparkConf()
-    .setMaster(Option(sparkMaster).getOrElse("local[*]"))
-    .setAppName("Notebook")
-    .setJars(jars)
-    .set("spark.repl.class.uri", uri)
+def reset(assign:Boolean=true):SparkContext = {
+  conf = new SparkConf()
+  conf.setMaster(Option(sparkMaster).getOrElse("local[*]"))
+      .setAppName("Notebook")
+      .set("spark.repl.class.uri", uri)
   if (execUri != null) {
     conf.set("spark.executor.uri", execUri)
   }
-  if (System.getenv("SPARK_HOME") != null) {
-    conf.setSparkHome(System.getenv("SPARK_HOME"))
+  if (sparkHome != null) {
+    conf.setSparkHome(sparkHome)
   }
-  new SparkContext(conf)
+  conf.setJars(jars)
+  val sc = new SparkContext(conf)
+  if (assign) sparkContext = sc
+  sc
 }
+
+@transient var sparkContext:SparkContext = reset(false)

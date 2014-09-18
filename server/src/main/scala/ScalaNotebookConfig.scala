@@ -26,7 +26,12 @@ case class ScalaNotebookConfig(kernelInit: List[Script], serverResources: List[F
   def kernelInitScripts: List[String] = kernelInit.map(_.script)
 
   def ++(other: ScalaNotebookConfig) =
-    new ScalaNotebookConfig(other.kernelInit ++ kernelInit, serverResources ++ other.serverResources, kernelCompilerArgs ++ other.kernelCompilerArgs, kernelVMConfig.withFallback(other.kernelVMConfig).resolve())
+    new ScalaNotebookConfig(
+      other.kernelInit ++ kernelInit, 
+      serverResources ++ other.serverResources, 
+      kernelCompilerArgs ++ other.kernelCompilerArgs, 
+      kernelVMConfig.withFallback(other.kernelVMConfig).resolve()
+    )
 }
 
 object ScalaNotebookConfig extends Logging {
@@ -48,7 +53,8 @@ object ScalaNotebookConfig extends Logging {
 
   def propertyOverrides = {
     val defaultCfg = ConfigFactory.defaultOverrides()
-    val overrides = if (defaultCfg.hasPath("notebook")) allCatch.opt(defaultCfg.getConfig("notebook")).getOrElse(ConfigFactory.empty) else ConfigFactory.empty
+    val overrides = if (defaultCfg.hasPath("notebook")) allCatch.opt(defaultCfg.getConfig("notebook")).getOrElse(ConfigFactory.empty) 
+                    else ConfigFactory.empty
     apply(overrides)
   }
   

@@ -58,6 +58,8 @@ class Repl(compilerOpts: List[String]) {
 
   private var loop:SparkILoop = _
 
+  var classServerUri:Option[String] = None
+
   lazy val interp = {
     val settings = new Settings
     settings.embeddedDefaults[Repl]
@@ -74,13 +76,7 @@ class Repl(compilerOpts: List[String]) {
     val i = loop.intp
     //i.initializeSynchronous()
 
-    val f = new java.io.File("/tmp/very-hackish-spark-classserver-uri")
-    if (f.exists()) {
-      f.renameTo(new java.io.File("/tmp/very-hackish-spark-classserver-uri.old"))
-      f.createNewFile()
-    }
-    new java.io.FileWriter(f).append(i.classServer.uri).close()
-
+    classServerUri = Some(i.classServer.uri)
     i
   }
 

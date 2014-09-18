@@ -67,15 +67,27 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
 
   override def preStart() {
     log.info("ReplCalculator preStart")
-    for (script <- initScripts if (script.trim.length > 0)) {
-      val (result, _) = repl.evaluate(script)
-      result match {
-        case Failure(str) =>
-          log.error("Error in init script: \n%s".format(str))
-        case _ =>
-          if (log.isDebugEnabled) log.debug("\n" + script)
-          log.info("Init script processed successfully")
+
+    val dummyScript = () => s"""val dummy = ();\n"""
+    val SparkHookScript = () => s"""val _5C4L4_N0T3800K_5P4RK_HOOK = "${repl.classServerUri.get}";\n"""
+
+    def eval(script: () => String):Unit = {
+      val sc = script()
+      if (sc.trim.length > 0) {
+      val (result, _) = repl.evaluate(sc)
+        result match {
+          case Failure(str) =>
+            log.error("Error in init script: \n%s".format(str))
+          case _ =>
+            if (log.isDebugEnabled) log.debug("\n" + sc)
+            log.info("Init script processed successfully")
+        }
+        result
       }
+    }
+
+    for (script <- (dummyScript :: SparkHookScript :: initScripts.map(x => () => x)) ) {
+      eval(script)
     }
     super.preStart()
   }

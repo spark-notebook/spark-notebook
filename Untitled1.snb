@@ -1,0 +1,102 @@
+{
+  "metadata":{
+    "name":"Untitled1",
+    "user_save_timestamp":"2014-09-18T16:32:49.712Z",
+    "auto_save_timestamp":"2014-09-18T16:32:09.876Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":"jars = (\"<path-to-jar>\" :: jars.toList).toArray\nreset()",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":1,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"sparkContext.getConf.get(\"spark.jars\")",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":2,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"sparkContext.getConf.toDebugString",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":3,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val a = 1\nval b = 2",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":4,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val test = 3\nval d = sparkContext.makeRDD(Array(1, 2)).map(_+test)\nd.reduce(_+_)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":5,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val a = List(4, 5,6)\nval rr = sparkContext.makeRDD(Array(1, 2, 3)).flatMap(x => a.map(_*x))\nval p = rr.reduce(_*_)\ndef pp(d:Double) = p * d\n                              \npp(2d)\n  ",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":6,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val a2 = List(4, 5,6)\nval rr2 = sparkContext.makeRDD(Array(1, 2, 3)).flatMap(x => a2.map(_*x))\nval p2 = rr2.reduce(_*_)\ndef pp2(d:Double) = p2 * d\n                              \npp2(2d)\n  ",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":7,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val a2 = 1",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":8,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val c = { rr2 }\nc",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":9,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"case class A(a:String)\n\nval rdd = sparkContext.makeRDD(Array(1, 2, 3)).map(_.toString).map(x => A(x))  \n  ",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":10,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"rdd.map(_.a).map(_.toInt).reduce(_+_)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":11,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"import JsonCodec._\nD3.linePlot(Seq(1d, 2, 3) zip Seq(1d, 2, 3))",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":12,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[],
+  "nbformat":3
+}

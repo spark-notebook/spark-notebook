@@ -50,7 +50,7 @@ class BetterFork[A <: ForkableProcess : Manifest](executionContext: ExecutionCon
   def permGen: Long = -1
   def reservedCodeCache: Long = -1
   def server: Boolean = true
-  def debug: Boolean = true // If true, then you will likely get address in use errors spawning multiple processes
+  def debug: Boolean = false // If true, then you will likely get address in use errors spawning multiple processes
   def classPath: IndexedSeq[String] = defaultClassPath
   def classPathString = classPath.mkString(File.pathSeparator)
 
