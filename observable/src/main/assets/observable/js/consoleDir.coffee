@@ -2,7 +2,7 @@ define([
     'observable'
     'knockout'
     'd3'
-], (Observable, ko, d3, tj) ->
+], (Observable, ko, d3) ->
   () ->
     console.log(">> This")
     console.dir(@)

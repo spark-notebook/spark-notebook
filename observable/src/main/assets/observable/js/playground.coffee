@@ -11,7 +11,8 @@ define([
     # dataO.subscribe( (data) =>
     #   onData(data, svg, m)
     # )
-    (f.call(@, dataO, elem) for f in functions)
-    
+    for f in functions
+      (f.f || f).call(@, dataO, elem, f.o) 
+
     dataO(@dataInit)
 )
