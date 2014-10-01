@@ -14,20 +14,37 @@ trait DataProvider[T] {
   def apply(newData: Seq[T]) = currentData <-- Connection.just(newData)
 }
 
+case class Script(script:String, options:Map[String, String/*Script?*/]) {
+  val name = "_"+script.replaceAll("[^_a-zA-Z0-9]", "")
+  val toJson = s"""{
+    "f": $name,
+    "o": ${ options.map { case (k, v) => s"'$k': '$v'"}.mkString("{", ",", "}") }
+  }
+  """
+}
+
+
 class Playground[T] (
     data: Seq[T],
-    scripts: List[String]
+    scripts: List[Script],
+    snippets:List[String]=Nil
   )(implicit val codec:Codec[JValue, T])
   extends Widget with DataProvider[T] {
 
-  private val js = ("playground" :: scripts).map(x => s"'js/$x'").mkString("[", ",", "]")
-  private val sanitizeScripts = scripts.map("_"+_.replaceAll("[^_a-zA-Z0-9]", ""))
+  private val js = ("playground" :: scripts.map(_.script)).map(x => s"'js/$x'").mkString("[", ",", "]")
   private val call = 
     s"""
-      function(playground, ${sanitizeScripts.mkString(", ")}) {
+      function(playground, ${scripts.map(_.name).mkString(", ")}) {
         // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }
         // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)
-        playground.call(data, this, ${sanitizeScripts.mkString(", ")});
+        
+        playground.call(data, 
+                        this
+                        ${ if (scripts.size>0) "," else "" }
+                        ${scripts.map(s => s.toJson).mkString(", ")}
+                        ${ if (snippets.size>0) "," else "" }
+                        ${snippets.mkString(", ")}
+                      );
       }
     """
 

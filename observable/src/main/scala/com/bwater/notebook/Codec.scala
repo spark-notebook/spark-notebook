@@ -50,15 +50,6 @@ object JsonCodec {
     }
   }
 
-  //implicit val doubleSeq = new Codec[JValue, Seq[Double]] {
-  //  def decode(t: Seq[Double]): JValue = t
-  //  def encode(v: JValue) = for (JDouble(d) <- v) yield d
-  //}
-  //implicit val pairSeq = new Codec[JValue, Seq[(Double,Double)]] {
-  //  def decode(t: Seq[(Double,Double)]): JValue = for ((x,y) <- t) yield Seq(x,y)
-  //  def encode(v: JValue) = for (JArray(Seq(JDouble(x),JDouble(y))) <- v) yield (x,y)
-  //}
-
   implicit def tMap[T](implicit codec:Codec[JValue, T]):Codec[JValue, Map[String, T]] = new Codec[JValue, Map[String, T]] {
     def encode(vs: JValue):Map[String, T] = {
       val JObject(xs) = vs

@@ -5,7 +5,7 @@ define([
     'rickshaw'
 ], (Observable, ko, d3, Rickshaw) ->
   #(data, container) =>
-  (dataO, container) ->
+  (dataO, container, options) ->
     gElmt = $("<div class='graph'></div>")
     $(container).append(gElmt)
     sElmt = $("<div class='slider'></div>")
@@ -26,12 +26,14 @@ define([
       element: $(container).find(".slider").get(0)
     });
     dataO.subscribe( (data) =>
-      console.dir("DATAAAAA")
-      console.dir(data)
       #graph.configure({series: data})
-      graph.series.forEach((x, i) -> x.data = data[i].data)
+      graph.series.forEach( (x, i) -> data[i].data.forEach( (d) -> x.data.push(d) ) )
       #series.data = data
       graph.render()
     )
     graph.render()
+
+    #test
+    eval("var test = "+options.test)
+    test()
 )
