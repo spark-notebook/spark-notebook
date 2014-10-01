@@ -14,6 +14,35 @@ trait DataProvider[T] {
   def apply(newData: Seq[T]) = currentData <-- Connection.just(newData)
 }
 
+class Playground[T] (
+    data: Seq[T],
+    scripts: List[String]
+  )(implicit val codec:Codec[JValue, T])
+  extends Widget with DataProvider[T] {
+
+  private val js = ("playground" :: scripts).map(x => s"'js/$x'").mkString("[", ",", "]")
+  private val sanitizeScripts = scripts.map("_"+_.replaceAll("[^_a-zA-Z0-9]", ""))
+  private val call = 
+    s"""
+      function(playground, ${sanitizeScripts.mkString(", ")}) {
+        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }
+        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)
+        playground.call(data, this, ${sanitizeScripts.mkString(", ")});
+      }
+    """
+
+  lazy val toHtml =
+    <div class="container">
+    {
+      scopedScript(
+        s"require($js, $call);",
+        ("dataId" -> dataConnection.id) ~
+        ("dataInit" -> JsonCodec.tSeq[T].decode(data))
+      )
+    } </div>
+}
+
+
 class Svg[T] (
     data: Seq[T],
     width: Int = 600,

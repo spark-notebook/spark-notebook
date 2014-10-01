@@ -4,7 +4,6 @@
  * Distributed under the terms of the Modified BSD License.  The full license is in
  * the file COPYING, distributed as part of this software.
  */
-
 package com.bwater.notebook
 
 import net.liftweb.json.DefaultFormats
@@ -26,9 +25,13 @@ object JsonCodec {
   val log = LoggerFactory.getLogger(getClass())
   implicit val formats = DefaultFormats
 
-  implicit val ints = new Codec[JValue, Int] {
-    def decode(t: Int) = JInt(t)
-    def encode(v: JValue):Int = v.extract[Int]
+//  implicit val ints = new Codec[JValue, Int] {
+//    def decode(t: Int) = JInt(t)
+//    def encode(v: JValue):Int = v.extract[Int]
+//  }
+  implicit val ints = new Codec[JDouble, Int] {
+    def decode(t: Int) = JDouble(t.toDouble)
+    def encode(v: JDouble):Int = v.extract[Double].toInt
   }
   implicit val doubles = new Codec[JValue, Double] {
     def decode(t: Double) = JDouble(t)
@@ -55,6 +58,16 @@ object JsonCodec {
   //  def decode(t: Seq[(Double,Double)]): JValue = for ((x,y) <- t) yield Seq(x,y)
   //  def encode(v: JValue) = for (JArray(Seq(JDouble(x),JDouble(y))) <- v) yield (x,y)
   //}
+
+  implicit def tMap[T](implicit codec:Codec[JValue, T]):Codec[JValue, Map[String, T]] = new Codec[JValue, Map[String, T]] {
+    def encode(vs: JValue):Map[String, T] = {
+      val JObject(xs) = vs
+      xs.map { case JField(name, value) =>
+        name -> codec.encode(value)
+      }.toMap
+    }
+    def decode(ts: Map[String, T]): JValue = JObject( ts.map{ case (n, t) => JField(n, codec.decode(t))}.toList )
+  }
 
   implicit def tSeq[T](implicit codec:Codec[JValue, T]):Codec[JValue, Seq[T]] = new Codec[JValue, Seq[T]] {
     def encode(vs: JValue) = for (JArray(Seq(t)) <- vs) yield codec.encode(t)
