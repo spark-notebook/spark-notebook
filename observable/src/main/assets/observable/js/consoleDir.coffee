@@ -2,8 +2,10 @@ define([
     'observable'
     'knockout'
     'd3'
-    'js!static/topojson.js'
 ], (Observable, ko, d3, tj) ->
-  (a) ->
-    console.dir(a)
+  () ->
+    console.log(">> This")
+    console.dir(@)
+    console.log(">> Arguments")
+    console.dir(arguments)
 )
