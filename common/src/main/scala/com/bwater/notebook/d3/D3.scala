@@ -2,6 +2,7 @@ package com.bwater.notebook.widgets.d3
 
 import com.bwater.notebook._, widgets._, JSBus._
 import com.bwater.notebook.JsonCodec._
+import net.liftweb.json.Printer._
 import net.liftweb.json.JsonAST._
 import net.liftweb.json.JsonDSL._
 
@@ -14,11 +15,11 @@ trait DataProvider[T] {
   def apply(newData: Seq[T]) = currentData <-- Connection.just(newData)
 }
 
-case class Script(script:String, options:Map[String, String/*Script?*/]) {
+case class Script(script:String, options:JObject) {
   val name = "_"+script.replaceAll("[^_a-zA-Z0-9]", "")
   val toJson = s"""{
     "f": $name,
-    "o": ${ options.map { case (k, v) => s"'$k': '$v'"}.mkString("{", ",", "}") }
+    "o": ${ pretty(render(options)) }
   }
   """
 }

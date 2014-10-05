@@ -37,7 +37,10 @@ object Server extends Logging {
   var app:Dispatcher = _
 
   def main(args: Array[String]) {
-    startServer(args, ScalaNotebookConfig.withOverrides(ScalaNotebookConfig.defaults))(openBrowser)
+    val action =  if(!args.contains("--no_browser")) {openBrowser _ } 
+                  else (s:String)=>logInfo(s"You can head to $s")
+
+    startServer(args, ScalaNotebookConfig.withOverrides(ScalaNotebookConfig.defaults))(action)
   }
 
   private val preferredPort = 8899

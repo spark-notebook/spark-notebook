@@ -14,5 +14,5 @@ define([
     for f in functions
       (f.f || f).call(@, dataO, elem, f.o) 
 
-    dataO(@dataInit)
+    #dataO(@dataInit)
 )
