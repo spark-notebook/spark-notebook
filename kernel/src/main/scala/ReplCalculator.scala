@@ -55,8 +55,14 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
   private val executor = context.actorOf(Props(new Actor {
     def receive = {
       case ExecuteRequest(_, code) =>
-        val (result, _) = repl.evaluate(code, msg => sender ! StreamResponse(msg, "stdout"))
-
+        val _code = if (code.startsWith(":sql ")) {
+          log.debug(s"Received sql code: $code")
+          val realCode = code.drop(":sql ".size).mkString
+          val c = "val unsafeForNowTestVarName = sqlContext.sql(\"\"\""+realCode+"\"\"\")"
+          log.info(s"Converted sql code as $c")
+          c
+        } else code
+        val (result, _) = repl.evaluate(_code, msg => sender ! StreamResponse(msg, "stdout"))
         result match {
           case Success(result)     => sender ! ExecuteResponse(result.toString)
           case Failure(stackTrace) => sender ! ErrorResponse(stackTrace, false)

@@ -1,0 +1,48 @@
+{
+  "metadata":{
+    "name":"Untitled2",
+    "user_save_timestamp":"1970-01-01T00:00:00.000Z",
+    "auto_save_timestamp":"1970-01-01T00:00:00.000Z"
+  },
+  "worksheets":[{
+    "cells":[]
+  }],
+  "autosaved":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":"val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)\n\n// createSchemaRDD is used to implicitly convert an RDD to a SchemaRDD.\nimport sqlContext.createSchemaRDD",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":1,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"/**\n     COPIED FROM  http://spark.apache.org/docs/latest/sql-programming-guide.html\n**/\n// Create an RDD\nval people = sparkContext.makeRDD(Array(\n\t\"Noootsab,32\",\n\t\"Sandrine,33\",\n\t\"Noah,4\"\n))\n\n// The schema is encoded in a string\nval schemaString = \"name age\"\n\n// Import Spark SQL data types and Row.\nimport org.apache.spark.sql._\n\n// Generate the schema based on the string of schema\nval schema =\n  StructType(\n    schemaString.split(\" \").map(fieldName => StructField(fieldName, StringType, true)))\n\n// Convert records of the RDD (people) to Rows.\nval rowRDD = people.map(_.split(\",\")).map(p => Row(p(0), p(1).trim))\n\n// Apply the schema to the RDD.\nval peopleSchemaRDD = sqlContext.applySchema(rowRDD, schema)\n\n// Register the SchemaRDD as a table.\npeopleSchemaRDD.registerTempTable(\"people\")\n\n// SQL statements can be run by using the sql methods provided by sqlContext.\nval results = sqlContext.sql(\"SELECT name FROM people\")\n\n// The results of SQL queries are SchemaRDDs and support all the normal RDD operations.\n// The columns of a row in the result can be accessed by ordinal.\n<ul>{results.map(t => \"Name: \" + t(0)).collect().map(x => <li>{x}</li>)}</ul>",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":2,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":":sql SELECT name FROM people",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":3,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"<ul>{unsafeForNowTestVarName.map(t => \"Name: \" + t(0)).collect().map(x => <li>{x}</li>)}</ul>",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":4,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "nbformat":3
+}
