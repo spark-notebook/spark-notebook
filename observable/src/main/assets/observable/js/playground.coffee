@@ -8,11 +8,6 @@ define([
     functions = l
 
     dataO = Observable.makeObservableArray(@dataId)
-    # dataO.subscribe( (data) =>
-    #   onData(data, svg, m)
-    # )
     for f in functions
       (f.f || f).call(@, dataO, elem, f.o) 
-
-    #dataO(@dataInit)
 )

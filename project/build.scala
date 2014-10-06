@@ -113,7 +113,8 @@ object NotebookBuild extends Build {
       ),
 
       libraryDependencies ++= Seq(
-        sparkRepl
+        sparkRepl,
+        sparkSQL
       )
     )
 
@@ -142,7 +143,8 @@ object NotebookBuild extends Build {
       ),
 
       libraryDependencies ++= Seq(
-        sparkRepl
+        sparkRepl,
+        sparkSQL
       ),
 
       libraryDependencies ++= Seq(
@@ -157,6 +159,7 @@ object NotebookBuild extends Build {
     val akkaVersion          = "2.2.3-shaded-protobuf"
 
     val sparkRepl            = "org.apache.spark"          %%         "spark-repl"          %      "1.1.0"
+    val sparkSQL             = "org.apache.spark"          %%         "spark-sql"           %      "1.1.0"
     val commonsIO            = "org.apache.commons"        %          "commons-io"          %      "1.3.2"
     val commonsHttp          = "org.apache.httpcomponents" %          "httpclient"          %      "4.3.4"
     val slf4jLog4j           = "org.slf4j"                 %         "slf4j-log4j12"        %      "1.7.7"
