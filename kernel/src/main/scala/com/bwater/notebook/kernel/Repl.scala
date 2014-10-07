@@ -25,7 +25,7 @@ import collection.JavaConversions
 import java.net.{URLDecoder, JarURLConnection}
 import scala.util.control.NonFatal
 
-class Repl(compilerOpts: List[String]) {
+class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
 
   def this() = this(Nil)
 
@@ -60,7 +60,7 @@ class Repl(compilerOpts: List[String]) {
 
   var classServerUri:Option[String] = None
 
-  lazy val interp = {
+  val interp:org.apache.spark.repl.SparkIMain = {
     val settings = new Settings
     settings.embeddedDefaults[Repl]
     if (!compilerOpts.isEmpty) settings.processArguments(compilerOpts, false)
@@ -72,10 +72,15 @@ class Repl(compilerOpts: List[String]) {
     // println(System.getProperty("java.class.path"))
     //val i = new HackIMain(settings, stdout)
     loop = new HackSparkILoop(stdout)
+    jars.foreach { jar =>
+      import scala.tools.nsc.util.ClassPath
+      val f = scala.tools.nsc.io.File(jar).normalize
+      loop.addedClasspath = ClassPath.join(loop.addedClasspath, f.path)
+    }
+    
     loop.process(settings)
     val i = loop.intp
     //i.initializeSynchronous()
-
     classServerUri = Some(i.classServer.uri)
     i
   }
@@ -203,6 +208,11 @@ class Repl(compilerOpts: List[String]) {
     }
 
     (result, stdoutBytes.toString)
+  }
+
+  def addCp(newJars:List[String]) = {
+    val r = new Repl(compilerOpts, newJars:::jars)
+    r
   }
 
   def complete(line: String, cursorPosition: Int): (String, Seq[Match]) = {

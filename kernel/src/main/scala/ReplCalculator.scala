@@ -49,20 +49,36 @@ case class ObjectInfoResponse(found: Boolean, name: String, callDef: String, cal
  * @param compilerArgs Command line arguments to pass to the REPL compiler
  */
 class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) extends Actor with akka.actor.ActorLogging {
-  private lazy val repl = new Repl(compilerArgs)
+  private var _repl:Option[Repl] = None
+
+  private def repl:Repl = _repl getOrElse {
+    val r = new Repl(compilerArgs, Nil)
+    _repl = Some(r)
+    r
+  }
 
   // Make a child actor so we don't block the execution on the main thread, so that interruption can work
   private val executor = context.actorOf(Props(new Actor {
     def receive = {
       case ExecuteRequest(_, code) =>
-        val _code = if (code.startsWith(":sql ")) {
-          log.debug(s"Received sql code: $code")
-          val realCode = code.drop(":sql ".size).mkString
-          val c = "val unsafeForNowTestVarName = sqlContext.sql(\"\"\""+realCode+"\"\"\")"
-          log.info(s"Converted sql code as $c")
-          c
-        } else code
-        val (result, _) = repl.evaluate(_code, msg => sender ! StreamResponse(msg, "stdout"))
+        val (result, _) = 
+          if (code.startsWith(":cp ") || code.startsWith(":cp\n")) {
+            val jars = code.drop(":cp".size).mkString.trim().split("\n").toList.map(_.trim()).filter(_.size > 0)
+            _repl = Some(repl.addCp(jars))
+            preStartLogic()
+            repl.evaluate(s"""
+                "Classpath changed!"
+              """, msg => sender ! StreamResponse(msg, "stdout"))
+          } else {        
+            val _code = if (code.startsWith(":sql ")) {
+              log.debug(s"Received sql code: $code")
+              val realCode = code.drop(":sql ".size).mkString
+              val c = "val unsafeForNowTestVarName = sqlContext.sql(\"\"\""+realCode+"\"\"\")"
+              log.info(s"Converted sql code as $c")
+              c
+            } else code
+            repl.evaluate(_code, msg => sender ! StreamResponse(msg, "stdout"))
+          }
         result match {
           case Success(result)     => sender ! ExecuteResponse(result.toString)
           case Failure(stackTrace) => sender ! ErrorResponse(stackTrace, false)
@@ -71,7 +87,7 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
     }
   }))
 
-  override def preStart() {
+  def preStartLogic() {
     log.info("ReplCalculator preStart")
 
     val dummyScript = () => s"""val dummy = ();\n"""
@@ -93,8 +109,17 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
     }
 
     for (script <- (dummyScript :: SparkHookScript :: initScripts.map(x => () => x)) ) {
+
+      println(" INIT SCRIPT ")
+      println(script)
+
+
       eval(script)
     }
+  }
+
+  override def preStart() {
+    preStartLogic()
     super.preStart()
   }
 

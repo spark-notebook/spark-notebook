@@ -31,11 +31,11 @@ object ConfigUtils {
   
   private def configPathAsList(c: Config, path: String) = {
     scala.util.control.Exception.allCatch.either(c.getStringList(path).toList) match {
-          /* Read scalar value as list for backwards compat with config that has been converted from scalar to list. */
-          case Left(_: ConfigException.WrongType) => List(c.getString(path))
-          case Left(e) => throw e
-          case Right(v) => v
-        }
+      /* Read scalar value as list for backwards compat with config that has been converted from scalar to list. */
+      case Left(_: ConfigException.WrongType) => List(c.getString(path))
+      case Left(e) => throw e
+      case Right(v) => v
+    }
   }
   
   private val MemSpec = """\s*(\d+)\s*([kKmMgG]?)""".r
