@@ -87,7 +87,7 @@ object NotebookBuild extends Build {
         akka,
         unfilteredJson,
         scalaTest,
-        "log4j" % "log4j" % "1.2.17",
+        log4j,
         "org.scalaz" %% "scalaz-core" % "7.0.6"
       )
     )
@@ -163,6 +163,7 @@ object NotebookBuild extends Build {
     val commonsIO            = "org.apache.commons"        %          "commons-io"          %      "1.3.2"
     val commonsHttp          = "org.apache.httpcomponents" %          "httpclient"          %      "4.3.4"
     val slf4jLog4j           = "org.slf4j"                 %         "slf4j-log4j12"        %      "1.7.7"
+    val log4j                = "log4j"                     %             "log4j"            %      "1.2.17"
     val unfilteredFilter     = "net.databinder"            %%      "unfiltered-filter"      % unfilteredVersion
     val unfilteredWebsockets = "net.databinder"            %% "unfiltered-netty-websockets" % unfilteredVersion
     val unfilteredJson       = "net.databinder"            %%       "unfiltered-json"       % unfilteredVersion

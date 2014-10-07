@@ -5,7 +5,7 @@
  * the file COPYING, distributed as part of this software.
  */
 
-import java.io.{FileReader, BufferedReader}
+import java.io.{File, FileReader, BufferedReader}
 
 import com.bwater.notebook._, widgets._, d3._
 import com.bwater.notebook.client.SparkClassServerUri
@@ -16,29 +16,34 @@ import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.repl.SparkILoop
 
 
-@transient var execUri = System.getenv("SPARK_EXECUTOR_URI")
-@transient var sparkHome = System.getenv("SPARK_HOME")
-@transient var sparkMaster = System.getenv("MASTER")
+@transient var execUri = Option(System.getenv("SPARK_EXECUTOR_URI"))
+@transient var execMemory = Option(System.getenv("SPARK_EXECUTOR_MEMORY"))
+@transient var sparkHome = Option(System.getenv("SPARK_HOME"))
+@transient var sparkMaster = Option(System.getenv("MASTER"))
 @transient var jars = SparkILoop.getAddedJars
 
 @transient val uri = _5C4L4_N0T3800K_5P4RK_HOOK
 
 @transient var conf = new SparkConf()
 
-def reset(assign:Boolean=true):SparkContext = {
+def reset(assign:Boolean=true, appName:String="Notebook", lastChanges:(SparkConf=>Unit)=(_:SparkConf)=>()):SparkContext = {
   conf = new SparkConf()
-  conf.setMaster(Option(sparkMaster).getOrElse("local[*]"))
-      .setAppName("Notebook")
+  conf.setMaster(sparkMaster.getOrElse("local[*]"))
+      .setAppName(appName)
       .set("spark.repl.class.uri", uri)
-  if (execUri != null) {
-    conf.set("spark.executor.uri", execUri)
-  }
-  if (sparkHome != null) {
-    conf.setSparkHome(sparkHome)
-  }
+
+  execMemory foreach (v => conf.set("spark.executor.memory", v))
+  execUri foreach (v => conf.set("spark.executor.uri", v))
+  sparkHome foreach (v => conf.setSparkHome(v))
+  
   conf.setJars(jars)
+  
+  lastChanges(conf)
+
+  if (assign) sparkContext.stop()
   val sc = new SparkContext(conf)
   if (assign) sparkContext = sc
+  
   sc
 }
 
@@ -49,24 +54,30 @@ object Repos {
     "default",
     "http://repo1.maven.org/maven2/"
   )
+
+  def apply(id:String, name:String, url:String) = new RemoteRepository(id, name, url)
 }
+
+@transient var remotes = List(Repos.central)
+@transient var repo:File = _
+def updateRepo(dir:String) = {
+  val r = new File(dir)
+  if (!r.exists) r.mkdirs else ()
+  repo = r
+  r
+}
+updateRepo(System.getProperty("java.io.tmpdir")+ s"/scala-notebook/aether/" + java.util.UUID.randomUUID.toString)
 
 def resolveAndAddToJars(group:String, artifact:String, version:String) = {
   import com.jcabi.aether.Aether
-  import java.io.File
   import java.util.Arrays
   import org.apache.maven.project.MavenProject
   import org.sonatype.aether.artifact.Artifact
   import org.sonatype.aether.util.artifact.DefaultArtifact
   import scala.collection.JavaConversions._
-  //import java.nio.Files
 
-  //val repo = Files.createTempDirectory(s"scala-notebook-aether-$group_$artifact_$version")
-  val repo = new File(System.getProperty("java.io.tmpdir")+ s"/scala-notebook/aether/${group}_${artifact}_${version}/" + java.util.UUID.randomUUID.toString)
+  
 
-  repo.mkdirs
-
-  val remotes = List(Repos.central)
   val deps:Set[Artifact] =  new Aether(remotes, repo).resolve(
                               new DefaultArtifact(group, artifact, "", "jar", version), 
                               "runtime"
@@ -75,6 +86,9 @@ def resolveAndAddToJars(group:String, artifact:String, version:String) = {
   val newJars = deps.map(_.getFile.getPath).toSet.toList
 
   jars = (newJars ::: jars.toList).distinct.toArray
+  jars.mkString("\n")
 }
 
 @transient var sparkContext:SparkContext = reset(false)
+
+def stopSpark() = sparkContext.stop()
