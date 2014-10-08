@@ -26,7 +26,9 @@ import org.apache.spark.repl.SparkILoop
 
 @transient var conf = new SparkConf()
 
-def reset(assign:Boolean=true, appName:String="Notebook", lastChanges:(SparkConf=>Unit)=(_:SparkConf)=>()):SparkContext = {
+@transient var sparkContext:SparkContext = _
+
+def reset(appName:String="Notebook", lastChanges:(SparkConf=>Unit)=(_:SparkConf)=>()):Unit = {
   conf = new SparkConf()
   conf.setMaster(sparkMaster.getOrElse("local[*]"))
       .setAppName(appName)
@@ -40,12 +42,12 @@ def reset(assign:Boolean=true, appName:String="Notebook", lastChanges:(SparkConf
   
   lastChanges(conf)
 
-  if (assign) sparkContext.stop()
-  val sc = new SparkContext(conf)
-  if (assign) sparkContext = sc
-  
-  sc
+  if (sparkContext != null) sparkContext.stop()
+  sparkContext = new SparkContext(conf)
 }
+
+reset()
+
 
 object Repos {
   import org.sonatype.aether.repository.RemoteRepository
@@ -89,6 +91,7 @@ def resolveAndAddToJars(group:String, artifact:String, version:String) = {
   jars.mkString("\n")
 }
 
-@transient var sparkContext:SparkContext = reset(false)
 
 def stopSpark() = sparkContext.stop()
+
+"init.sc done!"

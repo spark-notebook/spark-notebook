@@ -57,28 +57,33 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
     r
   }
 
+  private val cpRegex = "(?s)^:cp\\s*(.+)\\s*$".r
+  private val sqlRegex = "(?s)^:sql(?:\\[([a-zA-Z0-9][a-zA-Z0-9]*)\\])?\\s*(.+)\\s*$".r
+
   // Make a child actor so we don't block the execution on the main thread, so that interruption can work
   private val executor = context.actorOf(Props(new Actor {
     def receive = {
       case ExecuteRequest(_, code) =>
-        val (result, _) = 
-          if (code.startsWith(":cp ") || code.startsWith(":cp\n")) {
-            val jars = code.drop(":cp".size).mkString.trim().split("\n").toList.map(_.trim()).filter(_.size > 0)
-            _repl = Some(repl.addCp(jars))
-            preStartLogic()
-            repl.evaluate(s"""
-                "Classpath changed!"
-              """, msg => sender ! StreamResponse(msg, "stdout"))
-          } else {        
-            val _code = if (code.startsWith(":sql ")) {
-              log.debug(s"Received sql code: $code")
-              val realCode = code.drop(":sql ".size).mkString
-              val c = "val unsafeForNowTestVarName = sqlContext.sql(\"\"\""+realCode+"\"\"\")"
-              log.info(s"Converted sql code as $c")
-              c
-            } else code
-            repl.evaluate(_code, msg => sender ! StreamResponse(msg, "stdout"))
-          }
+        val (result, _) = {
+          val newCode = 
+            code match {
+              case cpRegex(cp) =>
+                val jars = cp.trim().split("\n").toList.map(_.trim()).filter(_.size > 0)
+                _repl = Some(repl.addCp(jars))
+                preStartLogic()
+                s""" "Classpath changed!" """
+              case sqlRegex(n, sql) =>
+                val name = Option(n).map(nm => s"val $nm = ").getOrElse ("")
+                log.debug(s"Received sql code: [$n] $sql")
+                val qs = "\"\"\""
+                val c = s"${name}sqlContext.sql(${qs}${sql}${qs})"
+                log.info(s"Converted sql code as $c")
+                c
+              case _ => code
+            }
+          repl.evaluate(newCode, msg => sender ! StreamResponse(msg, "stdout"))
+        }
+
         result match {
           case Success(result)     => sender ! ExecuteResponse(result.toString)
           case Failure(stackTrace) => sender ! ErrorResponse(stackTrace, false)
