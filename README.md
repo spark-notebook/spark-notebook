@@ -1,55 +1,109 @@
-Scala Notebook
+Spark Notebook
 ==============
+*Fork of the amazing [scala-notebook](https://github.com/Bridgewater/scala-notebook), yet focusing on Massive Dataset Analysis ugin [Apache Spark](http://spark.apache.org).*
 
-A more friendly, browser-based interactive Scala prompt (REPL).
+Description
+-----------
+The main intent of this tool is to create [reproductible analysis](http://simplystatistics.org/2014/06/06/the-real-reason-reproducible-research-is-important/) using Scala, Apache Spark and more.
 
-Based on the IPython notebook project, this project will let you interact with Scala in a browser window, which has the following advantages over the standard REPL:
+The interaction is only made through a web page that can combine Scala code, SQL queries, Markup or even JavaScript in a collaborative manner.
 
-* Easy to view and edit past commands
-* Commands can return HTML or images, allowing richer interactivity (charts, for example)
-* Notebooks can be saved and loaded, providing a bridge between interactive REPL and classes in a project
-* Supports mixing Scala expressions and markdown, letting you create rich, interactive documents similar to Mathematica
+The usage of Spark comes out of the box, and is simply enabled by the implicit variable named `sparkContext`.
 
-While I think this tool will be helpful for everyone using Scala, I expect it to be particularly valuable for the scientific and analytics community.
+Launch
+------
+## Very quickstart
+
+Long story short, there is a small script that can help you setup and launch it without any other requirements than a _java environment_.
 
 
-Using Scala Notebook
-----------------------
-
-## Building From Source
-* To build and run from SBT, type
-
-```scala
-project server
-run
+```bash
+curl https://raw.githubusercontent.com/andypetrella/spark-notebook/master/run.sh | bash
 ```
 
-![Alt text](http://i.imgur.com/8wnrP34.png)
+## Longer story
+The spark notebook is relying on several tools to work:
+ * [JAVA](http://en.wikipedia.org/wiki/Java_(programming_language))
+ * [SBT](www.scala-sbt.org)
 
-Development
------------
+It needs to be "installed", which means downloading the code and build it, this will need extra tools:
+ * [GIT](http://git-scm.com/)
 
-[![Build Status](https://secure.travis-ci.org/Bridgewater/scala-notebook.png?branch=master)](http://travis-ci.org/Bridgewater/scala-notebook)
+### Procedure
+#### Download the code
+```
+git clone https://github.com/andypetrella/spark-notebook.git
+cd spark-notebook
+```
+#### Launch the server
+Enter the `sbt` console by running within the `spark-notebook`:
+```
+spark-notebook$ sbt
+[warn] Multiple resolvers having different access mechanism configured with same name 'sbt-plugin-releases'. To avoid conflict, Remove duplicate project resolvers (`resolvers`) or rename publishing resolver (`publishTo`).
+[info] Updating {file:/home/noootsab/src/noootsab/spark-notebook/project/}spark-notebook-build...
+...
+...
+...
+```
 
-### IDE Setup
+Then you can head to the `server` and run it, you have several options available:
+ * `--disable_security`: this will disable the Akka secured cookie (helpful in local env)
+ * `--no_browser`: this prevents the project to open a page in your browser everytime the server is started
 
-* If you're using an IntelliJ project, note that by default IntelliJ will not include SSP files resources. Change settings in IntelliJ to to include '*' as resource extension.
+```
+> project server
+> run --disable_security
+```
 
-### Overview
+Use
+---
+When the server has been started, you can head to the page `http://localhost:8899` and you'll see something similar to:
+![Notebook list](https://raw.github.com/andypetrella/spark-notebook/spark/images/list.png)
 
-Having the web server process separate from the process doing the evaluation is also important in Scala; we want to separate
-the user's actions from the web server, allowing a restart of the client process (after building new client libraries, for example).
+From there you can either:
+ * create a new notebook
+ * launch an existing notebook
+ 
+In both case, the `scala-notebook` will open a new tab with our notebook in it, that is a web page.
 
-To that end, the project is organized as follows:
-* *server* is the web server
-* *common* are the classes shared by both
-* *observable* 
-* *kernel*
-* *subprocess*
+> Note: a notebook is nothing other than a JSON file containing the layout and analysis blocks, and it's located 
+> within the project folder (with the `snb` extension).
+> Hence, they can be shared and we can track their history in an SVM like `GIT`.
+
+Features
+--------
+## User/Reconfigure Spark
+Since this project aims directly the usage of Spark, a [SparkContext](https://github.com/apache/spark/blob/master/core%2Fsrc%2Fmain%2Fscala%2Forg%2Fapache%2Fspark%2FSparkContext.scala) is added to the environment and can directly be used without much effort.
+
+![Example using Spark](https://raw.github.com/andypetrella/spark-notebook/spark/images/simplest-spark.png)
 
 
-### Architecture
+However, it will start with a regular/basic configuration, hence a *function* is also provided in order to adapt it, `reset`. This function takes several parameters, but the most important one is `lastChanges` which is itself a function that can adapt the [SparkConf](https://github.com/apache/spark/blob/master/core%2Fsrc%2Fmain%2Fscala%2Forg%2Fapache%2Fspark%2FSparkConf.scala). Hence, we can change the *master*, the *executor memory* and a *cassandra sink* or whatever before restarting it.
 
-* Server
-* Kernel(s)
-* Widgets
+Here is how to reset the `SparkContext` with the [cassandra-connector] configuration in the mix:
+```{scala}
+import org.apache.spark.{Logging, SparkConf}
+import com.datastax.spark.connector._
+val cassandraHost:String = "localhost" 
+reset(lastChanges= _.set("spark.cassandra.connection.host", cassandraHost))
+```
+Then you can use it, like so:
+```{scala}
+sparkContext.cassandraTable("test_ks", "test_cf")
+
+```
+
+## Interacting with JavaScript
+
+## Plotting with [D3]()
+
+## Timeseries with  [Rickshaw]()
+
+## Dynamic update of data and plot using Scala's `Future`
+
+## Update _Notebook_ `ClassPath`
+
+## Update _Spark_ `jars`
+
+
+
