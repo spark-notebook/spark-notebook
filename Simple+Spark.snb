@@ -1,0 +1,53 @@
+{
+  "metadata":{
+    "name":"Simple Spark",
+    "user_save_timestamp":"2014-10-11T17:33:45.703Z",
+    "auto_save_timestamp":"2014-10-11T17:36:10.863Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[{
+    "cells":[{
+      "cell_type":"markdown",
+      "source":"### Spark config"
+    },{
+      "cell_type":"code",
+      "input":"sparkContext.getConf.toDebugString",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":3,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val count = sparkContext.makeRDD((1 to 1000).toArray).count()\n()",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":6,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"#### Counting"
+    },{
+      "cell_type":"code",
+      "input":"<strong>{count} items</strong>",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":5,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "nbformat":3
+}
