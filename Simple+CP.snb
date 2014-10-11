@@ -1,19 +1,15 @@
 {
   "metadata":{
-    "name":"Untitled1",
-    "user_save_timestamp":"1970-01-01T00:00:00.000Z",
+    "name":"Simple CP",
+    "user_save_timestamp":"2014-10-11T16:47:31.244Z",
     "auto_save_timestamp":"1970-01-01T00:00:00.000Z"
   },
   "worksheets":[{
-    "cells":[]
-  }],
-  "autosaved":[{
     "cells":[{
       "cell_type":"code",
       "input":":cp /home/petrellaa/.m2/repository/joda-time/joda-time/2.4/joda-time-2.4.jar",
       "language":"scala",
       "collapsed":false,
-      "prompt_number":1,
       "outputs":[]
     },{
       "cell_type":"code",
@@ -44,5 +40,6 @@
       "outputs":[]
     }]
   }],
+  "autosaved":[],
   "nbformat":3
 }
