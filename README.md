@@ -95,9 +95,9 @@ sparkContext.cassandraTable("test_ks", "test_cf")
 
 ## Interacting with JavaScript
 
-## Plotting with [D3]()
+## Plotting with [D3](http://d3js.org/)
 
-## Timeseries with  [Rickshaw]()
+## Timeseries with  [Rickshaw](http://code.shutterstock.com/rickshaw/)
 
 ## Dynamic update of data and plot using Scala's `Future`
 
