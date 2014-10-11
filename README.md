@@ -93,6 +93,29 @@ sparkContext.cassandraTable("test_ks", "test_cf")
 
 ```
 ## Using (Spark)SQL
+Spark comes with this handy and cool feature that we can write some SQL queries rather than boilerplating with 
+Scala or whatever code, with the clear advantage that the resulting DAG is optimize.
+
+Hence, this support also has been added to the notebook, this is as simple as the following. First we need to register an `RDD` as a table:
+```{scala}
+dataRDD.registerTempTable("data")
+```
+
+Then we can play with this `data` table like so:
+```
+:sql select col1 from data where col2 == 'thingy'
+```
+This will give access to the result via the `resX` variable.
+
+This is already helpful, but the `redX` can change and is not friendly, so we can also name the result likewise:
+```
+:sql[col1Var] select col1 from data where col2 == 'thingy'
+```
+Now, we can use the variable `col1Var` which is a RDD that we can manipulate further.
+
+This is how it looks like in the notebook:
+![Using SQL](https://raw.github.com/andypetrella/spark-notebook/spark/images/sql.png)
+
 
 ## Interacting with JavaScript
 
