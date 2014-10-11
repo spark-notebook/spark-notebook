@@ -92,6 +92,7 @@ Then you can use it, like so:
 sparkContext.cassandraTable("test_ks", "test_cf")
 
 ```
+## Using (Spark)SQL
 
 ## Interacting with JavaScript
 
