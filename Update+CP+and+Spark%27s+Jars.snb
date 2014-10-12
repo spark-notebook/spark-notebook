@@ -2,7 +2,7 @@
   "metadata":{
     "name":"Update CP and Spark's Jars",
     "user_save_timestamp":"2014-10-07T08:31:19.207Z",
-    "auto_save_timestamp":"2014-10-07T15:16:33.165Z"
+    "auto_save_timestamp":"2014-10-12T09:19:07.749Z"
   },
   "worksheets":[{
     "cells":[{
@@ -51,7 +51,7 @@
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"import org.sonatype.aether.repository.RemoteRepository\nremotes = (new RemoteRepository(\n    \"oss-sonatype\",\n    \"oss-sonatype\",\n    \"https://oss.sonatype.org/content/repositories/releases/\"\n  )) :: remotes\nresolveAndAddToJars(\"com.datastax.spark\", \"spark-cassandra-connector_2.10\", \"1.1.0-alpha1\")",
+      "input":"import org.sonatype.aether.repository.RemoteRepository\nremotes = (new RemoteRepository(\n    \"oss-sonatype\",\n    \"oss-sonatype\",\n    \"https://oss.sonatype.org/content/repositories/releases/\"\n  )) :: remotes // YOU CAN ADD NEW REMOTE REPO.. but also Local one\n  \nresolveAndAddToJars(\"com.datastax.spark\", \"spark-cassandra-connector_2.10\", \"1.1.0-alpha1\")",
       "language":"scala",
       "collapsed":false,
       "prompt_number":6,
