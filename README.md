@@ -114,6 +114,7 @@ This is already helpful, but the `redX` can change and is not friendly, so we ca
 Now, we can use the variable `col1Var` which is a RDD that we can manipulate further.
 
 This is how it looks like in the notebook:
+
 ![Using SQL](https://raw.github.com/andypetrella/spark-notebook/spark/images/sql.png)
 
 
@@ -128,22 +129,76 @@ The JavaScript function will be called with these parameters:
  * an extra object: a configuration or whatever but that comes from the Scala world
 
 Here is how this can be used, with a predefined `consoleDir` JS function ([see here](https://github.com/andypetrella/spark-notebook/blob/spark/observable/src/main/assets/observable/js/consoleDir.coffee)):
+
 ![Simple Playground](https://raw.github.com/andypetrella/spark-notebook/spark/images/simple-pg.png)
 
 Another example using the same predefined function and example to react on the new incoming data (more in further section). The __new stuff__ here is the use of `Codec` to convert a Scala object into the JSON format used in JS:
+
 ![Playground with custom data](https://raw.github.com/andypetrella/spark-notebook/spark/images/data-pg.png)
 
 
 ## Plotting with [D3](http://d3js.org/)
-__TODO: explain how to use linePlot for instance__
+Plotting with D3.js is rather common now, however it's not always simple, hence there is a Scala wrappers that brings the boostrap of it in the mix.
+
+These wrappers are `D3.svg` and `D3.linePlot`, and there just proof of concept for now. Actually the idea is to bring Scala data to D3.js then create `Coffeescript` to interact with them.
+
+For instance, `linePlot` is used like so:
+
+![Using Rickshaw](https://raw.github.com/andypetrella/spark-notebook/spark/images/linePlot.png)
+
+
+> Note: This is subject to refactorings because it would be better to use `playground` for this purpose.
 
 ## Timeseries with  [Rickshaw](http://code.shutterstock.com/rickshaw/)
-__TODO: explain how to use the provided JS function: rickshawts__
+Plotting timeseries is very common, for this purpose the spark notebook includes Rickshaw that quickly enables this feature.
+
+Rickshaw is available through `Playground` and a dedicated function for simple needs `rickshawts`.
+
+Thus using is rather simple and only requires to convert your type to a dedicated one `Series`:
+```{scala}
+def createTss(start:Long, step:Int=60*1000, nb:Int = 100):Seq[Series] = ...
+val data = createTss(orig, step, nb)
+
+val p = new Playground(data, List(Script("rickshawts", 
+                                         ("renderer" -> "stack")
+                                         ~ ("fixed" -> 
+                                              ("interval" -> step/1000)
+                                              ~ ("max" -> 100)
+                                              ~ ("baseInSec" -> orig/1000)
+                                           )
+                                        )))(seriesCodec)
+```
+As you can see, the only big deal is to create the timeseries (`Seq[Series]` which is a simple wrapper around:
+ * name
+ * color
+ * data (a sequence of `x` and `y`)
+
+Also, you can tune a bit the display by providing:
+ * the type of renderer (`line`, `stack`, ...)
+ * if the timeseries will be updated you can fix the window by supplying the `fixed` object:
+  * interval (at which data is upated)
+  * max (the max number of points displayed)
+  * the unit in the `X` axis.
+ 
+Here is the kind of result you can expect:
+
+![Using Rickshaw](https://raw.github.com/andypetrella/spark-notebook/spark/images/use-rickshaw.png)
+
+
 
 ## Dynamic update of data and plot using Scala's `Future`
 One of the very cool things that is used in the original `scala-notebook` is the use of reactive libs on both side, server and client, combined with WebSocket, it offers a very neat way to show dynamic activities like streaming and so on.
 
-__TODO: explain how to use observables with Future__
+Thanks to what is just said, we can ask Scala code to update Plot wrappers (`Playground` instance actually) in a dynamic manner. If the JS functions are listening to the data changes they can automatically update their results.
+
+The following is showing how a timeseries shown with Rickshaw can be updated using Scala `Future` -- that simulates a server side process that would poll for a third-party service for instance:
+
+![Update Timeseries Result](https://raw.github.com/andypetrella/spark-notebook/spark/images/dyn-ts-code.png)
+
+The results will be:
+
+![Update Timeseries Result](https://raw.github.com/andypetrella/spark-notebook/spark/images/dyn-ts.gif.png)
+
 
 ## Update _Notebook_ `ClassPath`
 The annoying thing with notebook can be the libraries that you might miss in the classpath. The usual way to add them would be to update the SBT definition. Which is pretty sad because it requires a restart, rebuild and is not contextual to the notebook!
@@ -179,6 +234,7 @@ Or even
 ```
 
 Here is what it'll look like in the notebook:
+
 ![Simple Classpath](https://raw.github.com/andypetrella/spark-notebook/spark/images/simple-cp.png)
 
 
@@ -197,6 +253,7 @@ resolveAndAddToJars("com.datastax.spark", "spark-cassandra-connector_2.10", "1.1
 __/!\Then update the Driver cp with the listed jars.__ (This will change!)
 
 So in live:
+
 ![Spark Jars](https://raw.github.com/andypetrella/spark-notebook/spark/images/spark-jars.png)
 
 > Note: [Aether](https://github.com/eclipse/aether-core) is used to do this, so if there are something special needed that it's not provided, 
