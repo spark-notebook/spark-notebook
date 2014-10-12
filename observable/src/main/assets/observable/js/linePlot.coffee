@@ -26,6 +26,7 @@ define([
       .attr('class', 'dataline')
       .attr("d", line)
       .attr("stroke", "black") #should be in a css/less, but this is only an example
+      .attr("fill", "none") #should be in a css/less, but this is only an example
 
 
     xAxis = d3.svg.axis()
