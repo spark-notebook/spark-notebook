@@ -197,7 +197,7 @@ The following is showing how a timeseries shown with Rickshaw can be updated usi
 
 The results will be:
 
-![Update Timeseries Result](https://raw.github.com/andypetrella/spark-notebook/spark/images/dyn-ts.gif.png)
+![Update Timeseries Result](https://raw.github.com/andypetrella/spark-notebook/spark/images/dyn-ts.gif)
 
 
 ## Update _Notebook_ `ClassPath`
