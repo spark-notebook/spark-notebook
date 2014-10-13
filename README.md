@@ -18,7 +18,7 @@ Long story short, there is a small script that can help you setup and launch it 
 
 
 ```bash
-curl https://raw.githubusercontent.com/andypetrella/spark-notebook/master/run.sh | bash
+curl https://raw.githubusercontent.com/andypetrella/spark-notebook/spark/run.sh | bash
 ```
 
 ## Longer story
