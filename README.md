@@ -18,7 +18,7 @@ Long story short, there is a small script that can help you setup and launch it 
 
 
 ```bash
-curl https://raw.githubusercontent.com/andypetrella/spark-notebook/spark/run.sh | bash
+curl https://raw.githubusercontent.com/andypetrella/spark-notebook/spark/run.sh | bash -s dev
 ```
 
 ## Longer story
@@ -236,6 +236,10 @@ Here is what it'll look like in the notebook:
 
 ![Simple Classpath](https://raw.github.com/andypetrella/spark-notebook/spark/images/simple-cp.png)
 
+> **WARNING**
+> `:cp` will not rerun all the previous commands → this is clearly a bug
+>
+> *Consequences*: all variables and setup have to be run again (usual ones are `updateRepo` and the spark conf ones like `jars`, `execUri`, ..)
 
 ## Update _Spark_ `jars`
 If you are a Spark user, you know that it's not enough to have the jars locally added to the Driver's classpath. Indeed, workers needs to also load them. The usual way would be to update the list of jars provided to the `SparkConf` using the `reset` function explained above.
