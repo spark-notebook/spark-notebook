@@ -70,7 +70,11 @@ def updateRepo(dir:String) = {
 }
 updateRepo(System.getProperty("java.io.tmpdir")+ s"/scala-notebook/aether/" + java.util.UUID.randomUUID.toString)
 
-def resolveAndAddToJars(group:String, artifact:String, version:String) = {
+def updateJars(newJars:List[String]) = {
+  jars = (newJars ::: jars.toList).distinct.toArray
+}
+
+def resolveAndAddToJars(group:String, artifact:String, version:String, update:Boolean=true) = {
   import com.jcabi.aether.Aether
   import java.util.Arrays
   import org.apache.maven.project.MavenProject
@@ -86,9 +90,9 @@ def resolveAndAddToJars(group:String, artifact:String, version:String) = {
                             ).toSet;
 
   val newJars = deps.map(_.getFile.getPath).toSet.toList
-
-  jars = (newJars ::: jars.toList).distinct.toArray
-  jars.mkString("\n")
+  
+  if (update) updateJars(newJars) else ()
+  newJars
 }
 
 
