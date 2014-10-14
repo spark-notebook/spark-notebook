@@ -1,67 +1,30 @@
 {
   "metadata":{
     "name":"Update CP and Spark's Jars",
-    "user_save_timestamp":"2014-10-07T08:31:19.207Z",
-    "auto_save_timestamp":"2014-10-12T09:19:07.749Z"
+    "user_save_timestamp":"2014-10-14T22:15:05.976Z",
+    "auto_save_timestamp":"2014-10-14T22:11:03.535Z"
   },
   "worksheets":[{
-    "cells":[{
-      "cell_type":"code",
-      "input":":cp /home/petrellaa/.m2/repository/joda-time/joda-time/2.4/joda-time-2.4.jar",
-      "language":"scala",
-      "collapsed":false,
-      "prompt_number":13,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"org.joda.time.DateTime.now()",
-      "language":"scala",
-      "collapsed":false,
-      "prompt_number":2,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"jars = (\"/home/petrellaa/.m2/repository/joda-time/joda-time/2.4/joda-time-2.4.jar\" :: jars.toList).toArray\nreset()",
-      "language":"scala",
-      "collapsed":false,
-      "prompt_number":2,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"sparkContext.makeRDD(Array(1, 2, 3)).map(_ => org.joda.time.DateTime.now()).collect() foreach println",
-      "language":"scala",
-      "collapsed":false,
-      "prompt_number":3,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"",
-      "language":"scala",
-      "collapsed":true,
-      "outputs":[]
-    }]
-  }],
-  "autosaved":[{
     "cells":[{
       "cell_type":"code",
       "input":"updateRepo(\"/tmp/scala-notebook/repo\")",
       "language":"scala",
       "collapsed":false,
-      "prompt_number":5,
+      "prompt_number":1,
       "outputs":[]
     },{
       "cell_type":"code",
       "input":"import org.sonatype.aether.repository.RemoteRepository\nremotes = (new RemoteRepository(\n    \"oss-sonatype\",\n    \"oss-sonatype\",\n    \"https://oss.sonatype.org/content/repositories/releases/\"\n  )) :: remotes // YOU CAN ADD NEW REMOTE REPO.. but also Local one\n  \nresolveAndAddToJars(\"com.datastax.spark\", \"spark-cassandra-connector_2.10\", \"1.1.0-alpha1\")",
       "language":"scala",
       "collapsed":false,
-      "prompt_number":6,
+      "prompt_number":2,
       "outputs":[]
     },{
       "cell_type":"code",
       "input":":cp \n/tmp/scala-notebook/repo/com/codahale/metrics/metrics-core/3.0.2/metrics-core-3.0.2.jar\n/tmp/scala-notebook/repo/org/scala-lang/scala-compiler/2.10.4/scala-compiler-2.10.4.jar\n/tmp/scala-notebook/repo/org/scala-lang/scala-library/2.10.4/scala-library-2.10.4.jar\n/tmp/scala-notebook/repo/joda-time/joda-time/2.3/joda-time-2.3.jar\n/tmp/scala-notebook/repo/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar\n/tmp/scala-notebook/repo/com/datastax/cassandra/cassandra-driver-core/2.0.4/cassandra-driver-core-2.0.4.jar\n/tmp/scala-notebook/repo/org/apache/thrift/libthrift/0.9.1/libthrift-0.9.1.jar\n/tmp/scala-notebook/repo/org/apache/httpcomponents/httpcore/4.2.4/httpcore-4.2.4.jar\n/tmp/scala-notebook/repo/org/joda/joda-convert/1.2/joda-convert-1.2.jar\n/tmp/scala-notebook/repo/org/scala-lang/scala-reflect/2.10.4/scala-reflect-2.10.4.jar\n/tmp/scala-notebook/repo/org/apache/cassandra/cassandra-clientutil/2.0.9/cassandra-clientutil-2.0.9.jar\n/tmp/scala-notebook/repo/org/slf4j/slf4j-api/1.7.2/slf4j-api-1.7.2.jar\n/tmp/scala-notebook/repo/com/datastax/cassandra/cassandra-driver-core/2.0.4/cassandra-driver-core-2.0.4-sources.jar\n/tmp/scala-notebook/repo/io/netty/netty/3.9.0.Final/netty-3.9.0.Final.jar\n/tmp/scala-notebook/repo/org/apache/commons/commons-lang3/3.3.2/commons-lang3-3.3.2.jar\n/tmp/scala-notebook/repo/commons-codec/commons-codec/1.6/commons-codec-1.6.jar\n/tmp/scala-notebook/repo/org/apache/httpcomponents/httpclient/4.2.5/httpclient-4.2.5.jar\n/tmp/scala-notebook/repo/org/apache/cassandra/cassandra-thrift/2.0.9/cassandra-thrift-2.0.9.jar\n/tmp/scala-notebook/repo/com/datastax/spark/spark-cassandra-connector_2.10/1.1.0-alpha1/spark-cassandra-connector_2.10-1.1.0-alpha1.jar\n/tmp/scala-notebook/repo/com/google/guava/guava/15.0/guava-15.0.jar",
       "language":"scala",
       "collapsed":false,
-      "prompt_number":8,
+      "prompt_number":3,
       "outputs":[]
     },{
       "cell_type":"markdown",
@@ -95,5 +58,6 @@
       "outputs":[]
     }]
   }],
+  "autosaved":[],
   "nbformat":3
 }

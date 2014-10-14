@@ -69,8 +69,10 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
             code match {
               case cpRegex(cp) =>
                 val jars = cp.trim().split("\n").toList.map(_.trim()).filter(_.size > 0)
-                _repl = Some(repl.addCp(jars))
+                val (_r, replay) = repl.addCp(jars)
+                _repl = Some(_r)
                 preStartLogic()
+                replay()
                 s""" "Classpath changed!" """
               case sqlRegex(n, sql) =>
                 val name = Option(n).map(nm => s"val $nm = ").getOrElse ("")
