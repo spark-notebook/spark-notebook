@@ -43,6 +43,14 @@ define([
         series: series
     })
 
+    xAxis = new Rickshaw.Graph.Axis.Time({
+        graph: graph
+    })
+
+    yAxis = new Rickshaw.Graph.Axis.Y( {
+      graph: graph
+    })
+
     udpate = null
     if options.update
       eval("update = "+options.update)
@@ -64,9 +72,11 @@ define([
 
     dataO.subscribe( (data) =>
       update(graph, data)
-      #graph.series.forEach( (x, i) -> data[i].data.forEach( (d) -> x.data.push(d) ) )
       graph.render()
+      xAxis.render()
     )
 
     graph.render()
+    xAxis.render()
+    yAxis.render();
 )
