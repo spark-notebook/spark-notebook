@@ -27,6 +27,8 @@ window.mathjax_url = "${mathjax_url}";
 
 <link rel="stylesheet" href="${static_url("bootstrap-icon/css/bootstrap.min.css")}" type="text/css" />
 
+<link rel="stylesheet" href="${static_url("rickshaw/rickshaw.min.css")}" type="text/css" />
+
 <link rel="stylesheet" href="${static_url("css/printnotebook.css")}" type="text/css" media="print" />
 
 #end
@@ -226,7 +228,7 @@ curl({
     jquery: 'static/jquery/js/jquery',
     knockout: 'static/knockout',
     d3: 'static/d3',
-    rickshaw: 'static/rickshaw',
+    rickshaw: 'static/rickshaw/rickshaw',
     resources: '',
     observable: 'js/observable',
     equiv: 'js/equiv',
