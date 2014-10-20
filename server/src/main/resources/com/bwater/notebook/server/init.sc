@@ -49,9 +49,9 @@ def reset(appName:String="Notebook", lastChanges:(SparkConf=>Unit)=(_:SparkConf)
 reset()
 
 
-object Repos {
+object Repos extends java.io.Serializable {
   import org.sonatype.aether.repository.RemoteRepository
-  val central = new RemoteRepository(
+  @transient val central = new RemoteRepository(
     "maven-central",
     "default",
     "http://repo1.maven.org/maven2/"
