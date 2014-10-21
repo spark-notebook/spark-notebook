@@ -1,20 +1,22 @@
 package com.bwater.notebook
 
+import java.io.{BufferedReader, IOException, File, Reader, FileReader}
+import java.net.{InetAddress, URLEncoder}
+
+import scala.util.Try
+
+import com.typesafe.config.{Config, ConfigFactory, ConfigParseOptions, ConfigSyntax}
+
 import org.apache.commons.io.FileUtils
+import org.apache.log4j.PropertyConfigurator
 import org.jboss.netty.handler.stream.ChunkedWriteHandler
+
 import unfiltered.netty.Http
 import unfiltered.netty.Resources
+
+import com.bwater.notebook.kernel.ConfigUtils._
 import com.bwater.notebook.util.Logging
-import org.apache.log4j.PropertyConfigurator
 import server._
-import java.io.{ IOException, File, Reader }
-import java.net.{ InetAddress, URLEncoder }
-import com.typesafe.config.Config
-import java.io.BufferedReader
-import com.typesafe.config.ConfigFactory
-import java.io.FileReader
-import com.typesafe.config.ConfigParseOptions
-import com.typesafe.config.ConfigSyntax
 
 /**
  * Author: Ken
@@ -38,7 +40,7 @@ object Server extends Logging {
 
   def main(args: Array[String]) {
     val action =  if(!args.contains("--no_browser")) {openBrowser _ } 
-                  else (s:String)=>logInfo(s"You can head to $s")
+                  else (s:String)=>println(s"You can head to $s")
 
     startServer(args, ScalaNotebookConfig.withOverrides(ScalaNotebookConfig.defaults))(action)
   }
@@ -72,8 +74,8 @@ object Server extends Logging {
     val secure = !args.contains("--disable_security")
 
     logInfo("Running SN Server in " + config.notebooksDir.getAbsolutePath)
-    val host = "127.0.0.1"
-    val port = choosePort(host)
+    val host = config.kernelVMConfig.get("hostname") getOrElse "127.0.0.1"
+    val port = config.kernelVMConfig.get("port").flatMap(x => Try(x.toInt).toOption) getOrElse choosePort(host)
     val security = if (secure) new ClientAuth(host, port) else Insecure
 
     val NotebookArg = "--notebook=(\\S+)".r
