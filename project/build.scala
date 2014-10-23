@@ -35,6 +35,7 @@ object NotebookBuild extends Build {
     publishMavenStyle := false,
     javacOptions ++= Seq("-Xlint:deprecation", "-g"),
     scalacOptions += "-deprecation",
+    scalacOptions ++= Seq("-Xmax-classfile-name", "100") ,
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v") //Suppress test output unless there is a failure
   )
 
