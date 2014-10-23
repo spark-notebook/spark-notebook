@@ -19,5 +19,5 @@ object LayoutTools {
   val mathjax_url = "http://cdn.mathjax.org/mathjax/latest/MathJax.js"
 
   def encode(text: String) = URLEncoder.encode(text, "UTF-8")
-  
+
 }
