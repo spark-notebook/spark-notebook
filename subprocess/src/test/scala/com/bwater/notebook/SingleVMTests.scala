@@ -5,7 +5,7 @@
  * the file COPYING, distributed as part of this software.
  */
 
-package com.bwater.notebook
+package notebook
 
 import akka.actor._
 import akka.testkit.{ImplicitSender, TestKit}

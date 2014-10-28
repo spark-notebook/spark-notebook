@@ -3,7 +3,7 @@
 <%@ var notebook_id: String %>
 <%@ var notebook_name: String %>
 
-<% import com.bwater.notebook.server.LayoutTools._ %>
+<% import notebook.server.LayoutTools._ %>
 
 #set(stylesheet)
     #if (mathjax_url != "")

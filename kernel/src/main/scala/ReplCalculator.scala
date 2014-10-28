@@ -1,9 +1,11 @@
-package com.bwater.notebook
+package notebook
 package client
 
 import akka.actor.{ActorLogging, Props, Actor}
 import kernel._
 import java.io.File
+
+import notebook.util.Match
 
 import org.apache.spark.repl.HackSparkILoop
 
@@ -14,7 +16,6 @@ sealed trait CalcRequest
 case class ExecuteRequest(counter: Int, code: String) extends CalcRequest
 case class CompletionRequest(line: String, cursorPosition: Int) extends CalcRequest
 case class ObjectInfoRequest(objName: String) extends CalcRequest
-case object SparkClassServerUri extends CalcRequest
 case object InterruptRequest extends CalcRequest
 
 sealed trait CalcResponse
@@ -65,7 +66,7 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
     def receive = {
       case ExecuteRequest(_, code) =>
         val (result, _) = {
-          val newCode = 
+          val newCode =
             code match {
               case cpRegex(cp) =>
                 val jars = cp.trim().split("\n").toList.map(_.trim()).filter(_.size > 0)
@@ -103,7 +104,7 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
     def eval(script: () => String):Unit = {
       val sc = script()
       if (sc.trim.length > 0) {
-      val (result, _) = repl.evaluate(sc)
+        val (result, _) = repl.evaluate(sc)
         result match {
           case Failure(str) =>
             log.error("Error in init script: \n%s".format(str))
@@ -111,8 +112,7 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
             if (log.isDebugEnabled) log.debug("\n" + sc)
             log.info("Init script processed successfully")
         }
-        result
-      }
+      } else ()
     }
 
     for (script <- (dummyScript :: SparkHookScript :: initScripts.map(x => () => x)) ) {
@@ -156,12 +156,6 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
           // repl.interrupt()
 
         case req @ ExecuteRequest(_, code) => executor.forward(req)
-
-        case SparkClassServerUri =>
-          repl.interp match {
-            case i:HackSparkILoop => sender ! Some(i.intp.classServer.uri)
-            case _ => sender ! None
-          }
 
         case CompletionRequest(line, cursorPosition) =>
           val (matched, candidates) = repl.complete(line, cursorPosition)

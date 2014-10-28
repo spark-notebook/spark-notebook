@@ -1,7 +1,7 @@
-package com.bwater.notebook
+package notebook
 
-import net.liftweb.json._
-import net.liftweb.json.Serialization
+import org.json4s._
+import org.json4s.native._
 import java.util.{Date}
 
 /**
@@ -50,18 +50,18 @@ object NBSerializer {
   def write(nb: Notebook): String = {
     val json = Extraction.decompose(nb)
 
-    val mapped = json transform {
+    val mapped = json transformField {
       case JField("jsonClass", JString(x)) =>
         val (typ, cat, _) =
           (translations filter { _._3 == x }).head
         JField(typ, JString(cat))
       }
-    pretty(render(mapped))
+    prettyJson(renderJValue(mapped))
   }
 
   def read(s: String): Notebook = {
-    val json = parse(s)
-    val mapped = json transform {
+    val json = parseJson(s)
+    val mapped = json transformField {
       case JField(typ, JString(cat)) if (translations exists { x => x._1 == typ && x._2 == cat }) =>
         val (_, _, clazz) = (translations filter { x => x._1 == typ && x._2 == cat }).head
         JField("jsonClass", JString(clazz))
