@@ -1,13 +1,13 @@
-package com.bwater.notebook
+package notebook
 package server
 
-import net.liftweb.json._
-import net.liftweb.json.JsonDSL._
+import org.json4s._
+import org.json4s.JsonDSL._
 import java.io._
 import org.apache.commons.io.FileUtils
 import java.util.{Date, UUID}
 import java.text.SimpleDateFormat
-import com.bwater.notebook.NBSerializer.{Metadata, Worksheet, Notebook}
+import notebook.NBSerializer.{Metadata, Worksheet, Notebook}
 import java.net.{URLEncoder, URLDecoder}
 
 /**
@@ -46,7 +46,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
     save(Some(id), name, nb, false)
     id
   }
-  
+
   def copyNotebook(nbId: Option[String], nbName: String) = {
     val nbData = getNotebook(nbId, nbName)
     nbData.map { nb =>
@@ -71,7 +71,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
       (last_mtime, notebook.name, data)
     }
   }
-  
+
   def deleteNotebook(id: Option[String], name: String) = {
     val realId = id match {
       case Some(x) => id
@@ -103,12 +103,12 @@ class NotebookManager(val name: String, val notebookDir: File) {
 
   def load(name: String): Option[Notebook] = {
     val file = notebookFile(name)
-    if (file.exists()) 
+    if (file.exists())
       Some(NBSerializer.read(FileUtils.readFileToString(file)))
     else None
   }
 
-  
+
   private def removeMapping(id: String) {
     idToName.remove(id)
   }

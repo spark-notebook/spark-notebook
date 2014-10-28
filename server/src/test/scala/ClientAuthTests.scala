@@ -1,6 +1,6 @@
-import com.bwater.notebook.NBSerializer._
-import com.bwater.notebook.server.{ClientAuth, Dispatcher}
-import com.bwater.notebook.{NBSerializer, Server}
+import notebook.NBSerializer._
+import notebook.server.{ClientAuth, Dispatcher}
+import notebook.{NBSerializer, Server}
 import java.io.{InputStreamReader, BufferedInputStream, File}
 import java.util.concurrent.CountDownLatch
 import org.apache.http.client.methods.{HttpPut, HttpPost, HttpGet}
@@ -20,8 +20,8 @@ import org.apache.http.client.methods.HttpDelete
 import unfiltered.request.DELETE
 import java.util.Date
 import java.util.Calendar
-import com.bwater.notebook.server.DispatcherSecurity
-import com.bwater.notebook.server.ScalaNotebookConfig
+import notebook.server.DispatcherSecurity
+import notebook.server.ScalaNotebookConfig
 
 class ClientAuthTests extends WordSpec with Matchers with BeforeAndAfterAll {
 

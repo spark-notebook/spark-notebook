@@ -1,7 +1,7 @@
 <% layout("default.ssp") { %>
 <%@ var project: String %>
 
-<% import com.bwater.notebook.server.LayoutTools._  %>
+<% import notebook.server.LayoutTools._  %>
 
 #set(title)
 Scala Dashboard

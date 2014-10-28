@@ -6,7 +6,7 @@
 <%@ var header: String = "" %>
 <%@ var site: String = "" %>
 <%@ var script: String = "" %>
-<% import com.bwater.notebook.server.LayoutTools._  %>
+<% import notebook.server.LayoutTools._  %>
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -23,7 +23,7 @@
     ${unescape(stylesheet)}
 
     ${unescape(meta)}
-    
+
 </head>
 
 <body ${unescape(params)}>
@@ -33,12 +33,12 @@
         <span id="login_widget"></span>
 
         ${unescape(header)}
-   
+
        <div id="logo">
        <!-- TODO: External logo hook -->
         </div>
         </div>
-        
+
     </div>
     <div id="expand_header"><a href="#"><i class="icon-chevron-down"></i></a></div>
 
