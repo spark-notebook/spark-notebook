@@ -1,7 +1,7 @@
-package com.bwater.notebook.kernel
+package notebook.kernel
 
 import org.scalatest.{BeforeAndAfter, FunSuite}
-import com.bwater.notebook.Match
+import notebook.Match
 import xml.Text
 import org.scalatest.Matchers
 import concurrent.ops
@@ -28,7 +28,7 @@ class ReplTests extends FunSuite with BeforeAndAfter with Matchers {
   test("evaluating should render to html") {
     repl.evaluate(
       """
-        |implicit val testRenderer = new com.bwater.notebook.Renderer[String] {
+        |implicit val testRenderer = new notebook.Renderer[String] {
         |  def render(value: String) = {
         |    <abc>{value}</abc>
         |  }

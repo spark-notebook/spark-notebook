@@ -126,7 +126,7 @@ object NotebookBuild extends Build {
     .settings(
       name := "notebook-server",
 
-      mainClass in (Compile, run) := Some("com.bwater.notebook.Server"),
+      mainClass in (Compile, run) := Some("notebook.Server"),
 
       libraryDependencies ++= Seq(
         akkaRemote,
@@ -156,7 +156,7 @@ object NotebookBuild extends Build {
     )
 
   object Dependencies {
-    val unfilteredVersion    = "0.6.7"
+    val unfilteredVersion    = "0.8.2"
     val akkaVersion          = "2.2.3-shaded-protobuf"
 
     val sparkRepl            = "org.apache.spark"          %%         "spark-repl"          %      "1.1.0"
@@ -167,7 +167,7 @@ object NotebookBuild extends Build {
     val log4j                = "log4j"                     %             "log4j"            %      "1.2.17"
     val unfilteredFilter     = "net.databinder"            %%      "unfiltered-filter"      % unfilteredVersion
     val unfilteredWebsockets = "net.databinder"            %% "unfiltered-netty-websockets" % unfilteredVersion
-    val unfilteredJson       = "net.databinder"            %%       "unfiltered-json"       % unfilteredVersion
+    val unfilteredJson       = "net.databinder"            %%      "unfiltered-json4s"      % unfilteredVersion
     val akka                 = "org.spark-project.akka"    %%         "akka-actor"          %    akkaVersion
     val akkaRemote           = "org.spark-project.akka"    %%         "akka-remote"         %    akkaVersion
     val akkaSlf4j            = "org.spark-project.akka"    %%          "akka-slf4j"         %    akkaVersion

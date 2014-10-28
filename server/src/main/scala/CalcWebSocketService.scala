@@ -1,20 +1,20 @@
-package com.bwater.notebook
+package notebook
 package server
 
 import akka.actor._
 import scala.concurrent._
-import com.bwater.notebook.client._
-import net.liftweb.json._
+import notebook.client._
+import org.json4s._
 import JsonDSL._
-import com.bwater.notebook.client.ObjectInfoRequest
-import com.bwater.notebook.client.StreamResponse
-import com.bwater.notebook.client.CompletionRequest
-import com.bwater.notebook.client.ObjectInfoResponse
-import com.bwater.notebook.client.ExecuteRequest
+import notebook.client.ObjectInfoRequest
+import notebook.client.StreamResponse
+import notebook.client.CompletionRequest
+import notebook.client.ObjectInfoResponse
+import notebook.client.ExecuteRequest
 import scala.Some
-import com.bwater.notebook.client.CompletionResponse
-import com.bwater.notebook.client.ErrorResponse
-import com.bwater.notebook.client.ExecuteResponse
+import notebook.client.CompletionResponse
+import notebook.client.ErrorResponse
+import notebook.client.ExecuteResponse
 import akka.actor.Terminated
 import scala.concurrent.duration._
 
@@ -55,10 +55,6 @@ class CalcWebSocketService(system: ActorSystem, initScripts: List[String], compi
         for (op <- currentSessionOperation) {
           calculator.tell(InterruptRequest, op)
         }
-
-      case SparkClassServerUri => {
-        calculator forward SparkClassServerUri
-      }
 
       case req@SessionRequest(header, session, request) =>
         val operations = new SessionOperationActors(header, session)

@@ -1,11 +1,12 @@
-package com.bwater.notebook
+package notebook
 package server
 
 import unfiltered.netty.websockets.WebSocket
-import net.liftweb.json._
-import net.liftweb.json.JsonDSL._
+import org.json4s._
+import org.json4s.JsonDSL._
+import org.json4s.native._
 import java.util.UUID
-import com.bwater.notebook.util.Logging
+import notebook.util.Logging
 
 /**
  * Author: Ken
@@ -31,6 +32,6 @@ class WebSockWrapperImpl(sock: WebSocket) extends WebSockWrapper with Logging {
         ("msg_id" -> UUID.randomUUID().toString) ~
         ("msg_type" -> msgType))
 
-    send(pretty(render(respJson)))
+    send(prettyJson(renderJValue(respJson)))
   }
 }
