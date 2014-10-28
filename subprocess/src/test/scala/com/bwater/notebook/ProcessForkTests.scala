@@ -1,4 +1,4 @@
-package com.bwater.notebook
+package notebook
 
 import akka.testkit.{ImplicitSender, TestKit}
 import akka.actor.{Actor, Props, ActorSystem}

@@ -1,10 +1,10 @@
-package com.bwater.notebook
+package notebook
 
 import org.apache.commons.io.FileUtils
-import org.jboss.netty.handler.stream.ChunkedWriteHandler
+import io.netty.handler.stream.ChunkedWriteHandler
 import unfiltered.netty.Http
 import unfiltered.netty.Resources
-import com.bwater.notebook.util.Logging
+import notebook.util.Logging
 import org.apache.log4j.PropertyConfigurator
 import server._
 import java.io.{ IOException, File, Reader }
@@ -28,16 +28,19 @@ object Server extends Logging {
 
   def openBrowser(url: String) {
     println("Launching browswer on %s".format(url))
-    unfiltered.util.Browser.open(url) match {
-      case Some(ex) => println("Cannot open browser to %s\n%s".format(url, ex.toString))
-      case None =>
+    // @see https://github.com/unfiltered/unfiltered/issues/278
+    scala.util.Try(
+      java.awt.Desktop.getDesktop.browse(new java.net.URI(url))
+    ) match {
+      case scala.util.Success(_) =>
+      case scala.util.Failure(ex) => println("Cannot open browser to %s\n%s".format(url, ex.toString))
     }
   }
 
   var app:Dispatcher = _
 
   def main(args: Array[String]) {
-    val action =  if(!args.contains("--no_browser")) {openBrowser _ } 
+    val action =  if(!args.contains("--no_browser")) {openBrowser _ }
                   else (s:String)=>logInfo(s"You can head to $s")
 
     startServer(args, ScalaNotebookConfig.withOverrides(ScalaNotebookConfig.defaults))(action)
@@ -92,6 +95,9 @@ object Server extends Logging {
 
   /* TODO: move host, port, security settings into config? */
   def startServer(config: ScalaNotebookConfig, host: String, port: Int, security: DispatcherSecurity)(startAction: (Http, Dispatcher) => Unit) {
+    implicit class Pipe[A](value: A) {
+      def pipe[B](f: A => B): B = f(value)
+    }
 
     if (!config.notebooksDir.exists()) {
       logWarn("Base directory %s for Scala Notebook server does not exist.  Creating, but your server may be misconfigured.".format(config.notebooksDir))
@@ -101,7 +107,7 @@ object Server extends Logging {
     val app = new Dispatcher(config, host, port)
     import security.{ withCSRFKey, withCSRFKeyAsync, withWSAuth, authIntent }
 
-    val wsPlan = unfiltered.netty.websockets.Planify(withWSAuth(app.WebSockets.intent)).onPass(_.sendUpstream(_))
+    val wsPlan = unfiltered.netty.websockets.Planify(withWSAuth(app.WebSockets.intent)).onPass(_.fireChannelRead(_))
 
     val authPlan = unfiltered.netty.cycle.Planify(authIntent)
 
@@ -111,7 +117,7 @@ object Server extends Logging {
     val kernelPlan = unfiltered.netty.async.Planify(withCSRFKeyAsync(app.WebServer.kernelIntent))
     val loggerPlan = unfiltered.netty.cycle.Planify(new ReqLogger().intent)
 
-    val obsInt = unfiltered.netty.websockets.Planify(withWSAuth(new ObservableIntent(app.system).webSocketIntent)).onPass(_.sendUpstream(_))
+    val obsInt = unfiltered.netty.websockets.Planify(withWSAuth(new ObservableIntent(app.system).webSocketIntent)).onPass(_.fireChannelRead(_))
 
     val iPythonRes = Resources(getClass.getResource("/from_ipython/"), 3600, true)
     val thirdPartyRes = Resources(getClass.getResource("/thirdparty/"), 3600, true)
@@ -125,11 +131,6 @@ object Server extends Logging {
     val observableRes = Resources(getClass.getResource("/observable/"), 3600, false)
 
     val http = unfiltered.netty.Http(port, host)
-
-    class Pipe[A](value: A) {
-      def pipe[B](f: A => B): B = f(value)
-    }
-    implicit def Pipe[A](value: A) = new Pipe(value)
 
     def resourcePlan(res: Resources*)(h: Http) = res.foldLeft(h)((h, r) => h.plan(r).makePlan(new ChunkedWriteHandler))
 

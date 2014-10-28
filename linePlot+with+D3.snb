@@ -7,7 +7,7 @@
   "worksheets":[{
     "cells":[{
       "cell_type":"code",
-      "input":"import com.bwater.notebook.widgets.d3._\nimport com.bwater.notebook._, widgets._\nimport com.bwater.notebook.JsonCodec._\nimport net.liftweb.json.JsonAST._",
+      "input":"import notebook.widgets.d3._\nimport notebook._, widgets._\nimport notebook.JsonCodec._\nimport org.json4s.JsonAST._",
       "language":"scala",
       "collapsed":false,
       "prompt_number":9,

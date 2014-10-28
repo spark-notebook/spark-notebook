@@ -1,1 +1,1 @@
-https://raw.github.com/cloudhead/less.js/master/dist/less-1.3.3.js
+http://cdnjs.cloudflare.com/ajax/libs/less.js/1.3.3/less.min.js

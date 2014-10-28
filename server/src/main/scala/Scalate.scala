@@ -1,4 +1,4 @@
-package com.bwater.notebook
+package notebook
 package server
 
 import org.fusesource.scalate.{

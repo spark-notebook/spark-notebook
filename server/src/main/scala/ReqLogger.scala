@@ -1,4 +1,4 @@
-package com.bwater.notebook
+package notebook
 import unfiltered.request._
 import unfiltered.response.Pass
 import util.Logging

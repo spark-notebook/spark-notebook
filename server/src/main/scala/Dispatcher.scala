@@ -1,12 +1,13 @@
-package com.bwater.notebook
+package notebook
 package server
 
 import akka.remote.RemotingLifecycleEvent
 import unfiltered.Cookie
 import unfiltered.netty.websockets.{Pass => _, _}
 import unfiltered.request._
-import net.liftweb.json._
-import net.liftweb.json.JsonDSL._
+import org.json4s._
+import org.json4s.JsonDSL._
+import org.json4s.native._
 import akka.actor._
 import java.net.URLDecoder
 import java.io.File
@@ -15,7 +16,7 @@ import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger}
 import com.typesafe.config.ConfigFactory
 import client._
 import kernel.remote.{Subprocess, AkkaConfigUtils, VMManager}
-import com.bwater.notebook.util.Logging
+import notebook.util._
 import unfiltered.netty.RequestBinding
 import unfiltered.response._
 import unfiltered.request.Accepts.Accepting
@@ -40,7 +41,6 @@ class Dispatcher(protected val config: ScalaNotebookConfig,
     }
   }
 
-
   object WebSockets {
     val intent: unfiltered.netty.websockets.Intent = {
       case req@Path(Seg("kernels" :: kernelId :: channel :: Nil)) => {
@@ -57,17 +57,17 @@ class Dispatcher(protected val config: ScalaNotebookConfig,
 
             logDebug("Message for " + kernelId + ":" + msg)
 
-            val json = parse(msg)
+            val json = parseJson(msg)
 
             for {
-              JField("header", header) <- json
-              JField("session", session) <- header
-              JField("msg_type", msgType) <- header
-              JField("content", content) <- json
+              header  <- json \ "header"
+              session <- header \ "session"
+              msgType <- header \ "msg_type"
+              content <- json \ "content"
             } {
               msgType match {
                 case JString("execute_request") => {
-                  for (JField("code", JString(code)) <- content) {
+                  for (JString(code) <- content \ "code") {
                     val execCounter = executionCounter.incrementAndGet()
                     calcService.calcActor ! SessionRequest(header, session, ExecuteRequest(execCounter, code))
                   }
@@ -75,15 +75,15 @@ class Dispatcher(protected val config: ScalaNotebookConfig,
 
                 case JString("complete_request") => {
                   for (
-                    JField("line", JString(line)) <- content;
-                    JField("cursor_pos", JInt(cursorPos)) <- content
+                    JString(line) <- content \ "line";
+                    JInt(cursorPos) <- content \ "cursor_pos"
                   ) {
                     calcService.calcActor ! SessionRequest(header, session, CompletionRequest(line, cursorPos.toInt))
                   }
                 }
 
                 case JString("object_info_request") => {
-                  for (JField("oname", JString(oname)) <- content) {
+                  for (JString(oname) <- content \ "oname") {
                     calcService.calcActor ! SessionRequest(header, session, ObjectInfoRequest(oname))
                   }
                 }
@@ -161,7 +161,7 @@ class Dispatcher(protected val config: ScalaNotebookConfig,
           "project" -> nbm.name)
 
       case GET(Path(Seg("notebooks" :: Nil))) =>
-        Json(nbm.listNotebooks)
+        unfiltered.response.Json(nbm.listNotebooks)
 
       case GET(Path(Seg("clusters" :: Nil))) =>
         val s = """[{"profile":"default","status":"stopped","profile_dir":"C:\\Users\\Ken\\.ipython\\profile_default"}]"""
@@ -190,7 +190,7 @@ class Dispatcher(protected val config: ScalaNotebookConfig,
         val response = for ((lastMod, name, data) <- nbm.getNotebook(id, name))
         yield format match {
             case "json" => JsonContent ~> ResponseHeader(
-                                            "Content-Disposition", 
+                                            "Content-Disposition",
                                             "attachment; filename=\"%s.snb".format(name) :: Nil
                                           ) ~> ResponseHeader("Last-Modified", lastMod :: Nil) ~> ResponseString(data) ~> Ok
 
@@ -213,7 +213,7 @@ class Dispatcher(protected val config: ScalaNotebookConfig,
       val service = new CalcWebSocketService(system, initScripts, compilerArgs, kernel.remoteDeployFuture)
       kernelIdToCalcService += kernelId -> service
       val json = ("kernel_id" -> kernelId) ~ ("ws_url" -> "ws:/%s:%d".format(domain, port))
-      JsonContent ~> ResponseString(compact(render(json))) ~> Ok
+      JsonContent ~> ResponseString(compactJson(renderJValue(json))) ~> Ok
     }
 
     def getCalcWebSocketService(kernelId: String):Option[CalcWebSocketService] = kernelIdToCalcService.get(kernelId)
@@ -229,7 +229,7 @@ class Dispatcher(protected val config: ScalaNotebookConfig,
           kernel.router ! RestartKernel
         }
         val json = ("kernel_id" -> kernelId) ~ ("ws_url" -> "ws:/%s:%d".format(domain, port))
-        val resp = JsonContent ~> ResponseString(compact(render(json))) ~> Ok
+        val resp = JsonContent ~> ResponseString(compactJson(renderJValue(json))) ~> Ok
         req.respond(resp)
 
       case req@POST(Path(Seg("kernels" :: kernelId :: "interrupt" :: Nil))) =>
@@ -341,9 +341,9 @@ trait NotebookSession extends Logging {
   protected def config: ScalaNotebookConfig
 
   val nbm = new NotebookManager(config.projectName, config.notebooksDir)
-  val system = ActorSystem( "NotebookServer", 
+  val system = ActorSystem( "NotebookServer",
                             AkkaConfigUtils.optSecureCookie(
-                              ConfigFactory.load("notebook-server"), 
+                              ConfigFactory.load("notebook-server"),
                               akka.util.Crypt.generateSecureCookie
                             )
                           )

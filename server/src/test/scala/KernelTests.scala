@@ -3,20 +3,20 @@ import akka.pattern.AskSupport
 import scala.concurrent._
 import akka.testkit.{ImplicitSender, TestKit}
 import akka.util.Timeout
-import com.bwater.notebook.client.ExecuteRequest
-import com.bwater.notebook.client.{ExecuteResponse, ExecuteRequest}
-import com.bwater.notebook.Kernel
-import com.bwater.notebook.kernel.remote.AkkaConfigUtils
-import com.bwater.notebook.server.{CalcWebSocketService, SessionRequest, WebSockWrapper}
+import notebook.client.ExecuteRequest
+import notebook.client.{ExecuteResponse, ExecuteRequest}
+import notebook.Kernel
+import notebook.kernel.remote.AkkaConfigUtils
+import notebook.server.{CalcWebSocketService, SessionRequest, WebSockWrapper}
 import com.typesafe.config.ConfigFactory
 import java.util.concurrent.{LinkedBlockingQueue, ArrayBlockingQueue, BlockingQueue}
-import net.liftweb.json.JsonAST.JInt
-import net.liftweb.json.JsonAST.{JValue, JInt}
+import org.json4s.JsonAST.JInt
+import org.json4s.JsonAST.{JValue, JInt}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.Matchers
 import org.scalatest.{BeforeAndAfterAll, WordSpecLike}
 import scala.concurrent.duration._
-import net.liftweb.json._
+import org.json4s._
 import JsonDSL._
 import scala.concurrent.ExecutionContext.Implicits.global
 

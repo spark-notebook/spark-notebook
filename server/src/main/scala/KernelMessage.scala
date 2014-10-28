@@ -1,8 +1,8 @@
-package com.bwater.notebook
+package notebook
 package server
 
-import com.bwater.notebook.client.CalcRequest
-import net.liftweb.json._
+import notebook.client.CalcRequest
+import org.json4s._
 
 /**
  * Author: Ken

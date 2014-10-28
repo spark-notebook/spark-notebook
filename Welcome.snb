@@ -13,7 +13,7 @@
       "source":"To edit a markdown cell, double-click in the text. "
     },{
       "cell_type":"code",
-      "input":"import com.bwater.notebook.JsonCodec._\nimport net.liftweb.json.JsonAST._\nimport net.liftweb.json.JsonDSL._\nimport com.bwater.notebook.widgets.d3._\n  \n  val script = {\n\t  implicit val sss = strings\n\t  D3(Seq(\"ok\", \"nok\"), 400, 100, \n         \"\"\" \n\t     function(data) {\n\t\t     var text = svg.selectAll(\"text\")\n                        .data(data)\n                        .enter()\n                        .append(\"text\")\n                        .attr(\"x\", 10)\n                        .attr(\"y\", 10)\n                        .attr(\"fill\", \"red\")\n \t\t\t            .text(function(t) {return t;});\n           \n         }\n         \"\"\", \n         \"\"\" function(x) {console.log(\"yop\"); };\"\"\")\n\n  }",
+      "input":"import notebook.JsonCodec._\nimport org.json4s.JsonAST._\nimport org.json4s.JsonDSL._\nimport notebook.widgets.d3._\n  \n  val script = {\n\t  implicit val sss = strings\n\t  D3(Seq(\"ok\", \"nok\"), 400, 100, \n         \"\"\" \n\t     function(data) {\n\t\t     var text = svg.selectAll(\"text\")\n                        .data(data)\n                        .enter()\n                        .append(\"text\")\n                        .attr(\"x\", 10)\n                        .attr(\"y\", 10)\n                        .attr(\"fill\", \"red\")\n \t\t\t            .text(function(t) {return t;});\n           \n         }\n         \"\"\", \n         \"\"\" function(x) {console.log(\"yop\"); };\"\"\")\n\n  }",
       "language":"scala",
       "collapsed":false,
       "prompt_number":12,
@@ -141,7 +141,7 @@
       "source":"To edit a markdown cell, double-click in the text. "
     },{
       "cell_type":"code",
-      "input":"import com.bwater.notebook.JsonCodec._\nimport net.liftweb.json.JsonAST._\nimport net.liftweb.json.JsonDSL._\nimport com.bwater.notebook.widgets.d3._\n  \n  val script = {\n\t  implicit val sss = strings\n\t  D3(Seq(\"ok\", \"nok\"), 400, 100, \n         \"\"\" \n\t     function(data) {\n\t\t   var text = svg.selectAll(\"text\")\n                        .data(data, function(d) { return d; });\n           text.enter()\n             .append(\"text\")\n             .attr(\"x\", function(d, i) { return (i+1) * 10;})\n             .attr(\"y\", function(d, i) { return (i+1) * 10;})\n             .attr(\"fill\", \"red\")\n             .text(function(t) {return t;});\n           \n           text.exit().remove();\n           \n         }\n         \"\"\", \n         \"\"\" function(x) {console.log(\"yop\"); };\"\"\")\n\n  }",
+      "input":"import notebook.JsonCodec._\nimport org.json4s.JsonAST._\nimport org.json4s.JsonDSL._\nimport notebook.widgets.d3._\n  \n  val script = {\n\t  implicit val sss = strings\n\t  D3(Seq(\"ok\", \"nok\"), 400, 100, \n         \"\"\" \n\t     function(data) {\n\t\t   var text = svg.selectAll(\"text\")\n                        .data(data, function(d) { return d; });\n           text.enter()\n             .append(\"text\")\n             .attr(\"x\", function(d, i) { return (i+1) * 10;})\n             .attr(\"y\", function(d, i) { return (i+1) * 10;})\n             .attr(\"fill\", \"red\")\n             .text(function(t) {return t;});\n           \n           text.exit().remove();\n           \n         }\n         \"\"\", \n         \"\"\" function(x) {console.log(\"yop\"); };\"\"\")\n\n  }",
       "language":"scala",
       "collapsed":false,
       "prompt_number":13,
@@ -155,7 +155,7 @@
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"import com.bwater.notebook.JsonCodec._\nimport net.liftweb.json.JsonAST._\nimport net.liftweb.json.JsonDSL._\nimport com.bwater.notebook.widgets.d3._\n\n  \nval script = {\n\t  implicit val sss = strings\n\t  D3.svg(Seq(\"ok\", \"nok\"), 400, 100, \n         \"consoleDir\", \n         \"consoleDir\")\n  }\n  ",
+      "input":"import notebook.JsonCodec._\nimport org.json4s.JsonAST._\nimport org.json4s.JsonDSL._\nimport notebook.widgets.d3._\n\n  \nval script = {\n\t  implicit val sss = strings\n\t  D3.svg(Seq(\"ok\", \"nok\"), 400, 100, \n         \"consoleDir\", \n         \"consoleDir\")\n  }\n  ",
       "language":"scala",
       "collapsed":false,
       "prompt_number":2,
@@ -169,7 +169,7 @@
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"import com.bwater.notebook.JsonCodec._\nimport net.liftweb.json.JsonAST._\nimport net.liftweb.json.JsonDSL._\nimport com.bwater.notebook.widgets.d3._\nval script2 = {\n  //implicit val sss = new Codec[JDouble, String] {\n  //  def encode(x:JDouble):String = \"a\"*x.extract[Double].toInt\n  //  def decode(x:String):JDouble = JDouble(x.size)\n  //}\n  //D3.linePlot(Seq(\"ok\", \"nok\"), 400, 100)\n  //implicit val sss = jdouble2jvalueCodec()\n   D3.linePlot(ts, 400, 100)\n}",
+      "input":"import notebook.JsonCodec._\nimport org.json4s.JsonAST._\nimport org.json4s.JsonDSL._\nimport notebook.widgets.d3._\nval script2 = {\n  //implicit val sss = new Codec[JDouble, String] {\n  //  def encode(x:JDouble):String = \"a\"*x.extract[Double].toInt\n  //  def decode(x:String):JDouble = JDouble(x.size)\n  //}\n  //D3.linePlot(Seq(\"ok\", \"nok\"), 400, 100)\n  //implicit val sss = jdouble2jvalueCodec()\n   D3.linePlot(ts, 400, 100)\n}",
       "language":"scala",
       "collapsed":false,
       "prompt_number":4,

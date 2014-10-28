@@ -5,7 +5,7 @@
  * the file COPYING, distributed as part of this software.
  */
 
-package com.bwater.notebook
+package notebook
 
 import akka.testkit.TestKit
 import kernel.remote.{RemoteActorSystem, SingleVM, AkkaConfigUtils}, SingleVM._
