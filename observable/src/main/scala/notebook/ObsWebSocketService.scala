@@ -44,7 +44,9 @@ class ObsServiceRemoteActor extends Actor with ActorLogging   {
   }
 
   def receive = {
-    case ObservableBrowserToVM(id, newValue) => JSBus.forwardClientUpdateMessage(id, newValue)
-    case msg: ObservableVMToBrowser => context.parent ! msg
+    case ObservableBrowserToVM(id, newValue) =>
+      JSBus.forwardClientUpdateMessage(id, newValue)
+    case msg: ObservableVMToBrowser =>
+      context.parent ! msg
   }
 }

@@ -33,10 +33,10 @@ class ObservableIntent(system: ActorSystem) {
         for {
           json <- parseJsonOpt(msg)
           service <- kernelIdToObsService.get(contextId)
-          JField("id", JString(id)) <- json
-          JField("new_value", value) <- json
+          JString(id) <- json \ "id"
+          value <- json \ "new_value"
         } {
-            service.obsActor ! ObservableBrowserToVM(id, value)
+          service.obsActor ! ObservableBrowserToVM(id, value)
         }
 
       case Close(_) =>
