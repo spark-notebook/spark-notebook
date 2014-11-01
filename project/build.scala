@@ -90,6 +90,11 @@ object NotebookBuild extends Build {
         scalaTest,
         log4j,
         "org.scalaz" %% "scalaz-core" % "7.0.6"
+      ),
+
+      libraryDependencies ++= Seq(
+        sparkRepl,
+        sparkSQL
       )
     )
 
