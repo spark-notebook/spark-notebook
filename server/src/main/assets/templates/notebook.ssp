@@ -25,7 +25,9 @@ window.mathjax_url = "${mathjax_url}";
 <link rel="stylesheet/less" href="${static_url("css/ribbon.less")}" type="text/css" />
 <link rel="stylesheet" href="${static_url("css/renderedhtml.css")}" type="text/css" />
 
-<link rel="stylesheet" href="${static_url("bootstrap-icon/css/bootstrap.min.css")}" type="text/css" />
+<link rel="stylesheet" href="${static_url("bootstrap/css/bootstrap.min.css")}" type="text/css" />
+<link rel="stylesheet" href="${static_url("bootstrap/css/bootstrap-theme.min.css")}" type="text/css" />
+<link rel="stylesheet" href="${static_url("bootstrap/css/bootstrap-responsive.min.css")}" type="text/css" />
 
 <link rel="stylesheet" href="${static_url("rickshaw/rickshaw.min.css")}" type="text/css" />
 
@@ -227,15 +229,13 @@ curl({
   paths: {
     jquery: 'static/jquery/js/jquery',
     knockout: 'static/knockout',
+    'knockout-bootstrap': 'static/knockout-bootstrap.min.js',
     d3: 'static/d3',
     rickshaw: 'static/rickshaw/rickshaw',
     resources: '',
     observable: 'js/observable',
     equiv: 'js/equiv',
-    'jwerty.js': 'static/jwerty.js',
-  },
-  bundles: {
-    bootstrap: ['link!static/bootstrap/css/bootstrap.min.css', 'link!static/bootstrap/css/bootstrap-responsive.min.css', 'js!static/bootstrap/js/bootstrap.js']
+    'jwerty.js': 'static/jwerty.js'
   }
 });
 </script>
@@ -274,6 +274,7 @@ curl({
 <script src="${static_url("js/notificationwidget.js")}" type="text/javascript" charset="utf-8"></script>
 <script src="${static_url("js/notebookmain.js")}" type="text/javascript" charset="utf-8"></script>
 
+<!--<script src="${static_url("bootstrap/js/bootstrap.min.js")}" type="text/javascript" charset="utf-8"></script>-->
 #end
 
 <%}%>

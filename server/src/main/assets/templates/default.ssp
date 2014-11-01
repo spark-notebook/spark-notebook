@@ -30,7 +30,10 @@
 
     <div id="header">
        <div>
-        <span id="login_widget"></span>
+        <span id="login_widget">
+            <button id="login"></button>
+            <button id="logout"></button>
+        </span>
 
         ${unescape(header)}
 
@@ -48,7 +51,14 @@
 
     <script src="${static_url("curl/curl.js")}" type="text/javascript" charset="utf-8"></script>
     <script src="${static_url("jquery/js/jquery.js")}" type="text/javascript" charset="utf-8"></script>
+    <script>
+      //heack for jquery-ui to not use require (jquery not yet loaded via curljs :-/)
+      define.amd = false;
+    </script>
     <script src="${static_url("jquery/js/jquery-ui.js")}" type="text/javascript" charset="utf-8"></script>
+    <script>
+      define.amd = true;
+    </script>
     <script src="${static_url("js/namespace.js")}" type="text/javascript" charset="utf-8"></script>
     <script src="${static_url("js/csrf.js")}" type="text/javascript" charset="utf-8"></script>
     <script src="${static_url("js/page.js")}" type="text/javascript" charset="utf-8"></script>

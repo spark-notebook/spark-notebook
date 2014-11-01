@@ -11,7 +11,10 @@ package notebook
  * Author: Ken
  */
 trait Observer[T] extends rx.Observer[T] {
-  def map[A](fxn: A=>T): Observer[A] =  new MappingObserver[T,A]{ def innerObserver = Observer.this; def observerMapper = fxn }
+  def map[A](fxn: A=>T): Observer[A] =  new MappingObserver[T,A]{
+    def innerObserver = Observer.this;
+    def observerMapper = fxn
+  }
 }
 
 /**
