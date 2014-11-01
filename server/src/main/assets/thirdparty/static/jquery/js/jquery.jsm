@@ -1,2 +1,1 @@
-
-http://code.jquery.com/jquery-1.7.1.js
+http://code.jquery.com/jquery-1.11.1.min.js

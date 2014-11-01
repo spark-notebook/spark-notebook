@@ -1,7 +1,7 @@
 package org.apache.spark.ui.notebook.front.widgets
 
 import scala.concurrent._
-import scala.concurrent.ExecutionContext.Implicits.global 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util._
 import scala.concurrent.duration._
 
@@ -17,7 +17,6 @@ import notebook._, JSBus._
 import notebook.front._
 import notebook.front.widgets._
 
-// TODO fetch host and port from `sparkContext`
 class SparkInfo(sparkContext:SparkContext, checkInterval:Duration=5 seconds, execNumber:Option[Int]=None) extends DataConnector[JValue] with Widget {
   implicit val codec:Codec[JValue, JValue] = JsonCodec.idCodec[JValue]
 
@@ -37,7 +36,7 @@ class SparkInfo(sparkContext:SparkContext, checkInterval:Duration=5 seconds, exe
 
     val stageExtract = (s:StageInfo) => {
       val stageDataOption = listener.stageIdToData.get((s.stageId, s.attemptId))
-      stageDataOption.map{ stageData => 
+      stageDataOption.map{ stageData =>
         val started = stageData.numActiveTasks
         val completed = stageData.completedIndices.size
         val failed = stageData.numFailedTasks
@@ -48,7 +47,7 @@ class SparkInfo(sparkContext:SparkContext, checkInterval:Duration=5 seconds, exe
         ("started" -> started) ~
         ("total" -> total) ~
         ("failed" -> failed) ~
-        ("progress" -> s"${completed.toDouble / total * 100}%")
+        ("progress" -> s"${completed.toDouble / total * 100}")
       }
     }
 
@@ -62,28 +61,28 @@ class SparkInfo(sparkContext:SparkContext, checkInterval:Duration=5 seconds, exe
   }}
 
   def exec(n:Int=Int.MaxValue):Unit = fetchMetrics.onComplete {
-    case Success(x) => 
+    case Success(x) =>
       apply(Seq(x))
       Thread.sleep(checkInterval.toMillis)
       if (n>1) exec(n-1) else ()
-    case Failure(ex) => 
+    case Failure(ex) =>
       apply(Seq("error" -> ("ERROR (stopping)>>>>"+ex.getMessage)))
   }
 
   // start the checks
   execNumber.map(x => exec(x)).getOrElse(exec())
 
-  lazy val toHtml = 
+  lazy val toHtml =
       <div data-bind="foreach: value">{
       scopedScript(
         """ require(
-              ['observable', 'knockout'], 
-              function (O, ko) { 
-                ko.applyBindings({ 
+              ['observable', 'knockout', 'knockout-bootstrap'],
+              function (O, ko) {
+                ko.applyBindings({
                     value: O.makeObservable(valueId)
-                  }, 
+                  },
                   this
-                ); 
+                );
               }
             );
         """,
@@ -110,12 +109,27 @@ class SparkInfo(sparkContext:SparkContext, checkInterval:Duration=5 seconds, exe
             <span data-bind="text: failedNb"></span>
           </li>
         </ul>
-        <ul data-bind="foreach: activeStages">
-          <li data-bind="attr: { title: details }"><span data-bind="text: name"></span> [<span data-bind="text: progress"></span>]</li>
-        </ul>
-        <ul data-bind="foreach: completedStages">
-          <li data-bind="attr: { title: details }"><span data-bind="text: name"></span> [<span data-bind="text: progress"></span>]</li>
-        </ul>
+        <hr/>
+        <h4>Active Stages</h4>
+        <div data-bind="foreach: activeStages">
+          <h5 data-bind="attr: { title: details }"><span data-bind="text: name"></span></h5>
+          <ul>
+            <li>Total: <span data-bind="text: total" style="color: blue"></span></li>
+            <li>Failed: <span data-bind="text: failed" style="color: red"></span></li>
+            <li>Progress: <span data-bind="text: progress"></span>%</li>
+          </ul>
+          <div data-bind="progress: progress"></div>
+        </div>
+        <hr/>
+        <h4>Completed Stages</h4>
+        <div data-bind="foreach: completedStages">
+          <h5 data-bind="attr: { title: details }"><span data-bind="text: name"></span></h5>
+          <ul>
+            <li>Total: <span data-bind="text: total" style="color: blue"></span></li>
+            <li>Failed: <span data-bind="text: failed" style="color: red"></span></li>
+          </ul>
+        </div>
+        <hr/>
       </div>
 
 
