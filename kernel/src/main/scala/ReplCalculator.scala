@@ -80,16 +80,22 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
                 s""" "Classpath changed!" """
 
               case sqlRegex(n, sql) =>
-                val name = Option(n).map(nm => s"val $nm = ").getOrElse ("")
                 log.debug(s"Received sql code: [$n] $sql")
-                if (!sqlGen.parts.isEmpty) {
-                  sqlGen.code
-                } else {
-                  val qs = "\"\"\""
-                  val c = s"${name}sqlContext.sql(${qs}${sql}${qs})"
-                  log.info(s"Converted sql code as $c")
+                val qs = "\"\"\""
+                //if (!sqlGen.parts.isEmpty) {
+                  val name = Option(n).map(nm => s"val $nm = ").getOrElse ("")
+                  val c = s"""
+                    import notebook.front.widgets.Sql
+                    import notebook.front.widgets.Sql._
+                    ${name}new Sql(sqlContext, s${qs}${sql}${qs})
+                  """
                   c
-                }
+                //} else {
+                //  val name = Option(n).map(nm => s"val $nm = ").getOrElse ("")
+                //  val c = s"${name}sqlContext.sql(${qs}${sql}${qs})"
+                //  log.info(s"Converted sql code as $c")
+                //  c
+                //}
 
               case _ => code
             }

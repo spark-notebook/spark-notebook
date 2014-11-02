@@ -8,13 +8,14 @@ import notebook._, JSBus._
 import notebook.front._
 
 
-class InputBox(initial: String) extends Widget {
-  private[this] val connection = JSBus.createConnection
-  val currentValue = connection biMap JsonCodec.strings
+class InputBox(initial: String, label:String="") extends Widget with SingleConnector[String] {
+  val codec =  JsonCodec.strings
 
-  currentValue <-- Connection.just(initial)
+  apply(initial)
 
-  lazy val toHtml = <input data-bind="value: value">{
+  val id = "input-"+dataConnection.id
+
+  lazy val toHtml = (<label for={id}>{label}</label>) ++ <input id={id} name={id} data-bind="value: value">{
     scopedScript(
       """require( ['observable', 'knockout'],
                   function (Observable, ko) {
@@ -23,7 +24,7 @@ class InputBox(initial: String) extends Widget {
                     }, this);
                   }
                 )""",
-      ("valueId" -> connection.id)
+      ("valueId" -> dataConnection.id)
     )
   }</input>
 }

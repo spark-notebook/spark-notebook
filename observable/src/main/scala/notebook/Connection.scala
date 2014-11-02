@@ -43,14 +43,14 @@ object Connection {
   def just[T](v: T) = new ConcreteConnection[T](Observable.just(v), new NoopObserver[T]())
 }
 
-class MappingConnection[A,B](inner:Connection[A], codec: Codec[A,B]) extends Connection[B] {
+class MappingConnection[A,B](innerConn:Connection[A], codec: Codec[A,B]) extends Connection[B] {
   val observable =  new MappingObservable[A,B] {
-    protected def innerObservable = inner.observable
+    protected def innerObservable = innerConn.observable
     protected def observableMapper = codec.encode
   }
 
   val observer = new MappingObserver[A,B] {
-    protected def innerObserver = inner.observer
+    protected def innerObserver = innerConn.observer
     protected def observerMapper = codec.decode
   }
 }

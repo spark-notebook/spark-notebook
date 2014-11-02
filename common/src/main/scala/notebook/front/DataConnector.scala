@@ -6,11 +6,16 @@ import notebook._, JSBus._
 import notebook.front._, widgets._
 import notebook.JsonCodec._
 
-trait DataConnector[T] {
-  implicit val codec:Codec[JValue, T]
+trait SingleConnector[T] {
+  implicit def codec:Codec[JValue, T]
 
   val dataConnection:ValueConnection = JSBus.createConnection
-  lazy val currentData:Connection[Seq[T]] = dataConnection biMap tSeq[T]
+  lazy val currentData:Connection[T] = dataConnection biMap codec
 
-  def apply(newData: Seq[T]) = currentData <-- Connection.just(newData)
+  def apply(newData: T) = currentData <-- Connection.just(newData)
+}
+
+trait DataConnector[T] extends SingleConnector[Seq[T]] {
+  implicit def singleCodec:Codec[JValue, T]
+  implicit lazy val codec = tSeq[T](singleCodec)
 }
