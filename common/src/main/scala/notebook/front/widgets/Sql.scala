@@ -3,19 +3,21 @@ package notebook.front.widgets
 import org.json4s.JsonDSL._
 import org.json4s.JsonAST.{JString, JValue}
 
+import org.apache.spark.sql.SQLContext
+
 import notebook._, JSBus._
 
 import notebook.front._
 
 
-class Sql(call: String) extends Widget {
+class Sql(sqlContext:SQLContext, call: String) extends Widget with notebook.util.Logging {
 
   private[this] val sqlInputRegex = "(\\{[^\\}]+\\})".r
   private[this] val sqlTypedInputRegex = "^\\{([^:]+):(.*)\\}$".r
 
   val parts:List[(String, TypedInput[_])] = {
-    val inputs = sqlInputRegex.findAllMatchIn(sql).toList
-    val sqlGen = Sql(inputs match {
+    val inputs = sqlInputRegex.findAllMatchIn(call).toList
+    inputs match {
       case Nil => Nil
       case x :: Nil =>
         val b = x.before.toString
@@ -32,61 +34,76 @@ class Sql(call: String) extends Widget {
                     (b, TypedInput(tpe, name))
                 }
         h :: t
-    })
+    }
   }
 
-  val sqlp = parts.map(_._1).map(x => s"${qs}$x${qs}")
-  val ws = parts.map(_._2.widget).mkString(" ++ ")
+  val sqlp = parts.map(_._1)
+  val ws:Widget = parts.map(_._2.widget).reduce((x:Widget, y:Widget) => x ++ y)
 
-  lazy val toHtml = <input data-bind="value: value">{
-    scopedScript(
-      """require( ['observable', 'knockout'],
-                  function (Observable, ko) {
-                    ko.applyBindings({
-                      value: Observable.makeObservable(valueId)
-                    }, this);
-                  }
-                )""",
-      ("valueId" -> connection.id)
-    )
-  }</input>
+  import rx.lang.scala.{Observable => RxObservable, Observer => RxObserver, _}
+
+  val mergedObservables:RxObservable[Seq[(String, Any)]] = {
+    val l:List[RxObservable[(String, Any)]] = parts.map{ p =>
+      val ob = p._2.widget.currentData.observable.inner
+      ob.subscribe(x => logInfo(x.toString))
+      val o:RxObservable[(String, Any)] = ob.map((d:Any) => (p._2.name, d))
+      o
+    }
+    // just a try in case Observable.from(l) wouldn't stop → hence zip won't start, because it needs to know N
+    l.head.zip(l.tail.head).map(v => v._1 :: v._2 :: Nil)
+    //RxObservable.zip(RxObservable.from(l))
+  }
+
+  var sql:Connection[String] = Connection.just("")
+
+  mergedObservables.subscribe(
+    onNext = (v:Seq[(String, Any)]) => {
+          logInfo("============ssssss============")
+          val values = v.toMap
+          val s = parts.map { case (before, input) =>
+            val vv = values(input.name)
+            before + vv.toString
+          }.mkString(" ")
+          logInfo(s)
+          sql <-- Connection.just(s)
+        },
+    onError = (t:Throwable) => logError("============ssssss============\n"+"Ouch in merged", t),
+    onCompleted = () => logWarn("============ssssss============\n"+" Merged completed ! ")
+  )
+
+  lazy val toHtml = ws.toHtml
+}
+
+object Sql {
+  implicit def toWidget(sql:Sql):Widget = sql.ws
 }
 
 sealed trait TypedInput[T] {
   def name:String
-  def apply(s:String):T
-  def widget:String
+  def widget:Widget with SingleConnector[T]
 }
 case class BooleanInput(name:String) extends TypedInput[Boolean]{
-  def apply(s:String):Boolean = s.toBoolean
   val widget = ???
 }
 case class CharInput(name:String) extends TypedInput[Char]{
-  def apply(s:String):Char = s.head
   val widget = ???
 }
 case class StringInput(name:String) extends TypedInput[String]{
-  def apply(s:String):String = s
-  val widget = """(new InputBox(""))"""
+  val widget = new InputBox("", name)
 }
 case class DateInput(name:String) extends TypedInput[java.util.Date]{
-  def apply(s:String):java.util.Date = new java.util.Date(s.toLong)
   val widget = ???
 }
 case class IntInput(name:String) extends TypedInput[Int]{
-  def apply(s:String):Int = s.toInt
   val widget = ???
 }
 case class LongInput(name:String) extends TypedInput[Long]{
-  def apply(s:String):Long = s.toLong
   val widget = ???
 }
 case class FloatInput(name:String) extends TypedInput[Float]{
-  def apply(s:String):Float = s.toFloat
   val widget = ???
 }
 case class DoubleInput(name:String) extends TypedInput[Double]{
-  def apply(s:String):Double = s.toDouble
   val widget = ???
 }
 object TypedInput {

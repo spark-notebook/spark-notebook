@@ -74,7 +74,7 @@ object NotebookBuild extends Build {
         unfilteredWebsockets,
         unfilteredJson,
         scalaTest,
-        "com.netflix.rxjava" % "rxjava-scala" % "0.5.3"
+        "io.reactivex" %% "rxscala" % "0.22.0"
       )
     )
 

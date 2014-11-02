@@ -11,7 +11,7 @@ class Playground[T] (
     data: Seq[T],
     scripts: List[Script],
     snippets:List[String]=Nil
-  )(implicit val codec:Codec[JValue, T])
+  )(implicit val singleCodec:Codec[JValue, T])
   extends Widget with DataConnector[T] {
 
   private val js = ("playground" :: scripts.map(_.script)).map(x => s"'js/$x'").mkString("[", ",", "]")
