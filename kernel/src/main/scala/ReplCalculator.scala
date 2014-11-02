@@ -6,6 +6,8 @@ import kernel._
 import java.io.File
 
 import notebook.util.Match
+import notebook.front._
+import notebook.front.widgets._
 
 import org.apache.spark.repl.HackSparkILoop
 
@@ -61,6 +63,7 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
   private val cpRegex = "(?s)^:cp\\s*(.+)\\s*$".r
   private val sqlRegex = "(?s)^:sql(?:\\[([a-zA-Z0-9][a-zA-Z0-9]*)\\])?\\s*(.+)\\s*$".r
 
+
   // Make a child actor so we don't block the execution on the main thread, so that interruption can work
   private val executor = context.actorOf(Props(new Actor {
     def receive = {
@@ -75,13 +78,19 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
                 preStartLogic()
                 replay()
                 s""" "Classpath changed!" """
+
               case sqlRegex(n, sql) =>
                 val name = Option(n).map(nm => s"val $nm = ").getOrElse ("")
                 log.debug(s"Received sql code: [$n] $sql")
-                val qs = "\"\"\""
-                val c = s"${name}sqlContext.sql(s${qs}${sql}${qs})"
-                log.info(s"Converted sql code as $c")
-                c
+                if (!sqlGen.parts.isEmpty) {
+                  sqlGen.code
+                } else {
+                  val qs = "\"\"\""
+                  val c = s"${name}sqlContext.sql(${qs}${sql}${qs})"
+                  log.info(s"Converted sql code as $c")
+                  c
+                }
+
               case _ => code
             }
           repl.evaluate(newCode, msg => sender ! StreamResponse(msg, "stdout"))
