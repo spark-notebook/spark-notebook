@@ -22,7 +22,6 @@ package object widgets {
       tag % new UnprefixedAttribute("data-this", compactJson(renderJValue(data)), Null)
   }
 
-
   def text(value: String) = html(xml.Text(value))
 
   def text(value: Connection[String], style: Connection[String] = Connection.just("")) = {
@@ -37,14 +36,14 @@ package object widgets {
     html(<p data-bind="text: value, style: style">{
       scopedScript(
         """ require(
-              ['observable', 'knockout'], 
-              function (O, ko) { 
-                ko.applyBindings({ 
-                    value: O.makeObservable(valueId), 
-                    style: O.makeObservable(styleId) 
-                  }, 
+              ['observable', 'knockout'],
+              function (O, ko) {
+                ko.applyBindings({
+                    value: O.makeObservable(valueId),
+                    style: O.makeObservable(styleId)
+                  },
                   this
-                ); 
+                );
               }
             );
         """,
