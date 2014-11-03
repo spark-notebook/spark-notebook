@@ -73,13 +73,16 @@ class SparkInfo(sparkContext:SparkContext, checkInterval:Duration=5 seconds, exe
   execNumber.map(x => exec(x)).getOrElse(exec())
 
   lazy val toHtml =
-      <div data-bind="foreach: value">{
+      <div data-bind="with: value">{
       scopedScript(
         """ require(
               ['observable', 'knockout', 'knockout-bootstrap'],
               function (O, ko) {
-                ko.applyBindings({
-                    value: O.makeObservable(valueId)
+                v_v_v = O.makeObservable(valueId);
+                v_v_v.subscribe(function (x) {console.dir(x);});
+                ko.applyBindings(
+                  {
+                    value: v_v_v
                   },
                   this
                 );
