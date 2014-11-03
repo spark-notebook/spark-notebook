@@ -1,9 +1,11 @@
 package notebook.front.widgets
 
+import scala.util._
+
 import org.json4s.JsonDSL._
 import org.json4s.JsonAST.{JString, JValue}
 
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{SQLContext, SchemaRDD}
 
 import notebook._, JSBus._
 
@@ -37,39 +39,65 @@ class Sql(sqlContext:SQLContext, call: String) extends Widget with notebook.util
     }
   }
 
-  val sqlp = parts.map(_._1)
-  val ws:Widget = parts.map(_._2.widget).reduce((x:Widget, y:Widget) => x ++ y)
-
   import rx.lang.scala.{Observable => RxObservable, Observer => RxObserver, _}
 
-  val mergedObservables:RxObservable[Seq[(String, Any)]] = {
+  val mergedObservables:RxObservable[(String, Any)] = {
     val l:List[RxObservable[(String, Any)]] = parts.map{ p =>
-      val ob = p._2.widget.currentData.observable.inner
-      ob.subscribe(x => logInfo(x.toString))
+      val ob = p._2.widget.currentData.observable.inner//.doOnEach(x => logInfo(x.toString))
       val o:RxObservable[(String, Any)] = ob.map((d:Any) => (p._2.name, d))
       o
     }
-    // just a try in case Observable.from(l) wouldn't stop → hence zip won't start, because it needs to know N
-    l.head.zip(l.tail.head).map(v => v._1 :: v._2 :: Nil)
-    //RxObservable.zip(RxObservable.from(l))
+    RxObservable.from(l).flatten
   }
 
-  var sql:Connection[String] = Connection.just("")
+  val sql = new SingleConnector[Option[Try[SchemaRDD]]] with Widget {
+    implicit val codec = new Codec[JValue, Option[Try[SchemaRDD]]] {
+      def encode(x:JValue):Option[Try[SchemaRDD]] = None
+      def decode(x:Option[Try[SchemaRDD]]):JValue = JString {
+        x.flatMap(t => t match {
+          case Success(s) => Some(s.toString)
+          case Failure(ex) => Some(ex.getMessage)
+        }).getOrElse("<no enough info>")
+      }
+    }
 
-  mergedObservables.subscribe(
-    onNext = (v:Seq[(String, Any)]) => {
-          logInfo("============ssssss============")
-          val values = v.toMap
-          val s = parts.map { case (before, input) =>
-            val vv = values(input.name)
-            before + vv.toString
-          }.mkString(" ")
-          logInfo(s)
-          sql <-- Connection.just(s)
-        },
-    onError = (t:Throwable) => logError("============ssssss============\n"+"Ouch in merged", t),
-    onCompleted = () => logWarn("============ssssss============\n"+" Merged completed ! ")
-  )
+    lazy val toHtml = <p data-bind="text: value">{
+      scopedScript(
+        """ require(
+              ['observable', 'knockout'],
+              function (O, ko) {
+                ko.applyBindings({
+                    value: O.makeObservable(valueId)
+                  },
+                  this
+                );
+              }
+            );
+        """,
+        ("valueId" -> dataConnection.id)
+      )}</p>
+  }
+  sql(None)
+
+  mergedObservables.subscribe(new RxObserver[(String, Any)]() {
+    val values:collection.mutable.Map[String, Any] = collection.mutable.HashMap[String, Any]().withDefaultValue("")
+    override def onNext(value: (String, Any)): Unit = {
+      values += value
+      val s = parts.map { case (before, input) =>
+        val vv = values(input.name)
+        before + vv.toString
+      }.mkString(" ")
+      val tried:Option[Try[SchemaRDD]] = Some(Try{sqlContext.sql(s)})
+      logDebug(tried.toString)
+      sql(tried)
+    }
+  })
+
+  val ws:Widget = {
+    val ps = parts.map(_._2.widget)
+                  .reduce((x:Widget, y:Widget) => x ++ y)
+    ps ++ sql
+  }
 
   lazy val toHtml = ws.toHtml
 }

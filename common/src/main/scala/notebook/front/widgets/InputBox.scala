@@ -11,8 +11,6 @@ import notebook.front._
 class InputBox(initial: String, label:String="") extends Widget with SingleConnector[String] {
   val codec =  JsonCodec.strings
 
-  apply(initial)
-
   val id = "input-"+dataConnection.id
 
   lazy val toHtml = (<label for={id}>{label}</label>) ++ <input id={id} name={id} data-bind="value: value">{
