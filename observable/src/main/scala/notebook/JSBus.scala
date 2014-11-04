@@ -102,6 +102,7 @@ object JSBus {
 
 
     def onJsReceived(v: JValue) {
+      //logInfo(">>><<< : " + v)
       subject.onNext(v)
     }
   }
