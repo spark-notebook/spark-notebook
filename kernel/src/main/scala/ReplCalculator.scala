@@ -90,13 +90,6 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
                     ${name}new Sql(sqlContext, s${qs}${sql}${qs})
                   """
                   c
-                //} else {
-                //  val name = Option(n).map(nm => s"val $nm = ").getOrElse ("")
-                //  val c = s"${name}sqlContext.sql(${qs}${sql}${qs})"
-                //  log.info(s"Converted sql code as $c")
-                //  c
-                //}
-
               case _ => code
             }
           repl.evaluate(newCode, msg => sender ! StreamResponse(msg, "stdout"))

@@ -8,6 +8,7 @@ import org.json4s.JsonAST.{JString, JValue}
 import org.apache.spark.sql.{SQLContext, SchemaRDD}
 
 import notebook._, JSBus._
+import JsonCodec._
 
 import notebook.front._
 
@@ -17,14 +18,17 @@ class Sql(sqlContext:SQLContext, call: String) extends Widget with notebook.util
   private[this] val sqlInputRegex = "(\\{[^\\}]+\\})".r
   private[this] val sqlTypedInputRegex = "^\\{([^:]+):(.*)\\}$".r
 
-  val parts:List[(String, TypedInput[_])] = {
+  private type Item = (String, TypedInput[_])
+
+  val (parts:List[Item], after:String) = {
     val inputs = sqlInputRegex.findAllMatchIn(call).toList
-    inputs match {
-      case Nil => Nil
+    val r = inputs match {
+      case Nil => (Nil, "")
       case x :: Nil =>
         val b = x.before.toString
         val sqlTypedInputRegex(tpe, name) = x.matched
-        (b, TypedInput(tpe, name)) :: Nil
+        val r = (b, TypedInput(tpe, name))
+        r :: List.empty[Item]
       case x :: xs =>
         val b = x.before.toString
         val sqlTypedInputRegex(tpe, name) = x.matched
@@ -37,13 +41,14 @@ class Sql(sqlContext:SQLContext, call: String) extends Widget with notebook.util
                 }
         h :: t
     }
+    (r, Try(inputs.last.after.toString).toOption.getOrElse(""))
   }
 
   import rx.lang.scala.{Observable => RxObservable, Observer => RxObserver, _}
 
   val mergedObservables:RxObservable[(String, Any)] = {
     val l:List[RxObservable[(String, Any)]] = parts.map{ p =>
-      val ob = p._2.widget.currentData.observable.inner//.doOnEach(x => logInfo(x.toString))
+      val ob = p._2.widget.currentData.observable.inner.doOnEach(x => logDebug("########:"+x.toString))
       val o:RxObservable[(String, Any)] = ob.map((d:Any) => (p._2.name, d))
       o
     }
@@ -79,6 +84,24 @@ class Sql(sqlContext:SQLContext, call: String) extends Widget with notebook.util
   }
   sql(None)
 
+  val subject:Subject[Option[Try[SchemaRDD]]] = Subject()
+
+  var result:Subject[Any] = Subject()
+
+  def on[A](f:SchemaRDD => A) = subject.subscribe(o => {
+    logInfo(">>>>> result.toString <<<<<<")
+    logInfo(o.toString)
+    o match {
+      case Some(Success(s)) =>
+        logInfo("MMMMMMH Looks like the computation is stuck here → dealock → scheduler pbms?")
+        val r = f(s)
+        logInfo("NEVER PRINTED!")
+        result.onNext(r)
+      case x =>
+        logError("ARRrrggllll → " + x.toString)
+    }
+  })
+
   mergedObservables.subscribe(new RxObserver[(String, Any)]() {
     val values:collection.mutable.Map[String, Any] = collection.mutable.HashMap[String, Any]().withDefaultValue("")
     override def onNext(value: (String, Any)): Unit = {
@@ -87,8 +110,10 @@ class Sql(sqlContext:SQLContext, call: String) extends Widget with notebook.util
         val vv = values(input.name)
         before + vv.toString
       }.mkString(" ")
-      val tried:Option[Try[SchemaRDD]] = Some(Try{sqlContext.sql(s)})
-      logDebug(tried.toString)
+      val c  = s + after
+      val tried:Option[Try[SchemaRDD]] = Some(Try{sqlContext.sql(c)})
+      logInfo(" !!!!! \n !!!!! \n" + tried.toString)
+      subject.onNext(tried)
       sql(tried)
     }
   })
@@ -106,33 +131,36 @@ object Sql {
   implicit def toWidget(sql:Sql):Widget = sql.ws
 }
 
+import notebook.front.widgets.types._
+
 sealed trait TypedInput[T] {
   def name:String
   def widget:Widget with SingleConnector[T]
 }
 case class BooleanInput(name:String) extends TypedInput[Boolean]{
-  val widget = ???
+  val widget = new InputBox[Boolean](false, name)
 }
 case class CharInput(name:String) extends TypedInput[Char]{
-  val widget = ???
+  val widget = new InputBox[Char](' ', name)
 }
 case class StringInput(name:String) extends TypedInput[String]{
-  val widget = new InputBox("", name)
+  val widget = new InputBox[String]("", name)
 }
-case class DateInput(name:String) extends TypedInput[java.util.Date]{
-  val widget = ???
+case class DateInput(name:String) extends TypedInput[java.util.Date] {
+  implicit val d:java.text.DateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd")
+  val widget = new InputBox[java.util.Date](new java.util.Date(), name)
 }
 case class IntInput(name:String) extends TypedInput[Int]{
-  val widget = ???
+  val widget = new InputBox[Int](0, name)
 }
 case class LongInput(name:String) extends TypedInput[Long]{
-  val widget = ???
+  val widget = new InputBox[Long](0, name)
 }
 case class FloatInput(name:String) extends TypedInput[Float]{
-  val widget = ???
+  val widget = new InputBox[Float](0, name)
 }
 case class DoubleInput(name:String) extends TypedInput[Double]{
-  val widget = ???
+  val widget = new InputBox[Double](0, name)
 }
 object TypedInput {
   def apply(tpe:String, name:String):TypedInput[_] = tpe match {

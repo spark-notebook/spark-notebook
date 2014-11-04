@@ -11,7 +11,7 @@ package notebook
  * Author: Ken
  * An observer and observable -  mutable data that can be changed or subscribed to
  */
-trait Connection[T] {
+trait Connection[T] extends notebook.util.Logging {
 
   def observable: Observable[T]
   def observer: Observer[T]
