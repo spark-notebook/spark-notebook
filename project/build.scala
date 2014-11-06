@@ -9,41 +9,62 @@ import sbt._
 import Keys._
 import org.apache.ivy.core.install.InstallOptions
 import com.untyped.sbtjs.Plugin._
-import scala.Some
+
+import sbtassembly.Plugin._
+import AssemblyKeys._
+
 
 object NotebookBuild extends Build {
 
   implicit def toRichProject(project: Project) = new RichProject(project)
   import Dependencies._
 
-  override def settings = super.settings ++ Seq(
-    organization := "com.bwater",
-    version := "0.3.0-SNAPSHOT",
-    scalaVersion in ThisBuild := "2.10.4",
-    fork in Test in ThisBuild := true,
-    parallelExecution in Test in ThisBuild := false,
-    // these java options are for the forked test JVMs
-    javaOptions in ThisBuild ++= Seq("-Xmx256M", "-XX:MaxPermSize=128M"),
+  override val settings =  {
+    super.settings ++ Seq(
+      organization := "nooostab",
+      version := "0.1.0-SNAPSHOT",
+      scalaVersion in ThisBuild := "2.10.4",
+      fork in Test in ThisBuild := true,
+      parallelExecution in Test in ThisBuild := false,
+      // these java options are for the forked test JVMs
+      javaOptions in ThisBuild ++= Seq("-Xmx512M", "-XX:MaxPermSize=128M"),
 
-    resolvers in ThisBuild ++= Seq(
-      Resolver.typesafeRepo("releases"),
-      Resolver.typesafeIvyRepo("releases"),
-      Resolver.typesafeIvyRepo("snapshots")
-    ),
+      resolvers in ThisBuild ++= Seq(
+        Resolver.typesafeRepo("releases"),
+        Resolver.typesafeIvyRepo("releases"),
+        Resolver.typesafeIvyRepo("snapshots")
+      ),
 
-    compileOrder := CompileOrder.Mixed,
-    publishMavenStyle := false,
-    javacOptions ++= Seq("-Xlint:deprecation", "-g"),
-    scalacOptions += "-deprecation",
-    scalacOptions ++= Seq("-Xmax-classfile-name", "100") ,
-    testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v") //Suppress test output unless there is a failure
-  )
+      compileOrder := CompileOrder.Mixed,
+      publishMavenStyle := false,
+      javacOptions ++= Seq("-Xlint:deprecation", "-g"),
+      scalacOptions += "-deprecation",
+      scalacOptions ++= Seq("-Xmax-classfile-name", "100") ,
+      testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v") //Suppress test output unless there is a failure
+    )
+  }
 
-  lazy val root = Project(id = "scala-notebook", base = file("."))
+  lazy val root = Project(id = "spark-notebook", base = file("."), settings = Defaults.defaultSettings ++ assemblySettings)
     .aggregate(subprocess, observable, common, kernel, server)
+    .dependsOn(subprocess, observable, common, kernel, server)
     .settings(
       publish := {}, // don't publish an empty jar for the root project
       publishLocal := {}
+    )
+    .settings(
+      mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
+        { 
+          case x if x.endsWith("MANIFEST.MF")                                       => MergeStrategy.discard
+          case PathList("META-INF", "THIRD-PARTY.txt", xs @ _*)                     => MergeStrategy.concat
+          case PathList("META-INF", "io.netty.versions.properties", xs @ _*)        => MergeStrategy.first
+          case PathList("META-INF", "jboss-beans.xml", xs @ _*)                     => MergeStrategy.first
+          case PathList("META-INF", "native", _, x, xs @ _*) if x.contains("jansi") => MergeStrategy.first
+          case "mime.types"                                                         => MergeStrategy.filterDistinctLines
+          case path if path.endsWith(".class")                                      => MergeStrategy.first
+          case path if path.endsWith("beans.xml")                                   => MergeStrategy.first
+          case x                                                                    => old(x)
+        }
+      }
     )
 
   lazy val subprocess = Project(id = "subprocess", base = file("subprocess"))
@@ -132,12 +153,14 @@ object NotebookBuild extends Build {
       name := "notebook-server",
 
       mainClass in (Compile, run) := Some("notebook.Server"),
+      mainClass in assembly := Some("notebook.Server"),
 
       libraryDependencies ++= Seq(
         akkaRemote,
         akkaSlf4j,
         slf4jLog4j,
         unfilteredFilter,
+        unfiltereNettyServer,
         unfilteredWebsockets,
         akkaTestkit,
         unfilteredJson,
@@ -157,20 +180,23 @@ object NotebookBuild extends Build {
         aetherApi,
         jcabiAether,
         mavenCore
-      )
+      ),
+
+      run in Compile <<= Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run)) 
     )
 
   object Dependencies {
     val unfilteredVersion    = "0.8.2"
     val akkaVersion          = "2.2.3-shaded-protobuf"
 
-    val sparkRepl            = "org.apache.spark"          %%         "spark-repl"          %      "1.1.0"
-    val sparkSQL             = "org.apache.spark"          %%         "spark-sql"           %      "1.1.0"
+    val sparkRepl            = "org.apache.spark"          %%         "spark-repl"          %      "1.1.0"      % "provided"
+    val sparkSQL             = "org.apache.spark"          %%         "spark-sql"           %      "1.1.0"      % "provided"
     val commonsIO            = "org.apache.commons"        %          "commons-io"          %      "1.3.2"
     val commonsHttp          = "org.apache.httpcomponents" %          "httpclient"          %      "4.3.4"
     val slf4jLog4j           = "org.slf4j"                 %         "slf4j-log4j12"        %      "1.7.7"
     val log4j                = "log4j"                     %             "log4j"            %      "1.2.17"
     val unfilteredFilter     = "net.databinder"            %%      "unfiltered-filter"      % unfilteredVersion
+    val unfiltereNettyServer = "net.databinder"            %%   "unfiltered-netty-server"   % unfilteredVersion
     val unfilteredWebsockets = "net.databinder"            %% "unfiltered-netty-websockets" % unfilteredVersion
     val unfilteredJson       = "net.databinder"            %%      "unfiltered-json4s"      % unfilteredVersion
     val akka                 = "org.spark-project.akka"    %%         "akka-actor"          %    akkaVersion
