@@ -34,13 +34,14 @@ var IPython = (function (IPython) {
             );
         };
         dialog.dialog({
-        	title: 'Keyboard shortcuts', 
-        	closeOnEscape: true, 
-        	closeText: '', 
+        	title: 'Keyboard shortcuts',
+        	closeOnEscape: true,
+        	closeText: '',
         	close: function() {
         		$(this).dialog('destroy').remove();
         		that.shortcut_dialog = null;
-        		}
+        		},
+            minWidth: 400
         });
     };
 
