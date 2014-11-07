@@ -21,3 +21,5 @@ trait DataConnector[T] extends SingleConnector[Seq[T]] {
   implicit def singleCodec:Codec[JValue, T]
   implicit lazy val codec = tSeq[T](singleCodec)
 }
+
+trait SingleConnectedWidget[T] extends SingleConnector[T] with Widget

@@ -149,7 +149,7 @@ object Server extends Logging {
       /* Workaround for https://github.com/unfiltered/unfiltered/issues/139 */
       //.pipe(resourcePlan(iPythonRes))
       //.pipe(resourcePlan(thirdPartyRes))
-      //.resources(getClass.getResource("/from_ipython/"), 3600, true)
+      .resources(getClass.getResource("/from_ipython/"), 3600, true)
       .resources(getClass.getResource("/thirdparty/"), 3600, true)
       .pipe(resourcePlan(moduleRes: _*))
       .pipe(resourcePlan(observableRes))

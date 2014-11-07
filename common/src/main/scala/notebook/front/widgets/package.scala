@@ -51,6 +51,27 @@ package object widgets {
       )}</p>)
   }
 
+  def out = new SingleConnectedWidget[String] {
+    implicit val codec = JsonCodec.strings
+
+    lazy val toHtml = <p data-bind="text: value">{
+      scopedScript(
+        """ require(
+              ['observable', 'knockout'],
+              function (O, ko) {
+                ko.applyBindings({
+                    value: O.makeObservable(valueId)
+                  },
+                  this
+                );
+              }
+            );
+        """,
+        ("valueId" -> dataConnection.id)
+      )}</p>
+  }
+
+
   def html(html: NodeSeq): Widget = new SimpleWidget(html)
 
   def layout(width: Int, contents: Seq[Widget]): Widget = html(
