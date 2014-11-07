@@ -66,15 +66,15 @@ var IPython = (function (IPython) {
     	var that = this;
         var $run = $('<a href="#"></a>').click(function () {
             that.notebook.execute_selected_cell();
-        }).append('<i class="icon-play"></i>');
+        }).append('<i class="glyphicon glyphicon-play"></i>');
 
         var $delete = $('<a href="#"></a>').click(function () {
            that.notebook.delete_cell();
-        }).append('<i class="icon-remove"></i>');
+        }).append('<i class="glyphicon glyphicon-remove"></i>');
 
 
         var optionBar = $('<div></div>').addClass('option_bar vbox')
-                    .append($('<div></div>').append($run)) 
+                    .append($('<div></div>').append($run))
                     .append($('<div></div>').append($delete));
 
         optionBar.dblclick(function (event) {
@@ -101,11 +101,11 @@ var IPython = (function (IPython) {
         // handlers and is used to provide custom key handling. Its return
         // value is used to determine if CodeMirror should ignore the event:
         // true = ignore, false = don't ignore.
-        
+
         if (this.read_only){
             return false;
         }
-        
+
         // note that we are comparing and setting the time to wait at each key press.
         // a better wqy might be to generate a new function on each time change and
         // assign it to CodeCell.prototype.request_tooltip_after_time
@@ -136,7 +136,7 @@ var IPython = (function (IPython) {
                 event.stop();
                 return false;
             } else {
-                return true; 
+                return true;
             };
         } else if (event.which === 40 && event.metaKey) {
             // If we are not at the bottom, let CM handle the down arrow and
@@ -145,7 +145,7 @@ var IPython = (function (IPython) {
                 event.stop();
                 return false;
             } else {
-                return true; 
+                return true;
             };
         } else if (event.keyCode === 9 && event.type == 'keydown') {
             // Tab completion.
@@ -602,7 +602,7 @@ var IPython = (function (IPython) {
         // up on FF when a newly loaded markdown cell was edited.
 
         this.element.find('.content').addClass('selected');
-        this.element.find('.option_bar i').addClass('icon-white');
+        this.element.find('.option_bar i').addClass('glyphicon-white');
     };
 
     CodeCell.prototype.unselect = function () {
@@ -610,7 +610,7 @@ var IPython = (function (IPython) {
 
         this.element.find('.content').removeClass('selected');
 
-        this.element.find('.option_bar i').removeClass('icon-white');
+        this.element.find('.option_bar i').removeClass('glyphicon-white');
     }
 
 
@@ -711,7 +711,7 @@ var IPython = (function (IPython) {
                 return;
             }
         }
-        
+
         // If we got here, attach a new div
         var toinsert = this.create_output_area();
         this.append_text(json.text, toinsert, "output_stream "+subclass);
@@ -833,10 +833,10 @@ var IPython = (function (IPython) {
         }, 500
         );
     };
-    
+
     CodeCell.prototype.clear_output_callback = function (stdout, stderr, other) {
         var output_div = this.element.find("div.output");
-        
+
         if (stdout && stderr && other){
             // clear all, no need for logic
             output_div.html("");
@@ -855,7 +855,7 @@ var IPython = (function (IPython) {
         if (other){
             output_div.find("div.output_subarea").not("div.output_stderr").not("div.output_stdout").parent().remove();
         }
-        
+
         // remove cleared outputs from JSON list:
         for (var i = this.outputs.length - 1; i >= 0; i--){
             var out = this.outputs[i];
@@ -876,7 +876,7 @@ var IPython = (function (IPython) {
     CodeCell.prototype.clear_input = function () {
         this.code_mirror.setValue('');
     };
-    
+
     CodeCell.prototype.flush_clear_timeout = function() {
         var output_div = this.element.find('div.output');
         if (this.clear_out_timeout){
@@ -917,19 +917,19 @@ var IPython = (function (IPython) {
         this.element.removeClass('output_only');
         this.showInput = true;
     };
-    
+
     CodeCell.prototype.show_sections = function (input, output) {
     	if (typeof input != 'undefined') {
     	  if (input) this.show_input();
     	  else this.hide_input();
     	}
-    	
+
     	if (typeof output != 'undefined') {
     	  if (output) this.expand();
     	  else this.collapse();
     	}
     }
-    
+
     CodeCell.prototype.toggle_input = function () {
     	this.show_sections(!this.showInput)
     };
