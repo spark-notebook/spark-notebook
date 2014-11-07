@@ -8,22 +8,61 @@ import notebook._, JSBus._
 import notebook.front._
 
 
-class InputBox(initial: String) extends Widget {
-  private[this] val connection = JSBus.createConnection
-  val currentValue = connection biMap JsonCodec.strings
+object types {
+  sealed trait InputType[T] {
+    def tpe:String
+    val extra:Map[String, String] = Map.empty
+  }
+  implicit object BooleanType extends InputType[Boolean] {
+    val tpe = "boolean" // TODO → extract a super type, put Input under, put CheckBox beside
+  }
+  implicit object CharType extends InputType[Char] {
+    val tpe = "text" // TODO → extract a super type, put Input under, put CheckBox beside
+    override val extra = Map("maxlength" -> "1")
+  }
+  implicit object TextType extends InputType[String] {
+    val tpe = "text"
+  }
+  implicit object IntType extends InputType[Int] {
+    val tpe = "number"
+  }
+  implicit object LongType extends InputType[Long] {
+    val tpe = "number"
+  }
+  implicit object FloatType extends InputType[Float] {
+    val tpe = "number"
+    override val extra = Map("step" -> "0.01")
+  }
+  implicit object DoubleType extends InputType[Double] {
+    val tpe = "number"
+    override val extra = Map("step" -> "0.01")
+  }
+  implicit object DateType extends InputType[java.util.Date] {
+    val tpe = "date"
+  }
+}
 
-  currentValue <-- Connection.just(initial)
+import types._
 
-  lazy val toHtml = <input data-bind="value: value">{
-    scopedScript(
-      """require( ['observable', 'knockout'],
-                  function (Observable, ko) {
-                    ko.applyBindings({
-                      value: Observable.makeObservable(valueId)
-                    }, this);
-                  }
-                )""",
-      ("valueId" -> connection.id)
-    )
-  }</input>
+class InputBox[T](initial: T, label:String="")(implicit t:InputType[T], val codec:Codec[JValue, T])
+  extends Widget with SingleConnector[T] {
+
+  val id = "input-"+dataConnection.id
+  lazy val toHtml = {
+    val ll = <label for={id}>{label}</label>
+    val in = <input id={id} type={t.tpe} name={id} data-bind="value: value">{
+              scopedScript(
+                """require( ['observable', 'knockout'],
+                            function (Observable, ko) {
+                              ko.applyBindings({
+                                value: Observable.makeObservable(valueId)
+                              }, this);
+                            }
+                          )""",
+                ("valueId" -> dataConnection.id)
+              )
+            }</input>
+    val nin = t.extra.map{ case (a,v) => new xml.UnprefixedAttribute(a, v, xml.Null) }.foldLeft(in)(_ % _)
+    ll ++ nin
+  }
 }

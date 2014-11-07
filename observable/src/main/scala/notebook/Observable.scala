@@ -6,40 +6,36 @@
  */
 
 package notebook
+import rx.lang.scala.{Observable => RxObservable, Observer => RxObserver, _}
 
 /**
  * Author: Ken
  * An observer trait, which is unfortunately lacking in rx.Subscription
  */
 trait Observable[T] {
-  def subscribe(observer: Observer[T]): rx.Subscription
+  def inner: RxObservable[T]
 
-//  def subscribe(next: T=>Unit): rx.Subscription = subscribe(new ConcreteObserver[T]{ override def onNext(args:T) = next(args) })
+  def subscribe(observer: Observer[T]): Subscription
 
   def map[A](fxn: T=>A):Observable[A] = new Observable[A] {
+    def inner = Observable.this.inner.map(fxn)
     def subscribe(observer: Observer[A]) = Observable.this.subscribe(observer map fxn)
   }
 }
 
-class WrappedObservable[T](inner: rx.Observable[T]) extends Observable[T] {
+class WrappedObservable[T](val inner: RxObservable[T]) extends Observable[T] {
   def subscribe(observer: Observer[T]) = inner.subscribe(observer)
-}
-
-class ConcreteObservable[T] extends Observable[T]  {
-  protected val observableHandler = rx.subjects.Subject.create[T]
-
-  def subscribe(observer: Observer[T]) = observableHandler.subscribe(observer)
 }
 
 trait MappingObservable[A,B] extends Observable[B] {
   protected def innerObservable: Observable[A]
-
   protected def observableMapper: A=>B
+  override lazy val inner:RxObservable[B] = innerObservable.inner.map(observableMapper)
 
   def subscribe(observer: Observer[B]) = innerObservable.subscribe(observer map observableMapper)
 }
 
 
 object Observable {
-  def just[T](x: T): Observable[T] = new WrappedObservable[T](rx.Observable.just(x))
+  def just[T](x: T): Observable[T] = new WrappedObservable[T](RxObservable.just(x))
 }

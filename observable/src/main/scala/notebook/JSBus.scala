@@ -11,10 +11,12 @@ import org.json4s.JsonAST.{JArray, JString, JInt, JValue}
 import org.apache.commons.codec.binary.Hex
 import java.security.SecureRandom
 import collection.mutable
-import rx.subjects.Subject
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.JavaConversions._
-import rx.operators.OperationMap
+
+import rx.lang.scala._
+//import rx.operators.OperationMap
+
 import org.slf4j.LoggerFactory
 import org.json4s.DefaultFormats
 import org.json4s.JsonDSL._
@@ -92,7 +94,7 @@ object JSBus {
       }
     }
 
-    private[this] val subject = Subject.create[JValue]
+    private[this] val subject = Subject[JValue]()
     val observable:Observable[JValue] = new WrappedObservable[JValue](subject)
 
     val id = newID
@@ -100,6 +102,7 @@ object JSBus {
 
 
     def onJsReceived(v: JValue) {
+      //logInfo(">>><<< : " + v)
       subject.onNext(v)
     }
   }

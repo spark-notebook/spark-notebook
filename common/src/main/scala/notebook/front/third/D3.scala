@@ -17,7 +17,7 @@ class Svg[T] (
     height: Int = 400,
     onData: String,
     extension: String
-  )(implicit val codec:Codec[JValue, T])
+  )(implicit val singleCodec:Codec[JValue, T])
   extends Widget with DataConnector[T] {
 
   private val js = List("sandbox", onData, extension).map(x => s"'js/$x'").mkString("[", ",", "]")

@@ -22,7 +22,6 @@ package object widgets {
       tag % new UnprefixedAttribute("data-this", compactJson(renderJValue(data)), Null)
   }
 
-
   def text(value: String) = html(xml.Text(value))
 
   def text(value: Connection[String], style: Connection[String] = Connection.just("")) = {
@@ -37,20 +36,41 @@ package object widgets {
     html(<p data-bind="text: value, style: style">{
       scopedScript(
         """ require(
-              ['observable', 'knockout'], 
-              function (O, ko) { 
-                ko.applyBindings({ 
-                    value: O.makeObservable(valueId), 
-                    style: O.makeObservable(styleId) 
-                  }, 
+              ['observable', 'knockout'],
+              function (O, ko) {
+                ko.applyBindings({
+                    value: O.makeObservable(valueId),
+                    style: O.makeObservable(styleId)
+                  },
                   this
-                ); 
+                );
               }
             );
         """,
         ("valueId" -> _currentValue.id) ~ ("styleId" -> _currentStyle.id)
       )}</p>)
   }
+
+  def out = new SingleConnectedWidget[String] {
+    implicit val codec = JsonCodec.strings
+
+    lazy val toHtml = <p data-bind="text: value">{
+      scopedScript(
+        """ require(
+              ['observable', 'knockout'],
+              function (O, ko) {
+                ko.applyBindings({
+                    value: O.makeObservable(valueId)
+                  },
+                  this
+                );
+              }
+            );
+        """,
+        ("valueId" -> dataConnection.id)
+      )}</p>
+  }
+
 
   def html(html: NodeSeq): Widget = new SimpleWidget(html)
 
