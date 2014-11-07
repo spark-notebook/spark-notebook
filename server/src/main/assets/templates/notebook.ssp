@@ -51,7 +51,7 @@ data-notebook-name="${notebook_name}"
 
 #set(header)
 
-<a href="${base_project_url}"><i class="icon-chevron-left"></i></a>
+<a href="${base_project_url}"><i class="glyphicon glyphicon-chevron-left"></i></a>
 <span id="save_widget">
     <span id="notebook_name"></span>
     <span id="save_status"></span>
@@ -71,21 +71,21 @@ data-notebook-name="${notebook_name}"
                 <div class="clusters">
                     <ul>
                         <p>Notebook</p>
-                        <li id="save_notebook"><a href="#"><i class="icon-hdd"></i>Save</a></li>
-                        <li id="revert_notebook"><a href="#"><i class="icon-circle-arrow-left"></i>Revert</a></li>
+                        <li id="save_notebook"><a href="#"><i class="glyphicon glyphicon-hdd"></i>Save</a></li>
+                        <li id="revert_notebook"><a href="#"><i class="glyphicon glyphicon-circle-arrow-left"></i>Revert</a></li>
                     </ul>
                     <ul>
                         <p>Cell</p>
-                        <!-- <li id="delete_cell"><a href="#"><i class="icon-remove"></i>Delete</a></li> -->
-                        <li id="move_cell_up"><a href="#"><i class="icon-arrow-up"></i>Move Up</a></li>
-                        <li id="move_cell_down"><a href="#"><i class="icon-arrow-down"></i>Move Down</a></li>
-                        <li id="insert_cell_above"><a href="#"><i class="icon-circle-arrow-up"></i>Insert Above</a></li>
-                        <li id="insert_cell_below"><a href="#"><i class="icon-circle-arrow-down"></i>Insert Below</a></li>
+                        <!-- <li id="delete_cell"><a href="#"><i class="glyphicon glyphicon-remove"></i>Delete</a></li> -->
+                        <li id="move_cell_up"><a href="#"><i class="glyphicon glyphicon-arrow-up"></i>Move Up</a></li>
+                        <li id="move_cell_down"><a href="#"><i class="glyphicon glyphicon-arrow-down"></i>Move Down</a></li>
+                        <li id="insert_cell_above"><a href="#"><i class="glyphicon glyphicon-circle-arrow-up"></i>Insert Above</a></li>
+                        <li id="insert_cell_below"><a href="#"><i class="glyphicon glyphicon-circle-arrow-down"></i>Insert Below</a></li>
                     </ul>
                     <ul>
                         <p>Run</p>
-                        <li id="run_cell"><a href="#"><i class="icon-play"></i>Run Cell</a></li>
-                        <li id="run_all_cells"><a href="#"><i class="icon-play-circle"></i>Run All</a></li>
+                        <li id="run_cell"><a href="#"><i class="glyphicon glyphicon-play"></i>Run Cell</a></li>
+                        <li id="run_all_cells"><a href="#"><i class="glyphicon glyphicon-play-circle"></i>Run All</a></li>
                     </ul>
                 </div>
             </li>
@@ -96,9 +96,9 @@ data-notebook-name="${notebook_name}"
                 <div class="clusters">
                     <ul>
                         <p>File</p>
-                        <li id="new_notebook"><a href="#"><i class="icon-file"></i>New</a></li>
-                        <li id="save_notebook"><a href="#"><i class="icon-hdd"></i>Save</a></li>
-                        <li id="open_notebook"><a href="#"><i class="icon-folder-open"></i>Open</a></li>
+                        <li id="new_notebook"><a href="#"><i class="glyphicon glyphicon-file"></i>New</a></li>
+                        <li id="save_notebook"><a href="#"><i class="glyphicon glyphicon-hdd"></i>Save</a></li>
+                        <li id="open_notebook"><a href="#"><i class="glyphicon glyphicon-folder-open"></i>Open</a></li>
                     </ul>
                     <ul>
                         <p>Notebook</p>
@@ -107,7 +107,7 @@ data-notebook-name="${notebook_name}"
                     </ul>
                     <ul>
                         <p>Download As</p>
-                        <li id="download_ipynb"><a href="#"><i class="icon-download-alt"></i>Notebook (.snb)</a></li>
+                        <li id="download_ipynb"><a href="#"><i class="glyphicon glyphicon-download-alt"></i>Notebook (.snb)</a></li>
                         <!-- TODO: Re-enable when export to scala is supported -->
                         <!--
                         <li id="download_py"><a href="#">Scala (.scala)</a></li>
@@ -135,8 +135,8 @@ data-notebook-name="${notebook_name}"
                 </ul>
                 <ul>
                     <p>Move</p>
-                    <li id="move_cell_up"><a href="#"><i class="icon-arrow-up"></i>Move Up</a></li>
-                    <li id="move_cell_down"><a href="#"><i class="icon-arrow-down"></i>Move Down</a></li>
+                    <li id="move_cell_up"><a href="#"><i class="glyphicon glyphicon-arrow-up"></i>Move Up</a></li>
+                    <li id="move_cell_down"><a href="#"><i class="glyphicon glyphicon-arrow-down"></i>Move Down</a></li>
                 </ul>
                 </div>
             </li>
@@ -162,9 +162,9 @@ data-notebook-name="${notebook_name}"
                 <div class="clusters">
                 <ul>
                     <p>Run</p>
-                    <li id="run_cell"><a href="#"><i class="icon-play"></i>Run</a></li>
-                    <!-- <li id="run_cell_in_place"><a href="#"><i class="icon-step-forward"></i>Run in Place</a></li> -->
-                    <li id="run_all_cells"><a href="#"><i class="icon-play-circle"></i>Run All</a></li>
+                    <li id="run_cell"><a href="#"><i class="glyphicon glyphicon-play"></i>Run</a></li>
+                    <!-- <li id="run_cell_in_place"><a href="#"><i class="glyphicon glyphicon-step-forward"></i>Run in Place</a></li> -->
+                    <li id="run_all_cells"><a href="#"><i class="glyphicon glyphicon-play-circle"></i>Run All</a></li>
                 </ul>
                 <ul>
                     <p>Type</p>
@@ -182,8 +182,8 @@ data-notebook-name="${notebook_name}"
                 <div class="clusters">
                 <ul>
                     <p>Kernel</p>
-                    <li id="int_kernel"><a href="#"><i class="icon-stop"></i>Interrupt</a></li>
-                    <li id="restart_kernel"><a href="#"><i class="icon-repeat"></i>Restart</a></li>
+                    <li id="int_kernel"><a href="#"><i class="glyphicon glyphicon-stop"></i>Interrupt</a></li>
+                    <li id="restart_kernel"><a href="#"><i class="glyphicon glyphicon-repeat"></i>Restart</a></li>
                 </ul>
                 </div>
             </li>

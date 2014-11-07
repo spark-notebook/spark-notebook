@@ -43,7 +43,7 @@
         </div>
 
     </div>
-    <div id="expand_header"><a href="#"><i class="icon-chevron-down"></i></a></div>
+    <div id="expand_header"><a href="#"><i class="glyphicon glyphicon-chevron-down"></i></a></div>
 
     <div id="site">
         ${unescape(site)}
