@@ -1,6 +1,9 @@
 package notebook.front.widgets
 
 import scala.util._
+import scala.concurrent._
+
+import akka.actor._
 
 import org.json4s.JsonDSL._
 import org.json4s.JsonAST.{JString, JValue}
@@ -12,7 +15,6 @@ import JsonCodec._
 
 import notebook.front._
 
-
 class Sql(sqlContext:SQLContext, call: String) extends Widget with notebook.util.Logging {
 
   private[this] val sqlInputRegex = "(\\{[^\\}]+\\})".r
@@ -23,21 +25,21 @@ class Sql(sqlContext:SQLContext, call: String) extends Widget with notebook.util
   val (parts:List[Item], after:String) = {
     val inputs = sqlInputRegex.findAllMatchIn(call).toList
     val r = inputs match {
-      case Nil => (Nil, "")
+      case Nil => Nil
       case x :: Nil =>
         val b = x.before.toString
         val sqlTypedInputRegex(tpe, name) = x.matched
-        val r = (b, TypedInput(tpe, name))
+        val r = (b, TypedInput(tpe, name.trim))
         r :: List.empty[Item]
       case x :: xs =>
         val b = x.before.toString
         val sqlTypedInputRegex(tpe, name) = x.matched
-        val h  = (b, TypedInput(tpe, name))
+        val h  = (b, TypedInput(tpe, name.trim))
         val t = inputs.sliding(2).toList.map{
                   case i::j::Nil =>
                     val b = j.before.toString.substring(i.before.toString.size+i.matched.size)
                     val sqlTypedInputRegex(tpe, name) = j.matched
-                    (b, TypedInput(tpe, name))
+                    (b, TypedInput(tpe, name.trim))
                 }
         h :: t
     }
@@ -48,7 +50,7 @@ class Sql(sqlContext:SQLContext, call: String) extends Widget with notebook.util
 
   val mergedObservables:RxObservable[(String, Any)] = {
     val l:List[RxObservable[(String, Any)]] = parts.map{ p =>
-      val ob = p._2.widget.currentData.observable.inner.doOnEach(x => logDebug("########:"+x.toString))
+      val ob = p._2.widget.currentData.observable.inner//.doOnEach(x => logDebug("########:"+x.toString))
       val o:RxObservable[(String, Any)] = ob.map((d:Any) => (p._2.name, d))
       o
     }
@@ -82,25 +84,44 @@ class Sql(sqlContext:SQLContext, call: String) extends Widget with notebook.util
         ("valueId" -> dataConnection.id)
       )}</p>
   }
-  sql(None)
 
-  val subject:Subject[Option[Try[SchemaRDD]]] = Subject()
+  val subject:Subject[Option[Try[SchemaRDD]]] = subjects.ReplaySubject(1)
 
-  var result:Subject[Any] = Subject()
+  var result:Subject[Any] = subjects.ReplaySubject(1)
 
-  def on[A](f:SchemaRDD => A) = subject.subscribe(o => {
-    logInfo(">>>>> result.toString <<<<<<")
-    logInfo(o.toString)
-    o match {
-      case Some(Success(s)) =>
-        logInfo("MMMMMMH Looks like the computation is stuck here → dealock → scheduler pbms?")
-        val r = f(s)
-        logInfo("NEVER PRINTED!")
-        result.onNext(r)
-      case x =>
-        logError("ARRrrggllll → " + x.toString)
+  def updateValue(c:String) = {
+    val tried:Option[Try[SchemaRDD]] = Some(Try{sqlContext.sql(c)})
+    logInfo(" Tried => " + tried.toString)
+    subject.onNext(tried)
+    sql(tried)
+    tried
+  }
+
+  sql {
+    parts match {
+      case Nil => updateValue(call)
+      case xs => None
     }
-  })
+  }
+
+  import scala.concurrent._
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  def react[A](f:SchemaRDD => A, w:SingleConnectedWidget[A]) = {
+    result.subscribe(x => w(x.asInstanceOf[A])) //argl → asInstanceOf
+    val sub = (o:Option[Try[SchemaRDD]]) => {
+      o match {
+        case Some(Success(s)) =>
+          val r = f(s)
+          result.onNext(r)
+        case x =>
+          logError("ARRrrggllll → " + x.toString)
+      }
+    }
+    subject.subscribe(sub)
+    //subject.orElse(None).subscribe(sub)
+    w
+  }
 
   mergedObservables.subscribe(new RxObserver[(String, Any)]() {
     val values:collection.mutable.Map[String, Any] = collection.mutable.HashMap[String, Any]().withDefaultValue("")
@@ -109,18 +130,17 @@ class Sql(sqlContext:SQLContext, call: String) extends Widget with notebook.util
       val s = parts.map { case (before, input) =>
         val vv = values(input.name)
         before + vv.toString
-      }.mkString(" ")
+      }.mkString("")
       val c  = s + after
-      val tried:Option[Try[SchemaRDD]] = Some(Try{sqlContext.sql(c)})
-      logInfo(" !!!!! \n !!!!! \n" + tried.toString)
-      subject.onNext(tried)
-      sql(tried)
+      updateValue(c)
     }
   })
 
   val ws:Widget = {
-    val ps = parts.map(_._2.widget)
-                  .reduce((x:Widget, y:Widget) => x ++ y)
+    val ps = parts.map(_._2.widget) match {
+      case Nil => out
+      case xs => xs.reduce((x:Widget, y:Widget) => x ++ y)
+    }
     ps ++ sql
   }
 
