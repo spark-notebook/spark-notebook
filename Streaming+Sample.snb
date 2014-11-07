@@ -1,0 +1,60 @@
+{
+  "metadata":{
+    "name":"Streaming Sample",
+    "user_save_timestamp":"2014-11-07T07:14:12.392Z",
+    "auto_save_timestamp":"2014-11-07T07:12:59.967Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":"import org.apache.spark.ui.notebook.front.widgets.SparkInfo\nimport scala.concurrent.duration._\nnew SparkInfo(sparkContext, checkInterval=1 seconds, execNumber=Some(100))",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":8,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"import org.apache.spark.streaming.{StreamingContext, Duration}\nval streaming = new StreamingContext(sparkContext, Duration(1000))",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":9,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"import org.apache.spark.streaming.dstream.ConstantInputDStream\nval stream  = new ConstantInputDStream(\n  \t\t\t    streaming, \n                sparkContext.makeRDD(Seq.fill(1000)(() => scala.util.Random.nextInt(1000)))\n  \t\t\t  )",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":10,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val concrete = stream.map(_())",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":11,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val t = out\nconcrete.foreachRDD { rdd => \n  val sum = rdd.reduce(_+_)\n  t(\"New rdd sum: \" + sum)\n}\nstreaming.start\nt",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":12,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"import scala.concurrent._\nimport scala.concurrent.ExecutionContext.Implicits.global\nFuture { Thread.sleep(30000) ; streaming.stop() }\n ",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":13,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[],
+  "nbformat":3
+}
