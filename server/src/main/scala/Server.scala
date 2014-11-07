@@ -73,6 +73,7 @@ object Server extends Logging {
     val secure = !args.contains("--disable_security")
 
     logInfo("Running SN Server in " + config.notebooksDir.getAbsolutePath)
+
     val host = if (config.kernelVMConfig.hasPath("hostname")) config.kernelVMConfig.getString("hostname") else "127.0.0.1"
     val port = (if (config.kernelVMConfig.hasPath("port")) Try(config.kernelVMConfig.getInt("port")).toOption else None) getOrElse choosePort(host)
     val security = if (secure) new ClientAuth(host, port) else Insecure
@@ -117,8 +118,8 @@ object Server extends Logging {
 
     val obsInt = unfiltered.netty.websockets.Planify(withWSAuth(new ObservableIntent(app.system).webSocketIntent)).onPass(_.fireChannelRead(_))
 
-    val iPythonRes = Resources(getClass.getResource("/from_ipython/"), 3600, true)
-    val thirdPartyRes = Resources(getClass.getResource("/thirdparty/"), 3600, true)
+    //val iPythonRes = Resources(getClass.getResource("/from_ipython/"), 0, true)
+    //val thirdPartyRes = Resources(getClass.getResource("/thirdparty/"), 3600, true)
 
     //TODO: absolute URL's may not be portable, should they be supported?  If not, are resources defined relative to notebooks dir or module root?
     def userResourceURL(res: File) = {
@@ -146,7 +147,10 @@ object Server extends Logging {
       .handler(templatesPlan)
 
       /* Workaround for https://github.com/unfiltered/unfiltered/issues/139 */
-      .pipe(resourcePlan(iPythonRes, thirdPartyRes))
+      //.pipe(resourcePlan(iPythonRes))
+      //.pipe(resourcePlan(thirdPartyRes))
+      .resources(getClass.getResource("/from_ipython/"), 3600, true)
+      .resources(getClass.getResource("/thirdparty/"), 3600, true)
       .pipe(resourcePlan(moduleRes: _*))
       .pipe(resourcePlan(observableRes))
       .run({

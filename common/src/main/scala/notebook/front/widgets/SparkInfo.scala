@@ -17,7 +17,7 @@ import notebook._, JSBus._
 import notebook.front._
 import notebook.front.widgets._
 
-class SparkInfo(sparkContext:SparkContext, checkInterval:Duration=5 seconds, execNumber:Option[Int]=None) extends DataConnector[JValue] with Widget {
+class SparkInfo(sparkContext:SparkContext, checkInterval:Duration=5 seconds, execNumber:Option[Int]=None) extends SingleConnector[JValue] with Widget {
   implicit val codec:Codec[JValue, JValue] = JsonCodec.idCodec[JValue]
 
   val listener = new org.apache.spark.ui.jobs.JobProgressListener(sparkContext.getConf)
@@ -62,24 +62,27 @@ class SparkInfo(sparkContext:SparkContext, checkInterval:Duration=5 seconds, exe
 
   def exec(n:Int=Int.MaxValue):Unit = fetchMetrics.onComplete {
     case Success(x) =>
-      apply(Seq(x))
+      apply(x)
       Thread.sleep(checkInterval.toMillis)
       if (n>1) exec(n-1) else ()
     case Failure(ex) =>
-      apply(Seq("error" -> ("ERROR (stopping)>>>>"+ex.getMessage)))
+      apply("error" -> ("ERROR (stopping)>>>>"+ex.getMessage))
   }
 
   // start the checks
   execNumber.map(x => exec(x)).getOrElse(exec())
 
   lazy val toHtml =
-      <div data-bind="foreach: value">{
+      <div data-bind="with: value">{
       scopedScript(
         """ require(
               ['observable', 'knockout', 'knockout-bootstrap'],
               function (O, ko) {
-                ko.applyBindings({
-                    value: O.makeObservable(valueId)
+                v_v_v = O.makeObservable(valueId);
+                v_v_v.subscribe(function (x) {console.dir(x);});
+                ko.applyBindings(
+                  {
+                    value: v_v_v
                   },
                   this
                 );
