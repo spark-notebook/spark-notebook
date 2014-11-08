@@ -2,29 +2,29 @@ Spark Notebook
 ==============
 *Fork of the amazing [scala-notebook](https://github.com/Bridgewater/scala-notebook), yet focusing on Massive Dataset Analysis using [Apache Spark](http://spark.apache.org).*
 
-<!-- MarkdownTOC depth=4 autolink=true -->
+<!-- MarkdownTOC depth=4 autolink=true bracket=round -->
 
-- [Description][description]
-- [Launch][launch]
-  - [Very quickstart][very-quickstart]
-  - [Longer story][longer-story]
-    - [Procedure][procedure]
-- [Use][use]
-- [Features][features]
-  - [Use/Reconfigure Spark][usereconfigure-spark]
-  - [Use the `form`][use-the-form]
-  - [The `reset` function][the-reset-function]
-  - [Keep an eye on your tasks][keep-an-eye-on-your-tasks]
-  - [Using (Spark)SQL][using-sparksql]
-    - [Static SQL][static-sql]
-    - [Dynamic SQL][dynamic-sql]
-    - [Show case][show-case]
-  - [Interacting with JavaScript][interacting-with-javascript]
-  - [Plotting with D3][plotting-with-d3]
-  - [Timeseries with  Rickshaw][timeseries-with--rickshaw]
-  - [Dynamic update of data and plot using Scala's `Future`][dynamic-update-of-data-and-plot-using-scalas-future]
-  - [Update _Notebook_ `ClassPath`][update-_notebook_-classpath]
-  - [Update _Spark_ `jars`][update-_spark_-jars]
+- [Description](#description)
+- [Launch](#launch)
+  - [Very quickstart](#very-quickstart)
+  - [Longer story](#longer-story)
+    - [Procedure](#procedure)
+- [Use](#use)
+- [Features](#features)
+  - [Use/Reconfigure Spark](#usereconfigure-spark)
+  - [Use the `form`](#use-the-form)
+  - [The `reset` function](#the-reset-function)
+  - [Keep an eye on your tasks](#keep-an-eye-on-your-tasks)
+  - [Using (Spark)SQL](#using-sparksql)
+    - [Static SQL](#static-sql)
+    - [Dynamic SQL](#dynamic-sql)
+    - [Show case](#show-case)
+  - [Interacting with JavaScript](#interacting-with-javascript)
+  - [Plotting with D3](#plotting-with-d3)
+  - [Timeseries with  Rickshaw](#timeseries-with--rickshaw)
+  - [Dynamic update of data and plot using Scala's `Future`](#dynamic-update-of-data-and-plot-using-scalas-future)
+  - [Update _Notebook_ `ClassPath`](#update-_notebook_-classpath)
+  - [Update _Spark_ `jars`](#update-_spark_-jars)
 
 <!-- /MarkdownTOC -->
 
