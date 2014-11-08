@@ -9,7 +9,17 @@ import notebook.Codec
 import notebook.JsonCodec._
 import notebook.front.SingleConnectedWidget
 
-class Spark(init:SparkContext) extends SingleConnectedWidget[Map[String, String]] {
+/* TODO → Would like to have the SparkContext wrapped in an Observable
+   But this will impact the whole shebang, unless we create a macro
+   that inspects the code to create the dependency graph and make it fully ractive
+
+    -------------------------------------→---------------------------------------------
+    | val r = sparkContext.makeRDD(...)  | val r = sparkContext.map(sc => sc.makeRDD) |
+    | val u = r.map(d => ...)            | val u = r.map(ir => ir.map(f => ...))      |
+    | out(u.collect())                   | u.subscribe(v => out(v.collect()))         |
+    -------------------------------------→---------------------------------------------
+  */
+class Spark(init:SparkContext)(implicit val update:SparkContext => Unit) extends SingleConnectedWidget[Map[String, String]] {
   private[this] var sparkContext:SparkContext = init
 
   implicit val codec:Codec[JValue, Map[String, String]] = tMap[String]
@@ -19,6 +29,7 @@ class Spark(init:SparkContext) extends SingleConnectedWidget[Map[String, String]
     val newConf = m.foldLeft(sparkConf)((acc, e) => acc.set(e._1, e._2))
     sparkContext.stop()
     sparkContext = new SparkContext(newConf) // BAD but probably temporary... hem hem
+    update(sparkContext)
   }
 
   val toHtml = <div>{
