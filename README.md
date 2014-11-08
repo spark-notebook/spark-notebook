@@ -75,8 +75,46 @@ Since this project aims directly the usage of Spark, a [SparkContext](https://gi
 ![Example using Spark](https://raw.github.com/andypetrella/spark-notebook/spark/images/simplest-spark.png)
 
 
-Spark will start with a regular/basic configuration. To customize the embedded Spark to your environment, a *function* 
- `reset` is also provided: This function takes several parameters, but the most important one is `lastChanges` which is itself a function that can adapt the [SparkConf](https://github.com/apache/spark/blob/master/core%2Fsrc%2Fmain%2Fscala%2Forg%2Fapache%2Fspark%2FSparkConf.scala). This way, we can change the *master*, the *executor memory* and a *cassandra sink* or whatever before restarting it. For more Spark configuration options see: [Spark Configuration]([Spark Configuration](https://spark.apache.org/docs/1.1.0/configuration.html#available-properties)) 
+Spark will start with a regular/basic configuration. There are different ways to customize the embedded Spark to your needs.
+
+## Use the `form`
+In order to adapt the configuration of the `SparkContext`, one can add the widget `notebook.front.widgets.Spark`.
+This widget takes the current context as only argument and will produce an HTML `form` that will allow manual and friendly changes to be applied.
+
+So first, adding the widget in a cell,
+```{scala}
+import notebook.front.widgets.Spark
+new Spark(sparkContext)
+```
+
+Run the cell and you'll get,
+![Using SQL](https://raw.github.com/andypetrella/spark-notebook/spark/images/update-spark-conf-form.png)
+
+It has two parts:
+ * the first one is showing an input for each current properties
+ * the second will add new entries in the configuration based on the provided name
+
+Submit the first part and the `SparkContext` will restart in the background (you can check the Spark UI to check if you like).
+
+## Keep an eye on your tasks
+Accessing the Spark UI is not always allowed or easy, hence a simple widget is available for us to keep a little eye on the stages running on the Spark cluster.
+
+Luckily, it's fairly easy, just add this to the notebook:
+```{scala}
+import org.apache.spark.ui.notebook.front.widgets.SparkInfo
+import scala.concurrent.duration._
+new SparkInfo(sparkContext, checkInterval=1 second, execNumber=Some(100))
+```
+This call will show and update a feeback panel tracking some basic (atm) metrics, in this configuration there will be **one check per second**, but will check only **100 times**.
+
+This can be tuned at will, for instance for an infinte checking, one can pass the `None` value to the argument `execNumber`.
+
+Counting the words of a [wikipedia dump](http://en.wikipedia.org/wiki/Wikipedia:Database_download) will result in
+![Showing progress](https://raw.github.com/andypetrella/spark-notebook/spark/images/spark-tracker.png)
+
+
+## The `reset` function
+The  *function* `reset` is available in all notebook: This function takes several parameters, but the most important one is `lastChanges` which is itself a function that can adapt the [SparkConf](https://github.com/apache/spark/blob/master/core%2Fsrc%2Fmain%2Fscala%2Forg%2Fapache%2Fspark%2FSparkConf.scala). This way, we can change the *master*, the *executor memory* and a *cassandra sink* or whatever before restarting it. For more Spark configuration options see: [Spark Configuration]([Spark Configuration](https://spark.apache.org/docs/1.1.0/configuration.html#available-properties)) 
 
 In this example we reset `SparkContext` and add configuration options to use the [cassandra-connector]:
 ```{scala}
@@ -88,8 +126,8 @@ This makes Cassandra connector avaible in the Spark Context. Then you can use it
 ```{scala}
 import com.datastax.spark.connector._
 sparkContext.cassandraTable("test_keyspace", "test_column_family")
-
 ```
+
 ## Using (Spark)SQL
 Spark comes with this handy and cool feature that we can write some SQL queries rather than boilerplating with 
 Scala or whatever code, with the clear advantage that the resulting DAG is optimized.
@@ -99,7 +137,9 @@ To access it, we first we need to register an `RDD` as a table:
 ```{scala}
 dataRDD.registerTempTable("data")
 ```
+Now, we can play with SQL in two different ways, the static and the dynamic ones.
 
+### Static SQL
 Then we can play with this `data` table like so:
 ```
 :sql select col1 from data where col2 == 'thingy'
@@ -110,11 +150,34 @@ This is already helpful, but the `resXYZ` nummering can change and is not friend
 ```
 :sql[col1Var] select col1 from data where col2 == 'thingy'
 ```
-Now, we can use the variable `col1Var` which is an RDD that we can manipulate further.
+Now, we can use the variable `col1Var` wrapping a `SchemaRDD`.
 
+This variable is reactive meaning that it react to the change of the SQL result. Hence in order to deal with the result, you can access its `react` function which takes two arguments:
+ * a **function** to apply on the underlying `SchemaRDD` to compute a result
+ * a **widget** that will take the result of the function applied to the `SchemaRDD` and use it to update its rendering
+
+The power of this reactivity is increased when we use SQL with dynamic parts.
+
+### Dynamic SQL
+A dynamic SQL is looking like a static SQL but where specific tokens are used. Such tokens are taking the form: {`type`: `variableName`}.
+
+When executing the command, the notebook will produce a form by generating on input for each dynamic part. See the show case below.
+
+An example of such dynamic SQL is
+```
+:sql[selectKids] SELECT name FROM people WHERE name = "{String: name}" and age >= {Int: age}
+```
+Which will create a form with to inputs, one text and on number.
+
+When changing the value in the inputs, the SQL is compiled on the server and the result is printed on the notebook (Success, Failure, Bad Plan, etc.).
+
+Again, the result is completly reactive, hence using the `react` function is mandatory to use the underlying SchemaRDD (when it becomes valid!).
+
+
+### Show case
 This is how it looks like in the notebook:
 
-![Using SQL](https://raw.github.com/andypetrella/spark-notebook/spark/images/sql.png)
+![Using SQL](https://raw.github.com/andypetrella/spark-notebook/spark/images/reactive-spark-sql.png)
 
 
 ## Interacting with JavaScript
@@ -182,7 +245,6 @@ Also, there are some options to tune the display:
 Here is an example of the kind of result you can expect:
 
 ![Using Rickshaw](https://raw.github.com/andypetrella/spark-notebook/spark/images/use-rickshaw.png)
-
 
 
 ## Dynamic update of data and plot using Scala's `Future`
