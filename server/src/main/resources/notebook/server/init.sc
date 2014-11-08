@@ -47,7 +47,6 @@ def reset(appName:String="Notebook", lastChanges:(SparkConf=>Unit)=(_:SparkConf)
 
 reset()
 
-
 object Repos extends java.io.Serializable {
   import org.sonatype.aether.repository.RemoteRepository
   @transient val central = new RemoteRepository(
@@ -96,5 +95,9 @@ def resolveAndAddToJars(group:String, artifact:String, version:String, update:Bo
 
 
 def stopSpark() = sparkContext.stop()
+
+@transient implicit val updateSparkContex:SparkContext=>Unit = (sc:SparkContext) => {
+  sparkContext = sc
+}
 
 "init.sc done!"
