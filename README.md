@@ -96,6 +96,22 @@ It has two parts:
 
 Submit the first part and the `SparkContext` will restart in the background (you can check the Spark UI to check if you like).
 
+
+## The `reset` function
+The  *function* `reset` is available in all notebook: This function takes several parameters, but the most important one is `lastChanges` which is itself a function that can adapt the [SparkConf](https://github.com/apache/spark/blob/master/core%2Fsrc%2Fmain%2Fscala%2Forg%2Fapache%2Fspark%2FSparkConf.scala). This way, we can change the *master*, the *executor memory* and a *cassandra sink* or whatever before restarting it. For more Spark configuration options see: [Spark Configuration]([Spark Configuration](https://spark.apache.org/docs/1.1.0/configuration.html#available-properties)) 
+
+In this example we reset `SparkContext` and add configuration options to use the [cassandra-connector]:
+```{scala}
+import org.apache.spark.{Logging, SparkConf}
+val cassandraHost:String = "localhost" 
+reset(lastChanges= _.set("spark.cassandra.connection.host", cassandraHost))
+```
+This makes Cassandra connector avaible in the Spark Context. Then you can use it, like so:
+```{scala}
+import com.datastax.spark.connector._
+sparkContext.cassandraTable("test_keyspace", "test_column_family")
+```
+
 ## Keep an eye on your tasks
 Accessing the Spark UI is not always allowed or easy, hence a simple widget is available for us to keep a little eye on the stages running on the Spark cluster.
 
@@ -112,21 +128,6 @@ This can be tuned at will, for instance for an infinte checking, one can pass th
 Counting the words of a [wikipedia dump](http://en.wikipedia.org/wiki/Wikipedia:Database_download) will result in
 ![Showing progress](https://raw.github.com/andypetrella/spark-notebook/spark/images/spark-tracker.png)
 
-
-## The `reset` function
-The  *function* `reset` is available in all notebook: This function takes several parameters, but the most important one is `lastChanges` which is itself a function that can adapt the [SparkConf](https://github.com/apache/spark/blob/master/core%2Fsrc%2Fmain%2Fscala%2Forg%2Fapache%2Fspark%2FSparkConf.scala). This way, we can change the *master*, the *executor memory* and a *cassandra sink* or whatever before restarting it. For more Spark configuration options see: [Spark Configuration]([Spark Configuration](https://spark.apache.org/docs/1.1.0/configuration.html#available-properties)) 
-
-In this example we reset `SparkContext` and add configuration options to use the [cassandra-connector]:
-```{scala}
-import org.apache.spark.{Logging, SparkConf}
-val cassandraHost:String = "localhost" 
-reset(lastChanges= _.set("spark.cassandra.connection.host", cassandraHost))
-```
-This makes Cassandra connector avaible in the Spark Context. Then you can use it, like so:
-```{scala}
-import com.datastax.spark.connector._
-sparkContext.cassandraTable("test_keyspace", "test_column_family")
-```
 
 ## Using (Spark)SQL
 Spark comes with this handy and cool feature that we can write some SQL queries rather than boilerplating with 
