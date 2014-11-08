@@ -2,6 +2,32 @@ Spark Notebook
 ==============
 *Fork of the amazing [scala-notebook](https://github.com/Bridgewater/scala-notebook), yet focusing on Massive Dataset Analysis using [Apache Spark](http://spark.apache.org).*
 
+<!-- MarkdownTOC depth=4 -->
+
+- Description
+- Launch
+  - Very quickstart
+  - Longer story
+    - Procedure
+- Use
+- Features
+  - Use/Reconfigure Spark
+  - Use the `form`
+  - The `reset` function
+  - Keep an eye on your tasks
+  - Using (Spark)SQL
+    - Static SQL
+    - Dynamic SQL
+    - Show case
+  - Interacting with JavaScript
+  - Plotting with D3
+  - Timeseries with  Rickshaw
+  - Dynamic update of data and plot using Scala's `Future`
+  - Update _Notebook_ `ClassPath`
+  - Update _Spark_ `jars`
+
+<!-- /MarkdownTOC -->
+
 Description
 -----------
 The main intent of this tool is to create [reproducible analysis](http://simplystatistics.org/2014/06/06/the-real-reason-reproducible-research-is-important/) using Scala, Apache Spark and more.
@@ -12,7 +38,7 @@ The usage of Spark comes out of the box, and is simply enabled by the implicit v
 
 Launch
 ------
-## Very quickstart
+### Very quickstart
 
 Long story short, there is a small script that can help you setup and launch it without any other requirements than a _java environment_.
 
@@ -21,18 +47,18 @@ Long story short, there is a small script that can help you setup and launch it 
 curl https://raw.githubusercontent.com/andypetrella/spark-notebook/spark/run.sh | bash -s dev
 ```
 
-## Longer story
+### Longer story
 The spark notebook requires a [Java(TM)](http://en.wikipedia.org/wiki/Java_(programming_language)) environment (aka JVM) as runtime and [SBT](www.scala-sbt.org) as build tool.
- 
+
 You will also need a working [GIT](http://git-scm.com/) installation to download the code and build it.
 
-### Procedure
-#### Download the code
+#### Procedure
+##### Download the code
 ```
 git clone https://github.com/andypetrella/spark-notebook.git
 cd spark-notebook
 ```
-#### Launch the server
+##### Launch the server
 Enter the `sbt console` by running `sbt` within the `spark-notebook`:
 ```
 spark-notebook$ sbt
@@ -60,16 +86,16 @@ When the server has been started, you can head to the page `http://localhost:889
 From there you can either:
  * create a new notebook
  * launch an existing notebook
- 
+
 In both case, the `scala-notebook` will open a new tab with your notebook in it, loaded as a web page.
 
-> Note: a notebook is a JSON file containing the layout and analysis blocks, and it's located 
+> Note: a notebook is a JSON file containing the layout and analysis blocks, and it's located
 > within the project folder (with the `snb` extension).
 > Hence, they can be shared and we can track their history in an SVM like `GIT`.
 
 Features
 --------
-## Use/Reconfigure Spark
+### Use/Reconfigure Spark
 Since this project aims directly the usage of Spark, a [SparkContext](https://github.com/apache/spark/blob/master/core%2Fsrc%2Fmain%2Fscala%2Forg%2Fapache%2Fspark%2FSparkContext.scala) is added to the environment and can directly be used without additional effort.
 
 ![Example using Spark](https://raw.github.com/andypetrella/spark-notebook/spark/images/simplest-spark.png)
@@ -77,7 +103,7 @@ Since this project aims directly the usage of Spark, a [SparkContext](https://gi
 
 Spark will start with a regular/basic configuration. There are different ways to customize the embedded Spark to your needs.
 
-## Use the `form`
+### Use the `form`
 In order to adapt the configuration of the `SparkContext`, one can add the widget `notebook.front.widgets.Spark`.
 This widget takes the current context as only argument and will produce an HTML `form` that will allow manual and friendly changes to be applied.
 
@@ -97,13 +123,13 @@ It has two parts:
 Submit the first part and the `SparkContext` will restart in the background (you can check the Spark UI to check if you like).
 
 
-## The `reset` function
-The  *function* `reset` is available in all notebook: This function takes several parameters, but the most important one is `lastChanges` which is itself a function that can adapt the [SparkConf](https://github.com/apache/spark/blob/master/core%2Fsrc%2Fmain%2Fscala%2Forg%2Fapache%2Fspark%2FSparkConf.scala). This way, we can change the *master*, the *executor memory* and a *cassandra sink* or whatever before restarting it. For more Spark configuration options see: [Spark Configuration]([Spark Configuration](https://spark.apache.org/docs/1.1.0/configuration.html#available-properties)) 
+### The `reset` function
+The  *function* `reset` is available in all notebook: This function takes several parameters, but the most important one is `lastChanges` which is itself a function that can adapt the [SparkConf](https://github.com/apache/spark/blob/master/core%2Fsrc%2Fmain%2Fscala%2Forg%2Fapache%2Fspark%2FSparkConf.scala). This way, we can change the *master*, the *executor memory* and a *cassandra sink* or whatever before restarting it. For more Spark configuration options see: [Spark Configuration]([Spark Configuration](https://spark.apache.org/docs/1.1.0/configuration.html##available-properties))
 
 In this example we reset `SparkContext` and add configuration options to use the [cassandra-connector]:
 ```{scala}
 import org.apache.spark.{Logging, SparkConf}
-val cassandraHost:String = "localhost" 
+val cassandraHost:String = "localhost"
 reset(lastChanges= _.set("spark.cassandra.connection.host", cassandraHost))
 ```
 This makes Cassandra connector avaible in the Spark Context. Then you can use it, like so:
@@ -112,7 +138,7 @@ import com.datastax.spark.connector._
 sparkContext.cassandraTable("test_keyspace", "test_column_family")
 ```
 
-## Keep an eye on your tasks
+### Keep an eye on your tasks
 Accessing the Spark UI is not always allowed or easy, hence a simple widget is available for us to keep a little eye on the stages running on the Spark cluster.
 
 Luckily, it's fairly easy, just add this to the notebook:
@@ -129,18 +155,18 @@ Counting the words of a [wikipedia dump](http://en.wikipedia.org/wiki/Wikipedia:
 ![Showing progress](https://raw.github.com/andypetrella/spark-notebook/spark/images/spark-tracker.png)
 
 
-## Using (Spark)SQL
-Spark comes with this handy and cool feature that we can write some SQL queries rather than boilerplating with 
+### Using (Spark)SQL
+Spark comes with this handy and cool feature that we can write some SQL queries rather than boilerplating with
 Scala or whatever code, with the clear advantage that the resulting DAG is optimized.
 
-The spark-notebook offers SparkSQL support. 
+The spark-notebook offers SparkSQL support.
 To access it, we first we need to register an `RDD` as a table:
 ```{scala}
 dataRDD.registerTempTable("data")
 ```
 Now, we can play with SQL in two different ways, the static and the dynamic ones.
 
-### Static SQL
+#### Static SQL
 Then we can play with this `data` table like so:
 ```
 :sql select col1 from data where col2 == 'thingy'
@@ -159,7 +185,7 @@ This variable is reactive meaning that it react to the change of the SQL result.
 
 The power of this reactivity is increased when we use SQL with dynamic parts.
 
-### Dynamic SQL
+#### Dynamic SQL
 A dynamic SQL is looking like a static SQL but where specific tokens are used. Such tokens are taking the form: {`type`: `variableName`}.
 
 When executing the command, the notebook will produce a form by generating on input for each dynamic part. See the show case below.
@@ -175,13 +201,13 @@ When changing the value in the inputs, the SQL is compiled on the server and the
 Again, the result is completly reactive, hence using the `react` function is mandatory to use the underlying SchemaRDD (when it becomes valid!).
 
 
-### Show case
+#### Show case
 This is how it looks like in the notebook:
 
 ![Using SQL](https://raw.github.com/andypetrella/spark-notebook/spark/images/reactive-spark-sql.png)
 
 
-## Interacting with JavaScript
+### Interacting with JavaScript
 Showing numbers can be good but great analysis reports should include relevant charts, for that we need JavaScript to manipulate the Notebook's DOM.
 
 For that purpose, a notebook can use the `Playground` abstraction. It allows us to create data in Scala and use it in predefined JavaScript functions (located under `observable/src/main/assets/observable/js`) or even JavaScript snippets (that is, written straight in the notebook as a Scala `String` to be sent to the JavaScript interpreter).
@@ -200,7 +226,7 @@ Another example using the same predefined function and example to react on the n
 ![Playground with custom data](https://raw.github.com/andypetrella/spark-notebook/spark/images/data-pg.png)
 
 
-## Plotting with [D3](http://d3js.org/)
+### Plotting with [D3](http://d3js.org/)
 Plotting with D3.js is rather common now, however it's not always simple, hence there is a Scala wrapper that brings the boostrap of D3 in the mix.
 
 These wrappers are `D3.svg` and `D3.linePlot`, and they are just proof of concept for now. The idea is to bring Scala data to D3.js then create `Coffeescript` to interact with them.
@@ -212,7 +238,7 @@ For instance, `linePlot` is used like so:
 
 > Note: This is subject to future change because it would be better to use `playground` for this purpose.
 
-## Timeseries with  [Rickshaw](http://code.shutterstock.com/rickshaw/)
+### Timeseries with  [Rickshaw](http://code.shutterstock.com/rickshaw/)
 Plotting timeseries is very common, for this purpose the spark notebook includes Rickshaw that quickly enables handsome timeline charts.
 
 Rickshaw is available through `Playground` and a dedicated function for simple needs `rickshawts`.
@@ -222,9 +248,9 @@ To use it, you are only required to convert/wrap your data points into a dedicat
 def createTss(start:Long, step:Int=60*1000, nb:Int = 100):Seq[Series] = ...
 val data = createTss(orig, step, nb)
 
-val p = new Playground(data, List(Script("rickshawts", 
+val p = new Playground(data, List(Script("rickshawts",
                                          ("renderer" -> "stack")
-                                         ~ ("fixed" -> 
+                                         ~ ("fixed" ->
                                               ("interval" -> step/1000)
                                               ~ ("max" -> 100)
                                               ~ ("baseInSec" -> orig/1000)
@@ -242,13 +268,13 @@ Also, there are some options to tune the display:
   * interval (at which data is upated)
   * max (the max number of points displayed)
   * the unit in the `X` axis.
- 
+
 Here is an example of the kind of result you can expect:
 
 ![Using Rickshaw](https://raw.github.com/andypetrella/spark-notebook/spark/images/use-rickshaw.png)
 
 
-## Dynamic update of data and plot using Scala's `Future`
+### Dynamic update of data and plot using Scala's `Future`
 One of the very cool things that is used in the original `scala-notebook` is the use of reactive libs on both sides: server and client, combined with WebSockets. This offers a neat way to show dynamic activities like streaming data and so on.
 
 We can exploit the reactive support to update Plot wrappers (the `Playground` instance actually) in a dynamic manner. If the JS functions are listening to the data changes they can automatically update their result.
@@ -262,7 +288,7 @@ The results will be:
 ![Update Timeseries Result](https://raw.github.com/andypetrella/spark-notebook/spark/images/dyn-ts.gif)
 
 
-## Update _Notebook_ `ClassPath`
+### Update _Notebook_ `ClassPath`
 Keeping your notebook runtime updated with the libraries you need in the classpath is usually cumbersome as it requires updating the server configuration in the SBT definition and restarting the system. Which is pretty sad because it requires a restart, rebuild and is not contextual to the notebook!
 
 Hence, a dedicated context has been added to the block, `:cp` which allows us to add specifiy __local paths__ to jars that will be part of the classpath.
@@ -272,7 +298,7 @@ Hence, a dedicated context has been added to the block, `:cp` which allows us to
 ```
 Or even
 ```
-:cp 
+:cp
 /tmp/scala-notebook/repo/com/codahale/metrics/metrics-core/3.0.2/metrics-core-3.0.2.jar
 /tmp/scala-notebook/repo/org/scala-lang/scala-compiler/2.10.4/scala-compiler-2.10.4.jar
 /tmp/scala-notebook/repo/org/scala-lang/scala-library/2.10.4/scala-library-2.10.4.jar
@@ -299,10 +325,10 @@ Here is what it'll look like in the notebook:
 
 ![Simple Classpath](https://raw.github.com/andypetrella/spark-notebook/spark/images/simple-cp.png)
 
-## Update _Spark_ `jars`
+### Update _Spark_ `jars`
 If you are a Spark user, you know that it's not enough to have the jars locally added to the Driver's classpath. Indeed, workers needs to also load them. The usual way would be to update the list of jars provided to the `SparkConf` using the `reset` function explained above.
 
-However, this can be very tricky when we need to add jars that have themselves plenty of dependencies. This notebook offers an extra feature to facilitate this dependency loading: 
+However, this can be very tricky when we need to add jars that have themselves plenty of dependencies. This notebook offers an extra feature to facilitate this dependency loading:
 
 ```
 resolveAndAddToJars
@@ -312,8 +338,8 @@ This function takes three parameters:
  * groupId
  * artifactId
  * version
- 
-It creates a local repository and downloads the project with all its dependecies. The repo where these libs will be downloaded can be updated using the `updateRepo`. 
+
+It creates a local repository and downloads the project with all its dependecies. The repo where these libs will be downloaded can be updated using the `updateRepo`.
 For example, if you want to use [Cassandra Spark connector](https://github.com/datastax/spark-cassandra-connector), all you need to do is:
 ```
 resolveAndAddToJars("com.datastax.spark", "spark-cassandra-connector_2.10", "1.1.0-alpha3")
@@ -324,6 +350,6 @@ In live:
 
 ![Spark Jars](https://raw.github.com/andypetrella/spark-notebook/spark/images/spark-jars.png)
 
-> Note: [Aether](https://github.com/eclipse/aether-core) is used to do this, so if there is something special needed that it's not provided, 
+> Note: [Aether](https://github.com/eclipse/aether-core) is used to do this, so if there is something special needed that it's not provided,
 > we can look at how Aether would enable it!
 
