@@ -2,7 +2,7 @@ package notebook.front.third
 
 import java.util.UUID
 
-import io.continuum.bokeh.Document
+import io.continuum.bokeh.{Plot, PlotContext, HTMLFileWriter, Document}
 import notebook.front.Widget
 
 import scala.xml.NodeSeq
@@ -11,11 +11,7 @@ import scala.xml.XML
 /**
  * Created by gerrit on 15.11.14.
  */
-class Bokeh(bokehDoc: Document) extends Widget {
-  private val path: String = UUID.randomUUID().toString + ".html"
-
-  lazy val html = bokehDoc.save(path)
-
+class Bokeh(plotContext : PlotContext) extends Widget {
   override def toHtml: NodeSeq = {
     /*
     val content = scala.io.Source.fromFile(html.file)
@@ -25,11 +21,14 @@ class Bokeh(bokehDoc: Document) extends Widget {
                   .mkString("\n")
     XML.loadString(content).seq
     */
-    XML.loadFile(html.file).seq
+    new PlotContext().children()
+    val writer = new HTMLFileWriter(List(plotContext), None)
+
+    writer.renderPlots(writer.specs())(0)
   }
 }
 
 object Bokeh {
-  def document(bokehDoc: Document) = new Bokeh(bokehDoc)
+  def plot(plots : List[Plot]) = new Bokeh(new PlotContext().children(plots))
 }
 
