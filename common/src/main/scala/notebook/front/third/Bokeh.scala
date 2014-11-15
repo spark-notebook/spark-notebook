@@ -24,7 +24,7 @@ object Bokeh {
 
 
   /**
-   * Plots function graph
+   * Creates a plot of the image real-valued function of the given points.
    * @param xs The parameter values.
    * @param f The function to the computed (real-valued right now).
    */
@@ -54,26 +54,45 @@ object Bokeh {
 
   def plotFunctionGraph(xs: Seq[Double], f: Double => Double) = plot(functionGraph(xs, f) :: Nil)
 
+  case class ScatterGroup(r: Double = 1.0, fill_color : Color = Color.Aqua, line_color : Color = Color.Black)
+  val stdGroup = ScatterGroup()
   // Scatter plot constructor
-  case class ScatterPoint(x: Double, y: Double)
+  case class ScatterPoint(x: Double, y: Double, group: ScatterGroup = stdGroup)
 
   def scatter(points : Seq[ScatterPoint]) = {
-    def buildPlotBase(source: DataSource) = {
+    def buildPlotBase(points : Seq[ScatterPoint]) = {
+      // Structure data
+      val source = new ColumnDataSource()
+        .addColumn('x, points.map(_.x))
+        .addColumn('y, points.map(_.y))
+
       val xdr = new DataRange1d().sources(source.columns('x) :: Nil)
       val ydr = new DataRange1d().sources(source.columns('y) :: Nil)
       val plot = new Plot().x_range(xdr).y_range(ydr)
       plot
     }
-    // Structure data
-    val source = new ColumnDataSource()
-      .addColumn('x, points.map(_.x))
-      .addColumn('y, points.map(_.y))
 
-    val plot = buildPlotBase(source)
+    def buildGlyph(group: ScatterGroup, points: Seq[ScatterPoint]) : Glyph = {
+      val source = new ColumnDataSource()
+        .addColumn('x, points.map(_.x))
+        .addColumn('y, points.map(_.y))
 
-    val glyphs = new Glyph()
+      val circle = new Circle().x('x).y('y)
+        .radius(group.r, SpatialUnits.Screen)
+        .fill_color(group.fill_color)
+        .line_color(group.line_color)
+
+      val glyph = new Glyph()
       .data_source(source)
-      .glyph(new Circle().x('x).y('y).radius(0.01).fill_color(Color.Aqua))
+      .glyph(circle)
+
+      glyph
+    }
+
+    val plot = buildPlotBase(points)
+
+    val pointsByGroup = points.groupBy(_.group)
+    val glyphs = pointsByGroup.map(buildGlyph _ tupled)
 
     val xaxis = new LinearAxis().plot(plot).location(Location.Below)
     val yaxis = new LinearAxis().plot(plot).location(Location.Left)
@@ -81,7 +100,7 @@ object Bokeh {
     plot.below <<= (xaxis :: _)
     plot.left <<= (yaxis :: _)
 
-    plot.renderers := List(xaxis, yaxis, glyphs)
+    plot.renderers := List(xaxis, yaxis) ++ glyphs
     plot
   }
 

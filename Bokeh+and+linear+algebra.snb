@@ -2,7 +2,7 @@
   "metadata":{
     "name":"Bokeh and linear algebra",
     "user_save_timestamp":"2014-11-15T16:02:08.385Z",
-    "auto_save_timestamp":"2014-11-15T16:02:48.098Z"
+    "auto_save_timestamp":"2014-11-15T17:06:07.574Z"
   },
   "worksheets":[{
     "cells":[{
@@ -74,24 +74,24 @@
   "autosaved":[{
     "cells":[{
       "cell_type":"code",
-      "input":"import io.continuum.bokeh._\nimport breeze.linalg.linspace\nimport notebook.front.third.Bokeh",
+      "input":"// First import is the official scala-bookeh stuff, the second one is the integration of bookeh\n// into this worksheet project.\nimport io.continuum.bokeh._\nimport notebook.front.third.Bokeh\n\n// Other random imports, breeze is for linear algebra.\nimport breeze.linalg.linspace ",
       "language":"scala",
       "collapsed":false,
       "prompt_number":1,
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"// Simple scatter plot example.\n// We build a grid of points in the unit square.\nval unit_interval = linspace(0,1,11)\nunit_interval.sum / unit_interval.size \nval unit_square = for (x <- unit_interval.data; y <- unit_interval.data) yield (x,y)\nunit_square.size\nBokeh.scatterPlot(unit_square.map({case (x,y) => Bokeh.ScatterPoint(x,y)}))",
+      "input":"// Simple scatter plot example.\n// We build a grid of points in the unit square.\nval unit_interval = linspace(0,1,20)\nunit_interval.sum / unit_interval.size \nval unit_square = for (x <- unit_interval.data; y <- unit_interval.data) yield (x,y)\nunit_square.size\n// Now divide the points into two groups.\n// Note: providing a scatter group is optional! \nval simplePlot = Bokeh.scatter(unit_square.map({ case(x,y) => Bokeh.ScatterPoint(x,y) }))  \n  \nval groupOutside = Bokeh.ScatterGroup(r = 4.0, fill_color = Color.Red)\nval groupInside = Bokeh.ScatterGroup(r = 4.0, fill_color = Color.Blue)\nval annotatedPoints = unit_square.map({ case (x,y) => {\n  val length = x*x + y*y\n  Bokeh.ScatterPoint(x,y, if (length >= 1) groupOutside else groupInside) \n}})  \n  \nval annotatedPlot = Bokeh.scatter(annotatedPoints)\nBokeh.plot(simplePlot :: annotatedPlot :: Nil)",
       "language":"scala",
       "collapsed":false,
-      "prompt_number":2,
+      "prompt_number":10,
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"\nimport math.{Pi=>pi}\n\n// Generate some data, in = [-2pi,2pi], out = sin(in)\nval xss = List(0.2,0.05,0.02,0.01).map(resolution => -2*pi to 2*pi by resolution)\nval f = Math.sin _\n\nval graphs = for (xs <- xss)\n  yield Bokeh.functionGraph(xs, f)\n  \nBokeh.plot(graphs)",
+      "input":"\nimport math.{Pi=>pi}\n\n// Generate some data, in = [-2pi,2pi], out = sin(in)\nval xss = List(0.2,0.05,0.01).map(resolution => -2*pi to 2*pi by resolution)\nval f = Math.sin _\n\nval graphs = for (xs <- xss)\n  yield Bokeh.functionGraph(xs, f)\n  \nBokeh.plot(graphs)",
       "language":"scala",
       "collapsed":false,
-      "prompt_number":7,
+      "prompt_number":3,
       "outputs":[]
     },{
       "cell_type":"code",
