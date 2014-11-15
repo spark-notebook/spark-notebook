@@ -1,34 +1,53 @@
 package notebook.front.third
 
-import java.util.UUID
-
-import io.continuum.bokeh.{Plot, PlotContext, HTMLFileWriter, Document}
+import io.continuum.bokeh._
+import io.continuum.bokeh.Glyph
 import notebook.front.Widget
 
 import scala.xml.NodeSeq
-import scala.xml.XML
 
 /**
  * Created by gerrit on 15.11.14.
  */
 class Bokeh(plotContext : PlotContext) extends Widget {
   override def toHtml: NodeSeq = {
-    /*
-    val content = scala.io.Source.fromFile(html.file)
-
-                  .getLines()
-                  .map(line => line.replace("\\\'", "\""))
-                  .mkString("\n")
-    XML.loadString(content).seq
-    */
-    new PlotContext().children()
     val writer = new HTMLFileWriter(List(plotContext), None)
-
     writer.renderPlots(writer.specs())(0)
   }
 }
 
 object Bokeh {
   def plot(plots : List[Plot]) = new Bokeh(new PlotContext().children(plots))
+
+
+  case class ScatterPoint(x: Double, y: Double)
+
+  def scatterPlot(points : Seq[ScatterPoint]) = {
+    def buildPlotBase(source: DataSource) = {
+      val xdr = new DataRange1d().sources(source.columns('x) :: Nil)
+      val ydr = new DataRange1d().sources(source.columns('y) :: Nil)
+      val plot = new Plot().x_range(xdr).y_range(ydr)
+      plot
+    }
+    // Structure data
+    val source = new ColumnDataSource()
+      .addColumn('x, points.map(_.x))
+      .addColumn('y, points.map(_.y))
+
+    val plot = buildPlotBase(source)
+
+    val glyphs = new Glyph()
+      .data_source(source)
+      .glyph(new Circle().x('x).y('y).radius(0.01).fill_color(Color.Aqua))
+
+    val xaxis = new LinearAxis().plot(plot).location(Location.Below)
+    val yaxis = new LinearAxis().plot(plot).location(Location.Left)
+
+    plot.below <<= (xaxis :: _)
+    plot.left <<= (yaxis :: _)
+
+    plot.renderers := List(xaxis, yaxis, glyphs)
+    Bokeh.plot(plot :: Nil)
+  }
 }
 
