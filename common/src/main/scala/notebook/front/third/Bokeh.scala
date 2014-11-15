@@ -22,7 +22,25 @@ object Bokeh {
    */
   def plot(plots : List[Plot]) = new Bokeh(new PlotContext().children(plots))
 
+  case class Point(x: Double, y: Double)
 
+  def buildLine(points : Seq[Point], line_color : Color = Color.Black, line_width : Double = 2.0) = {
+    val xs = points.map(_.x)
+    val ys = points.map(_.y)
+    val lines_source = new ColumnDataSource()
+          .addColumn('x,xs)
+          .addColumn('y,ys)
+
+    val line = new Line().x('x).y('y)
+      .line_color(line_color)
+      .line_width(line_width)
+
+    val line_renderer = new Glyph()
+      .data_source(lines_source)
+      .glyph(line)
+
+    line_renderer
+  }
   /**
    * Creates a plot of the image real-valued function of the given points.
    * @param xs The parameter values.
