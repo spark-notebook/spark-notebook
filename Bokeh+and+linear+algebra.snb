@@ -1,8 +1,8 @@
 {
   "metadata":{
     "name":"Bokeh and linear algebra",
-    "user_save_timestamp":"2014-11-15T14:30:24.617Z",
-    "auto_save_timestamp":"2014-11-15T14:23:02.163Z"
+    "user_save_timestamp":"2014-11-15T15:16:32.108Z",
+    "auto_save_timestamp":"2014-11-15T15:16:15.845Z"
   },
   "worksheets":[{
     "cells":[{
@@ -10,21 +10,21 @@
       "input":"import io.continuum.bokeh._\nimport breeze.linalg.linspace\nimport notebook.front.third.Bokeh",
       "language":"scala",
       "collapsed":false,
-      "prompt_number":1,
+      "prompt_number":4,
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"val unit_interval = linspace(0,1,1001)\nunit_interval.sum / unit_interval.size \nval unit_square = for (x <- unit_interval.data; y <- unit_interval.data) yield (x,y)\nunit_square.size\n",
+      "input":"val unit_interval = linspace(0,1,11)\nunit_interval.sum / unit_interval.size \nval unit_square = for (x <- unit_interval.data; y <- unit_interval.data) yield (x,y)\nunit_square.size\nBokeh.scatterPlot(unit_square.map({case (x,y) => Bokeh.ScatterPoint(x,y)}))",
       "language":"scala",
       "collapsed":false,
-      "prompt_number":2,
+      "prompt_number":8,
       "outputs":[]
     },{
       "cell_type":"code",
       "input":"\nimport math.{Pi=>pi}\n\n// Generate some data, in = [-2pi,2pi], out = sin(in)\nval x = -2*pi to 2*pi by 0.1\nval y = x.map(Math.sin)\n\n// Structure data\nval source = new ColumnDataSource()\n    .addColumn('x, x)\n    .addColumn('y, y)\nval xdr = new DataRange1d().sources(source.columns('x) :: Nil)\nval ydr = new DataRange1d().sources(source.columns('y) :: Nil)\nval plot = new Plot().x_range(xdr).y_range(ydr)\n\nval glyphs = new Glyph()\n  .data_source(source)\n  .glyph(new Circle().x('x).y('y).radius(0.01))\n                                                   \nval xaxis = new LinearAxis().plot(plot).location(Location.Below)\nval yaxis = new LinearAxis().plot(plot).location(Location.Left)\n                                                   \nplot.below <<= (xaxis :: _)\nplot.left <<= (yaxis :: _)\n\nplot.renderers := List(xaxis, yaxis, glyphs)\nBokeh.plot(plot :: Nil)",
       "language":"scala",
       "collapsed":false,
-      "prompt_number":3,
+      "prompt_number":6,
       "outputs":[]
     },{
       "cell_type":"code",
