@@ -244,7 +244,7 @@ class Dispatcher(protected val config: ScalaNotebookConfig,
       val Params(params) = req
       // Workaround for browsers that don't accept XHTML (e.g. older versions of IE)
       val contentType = req match {
-        case XhtmlReq(r) => XhtmlContent
+        case XhtmlReq(r) => HtmlContent
         case _ => HtmlContent
       }
       contentType ~> Scalate(req, "templates/" + file, (params.toSeq ++ extra): _*)

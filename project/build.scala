@@ -31,6 +31,7 @@ object NotebookBuild extends Build {
 
       resolvers in ThisBuild ++= Seq(
         Resolver.typesafeRepo("releases"),
+        Resolver.sonatypeRepo("releases"),
         Resolver.typesafeIvyRepo("releases"),
         Resolver.typesafeIvyRepo("snapshots")
       ),
@@ -116,6 +117,11 @@ object NotebookBuild extends Build {
       libraryDependencies ++= Seq(
         sparkRepl,
         sparkSQL
+      ),
+
+      // plotting functionality
+      libraryDependencies ++= Seq(
+        bokeh
       )
     )
 
@@ -182,7 +188,11 @@ object NotebookBuild extends Build {
         mavenCore
       ),
 
-      run in Compile <<= Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run)) 
+      libraryDependencies ++= Seq(
+        bokeh
+      ),
+
+      run in Compile <<= Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run))
     )
 
   object Dependencies {
@@ -210,6 +220,8 @@ object NotebookBuild extends Build {
     val aetherApi            = "org.sonatype.aether"       %          "aether-api"          %     "1.13.1"
     val jcabiAether          = "com.jcabi"                 %         "jcabi-aether"         %      "0.10"
     val mavenCore            = "org.apache.maven"          %          "maven-core"          %     "3.0.5"
+
+    val bokeh                = "io.continuum.bokeh"        %          "bokeh_2.10"               %       "0.2"
   }
 
 
