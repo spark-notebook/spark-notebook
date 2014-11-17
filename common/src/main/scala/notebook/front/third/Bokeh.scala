@@ -2,18 +2,20 @@ package notebook.front.third
 
 import io.continuum.bokeh._
 import io.continuum.bokeh.Glyph
-import notebook.front.Widget
+import notebook.front.{DataConnector, Widget}
 
 import scala.xml.NodeSeq
 
 /**
  * Created by gerrit on 15.11.14.
  */
-class Bokeh(plotContext : PlotContext) extends Widget {
-  override def toHtml: NodeSeq = {
-    val writer = new HTMLFileWriter(List(plotContext), None)
-    writer.renderPlots(writer.specs())(0)
-  }
+class Bokeh[D](data: Seq[PlotContext])(implicit val singleCodec:Codec[JValue, PlotContext]) extends Playground[PlotContext](data, List("bokehWrap"), Nil) {
+
+  //override def toHtml: NodeSeq = {
+  //  val writer = new HTMLFileWriter(List(plotContext), None)
+  //  writer.renderPlots(writer.specs())(0)
+  //}
+
 }
 
 object Bokeh {
