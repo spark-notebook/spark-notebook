@@ -44,7 +44,7 @@ Long story short, there is a small script that can help you setup and launch it 
 
 
 ```bash
-curl https://raw.githubusercontent.com/andypetrella/spark-notebook/spark/run.sh | bash -s dev
+curl https://raw.githubusercontent.com/andypetrella/spark-notebook/master/run.sh | bash -s dev
 ```
 
 ### Longer story
@@ -81,7 +81,7 @@ Then you can head to the `server` project and run it. You have several options a
 Use
 ---
 When the server has been started, you can head to the page `http://localhost:8899` and you'll see something similar to:
-![Notebook list](https://raw.github.com/andypetrella/spark-notebook/spark/images/list.png)
+![Notebook list](https://raw.github.com/andypetrella/spark-notebook/master/images/list.png)
 
 From there you can either:
  * create a new notebook
@@ -98,7 +98,7 @@ Features
 ### Use/Reconfigure Spark
 Since this project aims directly the usage of Spark, a [SparkContext](https://github.com/apache/spark/blob/master/core%2Fsrc%2Fmain%2Fscala%2Forg%2Fapache%2Fspark%2FSparkContext.scala) is added to the environment and can directly be used without additional effort.
 
-![Example using Spark](https://raw.github.com/andypetrella/spark-notebook/spark/images/simplest-spark.png)
+![Example using Spark](https://raw.github.com/andypetrella/spark-notebook/master/images/simplest-spark.png)
 
 
 Spark will start with a regular/basic configuration. There are different ways to customize the embedded Spark to your needs.
@@ -114,7 +114,7 @@ new Spark(sparkContext)
 ```
 
 Run the cell and you'll get,
-![Using SQL](https://raw.github.com/andypetrella/spark-notebook/spark/images/update-spark-conf-form.png)
+![Using SQL](https://raw.github.com/andypetrella/spark-notebook/master/images/update-spark-conf-form.png)
 
 It has two parts:
  * the first one is showing an input for each current properties
@@ -152,7 +152,7 @@ This call will show and update a feeback panel tracking some basic (atm) metrics
 This can be tuned at will, for instance for an infinte checking, one can pass the `None` value to the argument `execNumber`.
 
 Counting the words of a [wikipedia dump](http://en.wikipedia.org/wiki/Wikipedia:Database_download) will result in
-![Showing progress](https://raw.github.com/andypetrella/spark-notebook/spark/images/spark-tracker.png)
+![Showing progress](https://raw.github.com/andypetrella/spark-notebook/master/images/spark-tracker.png)
 
 
 ### Using (Spark)SQL
@@ -204,7 +204,7 @@ Again, the result is completly reactive, hence using the `react` function is man
 #### Show case
 This is how it looks like in the notebook:
 
-![Using SQL](https://raw.github.com/andypetrella/spark-notebook/spark/images/reactive-spark-sql.png)
+![Using SQL](https://raw.github.com/andypetrella/spark-notebook/master/images/reactive-spark-sql.png)
 
 
 ### Interacting with JavaScript
@@ -217,13 +217,13 @@ The JavaScript function will be called with these parameters:
  * the dom element: so that it can update it with custom behavior
  * an extra object: any additional data, configuration or whatever that comes from the Scala side
 
-Here is how this can be used, with a predefined `consoleDir` JS function ([see here](https://github.com/andypetrella/spark-notebook/blob/spark/observable/src/main/assets/observable/js/consoleDir.coffee)):
+Here is how this can be used, with a predefined `consoleDir` JS function ([see here](https://github.com/andypetrella/spark-notebook/blob/master/observable/src/main/assets/observable/js/consoleDir.coffee)):
 
-![Simple Playground](https://raw.github.com/andypetrella/spark-notebook/spark/images/simple-pg.png)
+![Simple Playground](https://raw.github.com/andypetrella/spark-notebook/master/images/simple-pg.png)
 
 Another example using the same predefined function and example to react on the new incoming data (more in further section). The __new stuff__ here is the use of `Codec` to convert a Scala object into the JSON format used in JS:
 
-![Playground with custom data](https://raw.github.com/andypetrella/spark-notebook/spark/images/data-pg.png)
+![Playground with custom data](https://raw.github.com/andypetrella/spark-notebook/master/images/data-pg.png)
 
 
 ### Plotting with [D3](http://d3js.org/)
@@ -233,7 +233,7 @@ These wrappers are `D3.svg` and `D3.linePlot`, and they are just proof of concep
 
 For instance, `linePlot` is used like so:
 
-![Using Rickshaw](https://raw.github.com/andypetrella/spark-notebook/spark/images/linePlot.png)
+![Using Rickshaw](https://raw.github.com/andypetrella/spark-notebook/master/images/linePlot.png)
 
 
 > Note: This is subject to future change because it would be better to use `playground` for this purpose.
@@ -271,7 +271,7 @@ Also, there are some options to tune the display:
 
 Here is an example of the kind of result you can expect:
 
-![Using Rickshaw](https://raw.github.com/andypetrella/spark-notebook/spark/images/use-rickshaw.png)
+![Using Rickshaw](https://raw.github.com/andypetrella/spark-notebook/master/images/use-rickshaw.png)
 
 
 ### Dynamic update of data and plot using Scala's `Future`
@@ -281,11 +281,11 @@ We can exploit the reactive support to update Plot wrappers (the `Playground` in
 
 The following example is showing how a timeseries plotted with Rickshaw can be regularly updated. We are using Scala `Futures` to simulate a server side process that would poll for a third-party service:
 
-![Update Timeseries Result](https://raw.github.com/andypetrella/spark-notebook/spark/images/dyn-ts-code.png)
+![Update Timeseries Result](https://raw.github.com/andypetrella/spark-notebook/master/images/dyn-ts-code.png)
 
 The results will be:
 
-![Update Timeseries Result](https://raw.github.com/andypetrella/spark-notebook/spark/images/dyn-ts.gif)
+![Update Timeseries Result](https://raw.github.com/andypetrella/spark-notebook/master/images/dyn-ts.gif)
 
 
 ### Update _Notebook_ `ClassPath`
@@ -323,7 +323,7 @@ Or even
 
 Here is what it'll look like in the notebook:
 
-![Simple Classpath](https://raw.github.com/andypetrella/spark-notebook/spark/images/simple-cp.png)
+![Simple Classpath](https://raw.github.com/andypetrella/spark-notebook/master/images/simple-cp.png)
 
 ### Update _Spark_ `jars`
 If you are a Spark user, you know that it's not enough to have the jars locally added to the Driver's classpath. Indeed, workers needs to also load them. The usual way would be to update the list of jars provided to the `SparkConf` using the `reset` function explained above.
@@ -348,7 +348,7 @@ __/!\Then update the Driver cp with the listed jars.__ (This will change!)
 
 In live:
 
-![Spark Jars](https://raw.github.com/andypetrella/spark-notebook/spark/images/spark-jars.png)
+![Spark Jars](https://raw.github.com/andypetrella/spark-notebook/master/images/spark-jars.png)
 
 > Note: [Aether](https://github.com/eclipse/aether-core) is used to do this, so if there is something special needed that it's not provided,
 > we can look at how Aether would enable it!
