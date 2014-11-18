@@ -2,25 +2,35 @@ package notebook.front.third
 
 import io.continuum.bokeh._
 import io.continuum.bokeh.Glyph
-import notebook.front.Widget
+import notebook._
+import notebook.front._
 
 import scala.xml.NodeSeq
+
+import org.json4s.native.JsonMethods._
+import org.json4s._
 
 /**
  * Created by gerrit on 15.11.14.
  */
-class Bokeh(plotContext : PlotContext) extends Widget {
-  override def toHtml: NodeSeq = {
-    val writer = new HTMLFileWriter(List(plotContext), None)
-    writer.renderPlots(writer.specs())(0)
-  }
+class Bokeh(data: Seq[PlotContext])(override implicit val singleCodec:Codec[JValue, PlotContext])
+  extends Playground[PlotContext](data, List(Script("bokehWrap", JObject())), Nil) {
+
 }
 
 object Bokeh {
+  implicit val contextCodec:Codec[JValue, PlotContext] = new Codec[JValue, PlotContext] {
+    val serializer = new JSONSerializer {
+      val stringifyFn = Resources.default.stringify _
+    }
+    def encode(x:JValue):PlotContext = ???
+    def decode(x:PlotContext):JValue = parse(serializer.stringify(x))
+  }
+
   /**
    * Renders the plots onto the display
    */
-  def plot(plots : List[Plot]) = new Bokeh(new PlotContext().children(plots))
+  def plot(plots : List[Plot]) = new Bokeh(Seq(new PlotContext().children(plots)))
 
   case class Point(x: Double, y: Double)
 
