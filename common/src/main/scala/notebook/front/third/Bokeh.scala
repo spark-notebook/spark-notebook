@@ -8,7 +8,8 @@ import notebook.front._
 import scala.xml.NodeSeq
 
 import org.json4s.native.JsonMethods._
-import org.json4s._
+import org.json4s.JsonAST._
+import org.json4s.JsonDSL._
 
 /**
  * Created by gerrit on 15.11.14.
@@ -24,7 +25,9 @@ object Bokeh {
       val stringifyFn = Resources.default.stringify _
     }
     def encode(x:JValue):PlotContext = ???
-    def decode(x:PlotContext):JValue = parse(serializer.stringify(x))
+    def decode(x:PlotContext):JValue =  ("models" -> parse(serializer.stringify(x))) ~ 
+                                        ("modelType" -> x.getRef.`type`) ~ 
+                                        ("modelId" -> x.getRef.id)
   }
 
   /**
