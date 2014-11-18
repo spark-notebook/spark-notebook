@@ -4,24 +4,20 @@ define([
     #bokehjs
 ], (Observable, ko) ->
   (dataO, container, options) ->
-    #Bokeh.set_log_level("${resources.logLevel.name}")
-    spec = @dataInit
-    models = ${spec.models}
-    modelid = "${spec.modelId}"
-    modeltype = "${spec.modelType}"
-    elementid = "#${spec.elementId}"
-    
-    Bokeh.logger.info("Realizing plot:")
-    Bokeh.logger.info(" - modeltype: " + modeltype)
-    Bokeh.logger.info(" - modelid:   " + modelid)
-    Bokeh.logger.info(" - elementid: " + elementid)
-    Bokeh.load_models(models)
-    
-    model = Bokeh.Collections(modeltype).get(modelid)
-    view = new model.default_view({model: model, el: container}) #elementid})
+    context = @dataInit[0]
+
+    Bokeh.load_models(context.models)
+
+    model = Bokeh.Collections(context.modelType).get(context.modelId)
+    view = new model.default_view({model: model, el: container})
 
     dataO.subscribe( (data) =>
-      model.set('data', data)
-      model.trigger('change', model, {})
+      view.closall()
+
+      context = data[0]
+
+      Bokeh.load_models(context.models)
+      model = Bokeh.Collections(context.modelType).get(context.modelId)
+      view = new model.default_view({model: model, el: container})
     )
 )
