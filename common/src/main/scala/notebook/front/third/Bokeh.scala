@@ -14,6 +14,29 @@ import org.json4s.JsonDSL._
 /**
  * Created by gerrit on 15.11.14.
  */
+class LowLevelBokeh[A](data: Seq[A], plottingScript:String)(override implicit val singleCodec:Codec[JValue, A])
+  extends Playground[A](data) {
+
+  override val scripts = Nil // bokeh is currently directly imported... no AMD atm
+  override val snippets = List(
+    """
+    function(dataO, container, options, mutableContext) {
+      var collection = Bokeh.Collections("ColumnDataSource").create({
+        data : @dataInit
+      });
+
+      mutableContext.data = collection;
+
+      dataO.subscribe(function(data) {
+        collection.set("data", data);
+        collection.trigger("change", collection, {});
+      });
+    }
+    """,
+    plottingScript
+  )
+}
+
 class Bokeh(data: Seq[PlotContext])(override implicit val singleCodec:Codec[JValue, PlotContext])
   extends Playground[PlotContext](data, List(Script("bokehWrap", JObject())), Nil) {
 
@@ -25,8 +48,8 @@ object Bokeh {
       val stringifyFn = Resources.default.stringify _
     }
     def encode(x:JValue):PlotContext = ???
-    def decode(x:PlotContext):JValue =  ("models" -> parse(serializer.stringify(x))) ~ 
-                                        ("modelType" -> x.getRef.`type`) ~ 
+    def decode(x:PlotContext):JValue =  ("models" -> parse(serializer.stringify(x))) ~
+                                        ("modelType" -> x.getRef.`type`) ~
                                         ("modelId" -> x.getRef.id)
   }
 

@@ -8,6 +8,7 @@ define([
     functions = l
 
     dataO = Observable.makeObservableArray(@dataId)
+    mutableContext = {}
     for f in functions
-      (f.f || f).call(@, dataO, elem, f.o) 
+      (f.f || f).call(@, dataO, elem, f.o, mutableContext)
 )
