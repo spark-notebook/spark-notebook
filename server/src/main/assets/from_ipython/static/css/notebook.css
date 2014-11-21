@@ -27,6 +27,11 @@ span#notebook_name {
     font-size: 146.5%;
 }
 
+/*hack to avoid bokeh.css integration side effect*/
+.ui-dialog-titlebar {
+    height: 31px;
+}
+
 .ui-menubar-item .ui-button .ui-button-text {
     padding: 0.4em 1.0em;
     font-size: 100%;
@@ -50,7 +55,7 @@ span#notebook_name {
     position: relative;
     width:100%;
     background-color: #DBDBDB;
-    height: 118px;
+    /*height: 118px;*/
 }
 
 #notification {
@@ -108,7 +113,7 @@ div#notebook {
     margin: 0;
     max-width: 996px;
     /* This spaces the cell away from the edge of the notebook area */
-    padding: 5px 5px 15px 5px;    
+    padding: 5px 5px 15px 5px;
 }
 
 div#pager_splitter {

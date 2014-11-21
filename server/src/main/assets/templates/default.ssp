@@ -16,6 +16,9 @@
 
     <title>${title}</title>
 
+    <!--hack to avoid bokeh.css integration side effect-->
+    <link rel="stylesheet" href="${static_url("css/bokeh.css")}" type="text/css" />
+
     <link rel="stylesheet" href="${static_url("jquery/css/base/jquery-ui.min.css")}" type="text/css" />
     <link rel="stylesheet" href="${static_url("css/boilerplate.css")}" type="text/css" />
     <link rel="stylesheet" href="${static_url("css/fbm.css")}" type="text/css" media="screen"/>
