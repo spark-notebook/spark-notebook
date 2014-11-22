@@ -54,7 +54,7 @@ object NotebookBuild extends Build {
     )
     .settings(
       mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
-        { 
+        {
           case x if x.endsWith("MANIFEST.MF")                                       => MergeStrategy.discard
           case PathList("META-INF", "THIRD-PARTY.txt", xs @ _*)                     => MergeStrategy.concat
           case PathList("META-INF", "io.netty.versions.properties", xs @ _*)        => MergeStrategy.first
@@ -119,6 +119,12 @@ object NotebookBuild extends Build {
         sparkSQL
       ),
 
+      libraryDependencies ++= Seq(
+        aetherApi,
+        jcabiAether,
+        mavenCore
+      ),
+
       // plotting functionality
       libraryDependencies ++= Seq(
         bokeh
@@ -180,12 +186,6 @@ object NotebookBuild extends Build {
       libraryDependencies ++= Seq(
         sparkRepl,
         sparkSQL
-      ),
-
-      libraryDependencies ++= Seq(
-        aetherApi,
-        jcabiAether,
-        mavenCore
       ),
 
       libraryDependencies ++= Seq(
