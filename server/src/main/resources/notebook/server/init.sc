@@ -8,11 +8,14 @@
 import java.io.{File, FileReader, BufferedReader}
 
 import notebook._, front.widgets._, front.third.d3._
+import notebook.util._
+
 import org.json4s.JsonAST._
 import org.json4s.JsonDSL._
 
 import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.repl.SparkILoop
+
 
 
 @transient var execUri = Option(System.getenv("SPARK_EXECUTOR_URI"))
@@ -47,17 +50,6 @@ def reset(appName:String="Notebook", lastChanges:(SparkConf=>Unit)=(_:SparkConf)
 
 reset()
 
-object Repos extends java.io.Serializable {
-  import org.sonatype.aether.repository.RemoteRepository
-  @transient val central = new RemoteRepository(
-    "maven-central",
-    "default",
-    "http://repo1.maven.org/maven2/"
-  )
-
-  def apply(id:String, name:String, url:String) = new RemoteRepository(id, name, url)
-}
-
 @transient var remotes = List(Repos.central)
 @transient var repo:File = _
 def updateRepo(dir:String) = {
@@ -72,27 +64,12 @@ def updateJars(newJars:List[String]) = {
   jars = (newJars ::: jars.toList).distinct.toArray
 }
 
-def resolveAndAddToJars(group:String, artifact:String, version:String, update:Boolean=true) = {
-  import com.jcabi.aether.Aether
-  import java.util.Arrays
-  import org.apache.maven.project.MavenProject
-  import org.sonatype.aether.artifact.Artifact
-  import org.sonatype.aether.util.artifact.DefaultArtifact
-  import scala.collection.JavaConversions._
-
-
-
-  val deps:Set[Artifact] =  new Aether(remotes, repo).resolve(
-                              new DefaultArtifact(group, artifact, "", "jar", version),
-                              "runtime"
-                            ).toSet;
-
-  val newJars = deps.map(_.getFile.getPath).toSet.toList
-
-  if (update) updateJars(newJars) else ()
+def resolveAndAddToJars(group:String, artifact:String, version:String, update:Boolean=true,
+                        exclusions:Set[PartialFunction[((String, String, String), Set[(String, String, String)]), Boolean]]=Set.empty) = {
+  val newJars = Deps.resolveAndAddToJars(group, artifact, version, exclusions)(remotes, repo)
+  if (update) updateJars(newJars)
   newJars
 }
-
 
 def stopSpark() = sparkContext.stop()
 
