@@ -1,0 +1,46 @@
+{
+  "metadata":{
+    "name":"ADAM",
+    "user_save_timestamp":"2014-11-22T07:51:30.963Z",
+    "auto_save_timestamp":"2014-11-22T07:59:41.090Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":"updateRepo(\"/tmp/scala-notebook/repo\")",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":10,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val adamDeps = resolveAndAddToJars(\"org.bdgenomics.adam\" , \"adam-core\" , \"0.14.0\", \n                    exclusions=Set(\n                      Deps.transitiveExclude(artifact = Some(\"spark-core_2.10\")),\n                      Deps.transitiveExclude(group = Some(\"org.apache.hadoop\")),\n                      Deps.transitiveExclude(group = Some(\"org.scala-lang\")),\n                      Deps.transitiveExclude(group = Some(\"org.scoverage\"))\n                   ))\n<ul>{adamDeps.map(x => <li>{x}</li>)}</ul>",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":16,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":":cp\n/tmp/scala-notebook/repo/org/codehaus/jackson/jackson-core-asl/1.9.13/jackson-core-asl-1.9.13.jar\n/tmp/scala-notebook/repo/it/unimi/dsi/fastutil/6.4.4/fastutil-6.4.4.jar\n/tmp/scala-notebook/repo/org/objenesis/objenesis/1.2/objenesis-1.2.jar\n/tmp/scala-notebook/repo/com/twitter/parquet-hadoop/1.4.3/parquet-hadoop-1.4.3.jar\n/tmp/scala-notebook/repo/com/twitter/parquet-column/1.4.3/parquet-column-1.4.3.jar\n/tmp/scala-notebook/repo/org/apache/bcel/bcel/5.2/bcel-5.2.jar\n/tmp/scala-notebook/repo/org/seqdoop/htsjdk/1.118/htsjdk-1.118.jar\n/tmp/scala-notebook/repo/org/apache/httpcomponents/httpcore/4.3.1/httpcore-4.3.1.jar\n/tmp/scala-notebook/repo/commons-io/commons-io/1.3.2/commons-io-1.3.2.jar\n/tmp/scala-notebook/repo/org/apache/httpcomponents/httpclient/4.3.2/httpclient-4.3.2.jar\n/tmp/scala-notebook/repo/com/twitter/parquet-common/1.4.3/parquet-common-1.4.3.jar\n/tmp/scala-notebook/repo/org/testng/testng/6.8.8/testng-6.8.8.jar\n/tmp/scala-notebook/repo/org/seqdoop/hadoop-bam/7.0.0/hadoop-bam-7.0.0.jar\n/tmp/scala-notebook/repo/com/netflix/servo/servo-core/0.5.5/servo-core-0.5.5.jar\n/tmp/scala-notebook/repo/org/beanshell/bsh/2.0b4/bsh-2.0b4.jar\n/tmp/scala-notebook/repo/com/twitter/parquet-format/2.0.0/parquet-format-2.0.0.jar\n/tmp/scala-notebook/repo/com/twitter/parquet-generator/1.4.3/parquet-generator-1.4.3.jar\n/tmp/scala-notebook/repo/com/twitter/parquet-jackson/1.4.3/parquet-jackson-1.4.3.jar\n/tmp/scala-notebook/repo/org/bdgenomics/bdg-formats/bdg-formats/0.2.0/bdg-formats-0.2.0.jar\n/tmp/scala-notebook/repo/org/apache/commons/commons-jexl/2.1.1/commons-jexl-2.1.1.jar\n/tmp/scala-notebook/repo/com/twitter/parquet-encoding/1.4.3/parquet-encoding-1.4.3.jar\n/tmp/scala-notebook/repo/org/apache/avro/avro/1.7.6/avro-1.7.6.jar\n/tmp/scala-notebook/repo/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar\n/tmp/scala-notebook/repo/org/codehaus/jackson/jackson-mapper-asl/1.9.13/jackson-mapper-asl-1.9.13.jar\n/tmp/scala-notebook/repo/org/ow2/asm/asm/4.0/asm-4.0.jar\n/tmp/scala-notebook/repo/com/esotericsoftware/kryo/kryo/2.21/kryo-2.21.jar\n/tmp/scala-notebook/repo/org/bdgenomics/adam/adam-core/0.14.0/adam-core-0.14.0.jar\n/tmp/scala-notebook/repo/com/google/code/findbugs/annotations/2.0.0/annotations-2.0.0.jar\n/tmp/scala-notebook/repo/com/esotericsoftware/reflectasm/reflectasm/1.07/reflectasm-1.07-shaded.jar\n/tmp/scala-notebook/repo/org/apache/commons/commons-compress/1.4.1/commons-compress-1.4.1.jar\n/tmp/scala-notebook/repo/jakarta-regexp/jakarta-regexp/1.4/jakarta-regexp-1.4.jar\n/tmp/scala-notebook/repo/com/beust/jcommander/1.27/jcommander-1.27.jar\n/tmp/scala-notebook/repo/org/tukaani/xz/1.0/xz-1.0.jar\n/tmp/scala-notebook/repo/org/slf4j/slf4j-log4j12/1.7.5/slf4j-log4j12-1.7.5.jar\n/tmp/scala-notebook/repo/com/esotericsoftware/minlog/minlog/1.2/minlog-1.2.jar\n/tmp/scala-notebook/repo/commons-httpclient/commons-httpclient/3.1/commons-httpclient-3.1.jar\n/tmp/scala-notebook/repo/org/seqdoop/cofoja/1.1-r150/cofoja-1.1-r150.jar\n/tmp/scala-notebook/repo/com/thoughtworks/paranamer/paranamer/2.3/paranamer-2.3.jar\n/tmp/scala-notebook/repo/org/apache/ant/ant-launcher/1.8.2/ant-launcher-1.8.2.jar\n/tmp/scala-notebook/repo/org/apache/ant/ant/1.8.2/ant-1.8.2.jar\n/tmp/scala-notebook/repo/commons-codec/commons-codec/1.6/commons-codec-1.6.jar\n/tmp/scala-notebook/repo/commons-cli/commons-cli/1.2/commons-cli-1.2.jar\n/tmp/scala-notebook/repo/com/twitter/parquet-avro/1.4.3/parquet-avro-1.4.3.jar",
+      "language":"scala",
+      "collapsed":false,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "nbformat":3
+}
