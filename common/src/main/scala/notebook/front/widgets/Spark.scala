@@ -22,6 +22,7 @@ import notebook.front.SingleConnectedWidget
 class Spark(val initData:SparkContext)(implicit updateSC:SparkContext => Unit)
   extends Form[SparkContext] {
 
+  val title = "Update Spark configuration"
   val paramsCodec:Codec[SparkContext, Map[String, String]] = new Codec[SparkContext, Map[String, String]] {
     def encode(sc:SparkContext):Map[String,String] = sc.getConf.getAll.toMap
     def decode(m:Map[String,String]):SparkContext = {

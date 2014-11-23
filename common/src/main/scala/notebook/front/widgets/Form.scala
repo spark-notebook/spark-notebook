@@ -8,9 +8,12 @@ import notebook.JsonCodec._
 import notebook.front.SingleConnectedWidget
 
 trait Form[D] extends SingleConnectedWidget[Map[String, String]] {
+  def title:String
   def initData:D
   def paramsCodec:Codec[D, Map[String, String]]
   def update:D => D
+
+  private[this] val htmlId = "_"+java.util.UUID.randomUUID.toString.replaceAll("\\W", "_")
 
   private[widgets] var data:D = initData
   implicit val codec:Codec[JValue, Map[String, String]] = tMap[String]
@@ -22,11 +25,11 @@ trait Form[D] extends SingleConnectedWidget[Map[String, String]] {
 
   lazy val toHtml = <div>{
       scopedScript(
-        """require( ['observable', 'knockout', 'jquery'],
-                    function (Observable, ko, $) {
+        s"""require( ['observable', 'knockout', 'jquery'],
+                    function (Observable, ko, $$) {
                       var value = Observable.makeObservable(valueId);
                       var publishFormData = function(form) {
-                        var r = $(form).serializeArray();
+                        var r = $$(form).serializeArray();
                         var result = {};
                         r.forEach(function(o) {
                           result[o.name] = o.value;
@@ -34,8 +37,8 @@ trait Form[D] extends SingleConnectedWidget[Map[String, String]] {
                         value(result);
                       };
                       var addEntry = function(form) {
-                        var entry = $(form).serializeArray()[0];
-                        $("#update-spark-form").find("button")
+                        var entry = $$(form).serializeArray()[0];
+                        $$("#$htmlId").find("button")
                                                .before("<div class='form-group'><label for-name='"+entry.value+"'>"+entry.value+"</label><input class='form-control' name='"+entry.value+"' value=''/></div>")
                       };
                       ko.applyBindings({
@@ -50,10 +53,10 @@ trait Form[D] extends SingleConnectedWidget[Map[String, String]] {
       )
     }
     <span class="help-block">
-      <input type="checkbox" data-bind="checked: formShown" />Update Spark configuration
+      <input type="checkbox" data-bind="checked: formShown" /><strong>{title}</strong>
     </span>
     <div data-bind="if: formShown">
-      <form role="form" id="update-spark-form" data-bind="submit: publishFormData">
+      <form role="form" id={htmlId} data-bind="submit: publishFormData">
         {
           paramsCodec.encode(data).map { case (k, v) =>
             <div class="form-group">
