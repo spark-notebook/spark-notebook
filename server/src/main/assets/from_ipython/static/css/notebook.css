@@ -55,7 +55,7 @@ span#notebook_name {
     position: relative;
     width:100%;
     background-color: #DBDBDB;
-    /*height: 118px;*/
+    height: 118px;
 }
 
 #notification {
