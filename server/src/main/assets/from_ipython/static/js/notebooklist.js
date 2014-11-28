@@ -48,7 +48,7 @@ var IPython = (function (IPython) {
             for (var i = 0, f; f = files[i]; i++) {
                 var reader = new FileReader();
                 reader.readAsText(f);
-                var fname = f.name.split('.'); 
+                var fname = f.name.split('.');
                 var nbname = fname.slice(0,-1).join('.');
                 var nbformat = fname.slice(-1)[0];
                 if (nbformat === 'snb') {nbformat = 'json';};
@@ -190,7 +190,7 @@ var IPython = (function (IPython) {
                                 processData : false,
                                 cache : false,
                                 type : "DELETE",
-                                dataType : "json",
+                                dataType : "text",
                                 success : function (data, status, xhr) {
                                     parent_item.remove();
                                 },
