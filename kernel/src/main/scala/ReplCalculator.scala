@@ -1,15 +1,19 @@
 package notebook
 package client
 
-import akka.actor.{ActorLogging, Props, Actor}
-import kernel._
 import java.io.File
 
-import notebook.util.Match
+import akka.actor.{ActorLogging, Props, Actor}
+import kernel._
+
+import org.sonatype.aether.repository.RemoteRepository
+
+import org.apache.spark.repl.HackSparkILoop
+
+import notebook.util.{Deps, Match, Repos}
 import notebook.front._
 import notebook.front.widgets._
 
-import org.apache.spark.repl.HackSparkILoop
 
 /**
  * Author: Ken
@@ -60,9 +64,28 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
     r
   }
 
-  private val cpRegex = "(?s)^:cp\\s*(.+)\\s*$".r
-  private val sqlRegex = "(?s)^:sql(?:\\[([a-zA-Z0-9][a-zA-Z0-9]*)\\])?\\s*(.+)\\s*$".r
+  var remotes:List[RemoteRepository] = List(Repos.central)
 
+  var repo:File = {
+    val tmp = new File(System.getProperty("java.io.tmpdir"))
+
+    val snb = new File(tmp, "scala-notebook")
+    if (!snb.exists) snb.mkdirs
+
+    val aether = new File(snb, "aether")
+    if (!aether.exists) aether.mkdirs
+
+    val r = new File(aether, java.util.UUID.randomUUID.toString)
+    if (!r.exists) r.mkdirs
+
+    r
+  }
+
+  private val repoRegex = "(?s)^:local-repo\\s*(.+)\\s*$".r
+  private val remoteRegex = "(?s)^:remote-repo\\s*(.+)\\s*$".r
+  private val cpRegex = "(?s)^:cp\\s*(.+)\\s*$".r
+  private val dpRegex = "(?s)^:dp\\s*(.+)\\s*$".r
+  private val sqlRegex = "(?s)^:sql(?:\\[([a-zA-Z0-9][a-zA-Z0-9]*)\\])?\\s*(.+)\\s*$".r
 
   // Make a child actor so we don't block the execution on the main thread, so that interruption can work
   private val executor = context.actorOf(Props(new Actor {
@@ -71,6 +94,41 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
         val (result, _) = {
           val newCode =
             code match {
+              case remoteRegex(r) =>
+                val List(id, name, url) = r.split("%").toList
+                remotes = (Repos(id,name,url)) :: remotes
+                s""" "Remote repo added: $r!" """
+
+              case repoRegex(r) =>
+                //TODO... probably copying the existing one would be better
+                repo = new File(r.trim)
+                repo.mkdirs
+                s""" "Repo changed to ${repo.getAbsolutePath}!" """
+
+              case dpRegex(cp) =>
+                val lines = cp.trim().split("\n").toList.map(_.trim()).filter(_.size > 0).toSet
+                val includes = lines map (Deps.parseInclude _) collect { case Some(x) => x }
+                val excludes = lines map (Deps.parseExclude _) collect { case Some(x) => x }
+                val excludesFns = excludes map (Deps.transitiveExclude _)
+
+                println(s"Includes: ${includes.mkString(" | ")}")
+                println(s"Excludes: ${excludes.mkString(" | ")}")
+                println(s"Remotes: ${remotes.mkString(" | ")}")
+                println(s"Local: ${repo}")
+
+                val jars = includes.flatMap(a => Deps.resolve(a, excludesFns)(remotes, repo)).toList
+
+                val (_r, replay) = repl.addCp(jars)
+                _repl = Some(_r)
+                preStartLogic()
+                replay()
+                s"""
+                  //updating jars
+                  jars = (${ jars.mkString("List(\"", "\",\"", "\")") } ::: jars.toList).distinct.toArray
+                  //restarting spark
+                  reset()
+                """
+
               case cpRegex(cp) =>
                 val jars = cp.trim().split("\n").toList.map(_.trim()).filter(_.size > 0)
                 val (_r, replay) = repl.addCp(jars)

@@ -24,7 +24,7 @@ Spark Notebook
   - [Timeseries with  Rickshaw](#timeseries-with--rickshaw)
   - [Dynamic update of data and plot using Scala's `Future`](#dynamic-update-of-data-and-plot-using-scalas-future)
   - [Update _Notebook_ `ClassPath`](#update-_notebook_-classpath)
-  - [Update _Spark_ `jars`](#update-_spark_-jars)
+  - [Update __Spark__ dependencies (`spark.jars`)](#update-__spark__-dependencies-sparkjars)
 
 <!-- /MarkdownTOC -->
 
@@ -325,31 +325,45 @@ Here is what it'll look like in the notebook:
 
 ![Simple Classpath](https://raw.github.com/andypetrella/spark-notebook/master/images/simple-cp.png)
 
-### Update _Spark_ `jars`
-If you are a Spark user, you know that it's not enough to have the jars locally added to the Driver's classpath. Indeed, workers needs to also load them. The usual way would be to update the list of jars provided to the `SparkConf` using the `reset` function explained above.
+### Update __Spark__ dependencies (`spark.jars`)
+So you use Spark, hence you know that it's not enough to have the jars locally added to the Driver's classpath.
 
-However, this can be very tricky when we need to add jars that have themselves plenty of dependencies. This notebook offers an extra feature to facilitate this dependency loading:
+Indeed, workers needs to have them in their classpath. One option would be to update the list of jars (`spark.jars` property) provided to the `SparkConf` using the `reset` function.
+
+However, this can be very tricky when we need to add jars that have themselves plenty of dependencies.
+
+However, there is another context available to update both the classpath on the notebook and in Spark
 
 ```
-resolveAndAddToJars
+:dp
++ group1 % artifact1 % version1
++ group2 % artifact2 % version2
+group3 % artifact3 % version3
++ group4 % artifact4 % version4
+
+- group5 % artifact5 % version5
++ group6 % artifact6 % version6
+- group7 % artifact7 % version7
 ```
 
-This function takes three parameters:
- * groupId
- * artifactId
- * version
+So this is simple:
+* lines starting with `-` are exclusions (transitive)
+* lines starting with `+` or nothing are inclusions
 
-It creates a local repository and downloads the project with all its dependecies. The repo where these libs will be downloaded can be updated using the `updateRepo`.
-For example, if you want to use [Cassandra Spark connector](https://github.com/datastax/spark-cassandra-connector), all you need to do is:
-```
-resolveAndAddToJars("com.datastax.spark", "spark-cassandra-connector_2.10", "1.1.0-alpha3")
-```
-__/!\Then update the Driver cp with the listed jars.__ (This will change!)
+The jars will be fetched in a temporary repository (that can be hardcoded using `:local-repo`).
 
-In live:
+Then they'll be added to the Spark's jars property, before restarting the context.
+
+
+For example, if you want to use [ADAM](https://github.com/bigdatagenomics/adam), all you need to do is:
+```
+:dp org.bdgenomics.adam % adam-apis % 0.15.0
+- org.apache.hadoop % hadoop-client %   _
+- org.apache.spark  %     _         %   _
+- org.scala-lang    %     _         %   _
+- org.scoverage     %     _         %   _
+```
+
+In live, you can check the notebook named `Update classpath and Spark's jars`, which looks like this:
 
 ![Spark Jars](https://raw.github.com/andypetrella/spark-notebook/master/images/spark-jars.png)
-
-> Note: [Aether](https://github.com/eclipse/aether-core) is used to do this, so if there is something special needed that it's not provided,
-> we can look at how Aether would enable it!
-
