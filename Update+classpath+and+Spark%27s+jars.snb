@@ -1,0 +1,112 @@
+{
+  "metadata":{
+    "name":"Update classpath and Spark's jars",
+    "user_save_timestamp":"2014-12-03T21:57:22.812Z",
+    "auto_save_timestamp":"2014-12-03T22:32:11.600Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"markdown",
+      "source":"### Add a remote repo using an `id`, the `name` and its `url`"
+    },{
+      "cell_type":"code",
+      "input":":remote-repo oss-sonatype % oss-sonatype % https://oss.sonatype.org/content/repositories/releases/",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":10,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"### Set the local repo (where jars will be added) "
+    },{
+      "cell_type":"code",
+      "input":":local-repo /tmp/snb/repository",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":11,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"### Declare some dependencies require for the analysis."
+    },{
+      "cell_type":"markdown",
+      "source":"* line starting with `+` or nothing are considered as __includes__\n* lines starting with a `-` are considered to be __excluded__ (from all other includes transitives deps)"
+    },{
+      "cell_type":"markdown",
+      "source":"__`dp` stands for dependencies, hence the spark context will contain all of them (sent to workers)__ "
+    },{
+      "cell_type":"code",
+      "input":":dp org.bdgenomics.adam % adam-apis % 0.15.0\n- org.apache.hadoop % hadoop-client %   _\n- org.apache.spark  %     _         %   _\n- org.scala-lang    %     _         %   _\n- org.scoverage     %     _         %   _",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":12,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"### Check the spark context → the configuration's key `spark.jars` contains all dependencies!"
+    },{
+      "cell_type":"code",
+      "input":"sparkContext.getConf.toDebugString",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":13,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":false,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[{
+    "cells":[{
+      "cell_type":"markdown",
+      "source":"### Add a remote repo using an `id`, the `name` and its `url`"
+    },{
+      "cell_type":"code",
+      "input":":remote-repo oss-sonatype % oss-sonatype % https://oss.sonatype.org/content/repositories/releases/",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":10,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"### Set the local repo (where jars will be added) "
+    },{
+      "cell_type":"code",
+      "input":":local-repo /tmp/snb/repository",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":11,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"### Declare some dependencies require for the analysis."
+    },{
+      "cell_type":"markdown",
+      "source":"* line starting with `+` or nothing are considered as __includes__\n* lines starting with a `-` are considered to be __excluded__ (from all other includes transitives deps)"
+    },{
+      "cell_type":"markdown",
+      "source":"__`dp` stands for dependencies, hence the spark context will contain all of them (sent to workers)__ "
+    },{
+      "cell_type":"code",
+      "input":":dp org.bdgenomics.adam % adam-apis % 0.15.0\n- org.apache.hadoop % hadoop-client %   _\n- org.apache.spark  %     _         %   _\n- org.scala-lang    %     _         %   _\n- org.scoverage     %     _         %   _",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":12,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"### Check the spark context → the configuration's key `spark.jars` contains all dependencies!"
+    },{
+      "cell_type":"code",
+      "input":"sparkContext.getConf.toDebugString",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":13,
+      "outputs":[]
+    }]
+  }],
+  "nbformat":3
+}

@@ -64,13 +64,6 @@ def updateJars(newJars:List[String]) = {
   jars = (newJars ::: jars.toList).distinct.toArray
 }
 
-def resolveAndAddToJars(group:String, artifact:String, version:String, update:Boolean=true,
-                        exclusions:Set[PartialFunction[((String, String, String), Set[(String, String, String)]), Boolean]]=Set.empty) = {
-  val newJars = Deps.resolveAndAddToJars(group, artifact, version, exclusions)(remotes, repo)
-  if (update) updateJars(newJars)
-  newJars
-}
-
 def stopSpark() = sparkContext.stop()
 
 @transient implicit val updateSparkContex:SparkContext=>Unit = (sc:SparkContext) => {
