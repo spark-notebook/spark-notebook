@@ -78,6 +78,10 @@ Then you can head to the `server` project and run it. You have several options a
 > run --disable_security
 ```
 
+##### Make the server accessible from the network
+
+Edit the `.conf` file in the project root and change the hostname to the hostname from `0.0.0.0` to the name that is reachable from the network.
+
 Use
 ---
 When the server has been started, you can head to the page `http://localhost:8899` and you'll see something similar to:
