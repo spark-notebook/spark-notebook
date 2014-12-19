@@ -115,6 +115,7 @@ object NotebookBuild extends Build {
       ),
 
       libraryDependencies ++= Seq(
+        guava,
         sparkRepl,
         sparkSQL
       ),
@@ -152,6 +153,7 @@ object NotebookBuild extends Build {
       ),
 
       libraryDependencies ++= Seq(
+        guava,
         sparkRepl,
         sparkSQL
       )
@@ -184,6 +186,7 @@ object NotebookBuild extends Build {
       ),
 
       libraryDependencies ++= Seq(
+        guava,
         sparkRepl,
         sparkSQL
       ),
@@ -198,6 +201,9 @@ object NotebookBuild extends Build {
   object Dependencies {
     val unfilteredVersion    = "0.8.2"
     val akkaVersion          = "2.2.3-shaded-protobuf"
+
+    // spark 1.1 conflicts sometimes :-/
+    val guava                = "com.google.guava"          %            "guava"             %     "14.0.1"
 
     val sparkRepl            = "org.apache.spark"          %%         "spark-repl"          %      "1.1.0"      % "provided"
     val sparkSQL             = "org.apache.spark"          %%         "spark-sql"           %      "1.1.0"      % "provided"
