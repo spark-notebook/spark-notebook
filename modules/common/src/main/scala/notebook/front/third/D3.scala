@@ -17,7 +17,7 @@ class Svg[T] (
   )(implicit val singleCodec:Codec[JsValue, T])
   extends Widget with DataConnector[T] {
 
-  private val js = List("sandbox", onData, extension).map(x => s"'js/$x'").mkString("[", ",", "]")
+  private val js = List("sandbox", onData, extension).map(x => s"'assets/javascripts/notebook/$x'").mkString("[", ",", "]")
   private val call = if (onData == extension) {
     s"""
       function(s, onData) {

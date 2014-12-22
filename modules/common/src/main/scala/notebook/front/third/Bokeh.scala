@@ -42,13 +42,13 @@ class Bokeh(data: Seq[PlotContext])(override implicit val singleCodec:Codec[JsVa
 
 object Bokeh {
   implicit val contextCodec:Codec[JsValue, PlotContext] = new Codec[JsValue, PlotContext] {
-    // TODO !
-    //val serializer = new JSONSerializer {
-    //  val stringifyFn = Resources.default.stringify _
-    //}
+    val serializer = new JSONSerializer {
+      val stringifyFn = Resources.default.stringify _
+    }
+    import serializer._
     def encode(x:JsValue):PlotContext = ???
     def decode(x:PlotContext):JsValue =  Json.obj(
-                                          ("models" -> ???/*parse(serializer.stringify(x))*/),
+                                          ("models" ->  Json.toJson(serializer.collectObjs(x).map(serializer.getModel))),
                                           ("modelType" -> x.getRef.`type`),
                                           ("modelId" -> x.getRef.id)
                                         )

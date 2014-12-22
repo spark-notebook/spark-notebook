@@ -30,14 +30,6 @@ object Application extends Controller {
 
   val kernelIdToCalcService = collection.mutable.Map[String, CalcWebSocketService]()
 
-  // FIXME... or fix da crap asap
-  val domain = "localhost"
-  val port = 9000
-
-  def index = Action {
-    Ok(views.html.index("Your new application is ready."))
-  }
-
   val project = "Spark Notebook" //TODO from application.conf
   val base_project_url = "/"
   val base_kernel_url = "/"
@@ -64,8 +56,8 @@ object Application extends Controller {
     Redirect(routes.Application.viewNotebook(name, id))
   }
 
-  def viewNotebook(name:String, id:String) = Action {
-    val ws_url = "ws:/%s:%d".format(domain, port)
+  def viewNotebook(name:String, id:String) = Action { request =>
+    val ws_url = s"ws:/${request.host}"
 
     Ok(views.html.notebook(
       nbm.name /*project?*/,
@@ -80,7 +72,7 @@ object Application extends Controller {
     ))
   }
 
-  def saveNotebook(name:String, id:String, force:Boolean) = Action(parse.json) { request => 
+  def saveNotebook(name:String, id:String, force:Boolean) = Action(parse.json) { request =>
     val notebook = NBSerializer.fromJson(request.body)
     try {
       nbm.save(Some(id), name, notebook, force)
@@ -94,7 +86,7 @@ object Application extends Controller {
     getNotebook(id, name, "json")
   }
 
-  def createKernel = Action {
+  def createKernel = Action { implicit request:RequestHeader =>
     startKernel(UUID.randomUUID.toString)
   }
 
@@ -159,7 +151,7 @@ object Application extends Controller {
     }
   }
 
-  def startKernel(kernelId: String) = {
+  def startKernel(kernelId: String)(implicit request:RequestHeader) = {
     val compilerArgs = config.kernelCompilerArgs.toList
     val initScripts = config.kernelInitScripts.toList
     val kernel = new Kernel(kernelSystem)
@@ -170,7 +162,7 @@ object Application extends Controller {
 
     val json = Json.obj(
       "kernel_id" -> kernelId,
-      "ws_url" -> "ws:/%s:%d".format(domain, port)
+      "ws_url" -> s"ws:/${request.host}"
     )
     Ok(json)
   }
