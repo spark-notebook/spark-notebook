@@ -1,0 +1,255 @@
+@(project:String, params:Map[String, String])
+
+
+
+@default("Spark Notebook", params){
+  <!-- stylesheet -->
+  <script src="" type="text/javascript" charset="utf-8"></script>
+  <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/projectdashboard.css")" type="text/css" />
+
+
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" charset="utf-8"></script>
+
+  <script type="text/javascript">
+    window.mathjax_url = "http://cdn.mathjax.org/mathjax/latest/MathJax.js";
+  </script>
+
+  <link rel="stylesheet" href="@routes.Assets.at("javascripts/ipython/codemirror/lib/codemirror.css")" />
+  <link rel="stylesheet" href="@routes.Assets.at("javascripts/ipython/codemirror/theme/ipython.css")" />
+
+  <link rel="stylesheet" href="@routes.Assets.at("javascripts/ipython/prettify/prettify.css")" />
+
+  <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/notebook.css")" type="text/css" />
+  <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/ribbon.css")" type="text/css" />
+  <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/renderedhtml.css")" type="text/css" />
+
+  <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/bootstrap/css/bootstrap.min.css")" type="text/css" />
+  <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/bootstrap/css/bootstrap-theme.min.css")" type="text/css" />
+  <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/bootstrap/css/bootstrap-responsive.min.css")" type="text/css" />
+
+  <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/rickshaw/rickshaw.min.css")" type="text/css" />
+
+  <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/printnotebook.css")" type="text/css" media="print" />
+ }{
+  <!-- meta -->
+
+} {
+  <!-- header -->
+  <a href="@{params("base-project-url")}"><i class="glyphicon glyphicon-chevron-left"></i></a>
+  <span id="save_widget">
+      <span id="notebook_name"></span>
+      <span id="save_status"></span>
+  </span>
+} {
+  <!-- site -->
+  <div id="menubar_container" class="vbox">
+    <div id="ribbon">
+      <ul>
+        <li class="selected">
+          <a href="#">Home</a>
+
+          <div class="clusters">
+            <ul>
+              <p>Notebook</p>
+              <li id="save_notebook"><a href="#"><i class="glyphicon glyphicon-hdd"></i>Save</a></li>
+              <li id="revert_notebook"><a href="#"><i class="glyphicon glyphicon-circle-arrow-left"></i>Revert</a></li>
+            </ul>
+            <ul>
+              <p>Cell</p>
+              <!-- <li id="delete_cell"><a href="#"><i class="glyphicon glyphicon-remove"></i>Delete</a></li> -->
+              <li id="move_cell_up"><a href="#"><i class="glyphicon glyphicon-arrow-up"></i>Move Up</a></li>
+              <li id="move_cell_down"><a href="#"><i class="glyphicon glyphicon-arrow-down"></i>Move Down</a></li>
+              <li id="insert_cell_above"><a href="#"><i class="glyphicon glyphicon-circle-arrow-up"></i>Insert Above</a></li>
+              <li id="insert_cell_below"><a href="#"><i class="glyphicon glyphicon-circle-arrow-down"></i>Insert Below</a></li>
+            </ul>
+            <ul>
+              <p>Run</p>
+              <li id="run_cell"><a href="#"><i class="glyphicon glyphicon-play"></i>Run Cell</a></li>
+              <li id="run_all_cells"><a href="#"><i class="glyphicon glyphicon-play-circle"></i>Run All</a></li>
+            </ul>
+          </div>
+        </li>
+
+        <li>
+          <a href="#">File</a>
+
+          <div class="clusters">
+            <ul>
+              <p>File</p>
+              <li id="new_notebook"><a href="#"><i class="glyphicon glyphicon-file"></i>New</a></li>
+              <li id="save_notebook"><a href="#"><i class="glyphicon glyphicon-hdd"></i>Save</a></li>
+              <li id="open_notebook"><a href="#"><i class="glyphicon glyphicon-folder-open"></i>Open</a></li>
+            </ul>
+            <ul>
+              <p>Notebook</p>
+              <li id="copy_notebook"><a href="#">Make a Copy...</a></li>
+              <li id="rename_notebook"><a href="#">Rename...</a></li>
+            </ul>
+            <ul>
+              <p>Download As</p>
+              <li id="download_ipynb"><a href="#"><i class="glyphicon glyphicon-download-alt"></i>Notebook (.snb)</a></li>
+              <!-- TODO: Re-enable when export to scala is supported -->
+              <!--
+              <li id="download_py"><a href="#">Scala (.scala)</a></li>
+              -->
+            </ul>
+          </div>
+        </li>
+        <li>
+          <a href="#">Edit</a>
+
+          <div class="clusters">
+          <ul>
+            <p>Edit</p>
+            <li id="cut_cell"><a href="#">Cut</a></li>
+            <li id="copy_cell"><a href="#">Copy</a></li>
+            <li id="paste_cell" class="ui-state-disabled"><a href="#">Paste</a></li>
+            <li id="paste_cell_above" class="ui-state-disabled"><a href="#">Paste Above</a></li>
+            <li id="paste_cell_below" class="ui-state-disabled"><a href="#">Paste Below</a></li>
+          </ul>
+          <ul>
+            <p>Cell</p>
+            <li id="split_cell"><a href="#">Split</a></li>
+            <li id="merge_cell_above"><a href="#">Merge Above</a></li>
+            <li id="merge_cell_below"><a href="#">Merge Below</a></li>
+          </ul>
+          <ul>
+            <p>Move</p>
+            <li id="move_cell_up"><a href="#"><i class="glyphicon glyphicon-arrow-up"></i>Move Up</a></li>
+            <li id="move_cell_down"><a href="#"><i class="glyphicon glyphicon-arrow-down"></i>Move Down</a></li>
+          </ul>
+          </div>
+        </li>
+        <li>
+          <a href="#">View</a>
+
+          <div class="clusters">
+          <ul>
+            <p>View</p>
+            <li id="toggle_header"><a href="#">Toggle Header</a></li>
+          </ul>
+          <ul>
+            <p>Contents</p>
+            <li id="output_only_all"><a href="#">Output Only</a></li>
+            <li id="input_only_all"><a href="#">Input Only</a></li>
+            <li id="input_output_all"><a href="#">Input/Output</a></li>
+          </ul>
+          </div>
+        </li>
+        <li>
+          <a href="#">Cell</a>
+
+          <div class="clusters">
+          <ul>
+            <p>Run</p>
+            <li id="run_cell"><a href="#"><i class="glyphicon glyphicon-play"></i>Run</a></li>
+            <!-- <li id="run_cell_in_place"><a href="#"><i class="glyphicon glyphicon-step-forward"></i>Run in Place</a></li> -->
+            <li id="run_all_cells"><a href="#"><i class="glyphicon glyphicon-play-circle"></i>Run All</a></li>
+          </ul>
+          <ul>
+            <p>Type</p>
+            <li id="to_code"><a href="#">Code</a></li>
+            <li id="to_markdown"><a href="#">Markdown </a></li>
+            <li id="to_raw"><a href="#">Raw Text</a></li>
+            <li id="to_heading1"><a href="#">Heading 1</a></li>
+            <li id="to_heading2"><a href="#">Heading 2</a></li>
+            <li id="to_heading3"><a href="#">Heading 3</a></li>
+            <li id="to_heading4"><a href="#">Heading 4</a></li>
+          </ul>
+          </div>
+        </li>
+        <li><a href="#">Kernel</a>
+          <div class="clusters">
+          <ul>
+            <p>Kernel</p>
+            <li id="int_kernel"><a href="#"><i class="glyphicon glyphicon-stop"></i>Interrupt</a></li>
+            <li id="restart_kernel"><a href="#"><i class="glyphicon glyphicon-repeat"></i>Restart</a></li>
+          </ul>
+          </div>
+        </li>
+        <li><a href="#">Help</a>
+          <div class="clusters">
+          <ul>
+            <p>Scala Notebook</p>
+            <!-- TODO: link to online help (github page?) -->
+            <li id="keyboard_shortcuts"><a href="#">Keyboard Shortcuts</a></li>
+          </ul>
+          <ul>
+            <p>Scala</p>
+            <li><a href="http://scala-lang.org" target="_blank">Scala</a></li>
+          </ul>
+          </div>
+        </li>
+      </ul>
+
+    </div>
+    <div id="notification"></div>
+  </div>
+
+  <div id="main_app">
+
+    <div id="notebook_panel">
+      <div id="notebook"></div>
+    </div>
+
+  </div>
+} {
+  <!-- script -->
+  <script type="text/javascript">
+  curl({
+    baseUrl: '/',
+    pluginPath: '@routes.Assets.at("javascripts/third/curl/plugin")',
+    paths: {
+      jquery: '@routes.Assets.at("javascripts/third/jquery/js/jquery.js")',
+      knockout: '@routes.Assets.at("javascripts/third/knockout.js")',
+      'knockout-bootstrap': '@routes.Assets.at("javascripts/third/knockout-bootstrap.min.js")',
+      d3: '@routes.Assets.at("javascripts/third/d3.js")',
+      rickshaw: '@routes.Assets.at("javascripts/third/rickshaw/rickshaw.js")',
+      resources: '',
+      //observable: 'js/observable',
+      //equiv: 'js/equiv',
+      observable: '@routes.Assets.at("javascripts/notebook/observable.js")',
+      equiv: '@routes.Assets.at("javascripts/notebook/equiv.js")',
+
+      'jwerty.js': '@routes.Assets.at("javascripts/third/jwerty.js")'
+    }
+  });
+  </script>
+  <!--<script src="@routes.Assets.at("javascripts/third/less.js")" type="text/javascript"></script>-->
+
+  <script src="@routes.Assets.at("javascripts/third/jquery/js/jquery.mousewheel.js")" type="text/javascript" charset="utf-8"></script>
+
+  <script src="@routes.Assets.at("javascripts/ipython/codemirror/lib/codemirror.js")" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/codemirror/mode/python/python.js")" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/codemirror/mode/htmlmixed/htmlmixed.js")" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/codemirror/mode/xml/xml.js")" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/codemirror/mode/javascript/javascript.js")" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/codemirror/mode/css/css.js")" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/codemirror/mode/rst/rst.js")" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/codemirror/mode/markdown/markdown.js")" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/codemirror/mode/clike/clike.js")" charset="utf-8"></script>
+
+  <script src="@routes.Assets.at("javascripts/ipython/pagedown/Markdown.Converter.js")" charset="utf-8"></script>
+
+  <script src="@routes.Assets.at("javascripts/ipython/prettify/prettify.js")" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/dateformat/date.format.js")" charset="utf-8"></script>
+
+  <script src="@routes.Assets.at("javascripts/ipython/js/bokeh.js")" type="text/javascript" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/js/events.js")" type="text/javascript" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/js/utils.js")" type="text/javascript" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/js/layoutmanager.js")" type="text/javascript" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/js/initmathjax.js")" type="text/javascript" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/js/cell.js")" type="text/javascript" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/js/codecell.js")" type="text/javascript" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/js/textcell.js")" type="text/javascript" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/js/kernel.js")" type="text/javascript" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/js/savewidget.js")" type="text/javascript" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/js/keybindings.js")" type="text/javascript" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/js/quickhelp.js")" type="text/javascript" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/js/pager.js")" type="text/javascript" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/js/menubar.js")" type="text/javascript" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/js/toolbar.js")" type="text/javascript" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/js/notebook.js")" type="text/javascript" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/js/notificationwidget.js")" type="text/javascript" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/js/notebookmain.js")" type="text/javascript" charset="utf-8"></script>
+}

@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+  <head>
+    <title>CodeMirror: Test Suite</title>
+    <link rel="stylesheet" href="../lib/codemirror.css">
+    <script src="../lib/codemirror.js"></script>
+    <script src="../mode/javascript/javascript.js"></script>
+
+    <style type="text/css">
+      .ok {color: #090;}
+      .fail {color: #e00;}
+      .error {color: #c90;}
+    </style>
+  </head>
+  <body>
+    <h1>CodeMirror: Test Suite</h1>
+
+    <p>A limited set of programmatic sanity tests for CodeMirror.</p>
+
+    <div style="border: 1px solid black; padding: 1px; max-width: 700px;">
+      <div style="background: #45d; white-space: pre; width: 0px; font-weight: bold; color: white; padding: 3px;" id=progress></div>
+    </div>
+    <pre style="padding-left: 5px" id=output></pre>
+
+    <div style="visibility: hidden" id=testground>
+      <form><textarea id="code" name="code"></textarea><input type=submit value=ok name=submit></form>
+    </div>
+
+    <script src="driver.js"></script>
+    <script src="test.js"></script>
+    <script>
+      window.onload = function() {
+        runTests(displayTest);
+      };
+
+      var output = document.getElementById("output"), progress = document.getElementById("progress");
+      var count = 0, failed = 0, bad = "";
+      function displayTest(type, name, msg) {
+        if (type != "done") ++count;
+        progress.style.width = (count * (progress.parentNode.clientWidth - 8) / tests.length) + "px";
+        progress.innerHTML = "Ran " + count + (count < tests.length ? " of " + tests.length : "") + " tests";
+        if (type == "ok") {
+          output.innerHTML = bad + "<span class=ok>Test '" + CodeMirror.htmlEscape(name) + "' succeeded</span>";
+        } else if (type == "error" || type == "fail") {
+          ++failed;
+          bad += CodeMirror.htmlEscape(name) + ": <span class=" + type + ">" + CodeMirror.htmlEscape(msg) + "</span>\n";
+          output.innerHTML = bad;
+        } else if (type == "done") {
+          output.innerHTML = bad + (failed ? "<span class=fail>" + failed + " failure" + (failed > 1 ? "s" : "") + "</span>"
+                                           : "<span class=ok>All passed</span>");
+        }
+      }
+    </script>
+  </body>
+</html>
