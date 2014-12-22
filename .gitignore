@@ -11,4 +11,3 @@ target/
 logs/
 Time+Serie+Demo.snb
 server/src/main/scala/BreezeAndbokehTesti.scala
-*.html
