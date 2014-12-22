@@ -3,8 +3,7 @@
 # ~~~~
 
 # Home page
-GET     /                           controllers.Application.index
-GET     /default                    controllers.Application.dash(title:String="Spark Notebook")
+GET     /                           controllers.Application.dash(title:String="Spark Notebook")
 POST    /new                        controllers.Application.newNotebook
 GET     /view/:name                 controllers.Application.viewNotebook(name:String, id:String)
 

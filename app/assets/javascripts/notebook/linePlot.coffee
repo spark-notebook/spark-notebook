@@ -2,7 +2,6 @@ define([
     'observable'
     'knockout'
     'd3'
-    'js!static/topojson.js'
 ], (Observable, ko, d3, tj) ->
   (data, svg, m) ->
     idxf = (idx) -> (d) -> d[idx]
