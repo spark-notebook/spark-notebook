@@ -4,6 +4,7 @@ import java.util.UUID
 
 import play.api._
 import play.api.mvc._
+import play.api.mvc.BodyParsers.parse._
 import play.api.libs.json._
 import play.api.libs.iteratee._
 
@@ -12,8 +13,8 @@ import com.typesafe.config._
 import akka.actor._
 
 import notebook._
-import notebook.server.{CalcWebSocketService, NotebookManager, NotebookConfig}
-import notebook.kernel.remote.{Subprocess, AkkaConfigUtils, VMManager}
+import notebook.server._
+import notebook.kernel.remote._
 
 object Application extends Controller {
   lazy val config = NotebookConfig(Play.current.configuration.getConfig("manager").get)
@@ -77,6 +78,16 @@ object Application extends Controller {
         "notebook-name" -> name
       )
     ))
+  }
+
+  def saveNotebook(name:String, id:String, force:Boolean) = Action(parse.json) { request => 
+    val notebook = NBSerializer.fromJson(request.body)
+    try {
+      nbm.save(Some(id), name, notebook, force)
+      Ok("saved " + id)
+    } catch {
+      case _ :NotebookExistsException => Conflict
+    }
   }
 
   def dlNotebook(name:String, id:String) = Action {

@@ -25,8 +25,6 @@ class ObsWebSocketService(system: ActorSystem, val channel: Concurrent.Channel[J
 
     def receive = {
       case msg@ObservableBrowserToVM(id, newValue) =>
-        println("to remote: " + remote)
-        println("the msg: " + msg)
         remote ! msg
       case ObservableVMToBrowser(id, value) =>
         val respJson = Json.obj( "id" -> id, "new_value" -> value )

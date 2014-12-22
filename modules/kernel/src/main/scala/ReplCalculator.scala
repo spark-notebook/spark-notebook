@@ -107,10 +107,10 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
                 val excludes = lines map (Deps.parseExclude _) collect { case Some(x) => x }
                 val excludesFns = excludes map (Deps.transitiveExclude _)
 
-                println(s"Includes: ${includes.mkString(" | ")}")
-                println(s"Excludes: ${excludes.mkString(" | ")}")
-                println(s"Remotes: ${remotes.mkString(" | ")}")
-                println(s"Local: ${repo}")
+                //println(s"Includes: ${includes.mkString(" | ")}")
+                //println(s"Excludes: ${excludes.mkString(" | ")}")
+                //println(s"Remotes: ${remotes.mkString(" | ")}")
+                //println(s"Local: ${repo}")
 
                 val jars = includes.flatMap(a => Deps.resolve(a, excludesFns)(remotes, repo)).toList
 

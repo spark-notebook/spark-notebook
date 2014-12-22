@@ -68,13 +68,12 @@ object NBSerializer {
   case class Worksheet(cells: List[Cell])
   implicit val worksheetFormat = Json.format[Worksheet]
 
-  case class Notebook(metadata: Metadata, worksheets: List[Worksheet], autosaved: List[Worksheet], nbformat: Option[Int]) {
+  case class Notebook(metadata: Metadata, worksheets: List[Worksheet], autosaved: Option[List[Worksheet]], nbformat: Option[Int]) {
     def name = metadata.name
   }
   implicit val notebookFormat = Json.format[Notebook]
 
-  def read(s:String):Notebook = {
-    val json:JsValue = Json.parse(s)
+  def fromJson(json:JsValue):Notebook = {
     json.validate[Notebook] match {
       case s: JsSuccess[Notebook] => {
         val notebook:Notebook = s.get
@@ -83,58 +82,16 @@ object NBSerializer {
       case e: JsError => {
         throw new RuntimeException(Json.stringify(JsError.toFlatJson(e)))
       }
-    }
+    }    
+  }
+
+  def read(s:String):Notebook = {
+    val json:JsValue = Json.parse(s)
+    fromJson(json)
   }
 
   def write(n:Notebook):String = {
     Json.prettyPrint(notebookFormat.writes(n))
   }
 
-/*
-
-  // Short type hints for inner classes of this class
-  case class NBTypeHints(hints: List[Class[_]]) extends TypeHints {
-    def hintFor(clazz: Class[_]) = clazz.getName.substring(clazz.getName.lastIndexOf("$")+1)
-    def classFor(hint: String) = hints find (hintFor(_) == hint)
-  }
-
-  implicit val formats = Serialization.formats(NBTypeHints(List(classOf[CodeCell],
-                                                                classOf[MarkdownCell],
-                                                                classOf[RawCell],
-                                                                classOf[HeadingCell],
-                                                                classOf[ScalaOutput],
-                                                                classOf[ScalaError],
-                                                                classOf[ScalaStream])))
-  val translations = List(
-    ("cell_type",   "code",     "CodeCell"),
-    ("cell_type",   "markdown", "MarkdownCell"),
-    ("cell_type",   "raw",      "RawCell"),
-    ("cell_type",   "heading",  "HeadingCell"),
-    ("output_type", "pyout",    "ScalaOutput"),
-    ("output_type", "pyerr",    "ScalaError"),
-    ("output_type", "stream",   "ScalaStream")
-  )
-
-  def write(nb: Notebook): String = {
-    val json = Extraction.decompose(nb)
-
-    val mapped = json transformField {
-      case JField("jsonClass", JString(x)) =>
-        val (typ, cat, _) =
-          (translations filter { _._3 == x }).head
-        JField(typ, JString(cat))
-      }
-    prettyJson(renderJValue(mapped))
-  }
-
-  def read(s: String): Notebook = {
-    val json = parseJson(s)
-    val mapped = json transformField {
-      case JField(typ, JString(cat)) if (translations exists { x => x._1 == typ && x._2 == cat }) =>
-        val (_, _, clazz) = (translations filter { x => x._1 == typ && x._2 == cat }).head
-        JField("jsonClass", JString(clazz))
-    }
-    mapped.extract[Notebook]
-  }
-*/
 }

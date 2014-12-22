@@ -52,6 +52,13 @@ class Sql(sqlContext:SQLContext, call: String) extends Widget {
     val l:List[RxObservable[(String, Any)]] = parts.map{ p =>
       val ob = p._2.widget.currentData.observable.inner//.doOnEach(x => Logger.debug("########:"+x.toString))
       val o:RxObservable[(String, Any)] = ob.map((d:Any) => (p._2.name, d))
+      o.doOnError{ t =>
+        Logger.warn(s"$p._1 is errored with ${t.getMessage}")
+        //t.printStackTrace()
+      }
+      o.doOnCompleted(
+        Logger.warn(s"$p._1 is completed")
+      )
       o
     }
     RxObservable.from(l).flatten
@@ -90,8 +97,6 @@ class Sql(sqlContext:SQLContext, call: String) extends Widget {
   var result:Subject[Any] = subjects.ReplaySubject(1)
 
   def updateValue(c:String) = {
-    Logger.info("c")
-    Logger.info(c)
     val tried:Option[Try[SchemaRDD]] = Some(Try{sqlContext.sql(c)})
     Logger.info(" Tried => " + tried.toString)
     subject.onNext(tried)
@@ -128,8 +133,6 @@ class Sql(sqlContext:SQLContext, call: String) extends Widget {
   mergedObservables.subscribe(new RxObserver[(String, Any)]() {
     val values:collection.mutable.Map[String, Any] = collection.mutable.HashMap[String, Any]().withDefaultValue("")
     override def onNext(value: (String, Any)): Unit = {
-      Logger.info("value: ")
-      Logger.info(value.toString)
       values += value
       val s = parts.map { case (before, input) =>
         val vv = values(input.name)
@@ -137,6 +140,17 @@ class Sql(sqlContext:SQLContext, call: String) extends Widget {
       }.mkString("")
       val c  = s + after
       updateValue(c)
+    }
+
+    override def onError(error: Throwable): Unit = {
+      Logger.warn(s"Merged errored with ${error.getMessage}")
+      //error.printStackTrace()
+      super.onError(error)
+    }
+
+    override def onCompleted(): Unit = {
+      Logger.warn(s"Merged completed!")
+      super.onCompleted()
     }
   })
 
@@ -175,7 +189,15 @@ case class DateInput(name:String) extends TypedInput[java.util.Date] {
   val widget = new InputBox[java.util.Date](new java.util.Date(), name)
 }
 case class IntInput(name:String) extends TypedInput[Int]{
-  val widget = new InputBox[Int](0, name)
+  implicit val codec:Codec[JsValue, Int] = JsonCodec.formatToCodec {
+    val r = Reads.of[Int] orElse Reads.of[String].map(_.toInt)
+    val w = Writes.of[Int].transform { x =>
+      val JsNumber(n) = x
+      JsString(n.toString)
+    }
+    Format(r, w)
+  }
+  val widget = new InputBox[Int](0, name)(implicitly[InputType[Int]], codec)
 }
 case class LongInput(name:String) extends TypedInput[Long]{
   val widget = new InputBox[Long](0, name)

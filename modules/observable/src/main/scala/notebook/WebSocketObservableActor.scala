@@ -19,11 +19,11 @@ class WebSocketObservableActor(channel: Concurrent.Channel[JsValue], val context
 
   def receive = {
     case msg: JsValue =>
-      println("msg")
-      println(msg)
       msg.validate[ObservableBrowserToVM] match {
-        case s:JsSuccess[ObservableBrowserToVM] => service.obsActor ! s.get
-        case e:JsError => throw new RuntimeException("Errors: " + JsError.toFlatJson(e).toString())
+        case s:JsSuccess[ObservableBrowserToVM] =>
+          service.obsActor ! s.get
+        case e:JsError =>
+          throw new RuntimeException("Errors: " + JsError.toFlatJson(e).toString())
       }
     }
 }
