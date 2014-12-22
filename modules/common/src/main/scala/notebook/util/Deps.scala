@@ -17,6 +17,12 @@ object Repos extends java.io.Serializable {
     "http://repo1.maven.org/maven2/"
   )
 
+  @transient val oss = new RemoteRepository(
+    "oss-sonatype",
+    "default",
+    "https://oss.sonatype.org/content/repositories/releases/"
+  )
+
   def apply(id:String, name:String, url:String) = new RemoteRepository(id, name, url)
 }
 

@@ -1,0 +1,45 @@
+{
+  "metadata":{
+    "name":"Simple (hard link) classpath ",
+    "user_save_timestamp":"2014-12-03T21:59:08.437Z",
+    "auto_save_timestamp":"2014-11-22T04:12:36.158Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":":cp /home/noootsab/.ivy2/cache/joda-time/joda-time/jars/joda-time-2.4.jar",
+      "language":"scala",
+      "collapsed":false,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"org.joda.time.DateTime.now()",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":5,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"jars = (\"/home/noootsab/.m2/repository/joda-time/joda-time/2.4/joda-time-2.4.jar\" :: jars.toList).toArray\nreset()",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":2,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"sparkContext.makeRDD(Array(1, 2, 3)).map(_ => org.joda.time.DateTime.now()).collect() foreach println",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":3,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[],
+  "nbformat":3
+}

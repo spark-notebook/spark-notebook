@@ -53,12 +53,16 @@ class InputBox[T](initial: T, label:String="")(implicit t:InputType[T], val code
               scopedScript(
                 """require( ['observable', 'knockout'],
                             function (Observable, ko) {
+                              console.log("-----------")
+                              console.dir(this);
+                              console.dir(valueId);
                               ko.applyBindings({
                                 value: Observable.makeObservable(valueId)
                               }, this);
                             }
                           )""",
-                Json.obj("valueId" -> dataConnection.id)
+                Json.obj("valueId" -> dataConnection.id),
+                Some("#"+id)
               )
             }</input>
     val nin = t.extra.map{ case (a,v) => new xml.UnprefixedAttribute(a, v, xml.Null) }.foldLeft(in)(_ % _)

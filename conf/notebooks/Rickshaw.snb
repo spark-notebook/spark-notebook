@@ -1,0 +1,61 @@
+{
+  "metadata":{
+    "name":"Rickshaw",
+    "user_save_timestamp":"2014-10-05T23:19:40.038Z",
+    "auto_save_timestamp":"2014-10-28T00:42:48.982Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":"import notebook.widgets.d3._\nimport notebook._, widgets._\nimport notebook.JsonCodec._\nimport org.json4s.JsonAST._\n\n  \nnew Playground(Seq(\"ok\", \"nok\"), List(Script(\"consoleDir\", JObject(Nil))), \n               List(\n                 \"function() { console.warn(arguments); }\"\n               ) \n              )\n\n",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":4,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"import notebook.widgets.d3._\nimport notebook._, widgets._\nimport notebook.JsonCodec._\nimport org.json4s.JsonAST._\nimport Series._\n  \ndef createTs(start:Long, step:Long=60000 /*1m*/, nb:Int=100)(name:String, color:String=\"steelblue\"):Series = {\n  val data = Seq.fill[Double](nb)(scala.util.Random.nextDouble*50)\n    \t\t\t.zipWithIndex\n    \t\t\t.map{ case (y, x) => ((start.toDouble+x*step)/1000, y) }\n  \t\t\t\t.map { case (x,y) => Map (\"x\"->x, \"y\"->y) }\n  Series(name, color, data)\n}\nval color9:Seq[String] = Seq(\n\t\t\"#423d4f\",\n\t\t\"#4a6860\",\n\t\t\"#848f39\",\n\t\t\"#a2b73c\",\n\t\t\"#ddcb53\",\n\t\t\"#c5a32f\",\n\t\t\"#7d5836\",\n\t\t\"#963b20\",\n\t\t\"#7c2626\",\n\t\t\"#491d37\",\n\t\t\"#2f254a\"\n\t).reverse\n\nval seriesList = color9.take(6)\n  \ndef createTss(start:Long, step:Int=60*1000, nb:Int = 100):Seq[Series] = \n  ('a' to 'z').take(seriesList.size).map(_.toString).zip(seriesList) map (x => createTs(start, step, nb)(x._1, x._2))\n  \nval orig = {\n  import java.util.Calendar._\n  val c = getInstance\n  c.set(YEAR, 2014)\n  c.set(MONTH, 1)\n  c.set(DATE, 1)\n  c.getTime.getTime\n}\nval step = 60*1000\nval nb = 50\n\nval data = createTss(orig, step, nb)\n\nval p = new Playground(data, List(Script(\"rickshawts\", \n                                         (\"renderer\" -> \"stack\")\n                                         ~ (\"fixed\" -> \n                                              (\"interval\" -> step/1000)\n                                              ~ (\"max\" -> 100)\n                                              ~ (\"baseInSec\" -> orig/1000)\n                                           )\n                                        )))(seriesCodec)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":5,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"import scala.concurrent.ExecutionContext.Implicits.global\nimport scala.concurrent.Future\n\nFuture.sequence((1 to 10).map{ i => Future { Thread.sleep(i*3*1000); p(createTss(orig+i*nb*step, step, nb) ) } })\n",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":6,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":"import notebook.front.third.d3._\nimport notebook._, front._, widgets._\nimport notebook.JsonCodec._\nimport org.json4s.JsonAST._\nimport notebook.Series,Series._\n  \ndef createTs(start:Long, step:Long=60000 /*1m*/ , _nb:Int=100)(name:String, color:String=\"steelblue\"):Series = {\n  val nb = (step/1000).toInt\n  val data = Seq.fill[Double](nb)(scala.util.Random.nextDouble*50)\n    \t\t\t.zipWithIndex\n    \t\t\t.map{ case (y, x) => ((start.toDouble+x*step)/1000, y) }\n  \t\t\t\t\n  Series(name, color, data)\n}\nval color9:Seq[String] = Seq(\n\t\t\"#423d4f\",\n\t\t\"#4a6860\",\n\t\t\"#848f39\",\n\t\t\"#a2b73c\",\n\t\t\"#ddcb53\",\n\t\t\"#c5a32f\",\n\t\t\"#7d5836\",\n\t\t\"#963b20\",\n\t\t\"#7c2626\",\n\t\t\"#491d37\",\n\t\t\"#2f254a\"\n\t).reverse\n\nval seriesList = color9.take(6)\n  \ndef createTss(start:Long, step:Int=60*1000, nb:Int = 100):Seq[Series] = \n  ('a' to 'z')  .take(seriesList.size)\n  \t\t\t\t.map(_.toString)\n  \t\t\t\t.zip(seriesList)\n  \t\t\t\t.map(x => createTs(start, step, nb)(x._1, x._2))\n  \nval orig = {\n  import java.util.Calendar._\n  val c = getInstance\n  c.set(YEAR, 2014)\n  c.set(MONTH, 1)\n  c.set(DATE, 1)\n  c.getTime.getTime\n}\nval step = 60*1000\nval nb = 50\n\nval data = createTss(orig, step, nb)\n\nval p = new Playground(data, List(Script(\"rickshawts\", \n                                         (\"renderer\" -> \"stack\")\n                                         ~ (\"fixed\" -> \n                                              (\"interval\" -> step/1000)\n                                              ~ (\"max\" -> 100)\n                                              ~ (\"baseInSec\" -> orig/1000)\n                                           )\n                                        )))(seriesCodec)\n p",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":2,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"import scala.concurrent.ExecutionContext.Implicits.global\nimport scala.concurrent.Future\n\n// update the timseries 5 times\nFuture.sequence((1 to 5).map{ i => \n  Future { \n    // update the graph with new data every 10 seconds\n    Thread.sleep(i*10*1000); \n    //`p` is the Playground instance that shows a timeseries\n    p(createTss(orig+i*60*step, 60000))\n  } \n})\n",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":3,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "nbformat":3
+}

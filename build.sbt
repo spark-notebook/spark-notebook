@@ -4,7 +4,9 @@ name := "spark-notebook"
 
 version := "1.0-SNAPSHOT"
 
-scalaVersion in ThisBuild := "2.10.4"
+scalaVersion := "2.10.4"
+
+ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) }
 
 parallelExecution in Test in ThisBuild := false
 
@@ -30,6 +32,9 @@ scalacOptions ++= Seq("-Xmax-classfile-name", "100")
 
 play.Project.playScalaSettings
 
+dependencyOverrides += "log4j" % "log4j" % "1.2.16"
+
+
 libraryDependencies ++= Seq(
   playDep,
   akka,
@@ -38,7 +43,8 @@ libraryDependencies ++= Seq(
   jdbc,
   anorm,
   cache,
-  commonsIO
+  commonsIO,
+  ningAsyncHttpClient // for aether to work...
 )
 
 lazy val sparkNotebook = project.in(file("."))

@@ -14,10 +14,12 @@ import play.api._
 import play.api.Logger
 
 case class NotebookConfig(config: Configuration) {
-  val defauldInitScript = config.getString("kerner.default.init").map { init =>
-                            ScriptFromURL(classOf[NotebookConfig].getResource(init)).toSource
-                          }
+  import play.api.Play.current
 
+  val defauldInitScript = config.getString("kerner.default.init").orElse(Some("init.sc")).flatMap { init =>
+                            val script = "scripts/"+init
+                            current.resource(script).map(i => ScriptFromURL(i).toSource)
+                          }
   val kernelInit = {
     val scripts = config.getStringList("kernel.init").map(_.asScala).getOrElse(Nil).map(url => ScriptFromURL(new URL(url)))
     defauldInitScript.map { s => s :: scripts.toList }.getOrElse(scripts)
@@ -28,7 +30,7 @@ case class NotebookConfig(config: Configuration) {
 
   val kernelCompilerArgs = config.getStringList("compilerArgs").map(_.asScala).getOrElse(Nil)
 
-  val notebooksDir = config.getString("notebooks.dir").map(new File(_)).getOrElse(new File("."))
+  val notebooksDir = config.getString("notebooks.dir").map(new File(_)).getOrElse(new File("./conf/notebooks"))
 
   val projectName = config.getString("notebooks.name").getOrElse(notebooksDir.getPath())
 

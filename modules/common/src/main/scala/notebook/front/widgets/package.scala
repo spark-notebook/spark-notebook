@@ -12,12 +12,18 @@ import JsonCodec._
  * This package contains primitive widgets that can be used in the child environment.
  */
 package object widgets {
-  def scopedScript(content: String, data: JsValue = null) = {
+  def scopedScript(content: String, data: JsValue = null, selector:Option[String]=None) = {
     val tag = <script type="text/x-scoped-javascript">/*{xml.PCData("*/" + content + "/*")}*/</script>
-    if (data == null)
+    val withData = if (data == null)
       tag
     else
       tag % new UnprefixedAttribute("data-this", Json.stringify(data), Null)
+
+    val withSelector = selector.map { s =>
+      withData % new UnprefixedAttribute("data-selector", s, Null)
+    }.getOrElse(withData)
+
+    withSelector
   }
 
   def text(value: String) = html(xml.Text(value))
@@ -44,7 +50,6 @@ package object widgets {
                   this
                 );
               }
-            );
         """,
         Json.obj("valueId" -> _currentValue.id, "styleId" -> _currentStyle.id)
       )}</p>)

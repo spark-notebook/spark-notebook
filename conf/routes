@@ -7,6 +7,7 @@ GET     /                           controllers.Application.index
 GET     /default                    controllers.Application.dash(title:String="Spark Notebook")
 POST    /new                        controllers.Application.newNotebook
 GET     /view/:name                 controllers.Application.viewNotebook(name:String, id:String)
+GET     /notebooks                  controllers.Application.listNotebooks
 GET     /notebooks/:name            controllers.Application.dlNotebook(name:String, id:String)
 
 POST    /kernels                    controllers.Application.createKernel

@@ -1,0 +1,39 @@
+{
+  "metadata":{
+    "name":"Plot (line) with D3",
+    "user_save_timestamp":"2014-12-03T22:18:37.057Z",
+    "auto_save_timestamp":"2014-10-28T01:11:36.938Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":"import notebook.front.third.d3._\nimport notebook._, front._, widgets._\nimport notebook.JsonCodec._\nimport org.json4s.JsonAST._",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":24,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"case class Data(x:Double, y:Double)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":25,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"implicit val dataCodec:Codec[(Double, Double), Data] = new Codec[(Double, Double), Data] {\n  def encode(j:(Double, Double)):Data = {\n    val (x,y) = j\n    Data(x, y)\n  }\n  def decode(x:Data):(Double, Double) = (x.x, x.y)\n}\nval data = Seq.fill(100){ Data(scala.util.Random.nextDouble()*100, scala.util.Random.nextDouble()*50)}.sortBy(_.x)\nD3.linePlot(data)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":26,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[],
+  "nbformat":3
+}

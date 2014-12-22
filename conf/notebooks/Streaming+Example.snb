@@ -1,0 +1,67 @@
+{
+  "metadata":{
+    "name":"Streaming Example",
+    "user_save_timestamp":"2014-11-08T00:16:53.499Z",
+    "auto_save_timestamp":"2014-11-08T00:12:12.641Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":"import notebook.front.widgets.Spark\nnew Spark(sparkContext)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":1,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"import org.apache.spark.ui.notebook.front.widgets.SparkInfo\nimport scala.concurrent.duration._\nnew SparkInfo(sparkContext, checkInterval=1 seconds, execNumber=Some(100))",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":2,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"import org.apache.spark.streaming.{StreamingContext, Duration}\nval streaming = new StreamingContext(sparkContext, Duration(1000))",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":3,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"import org.apache.spark.streaming.dstream.ConstantInputDStream\nval stream  = new ConstantInputDStream(\n  \t\t\t    streaming, \n                sparkContext.makeRDD(Seq.fill(1000)(() => scala.util.Random.nextInt(1000)))\n  \t\t\t  )",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":4,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val concrete = stream.map(_())",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":5,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"import notebook._, front._, widgets._\nimport notebook.JsonCodec._\nimport org.json4s.JsonAST._\nimport notebook.Series,Series._\n\ndef series(values:Seq[(Double, Double)]) = Seq(Series(\"Fun-DStream\", \"#4a6860\", values))\nval p = new Playground(series(Nil), List(Script(\"rickshawts\", \n                                         (\"renderer\" -> \"stack\")\n                                         ~ (\"fixed\" -> \n                                              (\"interval\" -> 1000)\n                                              ~ (\"max\" -> 5)\n                                              ~ (\"baseInSec\" -> 1)\n                                           )\n                                        )))(seriesCodec)\nconcrete.foreachRDD { rdd => \n  val sum = rdd.reduce(_+_)\n  p(series(Seq((System.currentTimeMillis.toDouble, sum.toDouble))))\n}\nstreaming.start\np",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":11,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"import scala.concurrent._\nimport scala.concurrent.ExecutionContext.Implicits.global\nFuture { Thread.sleep(30000) ; streaming.stop() }\n ",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":12,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[],
+  "nbformat":3
+}

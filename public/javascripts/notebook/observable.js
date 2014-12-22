@@ -24,7 +24,7 @@ return new function () {
         this.channelID = IPython.notebook.kernel.kernel_id
         this.channel = new this.WebSocket(ws_url + '/' + IPython.notebook.kernel.kernel_id); // TODO: This is a hack, obviously; fix when we support observable stuff outside of Scala Notebook
         send_cookie = function(){
-            this.send(document.cookie);
+            this.send("{\"cookie\":\"document.cookie\"}");
         };
         var already_called_onclose = false; // only alert once
         ws_closed_early = function(evt){
@@ -45,7 +45,9 @@ return new function () {
                 that._websocket_closed(ws_url, false);
             }
         };
-        this.channel.onopen = send_cookie;
+
+        //this.channel.onopen = send_cookie;
+
         this.channel.onclose = ws_closed_early;
         // switch from early-close to late-close message after 1s
         setTimeout(function(){
@@ -209,7 +211,9 @@ return new function () {
     this.scopedEval = function (toEval) {
         var callbacks = $('script[type="text/x-scoped-javascript"]', toEval).map(function () {
             var data = $.parseJSON($(this).attr('data-this')) || {};
-            var scope = this.parentElement;
+
+            var scope = $($(this).attr('data-selector')).get(0) || this.parentElement;
+
             var source = this.textContent;
             $(this).remove();
 
@@ -219,7 +223,11 @@ return new function () {
 
             return function () { (function() { with (data) { eval(source); } }).call(scope); };
         });
-        return function () { callbacks.each(function () { this.call(); }); };
+        return function () {
+            callbacks.each(function () {
+                this.call();
+            });
+        };
     };
 
     this.start();

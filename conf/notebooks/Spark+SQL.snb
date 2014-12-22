@@ -1,0 +1,82 @@
+{
+  "metadata":{
+    "name":"Spark SQL",
+    "user_save_timestamp":"2014-12-03T21:59:56.827Z",
+    "auto_save_timestamp":"2014-10-31T14:52:07.976Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":"import org.apache.spark.ui.notebook.front.widgets.SparkInfo\nimport scala.concurrent.duration._\nnew SparkInfo(sparkContext, checkInterval=1 seconds, execNumber=Some(100))",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":12,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"def ul(xs:Seq[String]) = <ul>{xs.map(x => <li>{x}</li>)}</ul>",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":13,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"case class Person(name:String, age:Int)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":14,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)\n\n// createSchemaRDD is used to implicitly convert an RDD to a SchemaRDD.\nimport sqlContext.createSchemaRDD",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":15,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"/**\n     COPIED FROM  http://spark.apache.org/docs/latest/sql-programming-guide.html\n**/\n// Create an RDD\nval people = sparkContext.makeRDD(Array(\n\t\"Sandrine,33\",\n\t\"Noah,4\",\n\t\"Noootsab,32\"\n))\n\n// The schema is encoded in a string\nval schemaString = \"name age\"\n\n// Import Spark SQL data types and Row.\nimport org.apache.spark.sql._\n\n// Generate the schema based on the string of schema\nval schema =\n  StructType(\n    schemaString.split(\" \").map(fieldName => StructField(fieldName, StringType, true)))\n\n// Convert records of the RDD (people) to Rows.\nval rowRDD = people.map(_.split(\",\")).map(p => Row(p(0), p(1).trim))\n\n// Apply the schema to the RDD.\nval peopleSchemaRDD = sqlContext.applySchema(rowRDD, schema)\n\n// Register the SchemaRDD as a table.\npeopleSchemaRDD.registerTempTable(\"people\")\n\n// SQL statements can be run by using the sql methods provided by sqlContext.\nval results = sqlContext.sql(\"SELECT name FROM people\")\n\n// The results of SQL queries are SchemaRDDs and support all the normal RDD operations.\n// The columns of a row in the result can be accessed by ordinal.\nul(results.map(t => \"Name: \" + t(0)).collect())",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":16,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":":sql SELECT name FROM people",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":17,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"ul(res3.map(t => \"Name: \" + t(0)).collect)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":18,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"\n// Create an RDD of Person objects and register it as a table.\nval persons = people.map(_.split(\",\")).map(p => Person(p(0), p(1).trim.toInt))\npersons.registerTempTable(\"persons\")\n\n// SQL statements can be run by using the sql methods provided by sqlContext.\nval kids = sqlContext.sql(\"SELECT name FROM persons WHERE age <= 12\")\n\n// The results of SQL queries are SchemaRDDs and support all the normal RDD operations.\n// The columns of a row in the result can be accessed by ordinal.\n\nul(kids.map(t => \"Name: \" + t(0)).collect())",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":19,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":":sql[selectKids] SELECT name FROM persons WHERE age <= 12",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":20,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"ul(selectKids.map(t => \"Name: \" + t(0)).collect())",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":21,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[],
+  "nbformat":3
+}
