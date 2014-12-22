@@ -1,8 +1,10 @@
 import Dependencies._
 
+organization := "noootsab"
+
 name := "spark-notebook"
 
-version := "1.0-SNAPSHOT"
+version := "0.1-SNAPSHOT"
 
 scalaVersion := "2.10.4"
 
