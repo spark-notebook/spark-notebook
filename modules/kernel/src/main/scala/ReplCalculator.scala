@@ -60,7 +60,7 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
     r
   }
 
-  var remotes:List[RemoteRepository] = List(Repos.central)
+  var remotes:List[RemoteRepository] = List(Repos.central, Repos.oss)
 
   var repo:File = {
     val tmp = new File(System.getProperty("java.io.tmpdir"))

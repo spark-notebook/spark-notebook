@@ -1,0 +1,68 @@
+{
+  "metadata":{
+    "name":"Using JavaScript with Playground",
+    "user_save_timestamp":"2014-10-12T09:00:08.551Z",
+    "auto_save_timestamp":"2014-10-28T01:10:40.526Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":"import notebook.widgets.d3._\nimport notebook._, widgets._\nimport notebook.JsonCodec._\nimport org.json4s.JsonAST._\n\nval d = \"update da DOM\"  \nnew Playground(Seq(\"ok\", \"nok\"), List(Script(\"consoleDir\", JObject(Nil))), \n               List(\n                 s\"\"\"\n                 function(dataObs, elem) { \n                   console.warn(arguments); \n                   $$(elem).append(\"<p>$d</p>\");\n                 }\n                 \"\"\"\n               ) \n              )",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":21,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"case class Data(name:String, payload:Int)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":14,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"import notebook.JsonCodec._\nimplicit val dataCodec = new Codec[JValue, Data] {\n  val c:Codec[JValue, Int] = ints // `ints` is a predefined Codec[JValue, Int]\n  \n  def encode(x:JValue):Data = Data(\"<unknown>\", c.encode(x))\n  def decode(x:Data):JValue = c.decode(x.payload)\n}\nval data = Seq(Data(\"test1\", 1), Data(\"test2\", 2))\nnew Playground(data, List(Script(\"consoleDir\", JObject(Nil))), List(s\"\"\" \n                                                                    function(dataO, e) {\n                                                                      dataO.subscribe(function(d) {\n                                                                        //do something with new data `d`\n                                                                      })\n                                                                    }\n                                                                    \"\"\"))",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":20,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":"import notebook.front.third.d3._\nimport notebook._, front._, widgets._\nimport notebook.JsonCodec._\nimport org.json4s.JsonAST._\n\nval d = \"update da DOM\"  \nnew Playground(Seq(\"ok\", \"nok\"), List(Script(\"consoleDir\", JObject(Nil))), \n               List(\n                 s\"\"\"\n                 function(dataObs, elem) { \n                   console.warn(arguments); \n                   $$(elem).append(\"<p>$d</p>\");\n                 }\n                 \"\"\"\n               ) \n              )",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":14,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"case class Data(name:String, payload:Int)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":15,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"import notebook.JsonCodec._\nimplicit val dataCodec = new Codec[JValue, Data] {\n  val c:Codec[JValue, Int] = ints // `ints` is a predefined Codec[JValue, Int]\n  \n  def encode(x:JValue):Data = Data(\"<unknown>\", c.encode(x))\n  def decode(x:Data):JValue = c.decode(x.payload)\n}\nval data = Seq(Data(\"test1\", 1), Data(\"test2\", 2))\nnew Playground(data, List(Script(\"consoleDir\", JObject(Nil))), List(s\"\"\" \n                                                                    function(dataO, e) {\n                                                                      dataO.subscribe(function(d) {\n                                                                        //do something with new data `d`\n                                                                      })\n                                                                    }\n                                                                    \"\"\"))",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":16,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "nbformat":3
+}

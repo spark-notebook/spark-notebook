@@ -1,0 +1,85 @@
+{
+  "metadata":{
+    "name":"Spark on Mesos using Cassandra",
+    "user_save_timestamp":"2014-12-03T22:12:58.863Z",
+    "auto_save_timestamp":"2014-12-03T22:10:42.476Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"markdown",
+      "source":"### Spark config"
+    },{
+      "cell_type":"code",
+      "input":":local-repo /tmp/repo",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":15,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":":dp com.datastax.spark % spark-cassandra-connector_2.10 % 1.1.0",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":16,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val sparkAssembly = \"hdfs://nnode:8020/spark-1.1.0.tgz\"\nval sparkLocalDir = \"/mnt4/spark-local\"\nval executorMem = \"5G\"\n// faced some problems with Torrent...\nval broadcastFactory = \"org.apache.spark.broadcast.HttpBroadcastFactory\"\nval mesosDriverNode = \"localhost\"\nval zks:List[(String, Int)] = List((\"zk0\", 2181), (\"zk0\", 2181))\n\nval cassandraHost = \"10.97.2.104\"\n  \nreset(\"Notebook on dnode-3\", lastChanges = (c:SparkConf) => {\n  c.set(\"spark.executor.memory\", executorMem)\n   .set(\"spark.executor.uri\", sparkAssembly)\n   .set(\"spark.cassandra.connection.host\", cassandraHost)\n   .set(\"spark.master\", zks.map{case (h,p)=>s\"$h:$p\"}.mkString(\"mesos://zk://\", \",\", \"/mesos\"))\n   .set(\"spark.driver.host\", mesosDriverNode)\n   .set(\"spark.broadcast.factory\", broadcastFactory)\n   .set(\"spark.local.dir\", sparkLocalDir)\n   //.set(\"spark.storage.memoryFraction\", \"0.1\")\n   //.set(\"spark.shuffle.memoryFraction\", \"0.4\")\n})",
+      "language":"scala",
+      "collapsed":false,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"sparkContext.getConf.toDebugString",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":12,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"import org.apache.spark.ui.notebook.front.widgets.SparkInfo\nimport scala.concurrent.duration._\nnew SparkInfo(sparkContext, checkInterval=1 second, execNumber=None)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":13,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"#### Access cassandra"
+    },{
+      "cell_type":"code",
+      "input":"import com.datastax.spark.connector._                                    \nimport org.apache.spark.sql.cassandra.CassandraSQLContext\n\nval cc = new CassandraSQLContext(sparkContext)\nval rdd: org.apache.spark.sql.SchemaRDD = cc.sql(\"SELECT * from tch.actualvalues\")",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":14,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"rdd.count",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":15,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"import cc._\n\nval proj = rdd.select( 'id, 'metrics )\n",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":16,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"import SparkContext._\nval l = proj.map(r => (r.getString(0), r(1).asInstanceOf[Map[String, Double]].get(\"mem\")))\n    .filter(_._2.isDefined)\n    .map(x => (x._1, x._2.get))\n    .reduceByKey(_ + _)\n    .take(100).toList\n<ul>{for ((x,y) <- l) yield <li>{x} → {y}</li>}</ul>  ",
+      "language":"scala",
+      "collapsed":false,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":":sql select * from test where name = {String: name} and first = {String: first}",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[],
+  "nbformat":3
+}

@@ -57,22 +57,67 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
   private lazy val stdoutBytes = new MyOutputStream
   private lazy val stdout = new PrintWriter(stdoutBytes)
 
-  private var loop:SparkILoop = _
+  private var loop:HackSparkILoop = _
 
   var classServerUri:Option[String] = None
 
+  def defaultClassPath: IndexedSeq[String] = {
+    import java.net._
+
+    def urls(cl:ClassLoader, acc:IndexedSeq[String]=IndexedSeq.empty):IndexedSeq[String] = {
+      if (!cl.isInstanceOf[URLClassLoader]) {
+        //println(" ----- ")
+        //println(cl.getClass.getSimpleName)
+        return acc
+      }
+      if (cl != null) {
+        val us = acc ++ (cl.asInstanceOf[URLClassLoader].getURLs map { u =>
+          val f = new java.io.File(u.getFile)
+          URLDecoder.decode(f.getAbsolutePath, "UTF8")
+        })
+        urls(cl.getParent, us)
+      } else {
+        acc
+      }
+    }
+    val loader = play.api.Play.current.classloader
+    val gurls = urls(loader)
+    //println(gurls)
+    gurls
+  }
+
+
   val interp:org.apache.spark.repl.SparkIMain = {
     val settings = new Settings
+
     settings.embeddedDefaults[Repl]
+
     if (!compilerOpts.isEmpty) settings.processArguments(compilerOpts, false)
 
     // TODO: This causes tests to fail in SBT, but work in IntelliJ
     // The java CP in SBT contains only a few SBT entries (no project entries), while
     // in intellij it has the full module classpath + some intellij stuff.
     settings.usejavacp.value = true
-    // println(System.getProperty("java.class.path"))
+
+
+    //val urls = java.lang.Thread.currentThread.getContextClassLoader match {
+    //  case cl: java.net.URLClassLoader => cl.getURLs.toList
+    //  case _ => error("classloader is not a URLClassLoader")
+    //}
+    //val classpath = urls map {_.toString}
+    //settings.classpath.value = classpath.distinct.mkString(java.io.File.pathSeparator)
+
+
+    //settings.bootclasspath.value += scala.tools.util.PathResolver.Environment.javaBootClassPath
+    //settings.bootclasspath.value += java.io.File.pathSeparator + defaultClassPath.mkString(java.io.File.pathSeparator)
+    //settings.bootclasspath.value += java.io.File.pathSeparator + "_lib/scala-library-2.10.4.jar"
+    //settings.bootclasspath.value += java.io.File.pathSeparator + "_lib/sbt-launch.jar"
+
+    //println(settings.bootclasspath.value)
+
     //val i = new HackIMain(settings, stdout)
     loop = new HackSparkILoop(stdout)
+
     jars.foreach { jar =>
       import scala.tools.nsc.util.ClassPath
       val f = scala.tools.nsc.io.File(jar).normalize
@@ -83,7 +128,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     val i = loop.intp
     //i.initializeSynchronous()
     classServerUri = Some(i.classServer.uri)
-    i
+    i.asInstanceOf[org.apache.spark.repl.SparkIMain]
   }
 
   private lazy val completion = {

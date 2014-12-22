@@ -6,6 +6,7 @@ import scala.concurrent._
 import akka.actor._
 
 import play.api.libs.json._
+import play.api.Logger
 
 import org.apache.spark.sql.{SQLContext, SchemaRDD}
 
@@ -14,7 +15,7 @@ import JsonCodec._
 
 import notebook.front._
 
-class Sql(sqlContext:SQLContext, call: String) extends Widget with notebook.util.Logging {
+class Sql(sqlContext:SQLContext, call: String) extends Widget {
 
   private[this] val sqlInputRegex = "(\\{[^\\}]+\\})".r
   private[this] val sqlTypedInputRegex = "^\\{([^:]+):(.*)\\}$".r
@@ -49,7 +50,7 @@ class Sql(sqlContext:SQLContext, call: String) extends Widget with notebook.util
 
   val mergedObservables:RxObservable[(String, Any)] = {
     val l:List[RxObservable[(String, Any)]] = parts.map{ p =>
-      val ob = p._2.widget.currentData.observable.inner//.doOnEach(x => logDebug("########:"+x.toString))
+      val ob = p._2.widget.currentData.observable.inner//.doOnEach(x => Logger.debug("########:"+x.toString))
       val o:RxObservable[(String, Any)] = ob.map((d:Any) => (p._2.name, d))
       o
     }
@@ -89,8 +90,10 @@ class Sql(sqlContext:SQLContext, call: String) extends Widget with notebook.util
   var result:Subject[Any] = subjects.ReplaySubject(1)
 
   def updateValue(c:String) = {
+    Logger.info("c")
+    Logger.info(c)
     val tried:Option[Try[SchemaRDD]] = Some(Try{sqlContext.sql(c)})
-    logInfo(" Tried => " + tried.toString)
+    Logger.info(" Tried => " + tried.toString)
     subject.onNext(tried)
     sql(tried)
     tried
@@ -114,7 +117,7 @@ class Sql(sqlContext:SQLContext, call: String) extends Widget with notebook.util
           val r = f(s)
           result.onNext(r)
         case x =>
-          logError("ARRrrggllll → " + x.toString)
+          Logger.error("ARRrrggllll → " + x.toString)
       }
     }
     subject.subscribe(sub)
@@ -125,6 +128,8 @@ class Sql(sqlContext:SQLContext, call: String) extends Widget with notebook.util
   mergedObservables.subscribe(new RxObserver[(String, Any)]() {
     val values:collection.mutable.Map[String, Any] = collection.mutable.HashMap[String, Any]().withDefaultValue("")
     override def onNext(value: (String, Any)): Unit = {
+      Logger.info("value: ")
+      Logger.info(value.toString)
       values += value
       val s = parts.map { case (before, input) =>
         val vv = values(input.name)

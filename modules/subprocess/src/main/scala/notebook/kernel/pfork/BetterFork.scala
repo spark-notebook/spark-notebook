@@ -74,7 +74,7 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](executionContext: Exec
     ifNonNeg(permGen, "-XX:MaxPermSize=")
     ifNonNeg(reservedCodeCache, "-XX:ReservedCodeCacheSize=")
     if (server) builder += "-server"
-    if (debug) builder ++= IndexedSeq("-Xdebug", "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005")
+    if (debug) builder ++= IndexedSeq("-Xdebug", "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5555")
     builder.result()
   }
 
@@ -143,29 +143,39 @@ object BetterFork {
   // Keeps server sockets around so they are not GC'd
   private val serverSockets = new ListBuffer[Socket]()
 
-  def defaultClassPath: IndexedSeq[String] = {
 
-    def urls(cl:ClassLoader, acc:IndexedSeq[String]=IndexedSeq.empty):IndexedSeq[String] = {
-      if (!cl.isInstanceOf[URLClassLoader]) {
-        //println(" ----- ")
-        //println(cl.getClass.getSimpleName)
-        return acc
-      }
-      if (cl != null) {
-        val us = acc ++ (cl.asInstanceOf[URLClassLoader].getURLs map { u =>
-          val f = new File(u.getFile)
-          URLDecoder.decode(f.getAbsolutePath, "UTF8")
-        })
-        urls(cl.getParent, us)
-      } else {
-        acc
-      }
+//  →→→→→→→→→→→→→    NEEDED WHEN running in SBT/Play ...
+//  def defaultClassPath: IndexedSeq[String] = {
+//    def urls(cl:ClassLoader, acc:IndexedSeq[String]=IndexedSeq.empty):IndexedSeq[String] = {
+//      if (!cl.isInstanceOf[URLClassLoader]) {
+//        //println(" ----- ")
+//        //println(cl.getClass.getSimpleName)
+//        return acc
+//      }
+//      if (cl != null) {
+//        val us = acc ++ (cl.asInstanceOf[URLClassLoader].getURLs map { u =>
+//          val f = new File(u.getFile)
+//          URLDecoder.decode(f.getAbsolutePath, "UTF8")
+//        })
+//        urls(cl.getParent, us)
+//      } else {
+//        acc
+//      }
+//    }
+//    val loader = Play.current.classloader
+//    val gurls = urls(loader)
+//    //println(gurls)
+//    gurls
+//  }
+
+  def defaultClassPath: IndexedSeq[String] = {
+    val loader = getClass.getClassLoader.asInstanceOf[URLClassLoader]
+
+    loader.getURLs.map(u => new File(u.getFile)).map { f =>
+      URLDecoder.decode(f.getAbsolutePath, "UTF8")
     }
-    val loader = Play.current.classloader
-    val gurls = urls(loader)
-    println(gurls)
-    gurls
   }
+
 
   def defaultHeap = Runtime.getRuntime.maxMemory
 

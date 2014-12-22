@@ -52,6 +52,11 @@ object Application extends Controller {
     )))
   }
 
+
+  def listNotebooks = Action {
+    Ok(nbm.listNotebooks)
+  }
+
   def newNotebook = Action {
     val id = nbm.newNotebook()
     val name = nbm.idToName(id)
@@ -92,8 +97,8 @@ object Application extends Controller {
       val actor = WebSocketObservableActor.props(channel, contextId)
 
       //log the message to stdout and send response back to client
-      val in = Iteratee.foreach[JsValue] {
-        msg => actor ! msg
+      val in = Iteratee.foreach[JsValue] { msg =>
+        actor ! msg
       }
       (in,out)
   }
@@ -121,8 +126,6 @@ object Application extends Controller {
   def closeKernel = {
     // TODO ? kernelIdToObsService.remove(contextId)
   }
-
-
 
   def getNotebook(id: String, name: String, format: String) = {
     try {

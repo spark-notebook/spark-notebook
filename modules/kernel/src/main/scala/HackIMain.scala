@@ -6,4 +6,5 @@ package interpreter
  */
 class HackIMain(settings: Settings, out: JPrintWriter) extends IMain(settings, out) {
   def previousRequests = prevRequestList
+  override protected def parentClassLoader = settings.getClass.getClassLoader()
 }

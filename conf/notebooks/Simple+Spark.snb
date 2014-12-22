@@ -1,0 +1,67 @@
+{
+  "metadata":{
+    "name":"Simple Spark",
+    "user_save_timestamp":"2014-10-11T17:33:45.703Z",
+    "auto_save_timestamp":"2014-10-20T09:55:34.464Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[{
+    "cells":[{
+      "cell_type":"markdown",
+      "source":"### Spark config"
+    },{
+      "cell_type":"code",
+      "input":"sparkContext.getConf.toDebugString",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":3,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val count = sparkContext.makeRDD((1 to 1000).toArray).count()\n()",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":6,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"#### Counting"
+    },{
+      "cell_type":"code",
+      "input":"<strong>{count} items</strong>",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":5,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val i:Int = 2",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":1,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"\nsparkContext.parallelize((1 to 10)).map( x => x*i)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":2,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"\n",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "nbformat":3
+}

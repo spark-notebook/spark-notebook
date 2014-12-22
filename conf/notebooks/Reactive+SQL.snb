@@ -1,0 +1,87 @@
+{
+  "metadata":{
+    "name":"Reactive SQL",
+    "user_save_timestamp":"2014-11-07T01:29:44.985Z",
+    "auto_save_timestamp":"2014-11-08T00:18:39.903Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":"//listen to Spark\nimport org.apache.spark.ui.notebook.front.widgets.SparkInfo\nimport scala.concurrent.duration._\nnew SparkInfo(sparkContext, checkInterval=1 seconds, execNumber=Some(100))",
+      "language":"scala",
+      "collapsed":false,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// show list\ndef ul(xs:Seq[String]) = <ul>{xs.map(x => <li>{x}</li>)}</ul>",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":6,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"//util class\ncase class Person(name:String, age:Int)",
+      "language":"scala",
+      "collapsed":false,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"//define sql context\nval sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)\n\n// createSchemaRDD is used to implicitly convert an RDD to a SchemaRDD.\nimport sqlContext.createSchemaRDD",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":7,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"//prepare some sql materials\n/**\n *    COPIED FROM  http://spark.apache.org/docs/latest/sql-programming-guide.html\n **/\n// Create an RDD\nval people = sparkContext.makeRDD(Array(\n\t\"Sandrine,33\",\n\t\"Noah,4\",\n\t\"Noootsab,32\"\n))\n\n// The schema is encoded in a string\nval schemaString = \"name age\"\n\n// Import Spark SQL data types and Row.\nimport org.apache.spark.sql._\n\n// Generate the schema based on the string of schema\nval schema =\n  StructType(\n    schemaString.split(\" \").map(fieldName => StructField(fieldName, StringType, true)))\n\n// Convert records of the RDD (people) to Rows.\nval rowRDD = people.map(_.split(\",\")).map(p => Row(p(0), p(1).trim))\n\n// Apply the schema to the RDD.\nval peopleSchemaRDD = sqlContext.applySchema(rowRDD, schema)\n\n// Register the SchemaRDD as a table.\npeopleSchemaRDD.registerTempTable(\"people\")\n\n// SQL statements can be run by using the sql methods provided by sqlContext.\nval results = sqlContext.sql(\"SELECT name FROM people\")\n\n// The results of SQL queries are SchemaRDDs and support all the normal RDD operations.\n// The columns of a row in the result can be accessed by ordinal.\nul(results.map(t => \"Name: \" + t(0)).collect())",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":8,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":":sql[selectKids] SELECT name FROM people WHERE name = \"{String: name}\" and age >= {Int: age}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":13,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"//use result of previous query when valid\nselectKids.react[String](s => \"# results:\" + s.count(), out)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":10,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":":sql[all] SELECT name FROM people",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":11,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"//show all names reactively → even if the sql was already finished!\nall.react[String](s => \"results:\" + s.map(_.getString(0)).collect().mkString(\",\"), out)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":12,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":false,
+      "outputs":[]
+    }]
+  }],
+  "nbformat":3
+}

@@ -61,7 +61,8 @@ object JSBus {
   protected[this] def newID = {
     val bytes = new Array[Byte](16)
     random.nextBytes(bytes)
-    "anon" + new String(Hex.encodeHex(bytes))
+    val id = "anon" + new String(Hex.encodeHex(bytes))
+    id
   }
 
   protected[this] def send(id: String, value: JsValue) {
@@ -70,6 +71,9 @@ object JSBus {
   val log = LoggerFactory.getLogger(getClass())
 
   private[notebook] def forwardClientUpdateMessage(obsId: String, newValue: JsValue) = idToSubject.get(obsId).map(x => {
+    println("obs: " + obsId)
+    println("x: " + x)
+    println("newValue: " + newValue)
     x.onJsReceived(newValue)
   })
 
@@ -103,7 +107,7 @@ object JSBus {
 
 
     def onJsReceived(v: JsValue) {
-      //logInfo(">>><<< : " + v)
+      println(">>><<< : " + v)
       subject.onNext(v)
     }
   }

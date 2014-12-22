@@ -9,7 +9,7 @@ import scala.reflect.api.{Mirror, TypeCreator, Universe => ApiUniverse}
 
 import scala.tools.nsc.interpreter._
 
-class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) { 
+class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) {
   private def getMaster(): String = {
     val master = this.master match {
       case Some(m) => m
@@ -20,8 +20,6 @@ class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) {
     }
     master
   }
-
-
 
   private def tagOfStaticClass[T: ClassTag]: u.TypeTag[T] =
     u.TypeTag[T](
