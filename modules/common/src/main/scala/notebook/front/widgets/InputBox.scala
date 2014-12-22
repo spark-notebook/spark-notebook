@@ -53,9 +53,9 @@ class InputBox[T](initial: T, label:String="")(implicit t:InputType[T], val code
               scopedScript(
                 """require( ['observable', 'knockout'],
                             function (Observable, ko) {
-                              console.log("-----------")
-                              console.dir(this);
-                              console.dir(valueId);
+                              //console.log("-----------")
+                              //console.dir(this);
+                              //console.dir(valueId);
                               ko.applyBindings({
                                 value: Observable.makeObservable(valueId)
                               }, this);
