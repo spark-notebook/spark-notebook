@@ -10,22 +10,6 @@
       "input":"import notebook.front.widgets.Spark\nnew Spark(sparkContext)",
       "language":"scala",
       "collapsed":false,
-      "prompt_number":14,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"",
-      "language":"scala",
-      "collapsed":false,
-      "outputs":[]
-    }]
-  }],
-  "autosaved":[{
-    "cells":[{
-      "cell_type":"code",
-      "input":"import notebook.front.widgets.Spark\nnew Spark(sparkContext)",
-      "language":"scala",
-      "collapsed":false,
       "prompt_number":1,
       "outputs":[]
     },{

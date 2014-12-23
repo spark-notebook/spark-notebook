@@ -2,6 +2,7 @@ package notebook
 
 import java.util.Date
 
+import play.api.Logger
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
@@ -32,18 +33,44 @@ object NBSerializer {
   }
   implicit val outputFormat:Format[Output] = Format(outputReads, outputWrites)
 
-  trait Cell
-  case class CodeCell(input: String, language: String, collapsed: Boolean,prompt_number:Option[Int], outputs: List[Output]) extends Cell
+  trait Cell {
+    def cell_type:String
+  }
+  case class CodeCell(cell_type:String="code", input: String, language: String, collapsed: Boolean,prompt_number:Option[Int], outputs: List[Output]) extends Cell
   implicit val codeCellFormat = Json.format[CodeCell]
-  case class MarkdownCell(source: String) extends Cell
+  case class MarkdownCell(cell_type:String="markdown", source: String) extends Cell
   implicit val markdownCellFormat = Json.format[MarkdownCell]
-  case class RawCell(source: String) extends Cell
+  case class RawCell(cell_type:String="raw", source: String) extends Cell
   implicit val rawCellFormat = Json.format[RawCell]
-  case class HeadingCell(source: String, level: Int) extends Cell
+  case class HeadingCell(cell_type:String="heading", source: String, level: Int) extends Cell
   implicit val headingCellFormat = Json.format[HeadingCell]
 
   case class Metadata(name: String, user_save_timestamp: Date = new Date(0), auto_save_timestamp: Date = new Date(0))
-  implicit val hetadataFormat = Json.format[Metadata]
+  implicit val hetadataFormat:Format[Metadata] = {
+    val f = new java.text.SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss.SSS'Z'")
+    val r:Reads[Metadata] = (
+      (JsPath \ "name").read[String] and
+      (JsPath \ "user_save_timestamp").read[String].map(x => f.parse(x)) and
+      (JsPath \ "auto_save_timestamp").read[String].map(x => f.parse(x))
+    )(Metadata.apply _)
+
+    val w:Writes[Metadata] =
+      OWrites{ (m:Metadata) =>
+        val name = JsString(m.name)
+        val user_save_timestamp = JsString(f.format(m.user_save_timestamp))
+        val auto_save_timestamp = JsString(f.format(m.auto_save_timestamp))
+        Json.obj(
+          "name" → name,
+          "user_save_timestamp" → user_save_timestamp,
+          "auto_save_timestamp" → auto_save_timestamp
+        )
+      }
+
+    Format(r, w)
+  }
+
+
+  Json.format[Metadata]
 
 
   implicit val cellReads:Reads[Cell] = Reads { (js:JsValue) =>
@@ -68,7 +95,7 @@ object NBSerializer {
   case class Worksheet(cells: List[Cell])
   implicit val worksheetFormat = Json.format[Worksheet]
 
-  case class Notebook(metadata: Metadata, worksheets: List[Worksheet], autosaved: Option[List[Worksheet]], nbformat: Option[Int]) {
+  case class Notebook(metadata: Metadata, worksheets: List[Worksheet], autosaved: Option[List[Worksheet]]=None, nbformat: Option[Int]) {
     def name = metadata.name
   }
   implicit val notebookFormat = Json.format[Notebook]
@@ -80,12 +107,16 @@ object NBSerializer {
         notebook
       }
       case e: JsError => {
-        throw new RuntimeException(Json.stringify(JsError.toFlatJson(e)))
+        val ex = new RuntimeException(Json.stringify(JsError.toFlatJson(e)))
+        Logger.error("parse notebook", ex)
+        throw ex
       }
-    }    
+    }
   }
 
   def read(s:String):Notebook = {
+    //Logger.info("Reading Notebook")
+    //Logger.info(s)
     val json:JsValue = Json.parse(s)
     fromJson(json)
   }
