@@ -6,15 +6,6 @@
   },
   "worksheets":[{
     "cells":[{
-      "cell_type":"code",
-      "input":"",
-      "language":"scala",
-      "collapsed":true,
-      "outputs":[]
-    }]
-  }],
-  "autosaved":[{
-    "cells":[{
       "cell_type":"markdown",
       "source":"### Spark config"
     },{
