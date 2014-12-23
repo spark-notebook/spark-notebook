@@ -1,0 +1,22 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                           controllers.Application.dash(title:String="Spark Notebook")
+POST    /new                        controllers.Application.newNotebook
+GET     /view/:name                 controllers.Application.viewNotebook(name:String, id:String)
+
+GET     /notebooks                  controllers.Application.listNotebooks
+GET     /notebooks/:name            controllers.Application.dlNotebook(name:String, id:String)
+PUT     /notebooks/:name            controllers.Application.saveNotebook(name:String, id:String, force:Boolean)
+
+POST    /kernels                    controllers.Application.createKernel
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.at(path="/public", file)
+
+
+# Web socket
+GET     /observable/:contextId      controllers.Application.openObservable(contextId:String)
+GET     /kernels/:kernelId/:channel controllers.Application.openKernel(kernelId:String, channel:String)

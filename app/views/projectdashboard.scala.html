@@ -1,0 +1,41 @@
+@(project:String, params:Map[String, String])
+
+@default("Spark Notebook", params){
+  <!-- stylesheet -->
+  <script src="" type="text/javascript" charset="utf-8"></script>
+  <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/projectdashboard.css")" type="text/css" />
+ }{
+  <!-- meta -->
+
+} {
+  <!-- header -->
+} {
+  <!-- site -->
+  <div id="main_app">
+    <div id="tabs">
+      <ul>
+        <li><a href="#tab1">Notebooks</a></li>
+      </ul>
+
+      <div id="tab1">
+        <div id="notebook_toolbar">
+          <span id="drag_info">Drag files onto the list to import notebooks.</span>
+
+          <span id="notebook_buttons">
+            <button id="refresh_notebook_list" title="Refresh notebook list">Refresh</button>
+            <button id="new_notebook" title="Create new notebook">New Notebook</button>
+          </span>
+        </div>
+
+        <div id="notebook_list">
+          <div id="project_name"><h2>@project</h2></div>
+        </div>
+      </div>
+    </div>
+  </div>
+} {
+  <!-- script -->
+  <script src="@routes.Assets.at("javascripts/ipython/js/notebooklist.js")" type="text/javascript" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/js/clusterlist.js")" type="text/javascript" charset="utf-8"></script>
+  <script src="@routes.Assets.at("javascripts/ipython/js/projectdashboardmain.js")" type="text/javascript" charset="utf-8"></script>
+}

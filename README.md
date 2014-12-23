@@ -6,8 +6,8 @@ Spark Notebook
 
 - [Description](#description)
 - [Launch](#launch)
-  - [Very quickstart](#very-quickstart)
-  - [Longer story](#longer-story)
+  - [Using a realease](#using-a-realease)
+  - [From the sources](#from-the-sources)
     - [Procedure](#procedure)
 - [Use](#use)
 - [Features](#features)
@@ -38,19 +38,15 @@ The usage of Spark comes out of the box, and is simply enabled by the implicit v
 
 Launch
 ------
-### Very quickstart
+### Using a realease
 
-Long story short, there is a small script that can help you setup and launch it without any other requirements than a _java environment_.
+Long story short, you can use the latest release [here](https://github.com/andypetrella/spark-notebook/releases), download it, unzip it and launch the script in `bin`.
 
 
-```bash
-curl https://raw.githubusercontent.com/andypetrella/spark-notebook/master/run.sh | bash -s dev
-```
+### From the sources
+The spark notebook requires a [Java(TM)](http://en.wikipedia.org/wiki/Java_(programming_language)) environment (aka JVM) as runtime and [Play 2.2.6](https://www.playframework.com/documentation/2.2.6/Home) to build it.
 
-### Longer story
-The spark notebook requires a [Java(TM)](http://en.wikipedia.org/wiki/Java_(programming_language)) environment (aka JVM) as runtime and [SBT](www.scala-sbt.org) as build tool.
-
-You will also need a working [GIT](http://git-scm.com/) installation to download the code and build it.
+Of course, you will also need a working [GIT](http://git-scm.com/) installation to download the code and build it.
 
 #### Procedure
 ##### Download the code
@@ -59,32 +55,38 @@ git clone https://github.com/andypetrella/spark-notebook.git
 cd spark-notebook
 ```
 ##### Launch the server
-Enter the `sbt console` by running `sbt` within the `spark-notebook`:
+Enter the `play console` by running `play` within the `spark-notebook` folder:
 ```
-spark-notebook$ sbt
-[warn] Multiple resolvers having different access mechanism configured with same name 'sbt-plugin-releases'. To avoid conflict, Remove duplicate project resolvers (`resolvers`) or rename publishing resolver (`publishTo`).
-[info] Updating {file:/home/noootsab/src/noootsab/spark-notebook/project/}spark-notebook-build...
-...
-...
-...
+[info] Loading global plugins from /home/noootsab/.sbt/0.13/plugins
+[info] Loading project definition from /home/Sources/noootsab/spark-notebook/project
+[info] Set current project to spark-notebook (in build file:/home/Sources/noootsab/spark-notebook/)
+       _
+ _ __ | | __ _ _  _
+| '_ \| |/ _' | || |
+|  __/|_|\____|\__ /
+|_|            |__/
+
+play 2.2.6 built with Scala 2.10.3 (running Java 1.7.0_72), http://www.playframework.com
+
+> Type "help play" or "license" for more information.
+> Type "exit" or use Ctrl+D to leave this console.
+
+[spark-notebook] $
 ```
 
-Then you can head to the `server` project and run it. You have several options available:
- * `--disable_security`: this will disable the Akka secure cookie (helpful in local env)
- * `--no_browser`: this prevents the project to open a page in your browser everytime the server is started
-
+To create you distribution
 ```
-> project server
-> run --disable_security
+[spark-notebook] $ dist
 ```
 
-##### Make the server accessible from the network
+In order to develop on the Spark Notebook, you'll have to use the `run` command instead.
 
-Edit the `.conf` file in the project root and change the hostname from `0.0.0.0` to the name that is reachable from the network.
+**NOTE**: there is a __MAJOR__ problem at the moment. The sbt\/play dev environment is working against the project - the spark notebook launches external process to encapsulate a notebook context, however while forking the process and running the init scala code, either the classpath is empty or _it looks like_ the macro are not expanded.
+
 
 Use
 ---
-When the server has been started, you can head to the page `http://localhost:8899` and you'll see something similar to:
+When the server has been started, you can head to the page `http://localhost:9000` and you'll see something similar to:
 ![Notebook list](https://raw.github.com/andypetrella/spark-notebook/master/images/list.png)
 
 From there you can either:
@@ -214,7 +216,7 @@ This is how it looks like in the notebook:
 ### Interacting with JavaScript
 Showing numbers can be good but great analysis reports should include relevant charts, for that we need JavaScript to manipulate the Notebook's DOM.
 
-For that purpose, a notebook can use the `Playground` abstraction. It allows us to create data in Scala and use it in predefined JavaScript functions (located under `observable/src/main/assets/observable/js`) or even JavaScript snippets (that is, written straight in the notebook as a Scala `String` to be sent to the JavaScript interpreter).
+For that purpose, a notebook can use the `Playground` abstraction. It allows us to create data in Scala and use it in predefined JavaScript functions (located under `assets/javascripts/notebook`) or even JavaScript snippets (that is, written straight in the notebook as a Scala `String` to be sent to the JavaScript interpreter).
 
 The JavaScript function will be called with these parameters:
  * the data observable: a JS function can register its new data via `subscribe`.
@@ -253,13 +255,14 @@ def createTss(start:Long, step:Int=60*1000, nb:Int = 100):Seq[Series] = ...
 val data = createTss(orig, step, nb)
 
 val p = new Playground(data, List(Script("rickshawts",
-                                         ("renderer" -> "stack")
-                                         ~ ("fixed" ->
-                                              ("interval" -> step/1000)
-                                              ~ ("max" -> 100)
-                                              ~ ("baseInSec" -> orig/1000)
-                                           )
-                                        )))(seriesCodec)
+                                          Json.obj(
+                                            "renderer" → "stack",
+                                            "fixed" → Json.obj(
+                                                        "interval" → (step/1000),
+                                                        "max" → 100,
+                                                        "baseInSec" → (orig/1000)
+                                                      )
+                                          ))))(seriesCodec)
 ```
 As you can see, the only big deal is to create the timeseries (`Seq[Series]` which is a simple wrapper around:
  * name

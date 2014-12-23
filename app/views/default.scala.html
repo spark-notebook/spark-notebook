@@ -1,0 +1,69 @@
+@(title: String, params:Map[String, String])(stylesheet: Html)(meta: Html)(header: Html)(site: Html)(script: Html)
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="utf-8" />
+
+    <title>@title</title>
+
+    <!--hack to avoid bokeh.css integration side effect-->
+    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/bokeh.css")" type="text/css" />  
+
+    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/jquery/css/base/jquery-ui.min.css")" type="text/css" />  
+
+    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/boilerplate.css")" type="text/css" />  
+    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/fbm.css")" type="text/css" />  
+    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/page.css")" type="text/css" />  
+
+
+    @stylesheet
+
+    @meta
+
+</head>
+
+<body @{params.map(x => s""" data-${x._1}=${x._2} """).mkString(" ")}>
+
+    <div id="header">
+       <div>
+        <span id="login_widget">
+            <button id="login"></button>
+            <button id="logout"></button>
+        </span>
+
+        @header
+
+       <div id="logo">
+       <!-- TODO: External logo hook -->
+        </div>
+        </div>
+
+    </div>
+    <div id="expand_header"><a href="#"><i class="glyphicon glyphicon-chevron-down"></i></a></div>
+
+    <div id="site">
+        @site
+    </div>
+
+    <script src="@routes.Assets.at("stylesheets/third/curl/curl.js")" type="text/javascript" charset="utf-8"></script>
+    <script src="@routes.Assets.at("stylesheets/third/jquery/js/jquery.js")" type="text/javascript" charset="utf-8"></script>
+    <script>
+      //heack for jquery-ui to not use require (jquery not yet loaded via curljs :-/)
+      define.amd = false;
+    </script>
+    <script src="@routes.Assets.at("stylesheets/third/jquery/js/jquery-ui.js")" type="text/javascript" charset="utf-8"></script>
+    <script>
+      define.amd = true;
+    </script>
+    <script src="@routes.Assets.at("javascripts/ipython/js/namespace.js")" type="text/javascript" charset="utf-8"></script>
+    <script src="@routes.Assets.at("javascripts/ipython/js/csrf.js")" type="text/javascript" charset="utf-8"></script>
+    <script src="@routes.Assets.at("javascripts/ipython/js/page.js")" type="text/javascript" charset="utf-8"></script>
+    <script src="@routes.Assets.at("javascripts/ipython/js/loginwidget.js")" type="text/javascript" charset="utf-8"></script>
+
+    @script
+
+    </body>
+</html>
