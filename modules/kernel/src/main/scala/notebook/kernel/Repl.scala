@@ -100,12 +100,12 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     settings.usejavacp.value = true
 
 
-    //val urls = java.lang.Thread.currentThread.getContextClassLoader match {
-    //  case cl: java.net.URLClassLoader => cl.getURLs.toList
-    //  case _ => error("classloader is not a URLClassLoader")
-    //}
-    //val classpath = urls map {_.toString}
-    //settings.classpath.value = classpath.distinct.mkString(java.io.File.pathSeparator)
+    val urls = java.lang.Thread.currentThread.getContextClassLoader match {
+      case cl: java.net.URLClassLoader => cl.getURLs.toList
+      case _ => error("classloader is not a URLClassLoader")
+    }
+    val classpath = urls map {_.toString}
+    settings.classpath.value = classpath.distinct.mkString(java.io.File.pathSeparator)
 
 
     //settings.bootclasspath.value += scala.tools.util.PathResolver.Environment.javaBootClassPath
