@@ -10,13 +10,13 @@
     <title>@title</title>
 
     <!--hack to avoid bokeh.css integration side effect-->
-    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/bokeh.css")" type="text/css" />  
+    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/bokeh.css")" type="text/css" />
 
-    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/jquery/css/base/jquery-ui.min.css")" type="text/css" />  
+    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/jquery/css/base/jquery-ui.min.css")" type="text/css" />
 
-    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/boilerplate.css")" type="text/css" />  
-    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/fbm.css")" type="text/css" />  
-    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/page.css")" type="text/css" />  
+    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/boilerplate.css")" type="text/css" />
+    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/fbm.css")" type="text/css" />
+    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/page.css")" type="text/css" />
 
 
     @stylesheet
@@ -25,7 +25,10 @@
 
 </head>
 
-<body @{params.map(x => s""" data-${x._1}=${x._2} """).mkString(" ")}>
+<body @{
+  val a = params.map(x => s""" data-${x._1}="${x._2}" """).mkString(" ")
+  Html(a)
+}>
 
     <div id="header">
        <div>
