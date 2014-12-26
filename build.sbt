@@ -6,6 +6,14 @@ name := "spark-notebook"
 
 version := "0.1"
 
+maintainer := "Andy Petrella" //Docker
+
+dockerExposedPorts in Docker := Seq(9000, 9443) //Docker
+
+dockerRepository := Some("andypetrella") //Docker
+
+packageName in Docker := "andypetrella/spark-notebook"
+
 scalaVersion := "2.10.4"
 
 ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) }
