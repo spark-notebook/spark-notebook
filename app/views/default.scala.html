@@ -25,11 +25,7 @@
 
 </head>
 
-<body @{
-  val a = params.map(x => s""" data-${x._1}="${x._2}" """).mkString(" ")
-  Html(a)
-}>
-
+<body @{Html(params.map(x => s""" data-${x._1}="${x._2}" """).mkString(" "))}>
     <div id="header">
        <div>
         <span id="login_widget">
