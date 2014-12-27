@@ -8,6 +8,7 @@ import java.util.{Date, UUID}
 
 import org.apache.commons.io.FileUtils
 
+import play.api.Logger
 import play.api.libs.json._
 
 import notebook.NBSerializer._
@@ -33,8 +34,13 @@ class NotebookManager(val name: String, val notebookDir: File) {
   }
 
   def notebookFile(name: String) = {
+    Logger.info(s"Load notebook: $name")
     val basePath = notebookDir.getCanonicalPath
-    val nbFile = new File(basePath, URLEncoder.encode(name, "UTF-8") + extension)
+    Logger.info(s"Load notebook. basePath: $basePath")
+    val fileName = URLEncoder.encode(name, "UTF-8") + extension
+    Logger.info(s"Load notebook. file name: $fileName")
+    val nbFile = new File(basePath, fileName)
+    Logger.info(s"Load notebook. canonical file path: ${nbFile.getParentFile.getCanonicalPath}")
     /* This check is probably not strictly necessary due to URL encoding of name (should escape any path traversal components), but let's be safe */
     require(nbFile.getParentFile.getCanonicalPath == basePath, "Unable to access notebook outside of notebooks path.")
     nbFile

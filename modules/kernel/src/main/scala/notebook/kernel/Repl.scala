@@ -8,23 +8,27 @@
 package notebook.kernel
 
 import java.io.{StringWriter, PrintWriter, ByteArrayOutputStream}
+import java.net.{URLDecoder, JarURLConnection}
+import java.util.ArrayList
+
+import collection.JavaConversions
+import collection.JavaConversions._
+import xml.{NodeSeq, Text}
+import scala.util.control.NonFatal
+
 import org.apache.spark.repl.{HackSparkILoop, SparkILoop, SparkJLineCompletion}
 
 import tools.nsc.Settings
 import tools.nsc.interpreter._
 import tools.nsc.interpreter.Completion.{Candidates, ScalaCompleter}
-import tools.jline.console.completer.{ArgumentCompleter, Completer}
-import tools.nsc.interpreter.Completion.Candidates
 import tools.nsc.interpreter.Results.{Incomplete => ReplIncomplete, Success => ReplSuccess, Error}
-import scala.Either
-import java.util.ArrayList
-import collection.JavaConversions._
+
+import tools.jline.console.completer.{ArgumentCompleter, Completer}
+
+import play.api.Play
+
 import notebook.front.Widget
 import notebook.util.Match
-import xml.{NodeSeq, Text}
-import collection.JavaConversions
-import java.net.{URLDecoder, JarURLConnection}
-import scala.util.control.NonFatal
 
 class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
 
@@ -61,32 +65,6 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
 
   var classServerUri:Option[String] = None
 
-  def defaultClassPath: IndexedSeq[String] = {
-    import java.net._
-
-    def urls(cl:ClassLoader, acc:IndexedSeq[String]=IndexedSeq.empty):IndexedSeq[String] = {
-      if (!cl.isInstanceOf[URLClassLoader]) {
-        //println(" ----- ")
-        //println(cl.getClass.getSimpleName)
-        return acc
-      }
-      if (cl != null) {
-        val us = acc ++ (cl.asInstanceOf[URLClassLoader].getURLs map { u =>
-          val f = new java.io.File(u.getFile)
-          URLDecoder.decode(f.getAbsolutePath, "UTF8")
-        })
-        urls(cl.getParent, us)
-      } else {
-        acc
-      }
-    }
-    val loader = play.api.Play.current.classloader
-    val gurls = urls(loader)
-    //println(gurls)
-    gurls
-  }
-
-
   val interp:org.apache.spark.repl.SparkIMain = {
     val settings = new Settings
 
@@ -94,26 +72,42 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
 
     if (!compilerOpts.isEmpty) settings.processArguments(compilerOpts, false)
 
-    // TODO: This causes tests to fail in SBT, but work in IntelliJ
-    // The java CP in SBT contains only a few SBT entries (no project entries), while
-    // in intellij it has the full module classpath + some intellij stuff.
-    settings.usejavacp.value = true
+    // fix for #52
+    settings.usejavacp.value = false
 
 
-    //val urls = java.lang.Thread.currentThread.getContextClassLoader match {
-    //  case cl: java.net.URLClassLoader => cl.getURLs.toList
-    //  case _ => error("classloader is not a URLClassLoader")
-    //}
-    //val classpath = urls map {_.toString}
-    //settings.classpath.value = classpath.distinct.mkString(java.io.File.pathSeparator)
+    // fix for #52
+    val urls: IndexedSeq[String] = {
+      import java.net.URLClassLoader
+      import java.io.File
+      def urls(cl:ClassLoader, acc:IndexedSeq[String]=IndexedSeq.empty):IndexedSeq[String] = {
+        if (!cl.isInstanceOf[URLClassLoader]) {
+          return acc
+        }
+        if (cl != null) {
+          val us = acc ++ (cl.asInstanceOf[URLClassLoader].getURLs map { u =>
+            val f = new File(u.getFile)
+            URLDecoder.decode(f.getAbsolutePath, "UTF8")
+          })
+          urls(cl.getParent, us)
+        } else {
+          acc
+        }
+      }
+      val loader = Play.current.classloader
+      val gurls = urls(loader).distinct.filter(!_.contains("sbt/"))
+      gurls
+    }
 
+    val classpath = urls// map {_.toString}
+    settings.classpath.value = classpath.distinct.mkString(java.io.File.pathSeparator)
 
-    //settings.bootclasspath.value += scala.tools.util.PathResolver.Environment.javaBootClassPath
-    //settings.bootclasspath.value += java.io.File.pathSeparator + defaultClassPath.mkString(java.io.File.pathSeparator)
-    //settings.bootclasspath.value += java.io.File.pathSeparator + "_lib/scala-library-2.10.4.jar"
-    //settings.bootclasspath.value += java.io.File.pathSeparator + "_lib/sbt-launch.jar"
+    //bootclasspath → settings.classpath.isDefault = false → settings.classpath is used
+    settings.bootclasspath.value += scala.tools.util.PathResolver.Environment.javaBootClassPath
+    settings.bootclasspath.value += java.io.File.pathSeparator + settings.classpath.value
 
-    //println(settings.bootclasspath.value)
+    // LOG the classpath
+    // debug the classpath → settings.Ylogcp.value = true
 
     //val i = new HackIMain(settings, stdout)
     loop = new HackSparkILoop(stdout)

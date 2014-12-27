@@ -54,7 +54,10 @@ libraryDependencies ++= Seq(
   anorm,
   cache,
   commonsIO,
-  ningAsyncHttpClient // for aether to work...
+  ningAsyncHttpClient, // for aether to work...
+  "org.scala-lang" % "scala-library" % "2.10.4",
+  "org.scala-lang" % "scala-reflect" % "2.10.4",
+  "org.scala-lang" % "scala-compiler" % "2.10.4"
 )
 
 lazy val sparkNotebook = project.in(file("."))
