@@ -45,6 +45,7 @@ class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) {
     if (getMaster() == "yarn-client") System.setProperty("SPARK_YARN_MODE", "true")
 
     this.settings = settings
+
     createInterpreter()
 
     // sets in to some kind of reader depending on environmental cues
@@ -84,6 +85,7 @@ class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) {
       createAsyncListener() // listens for signal to run postInitialization
     }
     else {
+      // ??? intp.getInterpreterClassLoader
       intp.initializeSynchronous()
       postInitialization()
     }
