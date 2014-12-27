@@ -4,7 +4,7 @@ organization := "noootsab"
 
 name := "spark-notebook"
 
-version := "0.1"
+version := "0.1.1"
 
 maintainer := "Andy Petrella" //Docker
 
