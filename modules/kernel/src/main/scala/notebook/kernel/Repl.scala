@@ -72,17 +72,11 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
 
     if (!compilerOpts.isEmpty) settings.processArguments(compilerOpts, false)
 
-    // TODO: This causes tests to fail in SBT, but work in IntelliJ
-    // The java CP in SBT contains only a few SBT entries (no project entries), while
-    // in intellij it has the full module classpath + some intellij stuff.
+    // fix for #52
     settings.usejavacp.value = false
 
 
-    //val urls = java.lang.Thread.currentThread.getContextClassLoader match {
-    //  case cl: java.net.URLClassLoader => cl.getURLs.toList
-    //  case _ => error("classloader is not a URLClassLoader")
-    //}
-
+    // fix for #52
     val urls: IndexedSeq[String] = {
       import java.net.URLClassLoader
       import java.io.File
@@ -105,29 +99,15 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
       gurls
     }
 
-//    println(settings.classpath.value)
-
     val classpath = urls// map {_.toString}
-//    println(classpath)
-
     settings.classpath.value = classpath.distinct.mkString(java.io.File.pathSeparator)
-
-/*
-    println(settings.classpath.value)
-    println(settings.bootclasspath.value)
-*/
 
     //bootclasspath → settings.classpath.isDefault = false → settings.classpath is used
     settings.bootclasspath.value += scala.tools.util.PathResolver.Environment.javaBootClassPath
     settings.bootclasspath.value += java.io.File.pathSeparator + settings.classpath.value
 
-    /*println(settings.bootclasspath.isDefault)
-    println(settings.bootclasspath.value)
-    println(settings.classpath.value)
-*/
-
     // LOG the classpath
-    settings.Ylogcp.value = true
+    // debug the classpath → settings.Ylogcp.value = true
 
     //val i = new HackIMain(settings, stdout)
     loop = new HackSparkILoop(stdout)
