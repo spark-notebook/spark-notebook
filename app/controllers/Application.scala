@@ -57,6 +57,7 @@ object Application extends Controller {
   }
 
   def viewNotebook(name:String, id:String) = Action { request =>
+    Logger.info(s"View notebook. Name is '$name', id id '$id'")
     val ws_url = s"ws:/${request.host}"
 
     Ok(views.html.notebook(
@@ -132,6 +133,7 @@ object Application extends Controller {
 
   def getNotebook(id: String, name: String, format: String) = {
     try {
+      Logger.info(s"getNotebook: id is '$id', name is '$name' and format is '$format'")
       val response = nbm.getNotebook(Some(id), name).map { case (lastMod, name, data) =>
         format match {
           case "json" =>
