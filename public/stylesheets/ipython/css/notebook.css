@@ -346,6 +346,10 @@ div.text_cell_render {
     line-height: 1.231;  /* Changed from 1em to our global default */
 }
 
+.CodeMirror-cursor {
+    overflow: visible !important;
+}
+
 .CodeMirror-scroll {
     height: auto;     /* Changed to auto to autogrow */
     /*  The CodeMirror docs are a bit fuzzy on if overflow-y should be hidden or visible.*/
