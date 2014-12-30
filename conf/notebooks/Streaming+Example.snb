@@ -1,8 +1,8 @@
 {
   "metadata" : {
     "name" : "Streaming Example",
-    "user_save_timestamp" : "2014-12-23T24:59:40.737Z",
-    "auto_save_timestamp" : "2014-12-23T24:59:01.720Z"
+    "user_save_timestamp" : "2014-12-23T00:59:40.737Z",
+    "auto_save_timestamp" : "2014-12-23T00:59:01.720Z"
   },
   "worksheets" : [ {
     "cells" : [ {
