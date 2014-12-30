@@ -47,7 +47,7 @@ object NBSerializer {
 
   case class Metadata(name: String, user_save_timestamp: Date = new Date(0), auto_save_timestamp: Date = new Date(0))
   implicit val metadataFormat:Format[Metadata] = {
-    val f = new java.text.SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss.SSS'Z'")
+    val f = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     val r:Reads[Metadata] = (
       (JsPath \ "name").read[String] and
       (JsPath \ "user_save_timestamp").read[String].map(x => f.parse(x)) and
