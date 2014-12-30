@@ -46,7 +46,7 @@ object NBSerializer {
   implicit val headingCellFormat = Json.format[HeadingCell]
 
   case class Metadata(name: String, user_save_timestamp: Date = new Date(0), auto_save_timestamp: Date = new Date(0))
-  implicit val hetadataFormat:Format[Metadata] = {
+  implicit val metadataFormat:Format[Metadata] = {
     val f = new java.text.SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss.SSS'Z'")
     val r:Reads[Metadata] = (
       (JsPath \ "name").read[String] and
@@ -70,7 +70,7 @@ object NBSerializer {
   }
 
 
-  Json.format[Metadata]
+  //Json.format[Metadata]
 
 
   implicit val cellReads:Reads[Cell] = Reads { (js:JsValue) =>
