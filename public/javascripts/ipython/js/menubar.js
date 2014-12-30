@@ -61,10 +61,12 @@ var IPython = (function (IPython) {
             IPython.CSRF.postAction(url)
             //window.open(url,'_newtab');
         });
-        this.element.find('#download_py > a').click(function () {
+        this.element.find('#download_scala > a').click(function () {
             var notebook_id = IPython.notebook.get_notebook_id();
-            var url = $('body').data('baseProjectUrl') + 'notebooks/' + notebook_id + '?format=scala';
-            window.open(url,'_newtab');
+            var notebook_name = IPython.notebook.get_notebook_name();
+            var url = $('body').data('baseProjectUrl') + 'notebooks/' + encodeURIComponent(notebook_name) + '?id=' + notebook_id + '&format=scala';
+            IPython.CSRF.postAction(url)
+            //window.open(url,'_newtab');
         });
         this.element.find('button#print_notebook > a').click(function () {
             IPython.print_widget.print_notebook();
@@ -175,7 +177,7 @@ var IPython = (function (IPython) {
             IPython.quick_help.show_keyboard_shortcuts(IPython.keybindings.bindings);
         });
     };
-    
+
 
     IPython.MenuBar = MenuBar;
 

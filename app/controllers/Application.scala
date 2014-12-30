@@ -87,6 +87,10 @@ object Application extends Controller {
     getNotebook(id, name, "json")
   }
 
+  def dlNotebookAs(name:String, id:String, format:String) = Action {
+    getNotebook(id, name, format)
+  }
+
   def createKernel = Action { implicit request:RequestHeader =>
     startKernel(UUID.randomUUID.toString)
   }
@@ -139,6 +143,23 @@ object Application extends Controller {
           case "json" =>
             Ok(Json.parse(data)).withHeaders(
               "Content-Disposition" → s"""attachment; filename="$name.snb" """,
+              "Last-Modified" → lastMod
+            )
+          case "scala" =>
+            val nb = NBSerializer.fromJson(Json.parse(data))
+            val ws = nb.worksheets
+            val code = ws.zipWithIndex.map { case (w, idx) =>
+              val cs = w.cells.collect { case NBSerializer.CodeCell("code", i, "scala", _, _, _) => i }
+              val fc = cs.map(_.split("\n").map { s => s"  $s" }.mkString("\n")).mkString("\n\n  /* ... new cell ... */\n\n").trim
+              s"""
+              |object Worksheet_$idx {
+              |  $fc
+              |}
+              """.stripMargin
+            }.mkString("\n\n\n/*     ---- new worksheet ----    */\n\n\n").trim
+
+            Ok(code).withHeaders(
+              "Content-Disposition" → s"""attachment; filename="$name.scala" """,
               "Last-Modified" → lastMod
             )
           case _ => InternalServerError(s"Unsupported format $format")
