@@ -95,7 +95,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
         }
       }
       val loader = Play.current.classloader
-      val gurls = urls(loader).distinct.filter(!_.contains("sbt/"))
+      val gurls = urls(loader)//.distinct.filter(!_.contains("sbt/"))
       gurls
     }
 
