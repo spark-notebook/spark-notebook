@@ -32,7 +32,7 @@ var IPython = (function (IPython) {
         this.notebook_name = null;
         this.notebook_name_blacklist_re = /[\/\\]/;
         this.nbformat = 3 // Increment this when changing the nbformat
-        
+
         this.style();
         this.create_elements();
         this.bind_events();
@@ -81,7 +81,7 @@ var IPython = (function (IPython) {
             var app_height = $('div#main_app').height(); // content height
             var splitter_height = $('div#pager_splitter').outerHeight(true);
             var pager_height = $('div#pager').outerHeight(true);
-            var new_height = app_height - pager_height - splitter_height; 
+            var new_height = app_height - pager_height - splitter_height;
             that.element.animate({height : new_height + 'px'}, 'fast');
         });
 
@@ -689,7 +689,7 @@ var IPython = (function (IPython) {
         var i = this.index_or_selected(index);
         this.get_cell(i).toggle_output();
     };
-    
+
     Notebook.prototype.toggle_input = function (index) {
         var i = this.index_or_selected(index);
         this.get_cell(i).toggle_input();
@@ -785,7 +785,7 @@ var IPython = (function (IPython) {
         this.kernel.shell_channel.onmessage = $.proxy(this.handle_shell_reply,this);
         this.kernel.iopub_channel.onmessage = $.proxy(this.handle_iopub_reply,this);
     	/* TODO: Either use AMD for all .js, or statically load observable... */
-        curl(['observable'], function(obs) {obs.start();}) //TODO: don't really want to start this if there is no observable content on the page... 
+        curl(['observable'], function(obs) {obs.start();}) //TODO: don't really want to start this if there is no observable content on the page...
     };
 
 
@@ -951,7 +951,7 @@ var IPython = (function (IPython) {
         if (data['application/javascript'] !== undefined) {
             json.javascript = data['application/javascript'];
         }
-        return json;    
+        return json;
     };
 
 
@@ -969,7 +969,7 @@ var IPython = (function (IPython) {
             var code = cell.get_text();
             if (/\S/.test(code)) { //Only execute if there is some content...
                cell.hideInputOnResult = default_options.hideInput;
-               cell.set_input_prompt('*');
+               cell.set_input_prompt(-1); //??? '*'
                cell.element.addClass("running");
                this.clear_cell_msgs(cell.cell_id, this.msg_cell_map)
                this.clear_cell_msgs(cell.cell_id, this.io_cell_map)
@@ -1015,8 +1015,8 @@ var IPython = (function (IPython) {
     Notebook.prototype.request_tool_tip = function (cell,func) {
         // Feel free to shorten this logic if you are better
         // than me in regEx
-        // basicaly you shoul be able to get xxx.xxx.xxx from 
-        // something(range(10), kwarg=smth) ; xxx.xxx.xxx( firstarg, rand(234,23), kwarg1=2, 
+        // basicaly you shoul be able to get xxx.xxx.xxx from
+        // something(range(10), kwarg=smth) ; xxx.xxx.xxx( firstarg, rand(234,23), kwarg1=2,
         // remove everything between matchin bracket (need to iterate)
         matchBracket = /\([^\(\)]+\)/g;
         oldfunc = func;
@@ -1248,7 +1248,7 @@ var IPython = (function (IPython) {
         $.ajax(url, settings);
     };
 
-    
+
 
     Notebook.prototype.save_notebook_success = function (data, status, xhr) {
         $([IPython.events]).trigger('notebook_saved.Notebook');

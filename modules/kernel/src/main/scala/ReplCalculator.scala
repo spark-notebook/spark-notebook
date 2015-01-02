@@ -1,7 +1,7 @@
 package notebook
 package client
 
-import java.io.File
+import java.io.{File, FileWriter}
 
 import akka.actor.{ActorLogging, Props, Actor}
 import kernel._
@@ -77,6 +77,8 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
     r
   }
 
+  def codeRepo = new File(repo, "code")
+
   private val repoRegex = "(?s)^:local-repo\\s*(.+)\\s*$".r
   private val remoteRegex = "(?s)^:remote-repo\\s*(.+)\\s*$".r
   private val cpRegex = "(?s)^:cp\\s*(.+)\\s*$".r
@@ -100,6 +102,7 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
                 //TODO... probably copying the existing one would be better
                 repo = new File(r.trim)
                 repo.mkdirs
+
                 s""" "Repo changed to ${repo.getAbsolutePath}!" """
 
               case dpRegex(cp) =>
@@ -107,11 +110,6 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
                 val includes = lines map (Deps.parseInclude _) collect { case Some(x) => x }
                 val excludes = lines map (Deps.parseExclude _) collect { case Some(x) => x }
                 val excludesFns = excludes map (Deps.transitiveExclude _)
-
-                //println(s"Includes: ${includes.mkString(" | ")}")
-                //println(s"Excludes: ${excludes.mkString(" | ")}")
-                //println(s"Remotes: ${remotes.mkString(" | ")}")
-                //println(s"Local: ${repo}")
 
                 val jars = includes.flatMap(a => Deps.resolve(a, excludesFns)(remotes, repo)).toList
 

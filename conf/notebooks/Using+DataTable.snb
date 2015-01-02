@@ -1,0 +1,77 @@
+{
+  "metadata" : {
+    "name" : "Using DataTable",
+    "user_save_timestamp" : "2015-01-02T01:10:22.815Z",
+    "auto_save_timestamp" : "2015-01-02T01:09:06.871Z"
+  },
+  "worksheets" : [ {
+    "cells" : [ {
+      "cell_type" : "markdown",
+      "source" : "Define some data structure"
+    }, {
+      "cell_type" : "code",
+      "input" : "case class Data(dbl:Double, n:String, b:Boolean)\n\n// ↓ won't work will fail later on (when using format) with a type mismatch exception!\n  // clearly a compiler problem...\n//import play.api.libs.json._\n//import play.api.libs.functional.syntax._\n\n//val format = Json.format[Data]\n",
+      "language" : "scala",
+      "collapsed" : false,
+      "prompt_number" : 1,
+      "outputs" : [ ]
+    }, {
+      "cell_type" : "markdown",
+      "source" : "A way to generate data easily"
+    }, {
+      "cell_type" : "code",
+      "input" : "import scala.util.Random._\ndef random:Data = Data(nextDouble, alphanumeric.take(10).mkString(\"\"), nextBoolean)",
+      "language" : "scala",
+      "collapsed" : false,
+      "prompt_number" : 2,
+      "outputs" : [ ]
+    }, {
+      "cell_type" : "markdown",
+      "source" : "Some data"
+    }, {
+      "cell_type" : "code",
+      "input" : "val data = List.fill(10)(random)",
+      "language" : "scala",
+      "collapsed" : false,
+      "prompt_number" : 3,
+      "outputs" : [ ]
+    }, {
+      "cell_type" : "markdown",
+      "source" : "Since using inception won't work... :-("
+    }, {
+      "cell_type" : "code",
+      "input" : "import play.api.libs.json._\n\nval r:Reads[Data] = Reads{ j => \n  JsSuccess(\n    Data((j \\ \"dbl\").as[Double],\n         (j \\ \"n\").as[String],\n         (j \\ \"b\").as[Boolean]\n    )\n  )\n}\nval w:Writes[Data] = OWrites{ (d:Data) =>  \n  Json.obj(\n    \"dbl\" → JsNumber(d.dbl),\n    \"n\" → JsString(d.n),\n    \"b\" → JsBoolean(d.b)    \n  )\n}\nval f = Format[Data](r, w)",
+      "language" : "scala",
+      "collapsed" : false,
+      "prompt_number" : 4,
+      "outputs" : [ ]
+    }, {
+      "cell_type" : "markdown",
+      "source" : "Create the codec for the data "
+    }, {
+      "cell_type" : "code",
+      "input" : "import notebook.Codec\nimport notebook.JsonCodec._\n\nimplicit val dataCodec:Codec[JsValue, Data] = formatToCodec(f)",
+      "language" : "scala",
+      "collapsed" : false,
+      "prompt_number" : 5,
+      "outputs" : [ ]
+    }, {
+      "cell_type" : "markdown",
+      "source" : "Show the data in a table"
+    }, {
+      "cell_type" : "code",
+      "input" : "import notebook.front.widgets._  \nnew DataTable(data)(dataCodec).plot",
+      "language" : "scala",
+      "collapsed" : false,
+      "prompt_number" : 6,
+      "outputs" : [ ]
+    }, {
+      "cell_type" : "code",
+      "input" : "",
+      "language" : "scala",
+      "collapsed" : true,
+      "outputs" : [ ]
+    } ]
+  } ],
+  "nbformat" : 3
+}

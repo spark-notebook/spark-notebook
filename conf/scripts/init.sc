@@ -3,9 +3,6 @@ import java.io.{File, FileReader, BufferedReader}
 import notebook._, front.widgets._, front.third.d3._
 import notebook.util._
 
-import org.json4s.JsonAST._
-import org.json4s.JsonDSL._
-
 import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.repl.SparkILoop
 

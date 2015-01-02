@@ -1,6 +1,6 @@
 package notebook.front.third
 
-import io.continuum.bokeh._
+import io.continuum.bokeh.{Widget=>BWidget, _}
 import io.continuum.bokeh.Glyph
 import notebook._
 import notebook.front._
@@ -58,6 +58,11 @@ object Bokeh {
    * Renders the plots onto the display
    */
   def plot(plots : List[Plot]) = new Bokeh(Seq(new PlotContext().children(plots)))
+
+  /**
+   * Renders the plots onto the display
+   */
+  def widget(widgets : List[BWidget]) = new Bokeh(Seq(new PlotContext().children(widgets)))
 
   case class Point(x: Double, y: Double)
 
