@@ -69,10 +69,6 @@ object NBSerializer {
     Format(r, w)
   }
 
-
-  //Json.format[Metadata]
-
-
   implicit val cellReads:Reads[Cell] = Reads { (js:JsValue) =>
     val tpe = (js \ "cell_type").as[String]
     tpe match {
