@@ -2,11 +2,14 @@ package controllers
 
 import java.util.UUID
 
+import scala.concurrent.Promise
+
 import play.api._
 import play.api.mvc._
 import play.api.mvc.BodyParsers.parse._
 import play.api.libs.json._
 import play.api.libs.iteratee._
+import play.api.libs.iteratee.Concurrent.Channel
 
 import com.typesafe.config._
 
@@ -95,45 +98,23 @@ object Application extends Controller {
     startKernel(UUID.randomUUID.toString)
   }
 
+  def openObservable(contextId:String) = ImperativeWebsocket.using[JsValue](
+    onOpen = channel => WebSocketObservableActor.props(channel, contextId),
+    onMessage = (msg, ref) => ref ! msg,
+    onClose = ref => {
+      Logger.info(s"Closing observable $contextId")
+      ref ! akka.actor.PoisonPill
+    }
+  )
 
-
-  def openObservable(contextId:String) =  WebSocket.using[JsValue] { request =>
-      import kernelSystem.dispatcher
-      //Concurrent.broadcast returns (Enumerator, Concurrent.Channel)
-      val (out,channel) = Concurrent.broadcast[JsValue]
-
-      val actor = WebSocketObservableActor.props(channel, contextId)
-
-      //log the message to stdout and send response back to client
-      val in = Iteratee.foreach[JsValue] { msg =>
-        actor ! msg
-      }
-      (in,out)
-  }
-
-  def closeObservable = {
-    // TODO ? kernelIdToObsService.remove(contextId)
-  }
-
-
-  def openKernel(kernelId:String, pchannel:String) =  WebSocket.using[JsValue] { request =>
-      import kernelSystem.dispatcher
-
-      //Concurrent.broadcast returns (Enumerator, Concurrent.Channel)
-      val (out,channel) = Concurrent.broadcast[JsValue]
-
-      val actor = WebSocketKernelActor.props(channel, pchannel, kernelIdToCalcService(kernelId))
-
-      //log the message to stdout and send response back to client
-      val in = Iteratee.foreach[JsValue] {
-        msg => actor ! msg
-      }
-      (in,out)
-  }
-
-  def closeKernel = {
-    // TODO ? kernelIdToObsService.remove(contextId)
-  }
+  def openKernel(kernelId:String, pchannel:String) =  ImperativeWebsocket.using[JsValue](
+    onOpen = channel => WebSocketKernelActor.props(channel, pchannel, kernelIdToCalcService(kernelId)),
+    onMessage = (msg, ref) => ref ! msg,
+    onClose = ref => {
+      Logger.info(s"Closing kernel $kernelId, $pchannel")
+      ref ! akka.actor.PoisonPill
+    }
+  )
 
   def getNotebook(id: String, name: String, format: String) = {
     try {
@@ -188,6 +169,35 @@ object Application extends Controller {
       "ws_url" -> s"ws:/${request.host}"
     )
     Ok(json)
+  }
+
+  // util
+  object ImperativeWebsocket {
+
+    def using[E: WebSocket.FrameFormatter](
+            onOpen: Channel[E] => ActorRef,
+            onMessage: (E, ActorRef) => Unit,
+            onClose: ActorRef => Unit,
+            onError: (String, Input[E]) => Unit = (_: String, _: Input[E]) => ()
+    ): WebSocket[E] = {
+      import kernelSystem.dispatcher
+
+      val promiseIn = Promise[Iteratee[E, Unit]]
+
+      val out = Concurrent.unicast[E](
+        onStart = channel => {
+          val ref = onOpen(channel)
+          val in = Iteratee.foreach[E] { message =>
+            onMessage(message, ref)
+          } map (_ => onClose(ref))
+          promiseIn.success(in)
+        },
+        onError = onError
+      )
+
+      WebSocket.using[E](_ => (Iteratee.flatten(promiseIn.future), out))
+    }
+
   }
 
 }
