@@ -38,7 +38,7 @@ The usage of Spark comes out of the box, and is simply enabled by the implicit v
 
 Launch
 ------
-### Using a realease
+### Using a release
 
 Long story short, you can use the latest release [here](https://github.com/andypetrella/spark-notebook/releases), download it, unzip it and launch the script in `bin`.
 
@@ -74,14 +74,14 @@ play 2.2.6 built with Scala 2.10.3 (running Java 1.7.0_72), http://www.playframe
 [spark-notebook] $
 ```
 
-To create you distribution
+To create your distribution
 ```
 [spark-notebook] $ dist
 ```
 
 In order to develop on the Spark Notebook, you'll have to use the `run` command instead.
 
-**NOTE**: there is a __MAJOR__ problem at the moment. The sbt\/play dev environment is working against the project - the spark notebook launches external process to encapsulate a notebook context, however while forking the process and running the init scala code, either the classpath is empty or _it looks like_ the macro are not expanded.
+**NOTE**: there is a __MAJOR__ problem at the moment. The sbt\/play dev environment is working against the project - the Spark notebook launches an external process to encapsulate a notebook context, however while forking the process and running the init scala code, either the classpath is empty or _it looks like_ the macro's are not expanded.
 
 
 Use
@@ -90,7 +90,7 @@ When the server has been started, you can head to the page `http://localhost:900
 ![Notebook list](https://raw.github.com/andypetrella/spark-notebook/master/images/list.png)
 
 From there you can either:
- * create a new notebook
+ * create a new notebook or
  * launch an existing notebook
 
 In both case, the `scala-notebook` will open a new tab with your notebook in it, loaded as a web page.
@@ -130,7 +130,7 @@ Submit the first part and the `SparkContext` will restart in the background (you
 
 
 ### The `reset` function
-The  *function* `reset` is available in all notebook: This function takes several parameters, but the most important one is `lastChanges` which is itself a function that can adapt the [SparkConf](https://github.com/apache/spark/blob/master/core%2Fsrc%2Fmain%2Fscala%2Forg%2Fapache%2Fspark%2FSparkConf.scala). This way, we can change the *master*, the *executor memory* and a *cassandra sink* or whatever before restarting it. For more Spark configuration options see: [Spark Configuration]([Spark Configuration](https://spark.apache.org/docs/1.1.0/configuration.html##available-properties))
+The  *function* `reset` is available in all notebooks: This function takes several parameters, but the most important one is `lastChanges` which is itself a function that can adapt the [SparkConf](https://github.com/apache/spark/blob/master/core%2Fsrc%2Fmain%2Fscala%2Forg%2Fapache%2Fspark%2FSparkConf.scala). This way, we can change the *master*, the *executor memory* and a *cassandra sink* or whatever before restarting it. For more Spark configuration options see: [Spark Configuration]([Spark Configuration](https://spark.apache.org/docs/1.1.0/configuration.html##available-properties))
 
 In this example we reset `SparkContext` and add configuration options to use the [cassandra-connector]:
 ```{scala}
@@ -153,7 +153,7 @@ import org.apache.spark.ui.notebook.front.widgets.SparkInfo
 import scala.concurrent.duration._
 new SparkInfo(sparkContext, checkInterval=1 second, execNumber=Some(100))
 ```
-This call will show and update a feeback panel tracking some basic (atm) metrics, in this configuration there will be **one check per second**, but will check only **100 times**.
+This call will show and update a feedback panel tracking some basic (atm) metrics, in this configuration there will be **one check per second**, but will check only **100 times**.
 
 This can be tuned at will, for instance for an infinte checking, one can pass the `None` value to the argument `execNumber`.
 
@@ -204,7 +204,7 @@ Which will create a form with to inputs, one text and on number.
 
 When changing the value in the inputs, the SQL is compiled on the server and the result is printed on the notebook (Success, Failure, Bad Plan, etc.).
 
-Again, the result is completly reactive, hence using the `react` function is mandatory to use the underlying SchemaRDD (when it becomes valid!).
+Again, the result is completely reactive, hence using the `react` function is mandatory to use the underlying SchemaRDD (when it becomes valid!).
 
 
 #### Show case
@@ -214,7 +214,7 @@ This is how it looks like in the notebook:
 
 
 ### Interacting with JavaScript
-Showing numbers can be good but great analysis reports should include relevant charts, for that we need JavaScript to manipulate the Notebook's DOM.
+Showing numbers can be good but great analysis reports should include relevant charts, for that we need JavaScript to manipulate the notebook's DOM.
 
 For that purpose, a notebook can use the `Playground` abstraction. It allows us to create data in Scala and use it in predefined JavaScript functions (located under `assets/javascripts/notebook`) or even JavaScript snippets (that is, written straight in the notebook as a Scala `String` to be sent to the JavaScript interpreter).
 
@@ -233,9 +233,9 @@ Another example using the same predefined function and example to react on the n
 
 
 ### Plotting with [D3](http://d3js.org/)
-Plotting with D3.js is rather common now, however it's not always simple, hence there is a Scala wrapper that brings the boostrap of D3 in the mix.
+Plotting with D3.js is rather common now, however it's not always simple, hence there is a Scala wrapper that brings the bootstrap of D3 in the mix.
 
-These wrappers are `D3.svg` and `D3.linePlot`, and they are just proof of concept for now. The idea is to bring Scala data to D3.js then create `Coffeescript` to interact with them.
+These wrappers are `D3.svg` and `D3.linePlot`, and they are just a proof of concept for now. The idea is to bring Scala data to D3.js then create `Coffeescript` to interact with them.
 
 For instance, `linePlot` is used like so:
 
