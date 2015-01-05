@@ -1,12 +1,14 @@
 import Dependencies._
 
+import Shared._
+
 play.Project.playScalaSettings
 
 organization := "noootsab"
 
 name := "spark-notebook"
 
-version := "0.1.2"
+version in ThisBuild <<= (sparkVersion, hadoopVersion) { (sv, hv) => "0.1.2_" + sv + "_" + hv }
 
 maintainer := "Andy Petrella" //Docker
 
@@ -14,7 +16,7 @@ dockerExposedPorts in Docker := Seq(9000, 9443) //Docker
 
 dockerRepository := Some("andypetrella") //Docker
 
-packageName in Docker := "andypetrella/spark-notebook"
+packageName in Docker := "spark-notebook"
 
 scalaVersion := "2.10.4"
 
@@ -43,7 +45,11 @@ scalacOptions += "-deprecation"
 
 scalacOptions ++= Seq("-Xmax-classfile-name", "100")
 
+commands ++= Seq( distAll, dockerPublishLocalAll, dockerPublishAll )
+
 dependencyOverrides += "log4j" % "log4j" % "1.2.16"
+
+sharedSettings
 
 libraryDependencies ++= Seq(
   playDep,
@@ -54,6 +60,10 @@ libraryDependencies ++= Seq(
   anorm,
   cache,
   commonsIO,
+  // ↓ to fix java.lang.IllegalStateException: impossible to get artifacts when data has
+  //   not been loaded. IvyNode = org.apache.commons#commons-exec;1.1
+  //   encountered when using hadoop "2.0.0-cdh4.2.0"
+  commonsExec,
   ningAsyncHttpClient, // for aether to work...
   "org.scala-lang" % "scala-library" % "2.10.4",
   "org.scala-lang" % "scala-reflect" % "2.10.4",
@@ -64,8 +74,9 @@ lazy val sparkNotebook = project.in(file("."))
     .aggregate(subprocess, observable, common, kernel)
     .dependsOn(subprocess, observable, common, kernel)
     .settings(
-      scalaVersion := "2.10.4"
+      sharedSettings:_*
     )
+
 
 lazy val subprocess =  project.in(file("modules/subprocess"))
                               .settings(
@@ -75,10 +86,6 @@ lazy val subprocess =  project.in(file("modules/subprocess"))
                                     akka,
                                     akkaRemote,
                                     akkaSlf4j,
-                                    guava,
-                                    sparkRepl,
-                                    sparkSQL,
-                                    hadoopClient,
                                     commonsIO,
                                     commonsExec,
                                     log4j
@@ -86,7 +93,10 @@ lazy val subprocess =  project.in(file("modules/subprocess"))
                                 }
                               )
                               .settings(
-                                scalaVersion := "2.10.4"
+                                sharedSettings:_*
+                              )
+                              .settings(
+                                sparkSettings:_*
                               )
 
 
@@ -101,7 +111,7 @@ lazy val observable = Project(id = "observable", base = file("modules/observable
                                 )
                               )
                               .settings(
-                                scalaVersion := "2.10.4"
+                                sharedSettings:_*
                               )
 
 lazy val common = Project(id = "common", base = file("modules/common"))
@@ -111,12 +121,6 @@ lazy val common = Project(id = "common", base = file("modules/common"))
                                   akka,
                                   log4j,
                                   scalaZ
-                                ),
-                               libraryDependencies ++= Seq(
-                                  guava,
-                                  sparkRepl,
-                                  sparkSQL,
-                                  hadoopClient
                                 ),
                                 libraryDependencies ++= Seq(
                                   aetherApi,
@@ -129,7 +133,10 @@ lazy val common = Project(id = "common", base = file("modules/common"))
                                 )
                               )
                               .settings(
-                                scalaVersion := "2.10.4"
+                                sharedSettings:_*
+                              )
+                              .settings(
+                                sparkSettings:_*
                               )
 
 lazy val kernel = Project(id = "kernel", base = file("modules/kernel"))
@@ -144,14 +151,15 @@ lazy val kernel = Project(id = "kernel", base = file("modules/kernel"))
                                 libraryDependencies ++= Seq(
                                   "org.scala-lang" % "jline" % scalaVersion.value,
                                   "org.scala-lang" % "scala-compiler" % scalaVersion.value
-                                ),
-                                libraryDependencies ++= Seq(
-                                  guava,
-                                  sparkRepl,
-                                  sparkSQL,
-                                  hadoopClient
                                 )
                               )
                               .settings(
-                                scalaVersion := "2.10.4"
+                                sharedSettings:_*
                               )
+                              .settings(
+                                sparkSettings:_*
+                              )
+
+
+
+
