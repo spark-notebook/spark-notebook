@@ -44,7 +44,7 @@ object Dependencies {
   // FIXME
   val sparkEnabledModules = List("common", "kernel", "subprocess")
   val crossConf = Map(
-    "1.1.0" → List("1.0.4", "2.0.0-cdh4.2.0")
+    "1.1.0" → List("1.0.4", "2.0.0-cdh4.2.0", "2.3.0", "2.4.0")
   )
 
   def distAll = Command.command("distAll") { state =>
