@@ -56,7 +56,7 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](executionContext: Exec
   def permGen: Long = -1
   def reservedCodeCache: Long = -1
   def server: Boolean = true
-  def debug: Boolean = false // If true, then you will likely get address in use errors spawning multiple processes
+  def debug: Boolean = true // If true, then you will likely get address in use errors spawning multiple processes
   def classPath: IndexedSeq[String] = defaultClassPath
   def classPathString = classPath.mkString(File.pathSeparator)
 
@@ -164,18 +164,9 @@ object BetterFork {
       }
     }
     val loader = Play.current.classloader
-    val gurls = urls(loader).distinct//.filter(!_.contains("sbt/"))
+    val gurls = urls(loader).distinct.filter(!_.contains("logback-classic"))//.filter(!_.contains("sbt/"))
     gurls
   }
-
-//  def defaultClassPath: IndexedSeq[String] = {
-//    val loader = getClass.getClassLoader.asInstanceOf[URLClassLoader]
-//
-//    loader.getURLs.map(u => new File(u.getFile)).map { f =>
-//      URLDecoder.decode(f.getAbsolutePath, "UTF8")
-//    }
-//  }
-
 
   def defaultHeap = Runtime.getRuntime.maxMemory
 

@@ -23,12 +23,14 @@ object Application extends Controller {
   lazy val config = NotebookConfig(Play.current.configuration.getConfig("manager").get)
   lazy val nbm = new NotebookManager(config.projectName, config.notebooksDir)
 
+  lazy val notebookServerConfig = Play.current.configuration.getConfig("notebook-server").get.underlying
+
   implicit val kernelSystem =  ActorSystem( "NotebookServer",
-                                            ConfigFactory.load("notebook-server")
-                        /*AkkaConfigUtils.optSecureCookie(
-                          ConfigFactory.load("notebook-server"),
-                          akka.util.Crypt.generateSecureCookie
-                        )*/
+                                            notebookServerConfig
+                                            /*AkkaConfigUtils.optSecureCookie(
+                                              ConfigFactory.load("notebook-server"),
+                                              akka.util.Crypt.generateSecureCookie
+                                            )*/
                       )
 
   val kernelIdToCalcService = collection.mutable.Map[String, CalcWebSocketService]()
