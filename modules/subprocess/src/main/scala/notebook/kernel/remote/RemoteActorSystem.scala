@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * Author: Ken
  */
-class RemoteActorProcess extends ForkableProcess{
+class RemoteActorProcess extends ForkableProcess {
   // http://stackoverflow.com/questions/14995834/programmatically-obtain-ephemeral-port-with-akka
   var _system: ActorSystem = null
 
@@ -39,7 +39,7 @@ class RemoteActorProcess extends ForkableProcess{
 
     val address = GetAddress(_system).address
     address.toString
-//    address.port.get?OrElse(sys.error("not a remote actor system: %s".format(cfg))).toString
+   // address.port.getOrElse(sys.error("not a remote actor system: %s".format(cfg))).toString
   }
 
   def waitForExit() {

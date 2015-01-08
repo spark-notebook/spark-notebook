@@ -51,7 +51,7 @@ case class ObjectInfoResponse(found: Boolean, name: String, callDef: String, cal
  * @param initScripts List of scala source strings to be executed during REPL startup.
  * @param compilerArgs Command line arguments to pass to the REPL compiler
  */
-class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) extends Actor with akka.actor.ActorLogging {
+class ReplCalculator(initScripts: List[(String, String)], compilerArgs: List[String]) extends Actor with akka.actor.ActorLogging {
   private var _repl:Option[Repl] = None
 
   private def repl:Repl = _repl getOrElse {
@@ -122,6 +122,7 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
                   jars = (${ jars.mkString("List(\"", "\",\"", "\")") } ::: jars.toList).distinct.toArray
                   //restarting spark
                   reset()
+                  <pre onclick='this.style.display=(this.style.display=="block")?"none":"block"'>{"Spark resetting with jars : " + jars.mkString("\n")}</pre>
                 """
 
               case cpRegex(cp) =>
@@ -167,8 +168,8 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
   def preStartLogic() {
     log.info("ReplCalculator preStart")
 
-    val dummyScript = () => s"""val dummy = ();\n"""
-    val SparkHookScript = () => s"""val _5C4L4_N0T3800K_5P4RK_HOOK = "${repl.classServerUri.get}";\n"""
+    val dummyScript = ("dummy", () => s"""val dummy = ();\n""")
+    val SparkHookScript = ("class server", () => s"""val _5C4L4_N0T3800K_5P4RK_HOOK = "${repl.classServerUri.get}";\n""")
 
     def eval(script: () => String):Unit = {
       val sc = script()
@@ -184,11 +185,11 @@ class ReplCalculator(initScripts: List[String], compilerArgs: List[String]) exte
       } else ()
     }
 
-    for (script <- (dummyScript :: SparkHookScript :: initScripts.map(x => () => x)) ) {
+    val allInitScrips: List[(String, () => String)] = dummyScript :: SparkHookScript :: initScripts.map(x => (x._1, () => x._2))
+    for ((name, script) <- allInitScrips) {
 
-      println(" INIT SCRIPT ")
+      println(s" INIT SCRIPT: $name")
       println(script)
-
 
       eval(script)
     }

@@ -25,8 +25,6 @@ import tools.nsc.interpreter.Results.{Incomplete => ReplIncomplete, Success => R
 
 import tools.jline.console.completer.{ArgumentCompleter, Completer}
 
-import play.api.Play
-
 import notebook.front.Widget
 import notebook.util.Match
 
@@ -94,7 +92,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
           acc
         }
       }
-      val loader = Play.current.classloader
+      val loader = getClass.getClassLoader//Play.current.classloader
       val gurls = urls(loader)//.distinct.filter(!_.contains("sbt/"))
       gurls
     }
