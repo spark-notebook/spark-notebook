@@ -27,7 +27,7 @@ object AppUtils {
   lazy val notebookServerConfig = current.configuration.getConfig("notebook-server").get.underlying
 
   lazy val kernelSystem =  ActorSystem( "NotebookServer",
-                                        notebookServerConfig
+                                        notebookServerConfig,
                                         play.api.Play.classloader // this resolves the Play classloader problems w/ remoting
                                       )
 }
