@@ -110,9 +110,9 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](executionContext: Exec
       val completion = Promise[Int]
       exec.setWorkingDirectory(workingDirectory)
       exec.execute(cmd, environment, new ExecuteResultHandler {
-        //Logger.info(s"Spawning $cmd")
-        //Logger.info(s"With Env $environment")
-        //Logger.info(s"In working directory $workingDirectory")
+        Logger.debug(s"Spawning $cmd")
+        Logger.debug(s"With Env $environment")
+        Logger.debug(s"In working directory $workingDirectory")
 
         def onProcessFailed(e: ExecuteException) {
           e.printStackTrace

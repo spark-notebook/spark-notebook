@@ -2,7 +2,7 @@
   "metadata" : {
     "name" : "Simple Spark",
     "user_save_timestamp" : "2014-10-11T17:33:45.703Z",
-    "auto_save_timestamp" : "2015-01-07T23:55:09.895Z"
+    "auto_save_timestamp" : "2015-01-10T00:02:12.659Z"
   },
   "worksheets" : [ {
     "cells" : [ {
@@ -60,17 +60,10 @@
       "source" : "### Spark config"
     }, {
       "cell_type" : "code",
-      "input" : "1+1",
-      "language" : "scala",
-      "collapsed" : true,
-      "prompt_number" : -1,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "code",
       "input" : "sparkContext.getConf.toDebugString",
       "language" : "scala",
       "collapsed" : false,
-      "prompt_number" : 3,
+      "prompt_number" : -1,
       "outputs" : [ ]
     }, {
       "cell_type" : "code",
