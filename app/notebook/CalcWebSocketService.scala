@@ -14,7 +14,7 @@ import notebook.client._
 /**
  * Provides a web-socket interface to the Calculator
  */
-class CalcWebSocketService(system: ActorSystem, initScripts: List[String], compilerArgs: List[String], remoteDeployFuture: Future[Deploy]) {
+class CalcWebSocketService(system: ActorSystem, initScripts: List[(String, String)], compilerArgs: List[String], remoteDeployFuture: Future[Deploy]) {
   implicit val executor = system.dispatcher
 
   val ioPubPromise = Promise[WebSockWrapper]

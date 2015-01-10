@@ -22,9 +22,9 @@ case class NotebookConfig(config: Configuration) {
                           }
   val kernelInit = {
     val scripts = config.getStringList("kernel.init").map(_.asScala).getOrElse(Nil).map(url => ScriptFromURL(new URL(url)))
-    defauldInitScript.map { s => s :: scripts.toList }.getOrElse(scripts)
+    defauldInitScript.map { s => s:: scripts.toList }.getOrElse(scripts)
   }
-  val kernelInitScripts = kernelInit.map(_.script)
+  val kernelInitScripts = kernelInit.map(x => (x.name, x.script))
 
   val serverResources = config.getStringList("resources").map(_.asScala).getOrElse(Nil).map(new File(_))
 
@@ -39,9 +39,11 @@ case class NotebookConfig(config: Configuration) {
 
 
 trait Script {
-  def script: String;
+  def name:String
+  def script: String
 }
 case class ScriptFromURL(url: URL) extends Script {
+  val name = url.toExternalForm
   def script = {
     var is: InputStream = null
     allCatch.andFinally(if (is != null) is.close()).either {
@@ -53,9 +55,10 @@ case class ScriptFromURL(url: URL) extends Script {
     }
   }
 
-  def toSource = ScriptFromSource(script)
+  def toSource = ScriptFromSource(url.toExternalForm, script)
 }
 case class ScriptFromFile(file: File) extends Script {
+  val name = file.getAbsolutePath
   def script = {
     allCatch.either(FileUtils.readFileToString(file)) match {
       case Right(s) => s
@@ -63,4 +66,4 @@ case class ScriptFromFile(file: File) extends Script {
     }
   }
 }
-case class ScriptFromSource(script: String) extends Script
+case class ScriptFromSource(name:String, script: String) extends Script

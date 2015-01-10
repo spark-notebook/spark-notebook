@@ -19,17 +19,26 @@ import notebook._
 import notebook.server._
 import notebook.kernel.remote._
 
-object Application extends Controller {
-  lazy val config = NotebookConfig(Play.current.configuration.getConfig("manager").get)
-  lazy val nbm = new NotebookManager(config.projectName, config.notebooksDir)
+object AppUtils {
+  import play.api.Play.current
 
-  implicit val kernelSystem =  ActorSystem( "NotebookServer",
-                                            ConfigFactory.load("notebook-server")
-                        /*AkkaConfigUtils.optSecureCookie(
-                          ConfigFactory.load("notebook-server"),
-                          akka.util.Crypt.generateSecureCookie
-                        )*/
-                      )
+  lazy val config = NotebookConfig(current.configuration.getConfig("manager").get)
+  lazy val nbm = new NotebookManager(config.projectName, config.notebooksDir)
+  lazy val notebookServerConfig = current.configuration.getConfig("notebook-server").get.underlying
+
+  lazy val kernelSystem =  ActorSystem( "NotebookServer",
+                                        notebookServerConfig,
+                                        play.api.Play.classloader // this resolves the Play classloader problems w/ remoting
+                                      )
+}
+
+object Application extends Controller {
+
+  lazy val config = AppUtils.config
+  lazy val nbm = AppUtils.nbm
+  lazy val notebookServerConfig = AppUtils.notebookServerConfig
+
+  implicit def kernelSystem =  AppUtils.kernelSystem
 
   val kernelIdToCalcService = collection.mutable.Map[String, CalcWebSocketService]()
 
@@ -180,7 +189,7 @@ object Application extends Controller {
             onClose: ActorRef => Unit,
             onError: (String, Input[E]) => Unit = (_: String, _: Input[E]) => ()
     ): WebSocket[E] = {
-      import kernelSystem.dispatcher
+      implicit val sys = kernelSystem.dispatcher
 
       val promiseIn = Promise[Iteratee[E, Unit]]
 
