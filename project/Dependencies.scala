@@ -18,10 +18,12 @@ object Dependencies {
   val scalaZ                  = "org.scalaz"                %%         "scalaz-core"          %      "7.0.6"
 
   val defaultSparkVersion     = "1.1.0"
+  def sparkRepl(v:String)     = "org.apache.spark"          %%         "spark-repl"           %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
+  def sparkSQL(v:String)      = "org.apache.spark"          %%         "spark-sql"            %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
   val defaultHadoopVersion    = "1.0.4"
-  def sparkRepl(v:String)     = "org.apache.spark"          %%         "spark-repl"           %    v                excludeAll(ExclusionRule("org.apache.hadoop"))
-  def sparkSQL(v:String)      = "org.apache.spark"          %%         "spark-sql"            %    v                excludeAll(ExclusionRule("org.apache.hadoop"))
-  def hadoopClient(v:String)  = "org.apache.hadoop"         %         "hadoop-client"         %    v                excludeAll(ExclusionRule("org.apache.commons", "commons-exec"))
+  def hadoopClient(v:String)  = "org.apache.hadoop"         %         "hadoop-client"         %         v           excludeAll(ExclusionRule("org.apache.commons", "commons-exec"))
+  val defaultJets3tVersion    = "[0.7.0,)"
+  def jets3t(v:String)        = "net.java.dev.jets3t"       %            "jets3t"             %         v           force()
 
   val commonsIO               = "org.apache.commons"        %          "commons-io"           %      "1.3.2"
   val commonsHttp             = "org.apache.httpcomponents" %          "httpclient"           %      "4.3.4"
@@ -43,99 +45,101 @@ object Dependencies {
 
   // FIXME
   val sparkEnabledModules = List("common", "kernel", "subprocess")
+
+
+  object SparkVersion extends Enumeration {
+    type SparkVersion = Value
+    val `1.1.0` = Value
+  }
+
+  object HadoopVersion extends Enumeration {
+    type HadoopVersion = Value
+    val `1.0.4`, `2.0.0-cdh4.2.0`, `2.3.0`, `2.4.0` = Value
+  }
+
   val crossConf = Map(
-    "1.1.0" → List("1.0.4", "2.0.0-cdh4.2.0", "2.3.0", "2.4.0")
+    SparkVersion.`1.1.0` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.3.0`, `2.4.0`) }
   )
 
-  def distAll = Command.command("distAll") { state =>
-
-    val extracted = Project.extract(state)
-
-    crossConf foreach { case (sv, hvs) =>
-      println(s" > Building: dist for Spark $sv")
-      hvs foreach { hv =>
-        println(s"   > with hadoop $hv")
-        Project.runTask(
-          packageBin in Universal,
-          extracted.append(
-            List(
-              Shared.sparkVersion := sv,
-              Shared.sparkVersion in "common" := sv,
-              Shared.sparkVersion in "kernel" := sv,
-              Shared.sparkVersion in "subprocess" := sv,
-
-              Shared.hadoopVersion := hv,
-              Shared.hadoopVersion in "common" := hv,
-              Shared.hadoopVersion in "kernel" := hv,
-              Shared.hadoopVersion in "subprocess" := hv
-            ),
-            state
-          ),
-          true
-        )
-      }
+  val extraConf:Map[(SparkVersion.Value, HadoopVersion.Value), List[sbt.Def.Setting[_]]] = Map(
+    (SparkVersion.`1.1.0`, List(HadoopVersion.`2.3.0`)) → {
+      List(
+        Shared.jets3tVersion := "0.9.0",
+        Shared.jets3tVersion in "common" := "0.9.0",
+        Shared.jets3tVersion in "kernel" := "0.9.0",
+        Shared.jets3tVersion in "subprocess" := "0.9.0"
+      )
     }
-    state
+  ).flatMap { case ((s,hs), sg) =>
+    hs.map(h => (s, h) → sg )
+  }.toMap
+
+  def extractEnumVersionName(s:String):String = s.toString.replaceAll("\\$u002E", ".").replaceAll("\\$minus", "-")
+
+  def forAll[T](name:String, logS:String=>String, logH:String=>String, t:Def.ScopedKey[Task[T]]) = {
+    Command.command(name) { state =>
+      val extracted = Project.extract(state)
+      println(s"Running command $t")
+      crossConf foreach { case (sv, hvs) =>
+        val svS = extractEnumVersionName(sv.toString)
+        println(logS(svS))
+        hvs foreach { hv =>
+          val hvS = extractEnumVersionName(hv.toString)
+          println(logH(hvS))
+
+          val shSettings = List(
+            Shared.sparkVersion := svS,
+            Shared.sparkVersion in "common" := svS,
+            Shared.sparkVersion in "kernel" := svS,
+            Shared.sparkVersion in "subprocess" := svS,
+
+            Shared.hadoopVersion := hvS,
+            Shared.hadoopVersion in "common" := hvS,
+            Shared.hadoopVersion in "kernel" := hvS,
+            Shared.hadoopVersion in "subprocess" := hvS
+          )
+
+          val extraSettings = extraConf.get((sv, hv)).getOrElse(Nil)
+
+          //println("***************")
+          //println(extraSettings)
+          //println("***************")
+
+          Project.runTask(
+            t,
+            extracted.append(
+              shSettings ::: extraSettings,
+              state
+            ),
+            true
+          )
+        }
+      }
+
+      state
+    }
   }
 
-  def dockerPublishLocalAll = Command.command("dockerPublishLocalAll") { state =>
-    val extracted = Project.extract(state)
 
-    crossConf foreach { case (sv, hvs) =>
-      println(s" > Publishing local: docker for Spark $sv")
-      hvs foreach { hv =>
-        println(s"   > with hadoop $hv")
-        Project.runTask(
-          publishLocal in Docker,
-          extracted.append(
-            List(
-              Shared.sparkVersion := sv,
-              Shared.sparkVersion in "common" := sv,
-              Shared.sparkVersion in "kernel" := sv,
-              Shared.sparkVersion in "subprocess" := sv,
+  def distAll = forAll(
+    "distAll",
+    logS = sv => s" > Building: dist for Spark $sv",
+    logH = hv => s"   > with hadoop $hv",
+    packageBin in Universal
+  )
 
-              Shared.hadoopVersion := hv,
-              Shared.hadoopVersion in "common" := hv,
-              Shared.hadoopVersion in "kernel" := hv,
-              Shared.hadoopVersion in "subprocess" := hv
-            ),
-            state
-          ),
-          true
-        )
-      }
-    }
-    state
-  }
+  def dockerPublishLocalAll = forAll(
+    "dockerPublishLocalAll",
+    logS = sv => s" > Publishing local: docker for Spark $sv",
+    logH = hv => s"   > with hadoop $hv",
+    publishLocal in Docker
+  )
 
-  def dockerPublishAll = Command.command("dockerPublishAll") { state =>
-    val extracted = Project.extract(state)
-
-    crossConf foreach { case (sv, hvs) =>
-      println(s" > Publishing local: docker for Spark $sv")
-      hvs foreach { hv =>
-        println(s"   > with hadoop $hv")
-        Project.runTask(
-          publish in Docker,
-          extracted.append(
-            List(
-              Shared.sparkVersion := sv,
-              Shared.sparkVersion in "common" := sv,
-              Shared.sparkVersion in "kernel" := sv,
-              Shared.sparkVersion in "subprocess" := sv,
-
-              Shared.hadoopVersion := hv,
-              Shared.hadoopVersion in "common" := hv,
-              Shared.hadoopVersion in "kernel" := hv,
-              Shared.hadoopVersion in "subprocess" := hv
-            ),
-            state
-          ),
-          true
-        )
-      }
-    }
-    state
-  }
+  def dockerPublishAll = forAll(
+    "dockerPublishAll",
+    logS = sv => s" > Publishing remote: docker for Spark $sv",
+    logH = hv => s"   > with hadoop $hv",
+    publish in Docker
+  )
 
 }

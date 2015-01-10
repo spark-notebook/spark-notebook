@@ -110,9 +110,9 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](executionContext: Exec
       val completion = Promise[Int]
       exec.setWorkingDirectory(workingDirectory)
       exec.execute(cmd, environment, new ExecuteResultHandler {
-        //Logger.info(s"Spawning $cmd")
-        //Logger.info(s"With Env $environment")
-        //Logger.info(s"In working directory $workingDirectory")
+        Logger.debug(s"Spawning $cmd")
+        Logger.debug(s"With Env $environment")
+        Logger.debug(s"In working directory $workingDirectory")
 
         def onProcessFailed(e: ExecuteException) {
           e.printStackTrace
@@ -164,18 +164,9 @@ object BetterFork {
       }
     }
     val loader = Play.current.classloader
-    val gurls = urls(loader).distinct//.filter(!_.contains("sbt/"))
+    val gurls = urls(loader).distinct.filter(!_.contains("logback-classic"))//.filter(!_.contains("sbt/"))
     gurls
   }
-
-//  def defaultClassPath: IndexedSeq[String] = {
-//    val loader = getClass.getClassLoader.asInstanceOf[URLClassLoader]
-//
-//    loader.getURLs.map(u => new File(u.getFile)).map { f =>
-//      URLDecoder.decode(f.getAbsolutePath, "UTF8")
-//    }
-//  }
-
 
   def defaultHeap = Runtime.getRuntime.maxMemory
 
