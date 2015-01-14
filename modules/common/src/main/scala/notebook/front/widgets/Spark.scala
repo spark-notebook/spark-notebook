@@ -35,7 +35,6 @@ class Spark(val initData:SparkContext)(implicit updateSC:SparkContext => Unit)
     data.stop()
     updateSC(sc)
     data = sc
-    println(data.getConf.toDebugString)
     sc
   }
 
