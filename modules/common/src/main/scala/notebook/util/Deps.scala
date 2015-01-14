@@ -5,6 +5,7 @@ import com.jcabi.aether.Aether
 import java.util.Arrays
 import org.apache.maven.project.MavenProject
 import org.sonatype.aether.repository.RemoteRepository
+import org.sonatype.aether.repository.Authentication
 import org.sonatype.aether.artifact.Artifact
 import org.sonatype.aether.util.artifact.DefaultArtifact
 import org.sonatype.aether.graph._
@@ -23,7 +24,18 @@ object Repos extends java.io.Serializable {
     "https://oss.sonatype.org/content/repositories/releases/"
   )
 
-  def apply(id:String, name:String, url:String) = new RemoteRepository(id, name, url)
+  // helper
+  def apply(id:String, name:String, url:String, username:Option[String] = None, password:Option[String] = None) = {
+    val r = new RemoteRepository(id, name, url)
+    for {
+      u <- username
+      p <- password
+    } r.setAuthentication(new Authentication(u, p))
+    r
+  }
+
+  //alias for clarity
+  def s3(id:String, name:String, url:String, key:String, secret:String) = Repos.apply(id, name, url, Some(key), Some(secret))
 }
 
 case class ArtifactMD(group:String, artifact:String, version:String)

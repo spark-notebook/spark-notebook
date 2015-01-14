@@ -81,6 +81,9 @@ class ReplCalculator(initScripts: List[(String, String)], compilerArgs: List[Str
 
   private val repoRegex = "(?s)^:local-repo\\s*(.+)\\s*$".r
   private val remoteRegex = "(?s)^:remote-repo\\s*(.+)\\s*$".r
+  private val authRegex = """(?s)^\s*\(([^\)]+)\)\s*$""".r
+  private val credRegex = """"([^"]+)"\s*,\s*"([^"]+)"""".r
+
   private val cpRegex = "(?s)^:cp\\s*(.+)\\s*$".r
   private val dpRegex = "(?s)^:dp\\s*(.+)\\s*$".r
   private val sqlRegex = "(?s)^:sql(?:\\[([a-zA-Z0-9][a-zA-Z0-9]*)\\])?\\s*(.+)\\s*$".r
@@ -94,8 +97,19 @@ class ReplCalculator(initScripts: List[(String, String)], compilerArgs: List[Str
           val newCode =
             code match {
               case remoteRegex(r) =>
-                val List(id, name, url) = r.split("%").toList
-                remotes = (Repos(id,name,url)) :: remotes
+                val List(id, tpe, url, rest) = r.split("%").toList
+                val (username, password):(Option[String],Option[String]) = rest.headOption.map { auth =>
+                  auth match {
+                    case authRegex(usernamePassword)   => 
+                      val (username, password) = usernamePassword match { case credRegex(username, password) => (username, password) }
+                      val u = if (username.startsWith("$")) sys.env.get(username.tail).get else username
+                      val p = if (password.startsWith("$")) sys.env.get(password.tail).get else password
+                      (Some(u), Some(p))
+                    case _                        => (None, None)
+                  }
+
+                }.getOrElse((None, None))
+                remotes = (Repos(id,tpe,url,username,password)) :: remotes
                 s""" "Remote repo added: $r!" """
 
               case repoRegex(r) =>
