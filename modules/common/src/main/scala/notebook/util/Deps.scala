@@ -30,7 +30,9 @@ object Repos extends java.io.Serializable {
     for {
       u <- username
       p <- password
-    } r.setAuthentication(new Authentication(u, p))
+    } {
+      r.setAuthentication(new Authentication(u, p))
+    }
     r
   }
 
@@ -109,8 +111,9 @@ object Deps extends java.io.Serializable {
       }
     }
 
+    val artifact = new DefaultArtifact(include.group, include.artifact, "", "jar", include.version)
     val deps:Set[Artifact] =  new Aether(remotes, repo).resolve(
-                                new DefaultArtifact(include.group, include.artifact, "", "jar", include.version),
+                                artifact,
                                 "runtime",
                                 exc
                               ).toSet

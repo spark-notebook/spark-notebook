@@ -120,7 +120,11 @@ object Application extends Controller {
     onOpen = channel => WebSocketKernelActor.props(channel, pchannel, kernelIdToCalcService(kernelId)),
     onMessage = (msg, ref) => ref ! msg,
     onClose = ref => {
-      Logger.info(s"Closing kernel $kernelId, $pchannel")
+      Logger.info(s"Closing websockets for kernel $kernelId, $pchannel")
+      KernelManager.get(kernelId).foreach{ k =>
+        Logger.info(s"Closing kernel $kernelId, $pchannel")
+        k.shutdown()
+      }
       ref ! akka.actor.PoisonPill
     }
   )

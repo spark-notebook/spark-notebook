@@ -82,7 +82,7 @@ class ReplCalculator(initScripts: List[(String, String)], compilerArgs: List[Str
   private val repoRegex = "(?s)^:local-repo\\s*(.+)\\s*$".r
   private val remoteRegex = "(?s)^:remote-repo\\s*(.+)\\s*$".r
   private val authRegex = """(?s)^\s*\(([^\)]+)\)\s*$""".r
-  private val credRegex = """"([^"]+)"\s*,\s*"([^"]+)"""".r
+  private val credRegex = """"([^"]+)"\s*,\s*"([^"]+)"""".r //"
 
   private val cpRegex = "(?s)^:cp\\s*(.+)\\s*$".r
   private val dpRegex = "(?s)^:dp\\s*(.+)\\s*$".r
@@ -97,10 +97,10 @@ class ReplCalculator(initScripts: List[(String, String)], compilerArgs: List[Str
           val newCode =
             code match {
               case remoteRegex(r) =>
-                val List(id, tpe, url, rest) = r.split("%").toList
+                val id::tpe::url::rest = r.split("%").toList
                 val (username, password):(Option[String],Option[String]) = rest.headOption.map { auth =>
                   auth match {
-                    case authRegex(usernamePassword)   => 
+                    case authRegex(usernamePassword)   =>
                       val (username, password) = usernamePassword match { case credRegex(username, password) => (username, password) }
                       val u = if (username.startsWith("$")) sys.env.get(username.tail).get else username
                       val p = if (password.startsWith("$")) sys.env.get(password.tail).get else password
@@ -109,8 +109,11 @@ class ReplCalculator(initScripts: List[(String, String)], compilerArgs: List[Str
                   }
 
                 }.getOrElse((None, None))
-                remotes = (Repos(id,tpe,url,username,password)) :: remotes
-                s""" "Remote repo added: $r!" """
+                val rem = Repos(id.trim,tpe.trim,url.trim,username,password)
+                remotes = rem :: remotes
+                val logR = r.replaceAll("\"", "\\\\\"")
+
+                s""" "Remote repo added: $logR!" """
 
               case repoRegex(r) =>
                 //TODO... probably copying the existing one would be better
@@ -120,24 +123,28 @@ class ReplCalculator(initScripts: List[(String, String)], compilerArgs: List[Str
                 s""" "Repo changed to ${repo.getAbsolutePath}!" """
 
               case dpRegex(cp) =>
+                log.debug("Fetching deps using repos: " + remotes.mkString(" -- "))
                 val lines = cp.trim().split("\n").toList.map(_.trim()).filter(_.size > 0).toSet
                 val includes = lines map (Deps.parseInclude _) collect { case Some(x) => x }
                 val excludes = lines map (Deps.parseExclude _) collect { case Some(x) => x }
                 val excludesFns = excludes map (Deps.transitiveExclude _)
 
-                val jars = includes.flatMap(a => Deps.resolve(a, excludesFns)(remotes, repo)).toList
+                val deps = includes.flatMap(a => Deps.resolve(a, excludesFns)(remotes, repo)).toList
 
-                val (_r, replay) = repl.addCp(jars)
+                val (_r, replay) = repl.addCp(deps)
                 _repl = Some(_r)
                 preStartLogic()
                 replay()
                 s"""
-                  //updating jars
-                  jars = (${ jars.mkString("List(\"", "\",\"", "\")") } ::: jars.toList).distinct.toArray
-                  //restarting spark
-                  reset()
-                  <pre onclick='this.style.display=(this.style.display=="block")?"none":"block"'>{"Spark resetting with jars : " + jars.mkString("\n")}</pre>
-                """
+                  |//updating deps
+                  |jars = (${ deps.mkString("List(\"", "\",\"", "\")") } ::: jars.toList).distinct.toArray
+                  |//restarting spark
+                  |reset()
+                  |
+                  |<pre onclick='this.style.display=(this.style.display=="block")?"none":"block"'>Spark resetting with jars :
+                  |{ jars.mkString("\\n") }
+                  |</pre>
+                """.stripMargin
 
               case cpRegex(cp) =>
                 val jars = cp.trim().split("\n").toList.map(_.trim()).filter(_.size > 0)

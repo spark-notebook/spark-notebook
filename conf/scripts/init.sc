@@ -40,16 +40,6 @@ def reset(appName:String="Notebook", lastChanges:(SparkConf=>Unit)=(_:SparkConf)
 
 reset()
 
-@transient var remotes = List(Repos.central)
-@transient var repo:File = _
-def updateRepo(dir:String) = {
-  val r = new File(dir)
-  if (!r.exists) r.mkdirs else ()
-  repo = r
-  r
-}
-updateRepo(System.getProperty("java.io.tmpdir")+ s"/scala-notebook/aether/" + java.util.UUID.randomUUID.toString)
-
 def updateJars(newJars:List[String]) = {
   jars = (newJars ::: jars.toList).distinct.toArray
 }
