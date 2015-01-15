@@ -26,6 +26,8 @@ import org.apache.log4j.PropertyConfigurator
 
 import org.slf4j.LoggerFactory
 
+import com.typesafe.config.{ConfigFactory, Config}
+
 import play.api.{Play, Logger}
 
 
@@ -43,20 +45,20 @@ trait ForkableProcess {
 /**
  * I am so sick of this being a thing that gets implemented everywhere. Let's abstract.
  */
-class BetterFork[A <: ForkableProcess : reflect.ClassTag](executionContext: ExecutionContext ) {
+class BetterFork[A <: ForkableProcess : reflect.ClassTag](config:Config, executionContext: ExecutionContext) {
   private implicit val ec = executionContext
 
   import BetterFork._
 
   val processClass = (implicitly[reflect.ClassTag[A]]).runtimeClass
 
-  def workingDirectory = new File(".")
-  def heap: Long = defaultHeap
-  def stack: Long = -1
-  def permGen: Long = -1
-  def reservedCodeCache: Long = -1
+  def workingDirectory = new File(if (config.hasPath("wd")) config.getString("wd") else ".")
+  def heap: Long = if (config.hasPath("heap")) config.getBytes("heap") else defaultHeap
+  def stack: Long = if (config.hasPath("stack")) config.getBytes("stack") else -1
+  def permGen: Long = if (config.hasPath("permGen")) config.getBytes("permGen") else -1
+  def reservedCodeCache: Long = if (config.hasPath("reservedCodeCache")) config.getBytes("reservedCodeCache") else -1
   def server: Boolean = true
-  def debug: Boolean = false // If true, then you will likely get address in use errors spawning multiple processes
+  def debug: Boolean = if (config.hasPath("debug")) config.getBoolean("debug") else false // If true, then you will likely get address in use errors spawning multiple processes
   def classPath: IndexedSeq[String] = defaultClassPath
   def classPathString = classPath.mkString(File.pathSeparator)
 
