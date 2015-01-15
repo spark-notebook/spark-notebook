@@ -1,12 +1,17 @@
 package notebook
 
+import java.util.concurrent.ConcurrentHashMap
+
+import scala.collection.JavaConverters._
+import scala.concurrent._
+import scala.concurrent.duration._
+
 import akka.actor._
 import akka.actor.Deploy
-import scala.concurrent._
+
+import com.typesafe.config.Config
+
 import kernel.remote.{RemoteActorSystem, RemoteActorProcess}
-import scala.concurrent.duration._
-import java.util.concurrent.ConcurrentHashMap
-import scala.collection.JavaConverters._
 
 /**
  * A kernel is a remote VM with a set of sub-actors, each of which interacts with  local resources (for example, WebSockets).
@@ -15,7 +20,7 @@ import scala.collection.JavaConverters._
  * to the remote (this is accomplished by blocking on startup waiting for
  */
 
-class Kernel(system: ActorSystem) {
+class Kernel(config:Config, system: ActorSystem) {
   implicit val executor = system.dispatcher
 
   val router = system.actorOf(Props(new ExecutionManager))
@@ -33,7 +38,7 @@ class Kernel(system: ActorSystem) {
     var remoteInfo: RemoteActorSystem = null
 
     override def preStart() {
-      remoteInfo = Await.result( RemoteActorSystem.spawn(system, "kernel"), 1 minutes)
+      remoteInfo = Await.result(RemoteActorSystem.spawn(config, system, "kernel"), 1 minutes)
       remoteDeployPromise.success(remoteInfo.deploy)
     }
 

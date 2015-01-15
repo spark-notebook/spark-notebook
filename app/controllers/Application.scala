@@ -169,9 +169,9 @@ object Application extends Controller {
   }
 
   def startKernel(kernelId: String)(implicit request:RequestHeader) = {
-    val compilerArgs = config.kernelCompilerArgs.toList
-    val initScripts = config.kernelInitScripts.toList
-    val kernel = new Kernel(kernelSystem)
+    val compilerArgs = config.kernel.compilerArgs.toList
+    val initScripts = config.kernel.initScripts.toList
+    val kernel = new Kernel(config.kernel.config.underlying, kernelSystem)
     KernelManager.add(kernelId, kernel)
 
     val service = new CalcWebSocketService(kernelSystem, initScripts, compilerArgs, kernel.remoteDeployFuture)
