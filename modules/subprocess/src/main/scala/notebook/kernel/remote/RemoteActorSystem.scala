@@ -6,15 +6,20 @@
  */
 package notebook.kernel.remote
 
-import notebook.kernel.pfork.{ProcessInfo, BetterFork, ForkableProcess}
-import akka.actor._
-import com.typesafe.config.ConfigFactory
-import akka.remote.{RemoteScope, RemoteActorRefProvider}
+import java.io.File
+import java.util.concurrent.atomic.AtomicInteger
+
+import com.typesafe.config.{ConfigFactory, Config}
+
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-import java.io.File
+
+import akka.actor._
+import akka.remote.{RemoteScope, RemoteActorRefProvider}
+
 import org.apache.commons.io.FileUtils
-import java.util.concurrent.atomic.AtomicInteger
+
+import notebook.kernel.pfork.{ProcessInfo, BetterFork, ForkableProcess}
 
 /**
  * Author: Ken
@@ -93,7 +98,7 @@ class RemoteActorSystem(localSystem: ActorSystem, info: ProcessInfo, remoteConte
  */
 object RemoteActorSystem {
   val nextId = new AtomicInteger(1)
-  def spawn(system: ActorSystem, configFile:String): Future[RemoteActorSystem] = {
+  def spawn(config:Config, system: ActorSystem, configFile:String): Future[RemoteActorSystem] = {
     //val cookiePath = AkkaConfigUtils.requiredCookie(system.settings.config) match {
     //  case Some(cookie) =>
     //    val cookieFile = new File(".", ".akka-cookie")
@@ -102,6 +107,6 @@ object RemoteActorSystem {
     //  case _ => ""
     //}cookiePath
      val cookiePath = ""
-    new BetterFork[RemoteActorProcess](system.dispatcher).execute(configFile, cookiePath) map { new RemoteActorSystem(system, _) }
+    new BetterFork[RemoteActorProcess](config, system.dispatcher).execute(configFile, cookiePath) map { new RemoteActorSystem(system, _) }
   }
 }
