@@ -53,11 +53,6 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config:Config, executi
   val processClass = (implicitly[reflect.ClassTag[A]]).runtimeClass
 
 
-  println("*****************************")
-  println("*****************************")
-  println("*****************************")
-  println(config.root().render())
-
   def workingDirectory = new File(if (config.hasPath("wd")) config.getString("wd") else ".")
   def heap: Long = if (config.hasPath("heap")) config.getBytes("heap") else defaultHeap
   def stack: Long = if (config.hasPath("stack")) config.getBytes("stack") else -1
