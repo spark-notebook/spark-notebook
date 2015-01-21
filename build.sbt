@@ -8,7 +8,7 @@ organization := "noootsab"
 
 name := "spark-notebook"
 
-version in ThisBuild <<= (sparkVersion, hadoopVersion) { (sv, hv) => "0.1.4_" + sv + "_" + hv }
+version in ThisBuild <<= (sparkVersion, hadoopVersion) { (sv, hv) => s"0.1.4-spark-$sv-hadoop-$hv" }
 
 maintainer := "Andy Petrella" //Docker
 
@@ -48,6 +48,8 @@ scalacOptions ++= Seq("-Xmax-classfile-name", "100")
 commands ++= Seq( distAll, dockerPublishLocalAll, dockerPublishAll )
 
 dependencyOverrides += "log4j" % "log4j" % "1.2.16"
+
+enablePlugins(DebianPlugin)
 
 sharedSettings
 
