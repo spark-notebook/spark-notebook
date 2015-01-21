@@ -76,10 +76,10 @@ object Dependencies {
 
   def extractEnumVersionName(s:String):String = s.toString.replaceAll("\\$u002E", ".").replaceAll("\\$minus", "-")
 
-  def forAll[T](name:String, logS:String=>String, logH:String=>String, t:Def.ScopedKey[Task[T]]) = {
+  def forAll[T](name:String, logS:String=>String, logH:String=>String, ts:List[sbt.TaskKey[_]]) = {
     Command.command(name) { state =>
       val extracted = Project.extract(state)
-      println(s"Running command $t")
+      println(s"Running command $name")
       crossConf foreach { case (sv, hvs) =>
         val svS = extractEnumVersionName(sv.toString)
         println(logS(svS))
@@ -104,15 +104,17 @@ object Dependencies {
           //println("***************")
           //println(extraSettings)
           //println("***************")
-
-          Project.runTask(
-            t,
-            extracted.append(
-              shSettings ::: extraSettings,
-              state
-            ),
-            true
-          )
+          ts.foreach { t =>
+            println(s"Running task $t")
+            Project.runTask(
+              t,
+              extracted.append(
+                shSettings ::: extraSettings,
+                state
+              ),
+              true
+            )
+          }
         }
       }
 
@@ -125,21 +127,21 @@ object Dependencies {
     "distAll",
     logS = sv => s" > Building: dist for Spark $sv",
     logH = hv => s"   > with hadoop $hv",
-    packageBin in Universal
+    (packageBin in Universal) :: (packageBin in Debian) :: Nil
   )
 
   def dockerPublishLocalAll = forAll(
     "dockerPublishLocalAll",
     logS = sv => s" > Publishing local: docker for Spark $sv",
     logH = hv => s"   > with hadoop $hv",
-    publishLocal in Docker
+    (publishLocal in Docker) :: Nil
   )
 
   def dockerPublishAll = forAll(
     "dockerPublishAll",
     logS = sv => s" > Publishing remote: docker for Spark $sv",
     logH = hv => s"   > with hadoop $hv",
-    publish in Docker
+    (publish in Docker) :: Nil
   )
 
 }
