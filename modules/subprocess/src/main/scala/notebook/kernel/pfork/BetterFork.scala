@@ -52,13 +52,15 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config:Config, executi
 
   val processClass = (implicitly[reflect.ClassTag[A]]).runtimeClass
 
+
   def workingDirectory = new File(if (config.hasPath("wd")) config.getString("wd") else ".")
   def heap: Long = if (config.hasPath("heap")) config.getBytes("heap") else defaultHeap
   def stack: Long = if (config.hasPath("stack")) config.getBytes("stack") else -1
   def permGen: Long = if (config.hasPath("permGen")) config.getBytes("permGen") else -1
   def reservedCodeCache: Long = if (config.hasPath("reservedCodeCache")) config.getBytes("reservedCodeCache") else -1
   def server: Boolean = true
-  def debug: Boolean = if (config.hasPath("debug")) config.getBoolean("debug") else false // If true, then you will likely get address in use errors spawning multiple processes
+  def debugPort: Option[Int] = if (config.hasPath("debug.port")) Some(config.getInt("debug.port")) else None
+  def vmArgs:List[String] = if (config.hasPath("vmArgs")) config.getStringList("vmArgs").toList else Nil
   def classPath: IndexedSeq[String] = defaultClassPath
   def classPathString = classPath.mkString(File.pathSeparator)
 
@@ -77,7 +79,12 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config:Config, executi
     ifNonNeg(reservedCodeCache, "-XX:ReservedCodeCacheSize=")
 
     if (server) builder += "-server"
-    if (debug) builder ++= IndexedSeq("-Xdebug", "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5555")
+    debugPort.foreach { p =>
+      builder ++= IndexedSeq("-Xdebug", "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address="+p)
+    }
+
+    builder ++= vmArgs
+
     builder.result()
   }
 
