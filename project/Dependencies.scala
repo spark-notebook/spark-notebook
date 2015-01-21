@@ -22,7 +22,7 @@ object Dependencies {
   def sparkSQL(v:String)      = "org.apache.spark"          %%         "spark-sql"            %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
   val defaultHadoopVersion    = "1.0.4"
   def hadoopClient(v:String)  = "org.apache.hadoop"         %         "hadoop-client"         %         v           excludeAll(ExclusionRule("org.apache.commons", "commons-exec"))
-  val defaultJets3tVersion    = "[0.7.0,)"
+  val defaultJets3tVersion    = "0.7.1"
   def jets3t(v:String)        = "net.java.dev.jets3t"       %            "jets3t"             %         v           force()
 
   val commonsIO               = "org.apache.commons"        %          "commons-io"           %      "1.3.2"
