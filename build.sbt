@@ -131,7 +131,9 @@ lazy val common = Project(id = "common", base = file("modules/common"))
                                 ),
                                 // plotting functionality
                                 libraryDependencies ++= Seq(
-                                  bokeh
+                                  bokeh,
+                                  wisp,
+                                  guava
                                 )
                               )
                               .settings(
