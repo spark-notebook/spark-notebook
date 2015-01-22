@@ -29,7 +29,7 @@ object Dependencies {
   val commonsHttp             = "org.apache.httpcomponents" %          "httpclient"           %      "4.3.4"
   val commonsExec             = "org.apache.commons"        %          "commons-exec"         %       "[1.2, 1.2]" force()
 
-  val guava                   = "com.google.guava"          %            "guava"              %     "14.0.1"
+  val guava                   = "com.google.guava"          %            "guava"              %     "14.0.1" force()
 
   val slf4jLog4j              = "org.slf4j"                 %         "slf4j-log4j12"         %      "1.7.7"
   val log4j                   = "log4j"                     %             "log4j"             %      "1.2.17"
@@ -42,6 +42,7 @@ object Dependencies {
 
   // Viz
   val bokeh                   = "io.continuum.bokeh"        %          "bokeh_2.10"           %       "0.2"
+  val wisp                    = "com.quantifind"            %%            "wisp"              %      "0.0.1"
 
   // FIXME
   val sparkEnabledModules = List("common", "kernel", "subprocess")
