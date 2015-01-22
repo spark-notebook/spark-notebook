@@ -6,7 +6,10 @@ Spark Notebook
 
 - [Description](#description)
 - [Launch](#launch)
-  - [Using a realease](#using-a-realease)
+  - [Using a release](#using-a-release)
+    - [Using a release (zip) on S3](#using-a-release-zip-on-s3)
+    - [Using a released Docker image](#using-a-released-docker-image)
+    - [Soon: Using a released debian package](#soon-using-a-released-debian-package)
   - [From the sources](#from-the-sources)
     - [Procedure](#procedure)
 - [Use](#use)
@@ -40,7 +43,24 @@ Launch
 ------
 ### Using a release
 
-Long story short, you can use the latest release [here](https://github.com/andypetrella/spark-notebook/releases), download it, unzip it and launch the script in `bin`.
+Long story short, there are several ways to use it quickly.
+
+#### Using a release (zip) on S3
+```
+wget s3: https://s3.eu-central-1.amazonaws.com/spark-notebook/spark-notebook-0.1.3_1.1.0_1.0.4.zip
+unzip spark-notebook-0.1.3_1.1.0_1.0.4.zip
+cd spark-notebook-0.1.3_1.1.0_1.0.4
+./bin/spark-notebook #with additional args with necessary like  `-mem 5G` for instance
+```
+
+#### Using a released Docker image
+```
+docker pull andypetrella/spark-notebook:0.1.3_1.1.0_1.0.4
+docker run -p 9000:9000 andypetrella/spark-notebook:0.1.3_1.1.0_1.0.4
+```
+
+#### Soon: Using a released debian package
+Sadly, the debian package aren't released yet (but everything is prepared on master ;-)).
 
 
 ### From the sources
