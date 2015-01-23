@@ -43,6 +43,14 @@ object Dependencies {
   // Viz
   val bokeh                   = "io.continuum.bokeh"        %          "bokeh_2.10"           %       "0.2"
   val wisp                    = "com.quantifind"            %%            "wisp"              %      "0.0.1"
+  // wisp deps on jackson-module-scala_2.10 v2.4 → guava v15
+  // but spark 1.1 → guava 14.0.1
+  val customJacksonScala      = Seq(
+                                  "com.fasterxml.jackson.module"   %%  "jackson-module-scala"     %    "2.3.3" force(),
+                                  "com.fasterxml.jackson.core"     % "jackson-annotations"        %    "2.3.3" force(),
+                                  "com.fasterxml.jackson.module"   % "jackson-module-jsonSchema"  %    "2.3.3" force(),
+                                  "com.fasterxml.jackson.datatype" % "jackson-datatype-joda"      %    "2.3.3" force()
+                                )
 
   // FIXME
   val sparkEnabledModules = List("common", "kernel", "subprocess")

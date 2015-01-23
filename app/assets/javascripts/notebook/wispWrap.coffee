@@ -3,11 +3,13 @@ define([
     'knockout'
 ], (Observable, ko) ->
   (dataO, container, options) ->
-    chartElement = $('<div style="min-width: 400px; height: 400px; margin: 0 auto"></div>')
+    chartElement = $('<div style="min-width: 200px; height: 200px; margin: 0 auto"></div>')
     $(container).append(chartElement)
     console.log("wisp data")
-    console.log(data)
-    $(chartElement).highcharts( @dataInit )
+    #console.log(@dataInit)
+    data = @dataInit[0]
+    data.chart.width = 400
+    $(chartElement).highcharts(data)
 
     dataO.subscribe( (data) =>
       console.error(data)

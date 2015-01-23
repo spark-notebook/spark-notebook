@@ -132,9 +132,8 @@ lazy val common = Project(id = "common", base = file("modules/common"))
                                 // plotting functionality
                                 libraryDependencies ++= Seq(
                                   bokeh,
-                                  wisp,
-                                  guava
-                                )
+                                  wisp
+                                ) ++ customJacksonScala
                               )
                               .settings(
                                 sharedSettings:_*

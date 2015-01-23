@@ -10,21 +10,24 @@ import scala.xml.NodeSeq
 import play.api.libs.json._
 
 import com.quantifind.charts.repl.{IterableIterable, IterablePair, IterablePairLowerPriorityImplicits}
-import com.quantifind.charts.highcharts._
+import com.quantifind.charts.highcharts.{Series=>HSeries, _ }
 import com.quantifind.charts.Highcharts
 
 object WISP {
+  import Highchart._
+
   def toHighchart[A:Numeric, B:Numeric](data:Seq[(A,B)], chart:String):Highchart = {
     val highchart = chart match {
-      case "area"       => Highcharts.area(data)
-      case "areaspline" => Highcharts.areaspline(data)
-      case "bar"        => Highcharts.bar(data)
-      case "column"     => Highcharts.column(data)
-      case "line"       => Highcharts.line(data)
-      case "pie"        => Highcharts.pie(data)
-      case "regression" => Highcharts.regression(data)
-      case "scatter"    => Highcharts.scatter(data)
-      case "spline"     => Highcharts.spline(data)
+      case "area"       => Highchart(HSeries(data, chart = SeriesType.area))
+      case "areaspline" => Highchart(HSeries(data, chart = SeriesType.areaspline))
+      case "bar"        => Highchart(HSeries(data, chart = SeriesType.bar))
+      case "column"     => Highchart(HSeries(data, chart = SeriesType.column))
+      case "line"       => Highchart(HSeries(data, chart = SeriesType.line))
+      case "pie"        => Highchart(HSeries(data, chart = SeriesType.pie))
+      //case "regression" => Highchart(HSeries(data, chart = SeriesType.regression))
+      case "scatter"    => Highchart(HSeries(data, chart = SeriesType.scatter))
+      case "spline"     => Highchart(HSeries(data, chart = SeriesType.spline))
+      //case _ => TODO
     }
     highchart
   }
@@ -39,7 +42,7 @@ class WISP[A:Numeric, B:Numeric](override val data: Seq[(A,B)], chart:String) ex
 
   implicit val singleCodec:Codec[JsValue, Highchart] = new Codec[JsValue, Highchart] {
     def encode(x:JsValue):Highchart = ???
-    def decode(x:Highchart):JsValue = Json.toJson(x.toJson)
+    def decode(x:Highchart):JsValue = Json.parse(x.toJson)
   }
 
 }
