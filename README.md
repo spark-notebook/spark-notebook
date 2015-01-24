@@ -7,9 +7,9 @@ Spark Notebook
 - [Description](#description)
 - [Launch](#launch)
   - [Using a release](#using-a-release)
-    - [Using a release (zip) on S3](#using-a-release-zip-on-s3)
-    - [Using a released Docker image](#using-a-released-docker-image)
-    - [Soon: Using a released debian package](#soon-using-a-released-debian-package)
+    - [ZIP](#zip)
+    - [Docker](#docker)
+    - [DEB](#deb)
   - [From the sources](#from-the-sources)
     - [Procedure](#procedure)
 - [Use](#use)
@@ -43,24 +43,47 @@ Launch
 ------
 ### Using a release
 
-Long story short, there are several ways to use it quickly.
+Long story short, there are several ways to start the spark notebook quickly (even from scratch):
+ * ZIP file
+ * Docker image
+ * DEB package
 
-#### Using a release (zip) on S3
+However, there are several flavors for these distribtions that depends on the Spark version and Hadoop version you are using.
+
+#### ZIP
+The zip distributions are publicly available in the bucket: <a href="http://s3.eu-central-1.amazonaws.com/spark-notebook/index.html">s3://spark-notebook</a>.
+
+**Checkout** the needed version <a href="http://s3.eu-central-1.amazonaws.com/spark-notebook/index.html">here</a>.
+
+Here is an example how to use it:
 ```
-wget s3: https://s3.eu-central-1.amazonaws.com/spark-notebook/spark-notebook-0.1.3_1.1.0_1.0.4.zip
-unzip spark-notebook-0.1.3_1.1.0_1.0.4.zip
-cd spark-notebook-0.1.3_1.1.0_1.0.4
-./bin/spark-notebook #with additional args with necessary like  `-mem 5G` for instance
+wget https://s3.eu-central-1.amazonaws.com/spark-notebook/zip/spark-notebook-0.1.4-spark-1.2.0-hadoop-1.0.4.zip
+unzip spark-notebook-0.1.4-spark-1.2.0-hadoop-1.0.4.zip
+cd spark-notebook-0.1.4-spark-1.2.0-hadoop-1.0.4
+./bin/spark-notebook
 ```
 
-#### Using a released Docker image
+#### Docker
+If you're a Docker user, the following procedure will be even simpler!
+
+**Checkout** the needed version <a href="https://registry.hub.docker.com/u/andypetrella/spark-notebook/tags/manage/">here</a>.
+
 ```
-docker pull andypetrella/spark-notebook:0.1.3_1.1.0_1.0.4
-docker run -p 9000:9000 andypetrella/spark-notebook:0.1.3_1.1.0_1.0.4
+docker pull andypetrella/spark-notebook:0.1.4-spark-1.2.0-hadoop-1.0.4
+docker run -p 9000:9000 andypetrella/spark-notebook:0.1.4-spark-1.2.0-hadoop-1.0.4
 ```
 
-#### Soon: Using a released debian package
-Sadly, the debian package aren't released yet (but everything is prepared on master ;-)).
+#### DEB
+Using debian packages is one of the standard, hence the spark notebook is also available in this form (from v0.1.4):
+
+
+```
+wget https://s3.eu-central-1.amazonaws.com/spark-notebook/deb/spark-notebook-0.1.4-spark-1.2.0-hadoop-1.0.4_all.deb
+sudo dpkg -i spark-notebook-0.1.4-spark-1.2.0-hadoop-1.0.4.zip
+sudo spark-notebook
+```
+
+**Checkout** the needed version <a href="http://s3.eu-central-1.amazonaws.com/spark-notebook/index.html">here</a>.
 
 
 ### From the sources
@@ -100,8 +123,6 @@ To create your distribution
 ```
 
 In order to develop on the Spark Notebook, you'll have to use the `run` command instead.
-
-**NOTE**: there is a __MAJOR__ problem at the moment. The sbt\/play dev environment is working against the project - the Spark notebook launches an external process to encapsulate a notebook context, however while forking the process and running the init scala code, either the classpath is empty or _it looks like_ the macro's are not expanded.
 
 
 Use
