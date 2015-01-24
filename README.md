@@ -28,6 +28,7 @@ Spark Notebook
   - [Dynamic update of data and plot using Scala's `Future`](#dynamic-update-of-data-and-plot-using-scalas-future)
   - [Update _Notebook_ `ClassPath`](#update-_notebook_-classpath)
   - [Update __Spark__ dependencies (`spark.jars`)](#update-__spark__-dependencies-sparkjars)
+- [IMPORTANT](#important)
 
 <!-- /MarkdownTOC -->
 
@@ -415,3 +416,8 @@ For example, if you want to use [ADAM](https://github.com/bigdatagenomics/adam),
 In live, you can check the notebook named `Update classpath and Spark's jars`, which looks like this:
 
 ![Spark Jars](https://raw.github.com/andypetrella/spark-notebook/master/images/spark-jars.png)
+
+## IMPORTANT
+Some vizualizations (wisp) are currently using Highcharts which is **not** available for commercial or private usage!
+
+If you're in this case, please to <a href="email:andy.petrella@gmail.com">contact</a> me first.
