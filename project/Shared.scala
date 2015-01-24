@@ -21,6 +21,7 @@ object Shared {
     libraryDependencies <++= (sparkVersion, hadoopVersion, jets3tVersion) { (sv, hv, jv) =>
       val libs = Seq(
         guava,
+        sparkRepl(sv),
         sparkSQL(sv),
         hadoopClient(hv),
         jets3t(jv)
