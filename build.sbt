@@ -2,7 +2,7 @@ import Dependencies._
 
 import Shared._
 
-play.Project.playScalaSettings
+//play.Project.playScalaSettings
 
 organization := "noootsab"
 
@@ -72,11 +72,13 @@ libraryDependencies ++= Seq(
   "org.scala-lang" % "scala-compiler" % "2.10.4"
 )
 
-lazy val sparkNotebook = project.in(file("."))
+lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).enablePlugins(SbtWeb)
     .aggregate(subprocess, observable, common, kernel)
     .dependsOn(subprocess, observable, common, kernel)
     .settings(
       sharedSettings:_*
+    ).settings(
+      includeFilter in (Assets, LessKeys.less) := "*.less"
     )
 
 

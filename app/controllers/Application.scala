@@ -192,7 +192,7 @@ object Application extends Controller {
             onMessage: (E, ActorRef) => Unit,
             onClose: ActorRef => Unit,
             onError: (String, Input[E]) => Unit = (_: String, _: Input[E]) => ()
-    ): WebSocket[E] = {
+    ): WebSocket[E, E] = {
       implicit val sys = kernelSystem.dispatcher
 
       val promiseIn = Promise[Iteratee[E, Unit]]

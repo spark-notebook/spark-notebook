@@ -5,19 +5,18 @@ import com.typesafe.sbt.SbtNativePackager._, Keys._
 
 object Dependencies {
 
-  val akkaVersion             = "2.2.3-shaded-protobuf"
-
-  val playDep                 = "com.typesafe.play"         %%            "play"              %      "2.2.6"        excludeAll(ExclusionRule("com.typesafe.akka"))
+  val playDep                 = "com.typesafe.play"         %%            "play"              %      "2.3.7"        excludeAll(ExclusionRule("com.typesafe.akka"))
 
   val rxScala                 = "io.reactivex"              %%           "rxscala"            %      "0.22.0"
 
   val scalaZ                  = "org.scalaz"                %%         "scalaz-core"          %      "7.0.6"
 
+  val akkaVersion             = "2.3.4-spark"
   val akka                    = "org.spark-project.akka"    %%         "akka-actor"           %    akkaVersion
   val akkaRemote              = "org.spark-project.akka"    %%         "akka-remote"          %    akkaVersion
   val akkaSlf4j               = "org.spark-project.akka"    %%          "akka-slf4j"          %    akkaVersion
 
-  val defaultSparkVersion     = "1.1.0"
+  val defaultSparkVersion     = "1.2.0"
   def sparkRepl(v:String)     = "org.apache.spark"          %%         "spark-repl"           %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
   def sparkSQL(v:String)      = "org.apache.spark"          %%         "spark-sql"            %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
   val defaultHadoopVersion    = "1.0.4"
@@ -44,7 +43,7 @@ object Dependencies {
   val bokeh                   = "io.continuum.bokeh"        %          "bokeh_2.10"           %       "0.2"
   val wisp                    = "com.quantifind"            %%            "wisp"              %      "0.0.1"
   // wisp deps on jackson-module-scala_2.10 v2.4 → guava v15
-  // but spark 1.1 → guava 14.0.1
+  // but spark 1.2 → guava 14.0.1
   val customJacksonScala      = Seq(
                                   "com.fasterxml.jackson.module"   %%  "jackson-module-scala"     %    "2.3.3" force(),
                                   "com.fasterxml.jackson.core"     % "jackson-annotations"        %    "2.3.3" force(),
@@ -58,7 +57,7 @@ object Dependencies {
 
   object SparkVersion extends Enumeration {
     type SparkVersion = Value
-    val `1.1.0` = Value
+    val `1.2.0` = Value
   }
 
   object HadoopVersion extends Enumeration {
@@ -67,11 +66,11 @@ object Dependencies {
   }
 
   val crossConf = Map(
-    SparkVersion.`1.1.0` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.3.0`, `2.4.0`) }
+    SparkVersion.`1.2.0` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.3.0`, `2.4.0`) }
   )
 
   val extraConf:Map[(SparkVersion.Value, HadoopVersion.Value), List[sbt.Def.Setting[_]]] = Map(
-    (SparkVersion.`1.1.0`, List(HadoopVersion.`2.3.0`)) → {
+    (SparkVersion.`1.2.0`, List(HadoopVersion.`2.3.0`)) → {
       List(
         Shared.jets3tVersion := "0.9.0",
         Shared.jets3tVersion in "common" := "0.9.0",
@@ -110,9 +109,6 @@ object Dependencies {
 
           val extraSettings = extraConf.get((sv, hv)).getOrElse(Nil)
 
-          //println("***************")
-          //println(extraSettings)
-          //println("***************")
           ts.foreach { t =>
             println(s"Running task $t")
             Project.runTask(
