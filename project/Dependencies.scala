@@ -9,13 +9,13 @@ object Dependencies {
 
   val playDep                 = "com.typesafe.play"         %%            "play"              %      "2.2.6"        excludeAll(ExclusionRule("com.typesafe.akka"))
 
-  val akka                    = "org.spark-project.akka"    %%         "akka-actor"           %    akkaVersion
-  val akkaRemote              = "org.spark-project.akka"    %%         "akka-remote"          %    akkaVersion
-  val akkaSlf4j               = "org.spark-project.akka"    %%          "akka-slf4j"          %    akkaVersion
-
   val rxScala                 = "io.reactivex"              %%           "rxscala"            %      "0.22.0"
 
   val scalaZ                  = "org.scalaz"                %%         "scalaz-core"          %      "7.0.6"
+
+  val akka                    = "org.spark-project.akka"    %%         "akka-actor"           %    akkaVersion
+  val akkaRemote              = "org.spark-project.akka"    %%         "akka-remote"          %    akkaVersion
+  val akkaSlf4j               = "org.spark-project.akka"    %%          "akka-slf4j"          %    akkaVersion
 
   val defaultSparkVersion     = "1.1.0"
   def sparkRepl(v:String)     = "org.apache.spark"          %%         "spark-repl"           %         v           excludeAll(ExclusionRule("org.apache.hadoop"))

@@ -12,16 +12,15 @@ object Shared {
 
   lazy val sharedSettings:Seq[Def.Setting[_]] = Seq(
     scalaVersion := "2.10.4",
-    sparkVersion  := defaultSparkVersion,
-    hadoopVersion := defaultHadoopVersion,
-    jets3tVersion := defaultJets3tVersion
+    sparkVersion  :=  defaultSparkVersion,
+    hadoopVersion :=  defaultHadoopVersion,
+    jets3tVersion :=  defaultJets3tVersion
   )
 
   lazy val sparkSettings:Seq[Def.Setting[_]] = Seq(
     libraryDependencies <++= (sparkVersion, hadoopVersion, jets3tVersion) { (sv, hv, jv) =>
       val libs = Seq(
         guava,
-        sparkRepl(sv),
         sparkSQL(sv),
         hadoopClient(hv),
         jets3t(jv)
