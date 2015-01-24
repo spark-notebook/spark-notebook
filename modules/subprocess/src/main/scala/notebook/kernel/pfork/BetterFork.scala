@@ -116,9 +116,9 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config:Config, executi
       val completion = Promise[Int]
       exec.setWorkingDirectory(workingDirectory)
       exec.execute(cmd, environment, new ExecuteResultHandler {
-        Logger.debug(s"Spawning $cmd")
-        Logger.debug(s"With Env $environment")
-        Logger.debug(s"In working directory $workingDirectory")
+        Logger.info(s"Spawning $cmd")
+        Logger.info(s"With Env $environment")
+        Logger.info(s"In working directory $workingDirectory")
 
         def onProcessFailed(e: ExecuteException) {
           e.printStackTrace
@@ -154,16 +154,17 @@ object BetterFork {
 //  →→→→→→→→→→→→→    NEEDED WHEN running in SBT/Play ...
   def defaultClassPath: IndexedSeq[String] = {
     def urls(cl:ClassLoader, acc:IndexedSeq[String]=IndexedSeq.empty):IndexedSeq[String] = {
-      if (!cl.isInstanceOf[URLClassLoader]) {
-        //println(" ----- ")
-        //println(cl.getClass.getSimpleName)
-        return acc
-      }
       if (cl != null) {
-        val us = acc ++ (cl.asInstanceOf[URLClassLoader].getURLs map { u =>
-          val f = new File(u.getFile)
-          URLDecoder.decode(f.getAbsolutePath, "UTF8")
-        })
+        val us = if (!cl.isInstanceOf[URLClassLoader]) {
+          //println(" ----- ")
+          //println(cl.getClass.getSimpleName)
+          acc
+        } else {
+          acc ++ (cl.asInstanceOf[URLClassLoader].getURLs map { u =>
+            val f = new File(u.getFile)
+            URLDecoder.decode(f.getAbsolutePath, "UTF8")
+          })
+        }
         urls(cl.getParent, us)
       } else {
         acc

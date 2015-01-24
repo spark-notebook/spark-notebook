@@ -79,21 +79,22 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
       import java.net.URLClassLoader
       import java.io.File
       def urls(cl:ClassLoader, acc:IndexedSeq[String]=IndexedSeq.empty):IndexedSeq[String] = {
-        if (!cl.isInstanceOf[URLClassLoader]) {
-          return acc
-        }
         if (cl != null) {
-          val us = acc ++ (cl.asInstanceOf[URLClassLoader].getURLs map { u =>
-            val f = new File(u.getFile)
-            URLDecoder.decode(f.getAbsolutePath, "UTF8")
-          })
+          val us = if (!cl.isInstanceOf[URLClassLoader]) {
+            acc
+          } else {
+            acc ++ (cl.asInstanceOf[URLClassLoader].getURLs map { u =>
+              val f = new File(u.getFile)
+              URLDecoder.decode(f.getAbsolutePath, "UTF8")
+            })
+          }
           urls(cl.getParent, us)
         } else {
           acc
         }
       }
-      val loader = getClass.getClassLoader//Play.current.classloader
-      val gurls = urls(loader)//.distinct.filter(!_.contains("sbt/"))
+      val loader = getClass.getClassLoader
+      val gurls = urls(loader).distinct//.filter(!_.contains("logback-classic"))//.filter(!_.contains("sbt/"))
       gurls
     }
 
