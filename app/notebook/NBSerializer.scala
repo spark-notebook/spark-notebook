@@ -36,7 +36,7 @@ object NBSerializer {
   trait Cell {
     def cell_type:String
   }
-  case class CodeCell(cell_type:String="code", input: String, language: String, collapsed: Boolean,prompt_number:Option[Int], outputs: List[Output]) extends Cell
+  case class CodeCell(cell_type:String="code", source: String, language: String, collapsed: Boolean,prompt_number:Option[Int], outputs: List[Output]) extends Cell
   implicit val codeCellFormat = Json.format[CodeCell]
   case class MarkdownCell(cell_type:String="markdown", source: String) extends Cell
   implicit val markdownCellFormat = Json.format[MarkdownCell]
@@ -45,13 +45,15 @@ object NBSerializer {
   case class HeadingCell(cell_type:String="heading", source: String, level: Int) extends Cell
   implicit val headingCellFormat = Json.format[HeadingCell]
 
-  case class Metadata(name: String, user_save_timestamp: Date = new Date(0), auto_save_timestamp: Date = new Date(0))
+  case class Metadata(name: String, user_save_timestamp: Date = new Date(0), auto_save_timestamp: Date = new Date(0), language_info:String="scala", trusted:Boolean=true)
   implicit val metadataFormat:Format[Metadata] = {
     val f = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     val r:Reads[Metadata] = (
       (JsPath \ "name").read[String] and
       (JsPath \ "user_save_timestamp").read[String].map(x => f.parse(x)) and
-      (JsPath \ "auto_save_timestamp").read[String].map(x => f.parse(x))
+      (JsPath \ "auto_save_timestamp").read[String].map(x => f.parse(x)) and
+      (JsPath \ "language_info").readNullable[String].map(_.getOrElse("scala")) and
+      (JsPath \ "trusted").readNullable[Boolean].map(_.getOrElse(true))
     )(Metadata.apply _)
 
     val w:Writes[Metadata] =
@@ -59,10 +61,14 @@ object NBSerializer {
         val name = JsString(m.name)
         val user_save_timestamp = JsString(f.format(m.user_save_timestamp))
         val auto_save_timestamp = JsString(f.format(m.auto_save_timestamp))
+        val language_info = JsString(m.language_info)
+        val trusted = JsBoolean(m.trusted)
         Json.obj(
           "name" → name,
           "user_save_timestamp" → user_save_timestamp,
-          "auto_save_timestamp" → auto_save_timestamp
+          "auto_save_timestamp" → auto_save_timestamp,
+          "language_info" → language_info,
+          "trusted" → trusted
         )
       }
 
@@ -91,12 +97,13 @@ object NBSerializer {
   case class Worksheet(cells: List[Cell])
   implicit val worksheetFormat = Json.format[Worksheet]
 
-  case class Notebook(metadata: Metadata, worksheets: List[Worksheet], autosaved: Option[List[Worksheet]]=None, nbformat: Option[Int]) {
+  case class Notebook(metadata: Metadata, cells:List[Cell], worksheets: Option[List[Worksheet]]=None, autosaved: Option[List[Worksheet]]=None, nbformat: Option[Int]) {
     def name = metadata.name
   }
   implicit val notebookFormat = Json.format[Notebook]
 
   def fromJson(json:JsValue):Notebook = {
+    println(Json.prettyPrint(json))
     json.validate[Notebook] match {
       case s: JsSuccess[Notebook] => {
         val notebook:Notebook = s.get

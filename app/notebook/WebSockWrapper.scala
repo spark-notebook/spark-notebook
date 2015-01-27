@@ -13,7 +13,7 @@ import notebook.util.Logging
  */
 
 trait WebSockWrapper {
-  def send(header: JsValue, session: JsValue, msgType: String, content: JsValue)
+  def send(header: JsValue, session: JsValue, msgType: String, channel:String, content: JsValue)
 }
 
 class WebSockWrapperImpl(sock: Concurrent.Channel[JsValue]) extends WebSockWrapper with Logging {
@@ -22,8 +22,9 @@ class WebSockWrapperImpl(sock: Concurrent.Channel[JsValue]) extends WebSockWrapp
     sock.push(msg)
   }
 
-  def send(header: JsValue, session: JsValue, msgType: String, content: JsValue) {
+  def send(header: JsValue, session: JsValue, msgType: String, channel:String, content: JsValue) {
     val respJson = Json.obj(
+      "channel" -> channel,
       "parent_header" -> header,
       "msg_type" -> msgType,
       "msg_id" -> UUID.randomUUID().toString,

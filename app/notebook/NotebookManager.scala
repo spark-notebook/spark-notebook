@@ -13,10 +13,6 @@ import play.api.libs.json._
 
 import notebook.NBSerializer._
 
-/**
- * Author: Ken
- */
-
 class NotebookManager(val name: String, val notebookDir: File) {
 
   val extension = ".snb"
@@ -37,7 +33,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
     Logger.info(s"Load notebook: $name")
     val basePath = notebookDir.getCanonicalPath
     Logger.info(s"Load notebook. basePath: $basePath")
-    val fileName = URLEncoder.encode(name, "UTF-8") + extension
+    val fileName = name + extension//URLEncoder.encode(name, "UTF-8") + extension
     Logger.info(s"Load notebook. file name: $fileName")
     val nbFile = new File(basePath, fileName)
     Logger.info(s"Load notebook. canonical file path: ${nbFile.getParentFile.getCanonicalPath}")
@@ -52,7 +48,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
 
   def newNotebook() = {
     val name = incrementFileName("Untitled")
-    val nb = Notebook(new Metadata(name), List(Worksheet(Nil)), None, None)
+    val nb = Notebook(new Metadata(name), Nil, None, None, None)
     val id = notebookId(name)
     save(Some(id), name, nb, false)
     id
@@ -64,7 +60,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
     	val name = incrementFileName(nb._2)
     	val oldNB = NBSerializer.read(nb._3)
     	val id = notebookId(name)
-    	save(Some(id), name, Notebook(new Metadata(name), oldNB.worksheets, oldNB.autosaved, None), false)
+    	save(Some(id), name, Notebook(new Metadata(name), oldNB.cells, oldNB.worksheets, oldNB.autosaved, None), false)
     	id
     } getOrElse newNotebook
   }
