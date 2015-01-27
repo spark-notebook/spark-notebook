@@ -1,0 +1,141 @@
+/**
+ * Primary styles
+ *
+ * Author: IPython Development Team
+ */
+
+
+body {
+    background-color: @body-bg;
+    /* This makes sure that the body covers the entire window and needs to
+       be in a different element than the display: box in wrapper below */
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+    bottom: 0px;
+    overflow: visible;
+}
+
+#header {
+    /* Initially hidden to prevent FLOUC */
+    display: none;
+    background-color: @body-bg;
+
+    /* Display over codemirror */
+    z-index: 100;
+
+    #header-container {
+        padding-bottom: 5px;
+        padding-top: 5px;
+        .border-box-sizing();
+    }
+
+    .header-bar {
+        width: 100%;
+        height: 1px;
+        background: @navbar-default-border;
+        margin-bottom: -1px;
+    }
+
+    @media print {
+        display: none !important;
+    }
+}
+
+#header-spacer {
+    width: 100%;
+    visibility: hidden;
+    
+    @media print {
+        display: none;
+    }
+}
+
+#ipython_notebook {
+    padding-left: 0px;
+    padding-top: (@navbar-height - @logo_height) / 2;
+    padding-bottom: (@navbar-height - @logo_height) / 2;
+    @media (max-width: @screen-sm-max){
+        margin-left: 10px;
+    }
+}
+
+
+
+#noscript {
+     width: auto;
+     padding-top: 16px;
+     padding-bottom: 16px;
+     text-align: center;
+     font-size: 22px;
+     color: red;
+     font-weight: bold;
+}
+
+#ipython_notebook img {
+    height: @logo_height;
+}
+
+#site {
+    // avoid repaints on size with translateZ(0)
+    -webkit-transform: translateZ(0);
+    -moz-transform: translateZ(0);
+    -ms-transform: translateZ(0);
+    -o-transform: translateZ(0);
+    transform: translateZ(0);
+    width: 100%;
+    display: none;
+    .border-box-sizing();
+    overflow: auto;
+}
+
+/* Smaller buttons */
+.ui-button .ui-button-text {
+    padding: 0.2em 0.8em;
+    font-size: 77%;
+}
+
+input.ui-button {
+    padding: 0.3em 0.9em;
+}
+
+span#login_widget {
+    float: right;
+}
+
+span#login_widget > .button,
+#logout
+{
+    .btn-default();
+}
+
+.nav-header {
+    text-transform: none;
+}
+
+#header > span {
+  margin-top: 10px;
+}
+
+// class for stretching dialogs to fill the screen
+.modal_stretch .modal-dialog {
+    .vbox();
+    min-height: 80%;
+    .modal-body {
+        max-height: none;
+        flex: 1;
+    }
+}
+
+@media (min-width: @screen-sm-min) {
+    .modal .modal-dialog {
+        width: 700px;
+    }
+}
+
+// less mixin to be sure to add the right class to get icons with font awesome.
+.icon(@ico){
+    .fa();
+    content: @ico;
+}

@@ -1,68 +1,138 @@
-@(title: String, params:Map[String, String])(stylesheet: Html)(meta: Html)(header: Html)(site: Html)(script: Html)
+@(title: String, params:Map[String, String], logo:Option[String]=None, version_hash:Option[String]=None, contents_js_source:Option[String]=None)(stylesheet: Html)(meta: Html)(headercontainer: Html)(header: Html)(site: Html)(script: Html)
 
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
-    <meta charset="utf-8" />
+  <meta charset="utf-8" />
 
-    <title>@title</title>
+  <title>@title</title>
 
-    <!--hack to avoid bokeh.css integration side effect-->
-    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/bokeh.css")" type="text/css" />
+  <link rel="shortcut icon" type="image/x-icon" href="@routes.Assets.at("images/favicon.ico")">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/jquery/css/base/jquery-ui.min.css")" type="text/css" />
-
-    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/boilerplate.css")" type="text/css" />
-    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/fbm.css")" type="text/css" />
-    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/page.css")" type="text/css" />
+  <link rel="stylesheet" href="@routes.Assets.at("ipython/components/jquery-ui/themes/smoothness/jquery-ui.min.css")" type="text/css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 
-    @stylesheet
+  @stylesheet
 
-    @meta
+  <link rel="stylesheet" href="@routes.Assets.at("ipython/custom/custom.css")" type="text/css" />
+  <script src="@routes.Assets.at("ipython/components/es6-promise/promise.min.js")" type="text/javascript" charset="utf-8"></script>
+  <script src="@routes.Assets.at("ipython/components/requirejs/require.js")" type="text/javascript" charset="utf-8"></script>
+
+  <script>
+    require.config({
+      @{version_hash.map { v => 
+        s""" urlArgs: "v=$v", """
+      }}
+        baseUrl: '/assets/ipython/',
+        paths: {
+          nbextensions : '/nbextensions',
+          kernelspecs : '/kernelspecs',
+          underscore : 'components/underscore/underscore-min',
+          backbone : 'components/backbone/backbone-min',
+          jquery: 'components/jquery/jquery.min',
+          bootstrap: 'components/bootstrap/js/bootstrap.min',
+          bootstraptour: 'components/bootstrap-tour/build/js/bootstrap-tour.min',
+          jqueryui: 'components/jquery-ui/ui/minified/jquery-ui.min',
+          moment: 'components/moment/moment',
+          codemirror: 'components/codemirror',
+          termjs: 'components/term.js/src/term',
+
+
+
+
+          knockout: '@routes.Assets.at("javascripts/third/knockout.js")',
+          'knockout-bootstrap': '@routes.Assets.at("javascripts/third/knockout-bootstrap.min.js")',
+          d3: '@routes.Assets.at("javascripts/third/d3.js")',
+          rickshaw: '@routes.Assets.at("javascripts/third/rickshaw/rickshaw.js")',
+          
+          observable: '@routes.Assets.at("javascripts/notebook/observable.js")',
+          equiv: '@routes.Assets.at("javascripts/notebook/equiv.js")'
+
+          //'jwerty.js': '@routes.Assets.at("javascripts/third/jwerty.js")'
+        },
+        shim: {
+          underscore: {
+            exports: '_'
+          },
+          backbone: {
+            deps: ["underscore", "jquery"],
+            exports: "Backbone"
+          },
+          bootstrap: {
+            deps: ["jquery"],
+            exports: "bootstrap"
+          },
+          bootstraptour: {
+            deps: ["bootstrap"],
+            exports: "Tour"
+          },
+          jqueryui: {
+            deps: ["jquery"],
+            exports: "$"
+          }
+        }
+    });
+
+    require.config({
+      map: {
+        '*':{
+          'contents': '@{contents_js_source.getOrElse("services/contents")}',
+        }
+      }
+    });
+  </script>
+
+  @meta
 
 </head>
 
-<body @{Html(params.map(x => s""" data-${x._1}="${x._2}" """).mkString(" "))}>
-    <div id="header">
-       <div>
-        <span id="login_widget">
-            <button id="login"></button>
-            <button id="logout"></button>
-        </span>
+<!-- todo bodyclasses (=notebook_app for notebook.scala.html)  → class="" -->
+<body class="notebook_app data" @{Html(params.map(x => s""" data-${x._1}="${x._2}" """).mkString(" "))}>
 
-        @header
 
-       <div id="logo">
-       <!-- TODO: External logo hook -->
-        </div>
-        </div>
+<noscript>
+    <div id='noscript'>
+      Spark Notebook requires JavaScript.<br>
+      Please enable it to proceed.
+  </div>
+</noscript>
 
-    </div>
-    <div id="expand_header"><a href="#"><i class="glyphicon glyphicon-chevron-down"></i></a></div>
+<div id="header">
+  <div id="header-container" class="container">
+  <div id="ipython_notebook" class="nav navbar-brand pull-left"><a href="{{base_url}}tree" title='dashboard'>@logo<img src='@routes.Assets.at("images/logo.png")' alt='Spark Notebook'/></a></div>
 
-    <div id="site">
-        @site
-    </div>
+  <!--
+  {% block login_widget %}
 
-    <script src="@routes.Assets.at("stylesheets/third/curl/curl.js")" type="text/javascript" charset="utf-8"></script>
-    <script src="@routes.Assets.at("stylesheets/third/jquery/js/jquery.js")" type="text/javascript" charset="utf-8"></script>
-    <script>
-      //heack for jquery-ui to not use require (jquery not yet loaded via curljs :-/)
-      define.amd = false;
-    </script>
-    <script src="@routes.Assets.at("stylesheets/third/jquery/js/jquery-ui.js")" type="text/javascript" charset="utf-8"></script>
-    <script>
-      define.amd = true;
-    </script>
-    <script src="@routes.Assets.at("javascripts/ipython/js/namespace.js")" type="text/javascript" charset="utf-8"></script>
-    <script src="@routes.Assets.at("javascripts/ipython/js/csrf.js")" type="text/javascript" charset="utf-8"></script>
-    <script src="@routes.Assets.at("javascripts/ipython/js/page.js")" type="text/javascript" charset="utf-8"></script>
-    <script src="@routes.Assets.at("javascripts/ipython/js/loginwidget.js")" type="text/javascript" charset="utf-8"></script>
+    <span id="login_widget">
+      {% if logged_in %}
+        <button id="logout" class="btn btn-sm navbar-btn">Logout</button>
+      {% elif login_available and not logged_in %}
+        <button id="login" class="btn btn-sm navbar-btn">Login</button>
+      {% endif %}
+    </span>
 
-    @script
+  {% endblock %}
+  -->
 
-    </body>
+  @headercontainer
+  </div>
+
+  <div class="header-bar"></div>
+
+  @header
+</div>
+
+<div id="site">
+@site
+</div>
+
+@script
+
+</body>
+
 </html>
