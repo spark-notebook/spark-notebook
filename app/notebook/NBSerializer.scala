@@ -8,11 +8,14 @@ import play.api.libs.functional.syntax._
 
 object NBSerializer {
   trait Output {
-    def name:String
     def output_type:String
   }
   case class ScalaOutput(name:String, output_type:String, prompt_number: Int, html: Option[String], text: Option[String]) extends Output
   implicit val scalaOutputFormat = Json.format[ScalaOutput]
+  case class ExecuteResultMetadata(id:Option[String]=None)
+  implicit val executeResultMetadataFormat = Json.format[ExecuteResultMetadata]
+  case class ScalaExecuteResult(metadata:ExecuteResultMetadata, data:Map[String,String], output_type:String, execution_count:Int) extends Output
+  implicit val scalaExecuteResultFormat = Json.format[ScalaExecuteResult]
   case class ScalaError(name:String, output_type:String, prompt_number: Int, traceback: String) extends Output
   implicit val scalaErrorFormat = Json.format[ScalaError]
   case class ScalaStream(name:String, output_type:String, text: String) extends Output
@@ -22,16 +25,18 @@ object NBSerializer {
   implicit val outputReads:Reads[Output] = Reads { (js:JsValue) =>
     val tpe = (js \ "output_type").as[String]
     tpe match {
-      case "pyout"  => scalaOutputFormat.reads(js)
+      case "execute_result"  => scalaExecuteResultFormat.reads(js)
+      case "stout"  => scalaOutputFormat.reads(js)
       case "pyerr"  => scalaErrorFormat.reads(js)
       case "stream" => scalaStreamFormat.reads(js)
     }
   }
   implicit val outputWrites:Writes[Output] = Writes { (o:Output) =>
     o match {
-      case o:ScalaOutput => scalaOutputFormat.writes(o)
-      case o:ScalaError  => scalaErrorFormat.writes(o)
-      case o:ScalaStream => scalaStreamFormat.writes(o)
+      case o:ScalaExecuteResult  => scalaExecuteResultFormat.writes(o)
+      case o:ScalaOutput         => scalaOutputFormat.writes(o)
+      case o:ScalaError          => scalaErrorFormat.writes(o)
+      case o:ScalaStream         => scalaStreamFormat.writes(o)
     }
   }
   implicit val outputFormat:Format[Output] = Format(outputReads, outputWrites)

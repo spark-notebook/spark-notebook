@@ -79,7 +79,7 @@ class SparkInfo(sparkContext:SparkContext, checkInterval:Duration=5 seconds, exe
   lazy val toHtml =
       <div data-bind="with: value">{
       scopedScript(
-        """ require(
+        """ req(
               ['observable', 'knockout', 'knockout-bootstrap'],
               function (O, ko) {
                 v_v_v = O.makeObservable(valueId);

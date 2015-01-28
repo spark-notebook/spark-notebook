@@ -586,6 +586,11 @@ define([
         this.keyboard_manager.register_events(toinsert);
         toinsert.append(html);
         element.append(toinsert);
+        require(['observable'], function (Observable) {
+          Observable.scopedEval(toinsert)();
+        });
+
+        //eval($(element).find("script").text())
         return toinsert;
     };
 

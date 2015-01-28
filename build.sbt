@@ -135,7 +135,7 @@ lazy val common = Project(id = "common", base = file("modules/common"))
                                 libraryDependencies ++= Seq(
                                   bokeh,
                                   wisp
-                                ) ++ customJacksonScala
+                                )// ++ customJacksonScala
                               )
                               .settings(
                                 sharedSettings:_*

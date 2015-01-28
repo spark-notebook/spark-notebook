@@ -17,7 +17,7 @@ class Svg[T] (
   )(implicit val singleCodec:Codec[JsValue, T])
   extends Widget with DataConnector[T] {
 
-  private val js = List("sandbox", onData, extension).map(x => s"'assets/javascripts/notebook/$x'").mkString("[", ",", "]")
+  private val js = List("sandbox", onData, extension).map(x => s"'../javascripts/notebook/$x'").mkString("[", ",", "]")
   private val call = if (onData == extension) {
     s"""
       function(s, onData) {
@@ -39,7 +39,7 @@ class Svg[T] (
        xmlns="http://www.w3.org/2000/svg" version="1.1">
     {
       scopedScript(
-        s"require($js, $call);",
+        s"req($js, $call);",
         Json.obj(
           ("dataId" -> dataConnection.id),
           ("dataInit" -> JsonCodec.tSeq[T].decode(data))

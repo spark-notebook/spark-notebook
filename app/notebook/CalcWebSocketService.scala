@@ -81,7 +81,7 @@ class CalcWebSocketService(system: ActorSystem, initScripts: List[(String, Strin
             ws.send(header, session, "stream", "iopub", Json.obj("text" -> data, "name" -> name))
 
           case ExecuteResponse(html) =>
-            ws.send(header, session, "pyout", "iopub", Json.obj("execution_count" -> counter, "data" -> Json.obj("text/html" -> html)))
+            ws.send(header, session, "execute_result", "iopub", Json.obj("execution_count" -> counter, "data" -> Json.obj("text/html" -> html)))
             ws.send(header, session, "status", "iopub", Json.obj("execution_state" -> "idle"))
             ws.send(header, session, "execute_reply", "shell", Json.obj("execution_count" -> counter))
             context.stop(self)

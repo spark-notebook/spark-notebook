@@ -34,6 +34,10 @@ GET     /edit/:snb                                                    controller
 GET     /nbconvert/:format/:path                                      controllers.Application.dlNotebookAs(path:String, format:String)
 
 
+GET     /ws/observable/:contextId                                        controllers.Application.openObservable(contextId:String)
+
+
+
 
 POST    /new                                                          controllers.Application.newNotebookOld
 GET     /view/:name                                                   controllers.Application.viewNotebook(name:String, id:String)
@@ -52,5 +56,4 @@ GET     /assets/*file                                                 controller
 
 
 # Web socket
-GET     /observable/:contextId                                        controllers.Application.openObservable(contextId:String)
 GET     /kernels/:kernelId/:channel                                   controllers.Application.openKernelOld(kernelId:String, channel:String)

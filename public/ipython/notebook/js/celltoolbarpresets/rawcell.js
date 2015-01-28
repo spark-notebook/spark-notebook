@@ -19,6 +19,7 @@ define([
     ["HTML", "text/html"],
     ["Markdown", "text/markdown"],
     ["Python", "text/x-python"],
+    ["Scala", "text/x-scala"],
     ["Custom", "dialog"],
 
     ],
