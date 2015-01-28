@@ -263,7 +263,7 @@ define([
             var langinfo = kinfo.language_info;
             that.metadata.language_info = langinfo;
             // Mode 'null' should be plain, unhighlighted text.
-            var cm_mode = langinfo.codemirror_mode || langinfo.name || 'null';
+            var cm_mode = langinfo.codemirror_mode || langinfo.name || 'scala';
             that.set_codemirror_mode(cm_mode);
         });
 

@@ -36,7 +36,7 @@ require([
     config.load();
     var common_config = new configmod.ConfigSection('common', {base_url: base_url});
     common_config.load();
-    
+
     var editor = new editmod.Editor('#texteditor-container', {
         base_url: base_url,
         events: events,
@@ -44,22 +44,22 @@ require([
         file_path: file_path,
         config: config,
     });
-    
+
     // Make it available for debugging
     IPython.editor = editor;
-    
+
     var save_widget = new savewidget.SaveWidget('span#save_widget', {
         editor: editor,
         events: events,
     });
-    
+
     var menus = new menubar.MenuBar('#menubar', {
         base_url: base_url,
         editor: editor,
         events: events,
         save_widget: save_widget,
     });
-    
+
     var notification_area = new notificationarea.EditorNotificationArea(
         '#notification_area', {
         events: events,

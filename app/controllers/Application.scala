@@ -75,7 +75,9 @@ object Application extends Controller {
         |      "name": "spark",
         |      "resources": {},
         |      "spec" : {
-        |        "display_name": "Apache Spark"
+        |        "language": "Scala",
+        |        "display_name": "Apache Spark",
+        |        "language_info": "scala"
         |      }
         |    }
         |  }
@@ -104,7 +106,8 @@ object Application extends Controller {
         |{
         |  "kernel": {
         |    "id": "$kernelId",
-        |    "name": "spark"
+        |    "name": "spark",
+        |    "language_info": "scala"
         |  }
         |}
         |""".stripMargin.trim
