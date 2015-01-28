@@ -31,7 +31,7 @@ class WebSocketKernelActor(channel: Concurrent.Channel[JsValue], val pchannel:St
 
       msgType match {
         case JsString("kernel_info_request") => {
-          ws.send(header, session, "info", "shell", Json.obj("language_info" -> "scala"))
+          ws.send(header, session, "info", "shell", Json.obj("language_info" -> "scala", "extension" → "scala"))
         }
 
         case JsString("execute_request") => {

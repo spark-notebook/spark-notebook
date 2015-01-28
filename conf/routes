@@ -23,6 +23,7 @@ GET     /api/contents/                                                controller
 GET     /api/contents/:snb                                            controllers.Application.content(type:String, snb:String)
 GET     /api/contents/:snb/checkpoints                                controllers.Application.listCheckpoints(snb:String)
 POST    /api/contents/:snb/checkpoints                                controllers.Application.saveCheckpoint(snb:String)
+POST    /api/contents                                                 controllers.Application.newNotebook()
 POST    /api/contents/                                                controllers.Application.newNotebook()
 PATCH   /api/contents/:snb                                            controllers.Application.renameNotebook(snb:String)
 PUT     /api/contents/:snb                                            controllers.Application.saveNotebook(snb:String)
@@ -30,6 +31,7 @@ PUT     /api/contents/:snb                                            controller
 GET     /notebooks/:snb                                               controllers.Application.openNotebook(snb:String)
 GET     /edit/:snb                                                    controllers.Application.openNotebook(snb:String)
 
+GET     /nbconvert/:format/:path                                      controllers.Application.dlNotebookAs(path:String, format:String)
 
 
 
@@ -40,7 +42,7 @@ GET     /notebooks                                                    controller
 GET     /notebooks/:name                                              controllers.Application.dlNotebook(name:String, id:String)
 PUT     /notebooks/:name                                              controllers.Application.saveNotebookOld(name:String, id:String, force:Boolean)
 
-POST    /notebooks/:name                                              controllers.Application.dlNotebookAs(name:String, id:String, format:String)
+POST    /notebooks/:name                                              controllers.Application.dlNotebookAsOld(name:String, id:String, format:String)
 
 
 POST    /kernels                                                      controllers.Application.createKernel
