@@ -218,7 +218,7 @@ return new function () {
             $(this).remove();
 
             function require(requirements, callback) {
-              curl(requirements, function () { callback.apply(scope, arguments); });
+              require(requirements, function () { callback.apply(scope, arguments); });
             }
 
             return function () { (function() { with (data) { eval(source); } }).call(scope); };

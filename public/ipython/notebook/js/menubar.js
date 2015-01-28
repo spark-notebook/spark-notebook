@@ -134,8 +134,8 @@ define([
             that._nbconvert('pdf', true);
         });
 
-        this.element.find('#download_script').click(function () {
-            that._nbconvert('script', true);
+        this.element.find('#download_scala').click(function () {
+            that._nbconvert('scala', true);
         });
 
         this.element.find('#rename_notebook').click(function () {
@@ -359,12 +359,12 @@ define([
         /**
          * Set the 'Download as foo' menu option for the relevant language.
          */
-        var el = this.element.find('#download_script');
+        var el = this.element.find('#download_scala');
 
-        // Set menu entry text to e.g. "Python (.py)"
-        var langname = (langinfo.name || 'Script');
+        // Set menu entry text to e.g. "Scala (.scala)"
+        var langname = (langinfo.name || 'Scala');
         langname = langname.charAt(0).toUpperCase()+langname.substr(1); // Capitalise
-        el.find('a').text(langname + ' ('+(langinfo.file_extension || 'txt')+')');
+        el.find('a').text(langname + ' ('+(langinfo.file_extension || 'scala')+')');
     };
 
     MenuBar.prototype.add_kernel_help_links = function(help_links) {

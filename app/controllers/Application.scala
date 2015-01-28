@@ -126,11 +126,11 @@ object Application extends Controller {
       .getOrElse(Nil)
       .filter(_.isFile)
       .map { f =>
-        f.getName.dropRight(".snb".size)
+        f.getName
       }.map { n =>
         Json.obj(
           "type" → "file",
-          "name" → n,
+          "name" → n.dropRight(".snb".size),
           "path" → n //todo → build relative path
         )
       }
@@ -142,13 +142,14 @@ object Application extends Controller {
 
   def content(`type`:String, snb:String) = Action {
     require(`type` == "notebook") // ?
-
-    getNotebook(snb, snb, "json")
+    Logger.info("content: " + snb)
+    val name = if (snb.endsWith(".snb")) {snb.dropRight(".snb".size)} else {snb}
+    getNotebook(name, name+".snb", "json")
   }
 
   def newNotebook() = Action {
-    val id = nbm.newNotebook()
-    val name = nbm.idToName(id)
+    val name = nbm.newNotebook()
+    Logger.info("new: " + name)
     Redirect(routes.Application.content("notebook", name))
   }
 
@@ -227,7 +228,7 @@ object Application extends Controller {
   def saveNotebook(snb:String) = Action(parse.tolerantJson) { request =>
     val notebook = NBSerializer.fromJson(request.body \ "content")
     try {
-      nbm.save(Some(snb), snb, notebook, true)
+      nbm.save(snb.dropRight(".snb".size), snb, notebook, true)
 
       Ok(Json.obj(
         "type" → "file",
@@ -237,6 +238,10 @@ object Application extends Controller {
     } catch {
       case _ :NotebookExistsException => Conflict
     }
+  }
+
+  def dlNotebookAs(path:String, format:String) = Action {
+    getNotebook(path.dropRight(".snb".size), path, format)
   }
 
   def dash(title:String) = Action {
@@ -255,6 +260,14 @@ object Application extends Controller {
     ))
   }
 
+  def openObservable(contextId:String) = ImperativeWebsocket.using[JsValue](
+    onOpen = channel => WebSocketObservableActor.props(channel, contextId),
+    onMessage = (msg, ref) => ref ! msg,
+    onClose = ref => {
+      Logger.info(s"Closing observable $contextId")
+      ref ! akka.actor.PoisonPill
+    }
+  )
 
 
 
@@ -269,9 +282,8 @@ object Application extends Controller {
   }
 
   def newNotebookOld = Action {
-    val id = nbm.newNotebook()
-    val name = nbm.idToName(id)
-    Redirect(routes.Application.viewNotebook(name, id))
+    val name = nbm.newNotebook()
+    Redirect(routes.Application.viewNotebook(name, name))
   }
 
   def viewNotebook(name:String, id:String) = Action { request =>
@@ -291,11 +303,11 @@ object Application extends Controller {
     ))
   }
 
-  def saveNotebookOld(name:String, id:String, force:Boolean) = Action(parse.json) { request =>
+  def saveNotebookOld(name:String, path:String, force:Boolean) = Action(parse.json) { request =>
     val notebook = NBSerializer.fromJson(request.body)
     try {
-      nbm.save(Some(id), name, notebook, force)
-      Ok("saved " + id)
+      nbm.save(name, path, notebook, force)
+      Ok("saved " + name)
     } catch {
       case _ :NotebookExistsException => Conflict
     }
@@ -305,7 +317,7 @@ object Application extends Controller {
     getNotebook(id, name, "json")
   }
 
-  def dlNotebookAs(name:String, id:String, format:String) = Action {
+  def dlNotebookAsOld(name:String, id:String, format:String) = Action {
     getNotebook(id, name, format)
   }
 
@@ -313,14 +325,6 @@ object Application extends Controller {
     startKernel(UUID.randomUUID.toString)
   }
 
-  def openObservable(contextId:String) = ImperativeWebsocket.using[JsValue](
-    onOpen = channel => WebSocketObservableActor.props(channel, contextId),
-    onMessage = (msg, ref) => ref ! msg,
-    onClose = ref => {
-      Logger.info(s"Closing observable $contextId")
-      ref ! akka.actor.PoisonPill
-    }
-  )
 
   def openKernelOld(kernelId:String, pchannel:String) =  ImperativeWebsocket.using[JsValue](
     onOpen = channel => {
@@ -337,27 +341,30 @@ object Application extends Controller {
     }
   )
 
-  def getNotebook(id: String, name: String, format: String) = {
+  def getNotebook(name: String, path: String, format: String) = {
     try {
-      Logger.info(s"getNotebook: id is '$id', name is '$name' and format is '$format'")
-      val response = nbm.getNotebook(Some(id), name).map { case (lastMod, name, data) =>
+      Logger.info(s"getNotebook: name is '$name', path is '$path' and format is '$format'")
+      val response = nbm.getNotebook(name, path).map { case (lastMod, name, data) =>
         format match {
           case "json" =>
             val j = Json.parse(data)
             val json = Json.obj(
               "content" → j,
               "name" → name,
-              "path" → name, //FIXME
+              "path" → path, //FIXME
               "writable" -> true //TODO
             )
             Ok(json).withHeaders(
-              "Content-Disposition" → s"""attachment; filename="$name.snb" """,
+              "Content-Disposition" → s"""attachment; filename="$path" """,
               "Last-Modified" → lastMod
             )
           case "scala" =>
             val nb = NBSerializer.fromJson(Json.parse(data))
             val code = nb.cells.map { cells =>
-              val cs = cells.collect { case NBSerializer.CodeCell(md, "code", i, Some("scala"), _, _) => i }
+              val cs = cells.collect {
+                case NBSerializer.CodeCell(md, "code", i, Some("scala"), _, _) => i
+                case NBSerializer.CodeCell(md, "code", i, None, _, _) => i
+              }
               val fc = cs.map(_.split("\n").map { s => s"  $s" }.mkString("\n")).mkString("\n\n  /* ... new cell ... */\n\n").trim
               val code = s"""
               |object Cells {

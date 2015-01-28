@@ -1721,7 +1721,10 @@ define([
      * @return {string} This notebook's name (excluding file extension)
      */
     Notebook.prototype.get_notebook_name = function () {
-        var nbname = this.notebook_name.substring(0,this.notebook_name.length-".snb".length);
+        var nbname = this.notebook_name;
+        if (nbname.indexOf(".snb") !== -1) {
+            nbname = nbname.substring(0,nbname.length-".snb".length);
+        }
         return nbname;
     };
 

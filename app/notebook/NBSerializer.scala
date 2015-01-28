@@ -113,9 +113,6 @@ object NBSerializer {
     json.validate[Notebook] match {
       case s: JsSuccess[Notebook] => {
         val notebook:Notebook = s.get
-        println("----------")
-        println(notebook)
-        println("++++++++++")
         val nb = notebook.cells.map { _ => notebook } getOrElse notebook.copy(cells=Some(Nil))
         nb
       }

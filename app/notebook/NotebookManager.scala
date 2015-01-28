@@ -23,20 +23,17 @@ class NotebookManager(val name: String, val notebookDir: File) {
       val name = URLDecoder.decode(fn.substring(0, fn.length - extension.length), "UTF-8")
       Json.obj(
         "name" -> name,
-        "notebook_id" -> notebookId(name)
+        "notebook_id" -> name
       )
     }
     JsArray(res.toList)
   }
 
-  def notebookFile(name: String, addExt:Boolean=false) = {
-    Logger.info(s"Load notebook: $name")
+  def notebookFile(name: String) = {
     val basePath = notebookDir.getCanonicalPath
-    Logger.info(s"Load notebook. basePath: $basePath")
-    val fileName = if (addExt) { name + extension } else { name } //URLEncoder.encode(name, "UTF-8") + extension
-    Logger.info(s"Load notebook. file name: $fileName")
+    val fileName = name + extension//URLEncoder.encode(name, "UTF-8") + extension
     val nbFile = new File(basePath, fileName)
-    Logger.info(s"Load notebook. canonical file path: ${nbFile.getParentFile.getCanonicalPath}")
+    Logger.info(s"Load notebook. canonical file path: ${nbFile.getCanonicalPath}")
     /* This check is probably not strictly necessary due to URL encoding of name (should escape any path traversal components), but let's be safe */
     require(nbFile.getParentFile.getCanonicalPath == basePath, "Unable to access notebook outside of notebooks path.")
     nbFile
@@ -49,19 +46,19 @@ class NotebookManager(val name: String, val notebookDir: File) {
   def newNotebook() = {
     val name = incrementFileName("Untitled")
     val nb = Notebook(Some(new Metadata(name)), Some(Nil), None, None, None)
-    val id = notebookId(name)
-    save(Some(id), name, nb, false)
-    id
+    val path = name+extension
+    save(name, path, nb, false)
+    name
   }
 
-  def copyNotebook(nbId: Option[String], nbName: String) = {
-    val nbData = getNotebook(nbId, nbName)
+  def copyNotebook(nbName: String, nbPath: String) = {
+    val nbData = getNotebook(nbName, nbPath)
     nbData.map { nb =>
     	val name = incrementFileName(nb._2)
     	val oldNB = NBSerializer.read(nb._3)
-    	val id = notebookId(name)
-    	save(Some(id), name, Notebook(Some(new Metadata(name)), oldNB.cells, oldNB.worksheets, oldNB.autosaved, None), false)
-    	id
+      val path = name
+    	save(name, path, Notebook(Some(new Metadata(name)), oldNB.cells, oldNB.worksheets, oldNB.autosaved, None), false)
+    	path
     } getOrElse newNotebook
   }
 
@@ -69,76 +66,57 @@ class NotebookManager(val name: String, val notebookDir: File) {
    * Attempts to select a notebook by ID first, if supplied and if the ID
    * is known; falls back to supplied name otherwise.
    */
-  def getNotebook(id: Option[String], name: String) = {
-    val nameToUse = id flatMap idToName.get getOrElse name
+  def getNotebook(name: String, path: String) = {
+    val nameToUse = name
+    Logger.info(s"getNotebook $name")
     for (notebook <- load(nameToUse)) yield {
-      val data = FileUtils.readFileToString(notebookFile(notebook.name))
+      val data = FileUtils.readFileToString(notebookFile(nameToUse))
       val df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss z'('Z')'")
-      val last_mtime = df.format(new Date(notebookFile(notebook.name).lastModified()))
+      val last_mtime = df.format(new Date(notebookFile(nameToUse).lastModified()))
       (last_mtime, notebook.name, data)
     }
   }
 
-  def deleteNotebook(id: Option[String], name: String) = {
-    val realId = id match {
-      case Some(x) => id
-      case None => nameToId(name)
-    }
-    val nameToUse = realId flatMap idToName.get getOrElse name
+  def deleteNotebook(name: String, path: String) = {
+    val nameToUse = name
     val file = notebookFile(nameToUse)
     if (file.exists()) {
-      realId foreach removeMapping
+      //removeMapping(nameToUse)
       file.delete()
     }
   }
 
 
-  def rename(id: String, path: String) = {
-    val file = notebookFile(id)
-    load(id).map { nbI =>
-      val nb = if (nbI.name != path) nbI.copy(metadata = Some(new Metadata(path))) else nbI
-      file.renameTo(notebookFile(path, false))
-      FileUtils.writeStringToFile(notebookFile(path, false), NBSerializer.write(nb))
+  def rename(name: String, path: String) = {
+    val file = notebookFile(name)
+    load(name).map { notebook =>
+      val nb = if (notebook.name != name) notebook.copy(metadata = Some(new Metadata(name))) else notebook
+      file.renameTo(notebookFile(name))
+      FileUtils.writeStringToFile(notebookFile(name), NBSerializer.write(nb))
 
-      setMapping(notebookId(path), path)
+      //setMapping(name, path)
     }
   }
 
-  def save(id: Option[String], name: String, nbI: Notebook, overwrite: Boolean) {
+  def save(name: String, path: String, notebook: Notebook, overwrite: Boolean) {
     val file = notebookFile(name)
     if (!overwrite && file.exists()) throw new NotebookExistsException("Notebook " + name + " already exists.")
 
-    val nb = if (nbI.name != name) nbI.copy(metadata = Some(new Metadata(name))) else nbI
-    println(nb)
+    val nb = if (notebook.name != name) notebook.copy(metadata = Some(new Metadata(name))) else notebook
+
     FileUtils.writeStringToFile(notebookFile(name), NBSerializer.write(nb))
 
-    setMapping(id getOrElse notebookId(name), name)
+    //setMapping(name, path)
   }
 
   def load(name: String): Option[Notebook] = {
+    Logger.info(s"Loading $name")
     val file = notebookFile(name)
     if (file.exists())
       Some(NBSerializer.read(FileUtils.readFileToString(file)))
     else None
   }
 
-
-  private def removeMapping(id: String) {
-    idToName.remove(id)
-  }
-  private def setMapping(id: String, name:String) {
-    nameToId(name).foreach(idToName.remove(_))
-    idToName.put(id, name)
-  }
-
-  val idToName = collection.mutable.Map[String, String]()
-  def nameToId(name: String) = idToName.find(_._2 == name).map(_._1)
-
-  def notebookId(name: String) = nameToId(name) getOrElse {
-    val id = UUID.randomUUID.toString
-    setMapping(id, name)
-    id
-  }
 
 }
 class NotebookExistsException(message:String) extends IOException(message)
