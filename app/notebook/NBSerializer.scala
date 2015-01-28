@@ -7,12 +7,15 @@ import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
 object NBSerializer {
-  trait Output
-  case class ScalaOutput(prompt_number: Int, html: Option[String], text: Option[String]) extends Output
+  trait Output {
+    def name:String
+    def output_type:String
+  }
+  case class ScalaOutput(name:String, output_type:String, prompt_number: Int, html: Option[String], text: Option[String]) extends Output
   implicit val scalaOutputFormat = Json.format[ScalaOutput]
-  case class ScalaError(prompt_number: Int, traceback: String) extends Output
+  case class ScalaError(name:String, output_type:String, prompt_number: Int, traceback: String) extends Output
   implicit val scalaErrorFormat = Json.format[ScalaError]
-  case class ScalaStream(text: String, stream: String) extends Output
+  case class ScalaStream(name:String, output_type:String, text: String) extends Output
   implicit val scalaStreamFormat = Json.format[ScalaStream]
 
 
@@ -33,16 +36,19 @@ object NBSerializer {
   }
   implicit val outputFormat:Format[Output] = Format(outputReads, outputWrites)
 
+  case class CellMetadata(trusted:Option[Boolean], collapsed:Option[Boolean])
+  implicit val codeCellMetadataFormat = Json.format[CellMetadata]
   trait Cell {
+    def metadata:CellMetadata
     def cell_type:String
   }
-  case class CodeCell(cell_type:String="code", source: String, language: String, collapsed: Boolean,prompt_number:Option[Int], outputs: List[Output]) extends Cell
+  case class CodeCell(metadata:CellMetadata, cell_type:String="code", source: String, language: Option[String], prompt_number:Option[Int]=None, outputs: Option[List[Output]]=None) extends Cell
   implicit val codeCellFormat = Json.format[CodeCell]
-  case class MarkdownCell(cell_type:String="markdown", source: String) extends Cell
+  case class MarkdownCell(metadata:CellMetadata, cell_type:String="markdown", source: String) extends Cell
   implicit val markdownCellFormat = Json.format[MarkdownCell]
-  case class RawCell(cell_type:String="raw", source: String) extends Cell
+  case class RawCell(metadata:CellMetadata, cell_type:String="raw", source: String) extends Cell
   implicit val rawCellFormat = Json.format[RawCell]
-  case class HeadingCell(cell_type:String="heading", source: String, level: Int) extends Cell
+  case class HeadingCell(metadata:CellMetadata, cell_type:String="heading", source: String, level: Int) extends Cell
   implicit val headingCellFormat = Json.format[HeadingCell]
 
   case class Metadata(name: String, user_save_timestamp: Date = new Date(0), auto_save_timestamp: Date = new Date(0), language_info:String="scala", trusted:Boolean=true)
@@ -97,8 +103,8 @@ object NBSerializer {
   case class Worksheet(cells: List[Cell])
   implicit val worksheetFormat = Json.format[Worksheet]
 
-  case class Notebook(metadata: Metadata, cells:List[Cell], worksheets: Option[List[Worksheet]]=None, autosaved: Option[List[Worksheet]]=None, nbformat: Option[Int]) {
-    def name = metadata.name
+  case class Notebook(metadata: Option[Metadata]=None, cells:Option[List[Cell]]=Some(Nil), worksheets: Option[List[Worksheet]]=None, autosaved: Option[List[Worksheet]]=None, nbformat: Option[Int]) {
+    def name = metadata.map(_.name).getOrElse("Anonymous")
   }
   implicit val notebookFormat = Json.format[Notebook]
 
@@ -107,7 +113,11 @@ object NBSerializer {
     json.validate[Notebook] match {
       case s: JsSuccess[Notebook] => {
         val notebook:Notebook = s.get
-        notebook
+        println("----------")
+        println(notebook)
+        println("++++++++++")
+        val nb = notebook.cells.map { _ => notebook } getOrElse notebook.copy(cells=Some(Nil))
+        nb
       }
       case e: JsError => {
         val ex = new RuntimeException(Json.stringify(JsError.toFlatJson(e)))

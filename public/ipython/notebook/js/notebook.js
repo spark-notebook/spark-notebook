@@ -26,7 +26,7 @@ define([
     'notebook/js/celltoolbarpresets/slideshow',
     'notebook/js/scrollmanager'
 ], function (
-    IPython, 
+    IPython,
     $,
     utils,
     dialog,
@@ -34,7 +34,7 @@ define([
     textcell,
     codecell,
     configmod,
-    session, 
+    session,
     celltoolbar,
     marked,
     CodeMirror,
@@ -51,10 +51,10 @@ define([
 
     /**
      * Contains and manages cells.
-     * 
+     *
      * @class Notebook
      * @param {string}          selector
-     * @param {object}          options - Dictionary of keyword arguments.  
+     * @param {object}          options - Dictionary of keyword arguments.
      * @param {jQuery}          options.events - selector of Events
      * @param {KeyboardManager} options.keyboard_manager
      * @param {Contents}        options.contents
@@ -66,7 +66,7 @@ define([
      */
     var Notebook = function (selector, options) {
         this.config = options.config;
-        this.class_config = new configmod.ConfigWithDefaults(this.config, 
+        this.class_config = new configmod.ConfigWithDefaults(this.config,
                                         Notebook.options_default, 'Notebook');
         this.base_url = options.base_url;
         this.notebook_path = options.notebook_path;
@@ -86,7 +86,7 @@ define([
         // We need a better way to deal with circular instance references.
         this.keyboard_manager.notebook = this;
         this.save_widget.notebook = this;
-        
+
         mathjaxutils.init();
 
         if (marked) {
@@ -244,9 +244,9 @@ define([
         this.events.on('command_mode.Cell', function (event, data) {
             that.handle_command_mode(data.cell);
         });
-        
+
         this.events.on('spec_changed.Kernel', function(event, data) {
-            that.metadata.kernelspec = 
+            that.metadata.kernelspec =
                 {name: data.name, display_name: data.spec.display_name};
             // start session if the current session isn't already correct
             if (!(this.session && this.session.kernel && this.session.kernel.name === data.name)) {
@@ -291,7 +291,7 @@ define([
             var time = (extrap !== undefined) ? ((extrap.duration !== undefined ) ? extrap.duration : 'fast') : 'fast';
             expand_time(time);
         });
-        
+
         // Firefox 22 broke $(window).on("beforeunload")
         // I'm not sure why or how.
         window.onbeforeunload = function (e) {
@@ -323,7 +323,7 @@ define([
             return null;
         };
     };
-    
+
     /**
      * Trigger a warning dialog about missing functionality from newer minor versions
      */
@@ -363,7 +363,7 @@ define([
 
     /**
      * Scroll the top of the page to a given cell.
-     * 
+     *
      * @param {integer}  index - An index of the cell to view
      * @param {integer}  time - Animation time in milliseconds
      * @return {integer} Pixel offset from the top of the container
@@ -400,7 +400,7 @@ define([
     Notebook.prototype.edit_metadata = function () {
         var that = this;
         dialog.edit_metadata({
-            md: this.metadata, 
+            md: this.metadata,
             callback: function (md) {
                 that.metadata = md;
             },
@@ -413,7 +413,7 @@ define([
 
     /**
      * Get all cell elements in the notebook.
-     * 
+     *
      * @return {jQuery} A selector of all cell elements
      */
     Notebook.prototype.get_cell_elements = function () {
@@ -422,7 +422,7 @@ define([
 
     /**
      * Get a particular cell element.
-     * 
+     *
      * @param {integer} index An index of a cell to select
      * @return {jQuery} A selector of the given cell.
      */
@@ -437,7 +437,7 @@ define([
 
     /**
      * Try to get a particular cell by msg_id.
-     * 
+     *
      * @param {string} msg_id A message UUID
      * @return {Cell} Cell or null if no cell was found.
      */
@@ -447,7 +447,7 @@ define([
 
     /**
      * Count the cells in this notebook.
-     * 
+     *
      * @return {integer} The number of cells in this notebook
      */
     Notebook.prototype.ncells = function () {
@@ -456,7 +456,7 @@ define([
 
     /**
      * Get all Cell objects in this notebook.
-     * 
+     *
      * @return {Array} This notebook's Cell objects
      */
     Notebook.prototype.get_cells = function () {
@@ -469,7 +469,7 @@ define([
 
     /**
      * Get a Cell objects from this notebook.
-     * 
+     *
      * @param {integer} index - An index of a cell to retrieve
      * @return {Cell} Cell or null if no cell was found.
      */
@@ -484,7 +484,7 @@ define([
 
     /**
      * Get the cell below a given cell.
-     * 
+     *
      * @param {Cell} cell
      * @return {Cell} the next cell or null if no cell was found.
      */
@@ -499,7 +499,7 @@ define([
 
     /**
      * Get the cell above a given cell.
-     * 
+     *
      * @param {Cell} cell
      * @return {Cell} The previous cell or null if no cell was found.
      */
@@ -511,10 +511,10 @@ define([
         }
         return result;
     };
-    
+
     /**
      * Get the numeric index of a given cell.
-     * 
+     *
      * @param {Cell} cell
      * @return {integer} The cell's numeric index or null if no cell was found.
      */
@@ -530,7 +530,7 @@ define([
 
     /**
      * Return given index if defined, or the selected index if not.
-     * 
+     *
      * @param {integer} [index] - A cell's index
      * @return {integer} cell index
      */
@@ -549,7 +549,7 @@ define([
 
     /**
      * Get the currently selected cell.
-     * 
+     *
      * @return {Cell} The selected cell
      */
     Notebook.prototype.get_selected_cell = function () {
@@ -559,7 +559,7 @@ define([
 
     /**
      * Check whether a cell index is valid.
-     * 
+     *
      * @param {integer} index - A cell index
      * @return True if the index is valid, false otherwise
      */
@@ -591,7 +591,7 @@ define([
 
     /**
      * Programmatically select a cell.
-     * 
+     *
      * @param {integer} index - A cell's index
      * @return {Notebook} This notebook
      */
@@ -726,7 +726,7 @@ define([
 
     /**
      * Move given (or selected) cell up and select it.
-     * 
+     *
      * @param {integer} [index] - cell index
      * @return {Notebook} This notebook
      */
@@ -750,7 +750,7 @@ define([
 
     /**
      * Move given (or selected) cell down and select it.
-     * 
+     *
      * @param {integer} [index] - cell index
      * @return {Notebook} This notebook
      */
@@ -777,7 +777,7 @@ define([
     /**
      * Delete a cell from the notebook without any precautions
      * Needed to reload checkpoints and other things like that.
-     * 
+     *
      * @param {integer} [index] - cell's numeric index
      * @return {Notebook} This notebook
      */
@@ -797,7 +797,7 @@ define([
 
     /**
      * Delete a cell from the notebook.
-     * 
+     *
      * @param {integer} [index] - cell's numeric index
      * @return {Notebook} This notebook
      */
@@ -910,9 +910,9 @@ define([
 
         if (ncells === 0 || this.is_valid_cell_index(index) || index === ncells) {
             var cell_options = {
-                events: this.events, 
-                config: this.config, 
-                keyboard_manager: this.keyboard_manager, 
+                events: this.events,
+                config: this.config,
+                keyboard_manager: this.keyboard_manager,
                 notebook: this,
                 tooltip: this.tooltip
             };
@@ -1021,7 +1021,7 @@ define([
 
     /**
      * Turn a cell into a code cell.
-     * 
+     *
      * @param {integer} [index] - cell index
      */
     Notebook.prototype.to_code = function (index) {
@@ -1052,7 +1052,7 @@ define([
 
     /**
      * Turn a cell into a Markdown cell.
-     * 
+     *
      * @param {integer} [index] - cell index
      */
     Notebook.prototype.to_markdown = function (index) {
@@ -1089,7 +1089,7 @@ define([
 
     /**
      * Turn a cell into a raw text cell.
-     * 
+     *
      * @param {integer} [index] - cell index
      */
     Notebook.prototype.to_raw = function (index) {
@@ -1120,7 +1120,7 @@ define([
             }
         }
     };
-    
+
     /**
      * Warn about heading cell support removal.
      */
@@ -1130,7 +1130,7 @@ define([
             keyboard_manager: this.keyboard_manager,
             title : "Use markdown headings",
             body : $("<p/>").text(
-                'IPython no longer uses special heading cells. ' + 
+                'IPython no longer uses special heading cells. ' +
                 'Instead, write your headings in Markdown cells using # characters:'
             ).append($('<pre/>').text(
                 '## This is a level 2 heading'
@@ -1140,10 +1140,10 @@ define([
             }
         });
     };
-    
+
     /**
      * Turn a cell into a heading containing markdown cell.
-     * 
+     *
      * @param {integer} [index] - cell index
      * @param {integer} [level] - heading level (e.g., 1 for h1)
      */
@@ -1337,7 +1337,7 @@ define([
 
     /**
      * Hide a cell's output.
-     * 
+     *
      * @param {integer} index - cell index
      */
     Notebook.prototype.collapse_output = function (index) {
@@ -1364,7 +1364,7 @@ define([
 
     /**
      * Show a cell's output.
-     * 
+     *
      * @param {integer} index - cell index
      */
     Notebook.prototype.expand_output = function (index) {
@@ -1391,7 +1391,7 @@ define([
 
     /**
      * Clear the selected CodeCell's output area.
-     * 
+     *
      * @param {integer} index - cell index
      */
     Notebook.prototype.clear_output = function (index) {
@@ -1417,7 +1417,7 @@ define([
 
     /**
      * Scroll the selected CodeCell's output area.
-     * 
+     *
      * @param {integer} index - cell index
      */
     Notebook.prototype.scroll_output = function (index) {
@@ -1442,9 +1442,9 @@ define([
         this.set_dirty(true);
     };
 
-    /** 
+    /**
      * Toggle whether a cell's output is collapsed or expanded.
-     * 
+     *
      * @param {integer} index - cell index
      */
     Notebook.prototype.toggle_output = function (index) {
@@ -1471,7 +1471,7 @@ define([
 
     /**
      * Toggle a scrollbar for long cell outputs.
-     * 
+     *
      * @param {integer} index - cell index
      */
     Notebook.prototype.toggle_output_scroll = function (index) {
@@ -1504,7 +1504,7 @@ define([
     Notebook.prototype.cell_toggle_line_numbers = function() {
         this.get_selected_cell().toggle_line_numbers();
     };
-    
+
     /**
      * Set the codemirror mode for all code cells, including the default for
      * new code cells.
@@ -1515,7 +1515,7 @@ define([
         }
         this.codemirror_mode = newmode;
         codecell.CodeCell.options_default.cm_config.mode = newmode;
-        
+
         var that = this;
         utils.requireCodeMirrorMode(newmode, function (spec) {
             that.get_cells().map(function(cell, i) {
@@ -1563,7 +1563,7 @@ define([
 
 
     /**
-     * Once a session is started, link the code cells to the kernel and pass the 
+     * Once a session is started, link the code cells to the kernel and pass the
      * comm manager to the widget manager.
      */
     Notebook.prototype._session_started = function (){
@@ -1585,7 +1585,7 @@ define([
         this._session_starting = false;
         utils.log_ajax_error(jqxhr, status, error);
     };
-    
+
     /**
      * Prompt the user to restart the IPython kernel.
      */
@@ -1609,14 +1609,14 @@ define([
             }
         });
     };
-    
+
     /**
      * Execute or render cell outputs and go into command mode.
      */
     Notebook.prototype.execute_cell = function () {
         // mode = shift, ctrl, alt
         var cell = this.get_selected_cell();
-        
+
         cell.execute();
         this.command_mode();
         this.set_dirty(true);
@@ -1628,7 +1628,7 @@ define([
     Notebook.prototype.execute_cell_and_insert_below = function () {
         var cell = this.get_selected_cell();
         var cell_index = this.find_cell_index(cell);
-        
+
         cell.execute();
 
         // If we are at the end always insert a new cell and return
@@ -1656,7 +1656,7 @@ define([
 
         var cell = this.get_selected_cell();
         var cell_index = this.find_cell_index(cell);
-        
+
         cell.execute();
 
         // If we are at the end always insert a new cell and return
@@ -1701,7 +1701,7 @@ define([
 
     /**
      * Execute a contiguous range of cells.
-     * 
+     *
      * @param {integer} start - index of the first cell to execute (inclusive)
      * @param {integer} end - index of the last cell to execute (exclusive)
      */
@@ -1717,11 +1717,11 @@ define([
 
     /**
      * Getter method for this notebook's name.
-     * 
+     *
      * @return {string} This notebook's name (excluding file extension)
      */
     Notebook.prototype.get_notebook_name = function () {
-        var nbname = this.notebook_name.substring(0,this.notebook_name.length-6);
+        var nbname = this.notebook_name.substring(0,this.notebook_name.length-".snb".length);
         return nbname;
     };
 
@@ -1738,7 +1738,7 @@ define([
 
     /**
      * Check that a notebook's name is valid.
-     * 
+     *
      * @param {string} nbname - A name for this notebook
      * @return {boolean} True if the name is valid, false if invalid
      */
@@ -1752,8 +1752,8 @@ define([
     };
 
     /**
-     * Load a notebook from JSON (.ipynb).
-     * 
+     * Load a notebook from JSON (.snb).
+     *
      * @param {object} data - JSON representation of a notebook
      */
     Notebook.prototype.fromJSON = function (data) {
@@ -1770,7 +1770,7 @@ define([
         this.notebook_name = data.name;
         this.notebook_path = data.path;
         var trusted = true;
-        
+
         // Set the codemirror mode from language_info metadata
         if (this.metadata.language_info !== undefined) {
             var langinfo = this.metadata.language_info;
@@ -1778,7 +1778,7 @@ define([
             var cm_mode = langinfo.codemirror_mode || langinfo.name || 'null';
             this.set_codemirror_mode(cm_mode);
         }
-        
+
         var new_cells = content.cells;
         ncells = new_cells.length;
         var cell_data = null;
@@ -1799,7 +1799,7 @@ define([
 
     /**
      * Dump this notebook into a JSON-friendly object.
-     * 
+     *
      * @return {object} A JSON-friendly representation of this notebook.
      */
     Notebook.prototype.toJSON = function () {
@@ -1833,7 +1833,7 @@ define([
 
     /**
      * Start an autosave timer which periodically saves the notebook.
-     * 
+     *
      * @param {integer} interval - the autosave interval in milliseconds
      */
     Notebook.prototype.set_autosave_interval = function (interval) {
@@ -1846,7 +1846,7 @@ define([
             // disable autosave if not writable
             interval = 0;
         }
-        
+
         this.autosave_interval = this.minimum_autosave_interval = interval;
         if (interval) {
             this.autosave_timer = setInterval(function() {
@@ -1860,7 +1860,7 @@ define([
             this.events.trigger("autosave_disabled.Notebook");
         }
     };
-    
+
     /**
      * Save this notebook on the server. This becomes a notebook instance's
      * .save_notebook method *after* the entire notebook has been loaded.
@@ -1898,10 +1898,10 @@ define([
                 }
             );
     };
-    
+
     /**
      * Success callback for saving a notebook.
-     * 
+     *
      * @param {integer} start - Time when the save request start
      * @param {object}  data - JSON representation of a notebook
      */
@@ -1938,10 +1938,10 @@ define([
             this._checkpoint_after_save = false;
         }
     };
-    
+
     /**
      * Update the autosave interval based on the duration of the last save.
-     * 
+     *
      * @param {integer} timestamp - when the save request started
      */
     Notebook.prototype._update_autosave_interval = function (start) {
@@ -2026,14 +2026,14 @@ define([
             }
         );
     };
-    
+
     /**
      * Ensure a filename has the right extension
      * Returns the filename with the appropriate extension, appending if necessary.
      */
     Notebook.prototype.ensure_extension = function (name) {
-        if (!name.match(/\.ipynb$/)) {
-            name = name + ".ipynb";
+        if (!name.match(/\.snb$/)) {
+            name = name + ".snb";
         }
         return name;
     };
@@ -2068,7 +2068,7 @@ define([
 
     /**
      * Request a notebook's data from the server.
-     * 
+     *
      * @param {string} notebook_path - A notebook to load
      */
     Notebook.prototype.load_notebook = function (notebook_path) {
@@ -2084,9 +2084,9 @@ define([
 
     /**
      * Success callback for loading a notebook from the server.
-     * 
+     *
      * Load notebook data from the JSON response.
-     * 
+     *
      * @param {object} data JSON representation of a notebook
      */
     Notebook.prototype.load_notebook_success = function (data) {
@@ -2160,12 +2160,12 @@ define([
             } else {
                 src = " a newer notebook format ";
             }
-            
+
             msg = "This notebook has been converted from" + src +
             "(v"+orig_nbformat+") to the current notebook " +
             "format (v"+nbmodel.nbformat+"). The next time you save this notebook, the " +
             "current notebook format will be used.";
-            
+
             if (nbmodel.nbformat > orig_nbformat) {
                 msg += " Older versions of IPython may not be able to read the new format.";
             } else {
@@ -2187,7 +2187,7 @@ define([
         } else if (this.nbformat_minor < nbmodel.nbformat_minor) {
             this.nbformat_minor = nbmodel.nbformat_minor;
         }
-        
+
         if (this.session === null) {
             var kernel_name;
             if (this.metadata.kernelspec) {
@@ -2207,7 +2207,7 @@ define([
         }
         // load our checkpoint list
         this.list_checkpoints();
-        
+
         // load toolbar state
         if (this.metadata.celltoolbar) {
             celltoolbar.CellToolbar.global_show();
@@ -2215,12 +2215,12 @@ define([
         } else {
             celltoolbar.CellToolbar.global_hide();
         }
-        
+
         if (!this.writable) {
             this.set_autosave_interval(0);
             this.events.trigger('notebook_read_only.Notebook');
         }
-        
+
         // now that we're fully loaded, it is safe to restore save functionality
         this._fully_loaded = true;
         this.events.trigger('notebook_loaded.Notebook');
@@ -2232,7 +2232,7 @@ define([
 
     /**
      * Failure callback for loading a notebook from the server.
-     * 
+     *
      * @param {Error} error
      */
     Notebook.prototype.load_notebook_error = function (error) {
@@ -2258,7 +2258,7 @@ define([
     };
 
     /*********************  checkpoint-related  ********************/
-    
+
     /**
      * Save the notebook then immediately create a checkpoint.
      */
@@ -2266,7 +2266,7 @@ define([
         this._checkpoint_after_save = true;
         this.save_notebook();
     };
-    
+
     /**
      * Add a checkpoint for this notebook.
      */
@@ -2285,7 +2285,7 @@ define([
         }
         this.last_checkpoint = this.checkpoints[this.checkpoints.length - 1];
     };
-    
+
     /**
      * List checkpoints for this notebook.
      */
@@ -2301,7 +2301,7 @@ define([
 
     /**
      * Success callback for listing checkpoints.
-     * 
+     *
      * @param {object} data - JSON representation of a checkpoint
      */
     Notebook.prototype.list_checkpoints_success = function (data) {
@@ -2329,7 +2329,7 @@ define([
 
     /**
      * Success callback for creating a checkpoint.
-     * 
+     *
      * @param {object} data - JSON representation of a checkpoint
      */
     Notebook.prototype.create_checkpoint_success = function (data) {
@@ -2364,7 +2364,7 @@ define([
                 Date(checkpoint.last_modified)
             ).css("text-align", "center")
         );
-        
+
         dialog.modal({
             notebook: this,
             keyboard_manager: this.keyboard_manager,
@@ -2381,10 +2381,10 @@ define([
                 }
         });
     };
-    
+
     /**
      * Restore the notebook to a checkpoint state.
-     * 
+     *
      * @param {string} checkpoint ID
      */
     Notebook.prototype.restore_checkpoint = function (checkpoint) {
@@ -2397,7 +2397,7 @@ define([
             }
         );
     };
-    
+
     /**
      * Success callback for restoring a notebook to a checkpoint.
      */
@@ -2408,7 +2408,7 @@ define([
 
     /**
      * Delete a notebook checkpoint.
-     * 
+     *
      * @param {string} checkpoint ID
      */
     Notebook.prototype.delete_checkpoint = function (checkpoint) {
@@ -2421,7 +2421,7 @@ define([
             }
         );
     };
-    
+
     /**
      * Success callback for deleting a notebook checkpoint.
      */

@@ -10,7 +10,7 @@ define([
     'base/js/keyboard',
 ], function(IPython, $, utils, dialog, events, keyboard) {
     "use strict";
-    
+
     var NotebookList = function (selector, options) {
         /**
          * Constructor
@@ -41,7 +41,7 @@ define([
         this.notebook_path = options.notebook_path || utils.get_body_data("notebookPath");
         this.contents = options.contents;
         if (this.session_list && this.session_list.events) {
-            this.session_list.events.on('sessions_loaded.Dashboard', 
+            this.session_list.events.on('sessions_loaded.Dashboard',
                 function(e, d) { that.sessions_loaded(d); });
         }
     };
@@ -95,7 +95,7 @@ define([
         var files;
         if(dropOrForm =='drop'){
             files = event.originalEvent.dataTransfer.files;
-        } else 
+        } else
         {
             files = event.originalEvent.target.files;
         }
@@ -105,7 +105,7 @@ define([
             var file_ext = name_and_ext[1];
 
             var reader = new FileReader();
-            if (file_ext === '.ipynb') {
+            if (file_ext === '.snb') {
                 reader.readAsText(f);
             } else {
                 // read non-notebook files as binary
@@ -113,7 +113,7 @@ define([
             }
             var item = that.new_item(0);
             item.addClass('new-file');
-            that.add_name_input(f.name, item, file_ext == '.ipynb' ? 'notebook' : 'file');
+            that.add_name_input(f.name, item, file_ext == '.snb' ? 'notebook' : 'file');
             // Store the list item in the reader so we can use it later
             // to know which item it belongs to.
             $(reader).data('item', item);
@@ -134,7 +134,7 @@ define([
             };
         }
         // Replace the file input form wth a clone of itself. This is required to
-        // reset the form. Otherwise, if you upload a file, delete it and try to 
+        // reset the form. Otherwise, if you upload a file, delete it and try to
         // upload it again, the changed event won't fire.
         var form = $('input.fileinput');
         form.replaceWith(form.clone(true));
@@ -152,7 +152,7 @@ define([
         if (remove_uploads) {
             this.element.children('.list_item').remove();
         } else {
-            this.element.children('.list_item:not(.new-file)').remove();  
+            this.element.children('.list_item:not(.new-file)').remove();
         }
     };
 
@@ -250,7 +250,7 @@ define([
         ).append(
             $('<div/>').addClass("item_buttons  pull-right")
         ));
-        
+
         if (index === -1) {
             this.element.append(item);
         } else {
@@ -468,7 +468,7 @@ define([
                 var name_and_ext = utils.splitext(filename);
                 var file_ext = name_and_ext[1];
                 var content_type;
-                if (file_ext === '.ipynb') {
+                if (file_ext === '.snb') {
                     model.type = 'notebook';
                     model.format = 'json';
                     try {
@@ -501,12 +501,12 @@ define([
                     that.add_delete_button(item);
                     that.session_list.load_sessions();
                 };
-                
+
                 var exists = false;
                 $.each(that.element.find('.list_item:not(.new-file)'), function(k,v){
                     if ($(v).data('name') === filename) { exists = true; return false; }
                 });
-                
+
                 if (exists) {
                     dialog.modal({
                         title : "Replace file",
@@ -526,7 +526,7 @@ define([
                 } else {
                     that.contents.save(path, model).then(on_success);
                 }
-                
+
                 return false;
             });
         var cancel_button = $('<button/>').text("Cancel")

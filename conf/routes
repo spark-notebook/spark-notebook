@@ -16,12 +16,16 @@ POST    /api/sessions                                                 controller
 
 GET     /clusters                                                     controllers.Application.clusters()
 
+
 GET     /api/sessions                                                 controllers.Application.sessions()
+
 GET     /api/contents/                                                controllers.Application.contents(type:String)
 GET     /api/contents/:snb                                            controllers.Application.content(type:String, snb:String)
 GET     /api/contents/:snb/checkpoints                                controllers.Application.listCheckpoints(snb:String)
+POST    /api/contents/:snb/checkpoints                                controllers.Application.saveCheckpoint(snb:String)
 POST    /api/contents/                                                controllers.Application.newNotebook()
-PATCH   /api/contents/:snb                                            controllers.Application.saveNotebook(snb:String)
+PATCH   /api/contents/:snb                                            controllers.Application.renameNotebook(snb:String)
+PUT     /api/contents/:snb                                            controllers.Application.saveNotebook(snb:String)
 
 GET     /notebooks/:snb                                               controllers.Application.openNotebook(snb:String)
 GET     /edit/:snb                                                    controllers.Application.openNotebook(snb:String)

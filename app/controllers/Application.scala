@@ -192,17 +192,48 @@ object Application extends Controller {
     Ok(Json.parse(
       """
       |[
-      | { "last_modified": "2015-01-02T13:22:01.751Z" }
+      | { "id": "TODO", "last_modified": "2015-01-02T13:22:01.751Z" }
       |]
       |""".stripMargin.trim
     ))
   }
 
+  def saveCheckpoint(snb:String) = Action { request =>
+    //TODO
+    Ok(Json.parse(
+      """
+      |[
+      | { "id": "TODO", "last_modified": "2015-01-02T13:22:01.751Z" }
+      |]
+      |""".stripMargin.trim
+    ))
+  }
+
+  def renameNotebook(snb:String) = Action(parse.tolerantJson) { request =>
+    val notebook = (request.body \ "path").as[String]
+    try {
+      nbm.rename(snb, notebook)
+
+      Ok(Json.obj(
+        "type" → "file",
+        "name" → notebook,
+        "path" → notebook //todo → rebuild relative path
+      ))
+    } catch {
+      case _ :NotebookExistsException => Conflict
+    }
+  }
+
   def saveNotebook(snb:String) = Action(parse.tolerantJson) { request =>
-    val notebook = NBSerializer.fromJson(request.body)
+    val notebook = NBSerializer.fromJson(request.body \ "content")
     try {
       nbm.save(Some(snb), snb, notebook, true)
-      Ok("saved " + snb)
+
+      Ok(Json.obj(
+        "type" → "file",
+        "name" → snb,
+        "path" → snb //todo → rebuild relative path
+      ))
     } catch {
       case _ :NotebookExistsException => Conflict
     }
@@ -325,13 +356,16 @@ object Application extends Controller {
             )
           case "scala" =>
             val nb = NBSerializer.fromJson(Json.parse(data))
-            val cs = nb.cells.collect { case NBSerializer.CodeCell("code", i, "scala", _, _, _) => i }
-            val fc = cs.map(_.split("\n").map { s => s"  $s" }.mkString("\n")).mkString("\n\n  /* ... new cell ... */\n\n").trim
-            val code = s"""
-            |object Cells {
-            |  $fc
-            |}
-            """.stripMargin
+            val code = nb.cells.map { cells =>
+              val cs = cells.collect { case NBSerializer.CodeCell(md, "code", i, Some("scala"), _, _) => i }
+              val fc = cs.map(_.split("\n").map { s => s"  $s" }.mkString("\n")).mkString("\n\n  /* ... new cell ... */\n\n").trim
+              val code = s"""
+              |object Cells {
+              |  $fc
+              |}
+              """.stripMargin
+              code
+            }.getOrElse(""" //NO CELLS! """)
 
             Ok(code).withHeaders(
               "Content-Disposition" → s"""attachment; filename="$name.scala" """,
