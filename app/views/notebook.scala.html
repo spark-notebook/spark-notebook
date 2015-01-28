@@ -33,7 +33,7 @@
 
   <span id="kernel_logo_widget">
     <img class="current_kernel_logo" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"/>
-  </span>  
+  </span>
 }{
   <!-- header -->
   <!-- old
@@ -240,16 +240,16 @@
                         <li id="notebook_tour" title="A quick tour of the notebook user interface"><a href="#">User Interface Tour</a></li>
                         <li id="keyboard_shortcuts" title="Opens a tooltip with all keyboard shortcuts"><a href="#">Keyboard Shortcuts</a></li>
                         <li class="divider"></li>
-                        {% set
+                        <!--{% set
                             sections = (
                                 (
                                     ("http://nbviewer.ipython.org/github/ipython/ipython/blob/3.x/examples/Notebook/Index.ipynb", "Notebook Help", True),
                                     ("https://help.github.com/articles/markdown-basics/","Markdown",True),
                                 ),
                             )
-                        %}
+                        %}-->
 
-                        {% for helplinks in sections %}
+                        <!-- {% for helplinks in sections %}
                             {% for link in helplinks %}
                                 <li><a href="{{link[0]}}" {{'target="_blank" title="Opens in a new window"' if link[2]}}>
                                 {{'<i class="fa fa-external-link menu-icon pull-right"></i>' if link[2]}}
@@ -259,7 +259,7 @@
                             {% if not loop.last %}
                                 <li class="divider"></li>
                             {% endif %}
-                        {% endfor %}
+                        {% endfor %} -->
                         <li class="divider"></li>
                         <li title="About Spark Notebook"><a id="notebook_about" href="#">About</a></li>
                     </ul>
@@ -292,7 +292,7 @@
       <div id='pager-button-area'></div>
   </div>
 
-  <div id='tooltip' class='ipython_tooltip' style='display:none'></div>  
+  <div id='tooltip' class='ipython_tooltip' style='display:none'></div>
 } {
   <!-- script -->
   <script type="text/javascript">

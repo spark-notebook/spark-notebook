@@ -29,11 +29,11 @@ class NotebookManager(val name: String, val notebookDir: File) {
     JsArray(res.toList)
   }
 
-  def notebookFile(name: String) = {
+  def notebookFile(name: String, addExt:Boolean=false) = {
     Logger.info(s"Load notebook: $name")
     val basePath = notebookDir.getCanonicalPath
     Logger.info(s"Load notebook. basePath: $basePath")
-    val fileName = name + extension//URLEncoder.encode(name, "UTF-8") + extension
+    val fileName = if (addExt) { name + extension } else { name } //URLEncoder.encode(name, "UTF-8") + extension
     Logger.info(s"Load notebook. file name: $fileName")
     val nbFile = new File(basePath, fileName)
     Logger.info(s"Load notebook. canonical file path: ${nbFile.getParentFile.getCanonicalPath}")
@@ -48,7 +48,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
 
   def newNotebook() = {
     val name = incrementFileName("Untitled")
-    val nb = Notebook(new Metadata(name), Nil, None, None, None)
+    val nb = Notebook(Some(new Metadata(name)), Some(Nil), None, None, None)
     val id = notebookId(name)
     save(Some(id), name, nb, false)
     id
@@ -60,7 +60,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
     	val name = incrementFileName(nb._2)
     	val oldNB = NBSerializer.read(nb._3)
     	val id = notebookId(name)
-    	save(Some(id), name, Notebook(new Metadata(name), oldNB.cells, oldNB.worksheets, oldNB.autosaved, None), false)
+    	save(Some(id), name, Notebook(Some(new Metadata(name)), oldNB.cells, oldNB.worksheets, oldNB.autosaved, None), false)
     	id
     } getOrElse newNotebook
   }
@@ -93,17 +93,24 @@ class NotebookManager(val name: String, val notebookDir: File) {
   }
 
 
+  def rename(id: String, path: String) = {
+    val file = notebookFile(id)
+    load(id).map { nbI =>
+      val nb = if (nbI.name != path) nbI.copy(metadata = Some(new Metadata(path))) else nbI
+      file.renameTo(notebookFile(path, false))
+      FileUtils.writeStringToFile(notebookFile(path, false), NBSerializer.write(nb))
+
+      setMapping(notebookId(path), path)
+    }
+  }
+
   def save(id: Option[String], name: String, nbI: Notebook, overwrite: Boolean) {
     val file = notebookFile(name)
     if (!overwrite && file.exists()) throw new NotebookExistsException("Notebook " + name + " already exists.")
 
-    val nb = if (nbI.name != name) nbI.copy(new Metadata(name)) else nbI
+    val nb = if (nbI.name != name) nbI.copy(metadata = Some(new Metadata(name))) else nbI
+    println(nb)
     FileUtils.writeStringToFile(notebookFile(name), NBSerializer.write(nb))
-    // If there was an old file that's different, then delete it because this is a rename
-    id flatMap idToName.get foreach { oldName =>
-      if (notebookFile(nb.name).compareTo(notebookFile(oldName)) != 0)
-        notebookFile(oldName).delete()
-    }
 
     setMapping(id getOrElse notebookId(name), name)
   }
