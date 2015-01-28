@@ -1,0 +1,30 @@
+{
+  "metadata" : {
+    "name" : "WISP - Quick Start",
+    "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "language_info" : "scala",
+    "trusted" : true
+  },
+  "cells" : [ {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import notebook.front.third.wisp._\nPlot(Seq(SummarySeries((1 to 10) zip (10 to 100 by 10), \"line\")))",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import notebook.front.third.wisp._\nres1: notebook.front.third.wisp.Plot[Int,Int] = <Plot widget>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div class=\"container\">\n    <script data-this=\"{&quot;dataId&quot;:&quot;anone79c823d5313cb42582c3b9f04ff215d&quot;,&quot;dataInit&quot;:[{&quot;series&quot;:[{&quot;data&quot;:[{&quot;x&quot;:1,&quot;y&quot;:10},{&quot;x&quot;:2,&quot;y&quot;:20},{&quot;x&quot;:3,&quot;y&quot;:30},{&quot;x&quot;:4,&quot;y&quot;:40},{&quot;x&quot;:5,&quot;y&quot;:50},{&quot;x&quot;:6,&quot;y&quot;:60},{&quot;x&quot;:7,&quot;y&quot;:70},{&quot;x&quot;:8,&quot;y&quot;:80},{&quot;x&quot;:9,&quot;y&quot;:90},{&quot;x&quot;:10,&quot;y&quot;:100}],&quot;type&quot;:&quot;line&quot;}],&quot;exporting&quot;:{&quot;filename&quot;:&quot;chart&quot;},&quot;yAxis&quot;:[{&quot;title&quot;:{&quot;text&quot;:&quot;&quot;}}],&quot;plotOptions&quot;:{&quot;line&quot;:{&quot;turboThreshold&quot;:0}},&quot;credits&quot;:{&quot;href&quot;:&quot;&quot;,&quot;text&quot;:&quot;&quot;},&quot;chart&quot;:{&quot;zoomType&quot;:&quot;xy&quot;},&quot;title&quot;:{&quot;text&quot;:&quot;&quot;}}]}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/wispWrap'], \n      function(playground, _wispWrap) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _wispWrap,\n    \"o\": {}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script> </div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 1
+    } ]
+  } ],
+  "nbformat" : 4
+}

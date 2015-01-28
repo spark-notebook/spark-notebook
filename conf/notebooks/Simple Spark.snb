@@ -3,141 +3,69 @@
     "name" : "Simple Spark",
     "user_save_timestamp" : "2014-10-11T17:33:45.703Z",
     "auto_save_timestamp" : "2015-01-10T00:02:12.659Z",
-    "language_info" : "scala"
+    "language_info" : "scala",
+    "trusted" : true
   },
   "cells" : [ {
+    "metadata" : { },
     "cell_type" : "markdown",
     "source" : "### Spark config"
   }, {
-    "cell_type" : "code",
-    "metadata": {
-      "trusted": true
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
     },
+    "cell_type" : "code",
     "source" : "sparkContext.getConf.toDebugString",
-    "language" : "scala",
-    "collapsed" : false,
-    "prompt_number" : 3,
     "outputs" : [ ]
   }, {
-    "cell_type" : "code",
-    "metadata": {
-      "trusted": true
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
     },
+    "cell_type" : "code",
     "source" : "val count = sparkContext.makeRDD((1 to 1000).toArray).count()\n()",
-    "language" : "scala",
-    "collapsed" : false,
-    "prompt_number" : 6,
     "outputs" : [ ]
   }, {
+    "metadata" : { },
     "cell_type" : "markdown",
     "source" : "#### Counting"
   }, {
-    "cell_type" : "code",
-    "metadata": {
-      "trusted": true
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
     },
+    "cell_type" : "code",
     "source" : "<strong>{count} items</strong>",
-    "language" : "scala",
-    "collapsed" : false,
-    "prompt_number" : 5,
     "outputs" : [ ]
   }, {
-    "cell_type" : "code",
-    "metadata": {
-      "trusted": true
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
     },
+    "cell_type" : "code",
     "source" : "val i:Int = 2",
-    "language" : "scala",
-    "collapsed" : false,
-    "prompt_number" : 1,
-    "outputs" : [ ]
-  }, {
-    "cell_type" : "code",
-    "metadata": {
-      "trusted": true
-    },
-    "source" : "\nsparkContext.parallelize((1 to 10)).map( x => x*i)",
-    "language" : "scala",
-    "collapsed" : false,
-    "prompt_number" : 2,
-    "outputs" : [ ]
-  }, {
-    "cell_type" : "code",
-    "metadata": {
-      "trusted": true
-    },
-    "source" : "\n",
-    "language" : "scala",
-    "collapsed" : true,
-    "outputs" : [ ]
-  } ],
-  "autosaved" : [ {
-    "cells" : [ {
-      "cell_type" : "markdown",
-      "source" : "### Spark config"
-    }, {
-      "cell_type" : "code",
-    "metadata": {
-      "trusted": true
-    },
-      "source" : "sparkContext.getConf.toDebugString",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : -1,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "code",
-    "metadata": {
-      "trusted": true
-    },
-      "source" : "val count = sparkContext.makeRDD((1 to 1000).toArray).count()\n()",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 6,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "markdown",
-      "source" : "#### Counting"
-    }, {
-      "cell_type" : "code",
-    "metadata": {
-      "trusted": true
-    },
-      "source" : "<strong>{count} items</strong>",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 5,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "code",
-    "metadata": {
-      "trusted": true
-    },
-      "source" : "val i:Int = 2",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 1,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "code",
-    "metadata": {
-      "trusted": true
-    },
-      "source" : "\nsparkContext.parallelize((1 to 10)).map( x => x*i)",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 2,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "code",
-    "metadata": {
-      "trusted": true
-    },
-      "source" : "\n",
-      "language" : "scala",
-      "collapsed" : true,
-      "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "i: Int = 2\n"
     } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "sparkContext.parallelize((1 to 10)).map( x => x*i)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "1+1",
+    "outputs" : [ ]
   } ],
-  "nbformat" : 3
+  "nbformat" : 4
 }

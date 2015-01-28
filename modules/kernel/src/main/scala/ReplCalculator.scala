@@ -131,10 +131,19 @@ class ReplCalculator(initScripts: List[(String, String)], compilerArgs: List[Str
 
                 val deps = includes.flatMap(a => Deps.resolve(a, excludesFns)(remotes, repo)).toList
 
+                repl.evaluate("""
+                  sparkContext.stop()
+                """)._1 match {
+                  case Failure(str) =>
+                    log.error("Error in :cp: \n%s".format(str))
+                  case _ =>
+                    log.info("CP reload processed successfully")
+                }
                 val (_r, replay) = repl.addCp(deps)
                 _repl = Some(_r)
                 preStartLogic()
                 replay()
+
                 s"""
                   |//updating deps
                   |jars = (${ deps.mkString("List(\"", "\",\"", "\")") } ::: jars.toList).distinct.toArray
@@ -148,11 +157,19 @@ class ReplCalculator(initScripts: List[(String, String)], compilerArgs: List[Str
 
               case cpRegex(cp) =>
                 val jars = cp.trim().split("\n").toList.map(_.trim()).filter(_.size > 0)
+                repl.evaluate("""
+                  sparkContext.stop()
+                """)._1 match {
+                  case Failure(str) =>
+                    log.error("Error in :cp: \n%s".format(str))
+                  case _ =>
+                    log.info("CP reload processed successfully")
+                }
                 val (_r, replay) = repl.addCp(jars)
                 _repl = Some(_r)
                 preStartLogic()
                 replay()
-                s""" "Classpath changed!" """
+                s""" "Classpath CHANGED!" """
 
               case shRegex(sh) =>
                 val ps = "\""+sh.replaceAll("\\s*\\|\\s*", "\" #\\| \"").replaceAll("\\s*&&\\s*", "\" #&& \"")+"\""
@@ -175,7 +192,8 @@ class ReplCalculator(initScripts: List[(String, String)], compilerArgs: List[Str
                   c
               case _ => code
             }
-          repl.evaluate(newCode, msg => sender ! StreamResponse(msg, "stdout"))
+          val result = repl.evaluate(newCode, msg => sender ! StreamResponse(msg, "stdout"))
+          result
         }
 
         result match {

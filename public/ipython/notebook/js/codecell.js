@@ -140,6 +140,7 @@ define([
             'magic_shell'         :{'reg':[/^%%bash/]},
             'magic_r'             :{'reg':[/^%%R/]},
             'magic_text/x-cython' :{'reg':[/^%%cython/]},
+            'magic_text/x-scala'  :{'reg':[/^%%scala/]},
         },
     };
 
