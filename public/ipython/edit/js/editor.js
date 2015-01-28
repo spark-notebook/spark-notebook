@@ -32,14 +32,14 @@ function($,
         this.config = options.config;
         this.codemirror = new CodeMirror($(this.selector)[0]);
         this.generation = -1;
-        
+
         // It appears we have to set commands on the CodeMirror class, not the
         // instance. I'd like to be wrong, but since there should only be one CM
         // instance on the page, this is good enough for now.
         CodeMirror.commands.save = $.proxy(this.save, this);
-        
+
         this.save_enabled = false;
-        
+
         this.config.loaded.then(function () {
             // load codemirror config
             var cfg = that.config.data.Editor || {};
@@ -51,18 +51,18 @@ function($,
             that.events.trigger('config_changed.Editor', {config: that.config});
         });
     };
-    
+
     // default CodeMirror options
     Editor.default_codemirror_options = {
         extraKeys: {
             "Tab" :  "indentMore",
         },
-        indentUnit: 4,
-        theme: "ipython",
+        indentUnit: 2,
+        theme: "scala",
         lineNumbers: true,
         lineWrapping: true,
     };
-    
+
     Editor.prototype.load = function() {
         /** load the file */
         var that = this;
@@ -128,7 +128,7 @@ function($,
             that.events.trigger("mode_changed.Editor", modeinfo);
         });
     };
-    
+
     Editor.prototype.get_filename = function () {
         return utils.url_path_split(this.file_path)[1];
     };
@@ -146,7 +146,7 @@ function($,
             }
         );
     };
-    
+
     Editor.prototype.save = function () {
         /** save the file */
         if (!this.save_enabled) {
@@ -166,7 +166,7 @@ function($,
             that.events.trigger("file_saved.Editor", data);
         });
     };
-    
+
     Editor.prototype._set_codemirror_options = function (options) {
         // update codemirror options from a dict
         var codemirror = this.codemirror;
@@ -177,7 +177,7 @@ function($,
             codemirror.setOption(opt, value);
         });
     };
-    
+
     Editor.prototype.update_codemirror_options = function (options) {
         /** update codemirror options locally and save changes in config */
         var that = this;
