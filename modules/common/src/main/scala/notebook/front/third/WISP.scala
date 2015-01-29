@@ -34,7 +34,7 @@ case class SummarySeries[A:Numeric, B:Numeric](data:Seq[(A,B)], chart:String, f:
 case class Plot[A:Numeric, B:Numeric](override val data: Seq[SummarySeries[A,B]], f:Highchart=>Highchart=identity[Highchart])
   extends JsWorld[SummarySeries[A,B], Highchart] {
 
-  import Highchart._
+    import Highchart._
   override val scripts: List[Script] = List(Script("wispWrap", JsObject(Nil)))
   override val snippets:List[String] = Nil
 
