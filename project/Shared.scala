@@ -14,13 +14,13 @@ object Shared {
     scalaVersion := "2.10.4",
     sparkVersion  :=  defaultSparkVersion,
     hadoopVersion :=  defaultHadoopVersion,
-    jets3tVersion :=  defaultJets3tVersion
+    jets3tVersion :=  defaultJets3tVersion,
+    libraryDependencies += guava
   )
 
   lazy val sparkSettings:Seq[Def.Setting[_]] = Seq(
     libraryDependencies <++= (sparkVersion, hadoopVersion, jets3tVersion) { (sv, hv, jv) =>
       val libs = Seq(
-        guava,
         //sparkRepl(sv), → spark-repl:1.2.0 not yet published → lib/spark-repl_2.10-1.2.0-notebook.jar to be used
         sparkSQL(sv),
         hadoopClient(hv),

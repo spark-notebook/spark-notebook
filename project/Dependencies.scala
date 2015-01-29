@@ -5,8 +5,10 @@ import com.typesafe.sbt.SbtNativePackager._, Keys._
 
 object Dependencies {
 
-  val playDep                 = "com.typesafe.play"         %%            "play"              %      "2.3.7"        excludeAll(ExclusionRule("com.typesafe.akka"))
-
+  val playDeps                = Seq(
+                                    "com.typesafe.play"         %%            "play"              %      "2.3.7"        excludeAll(ExclusionRule("com.typesafe.akka"), ExclusionRule("com.google.guava")),
+                                    "com.typesafe.play"         %%            "play-test"         %      "2.3.7"        excludeAll(ExclusionRule("com.typesafe.akka"), ExclusionRule("com.google.guava"))
+                                )
   val rxScala                 = "io.reactivex"              %%           "rxscala"            %      "0.22.0"
 
   val scalaZ                  = "org.scalaz"                %%         "scalaz-core"          %      "7.0.6"
@@ -25,7 +27,7 @@ object Dependencies {
   def jets3t(v:String)        = "net.java.dev.jets3t"       %            "jets3t"             %         v           force()
 
   val commonsIO               = "org.apache.commons"        %          "commons-io"           %      "1.3.2"
-  val commonsHttp             = "org.apache.httpcomponents" %          "httpclient"           %      "4.3.4"
+  val commonsHttp             = "org.apache.httpcomponents" %          "httpclient"           %      "4.3.4"       excludeAll(ExclusionRule("com.google.guava"))
   val commonsExec             = "org.apache.commons"        %          "commons-exec"         %       "[1.2, 1.2]" force()
 
   val guava                   = "com.google.guava"          %            "guava"              %     "14.0.1"       force()
@@ -35,13 +37,13 @@ object Dependencies {
 
   // to download deps at runtime
   val aetherApi               = "org.sonatype.aether"       %          "aether-api"           %     "1.13"
-  val jcabiAether             = "com.jcabi"                 %         "jcabi-aether"          %     "0.10.1"
+  val jcabiAether             = "com.jcabi"                 %         "jcabi-aether"          %     "0.10.1" 
   val mavenCore               = "org.apache.maven"          %          "maven-core"           %     "3.0.5"
   val ningAsyncHttpClient     = "com.ning"                  %       "async-http-client"       %     "[1.6.5, 1.6.5]" force()
 
   // Viz
-  val bokeh                   = "io.continuum.bokeh"        %          "bokeh_2.10"           %       "0.2"
-  val wisp                    = "com.quantifind"            %%            "wisp"              %      "0.0.2" //excludeAll(ExclusionRule(com.fasterxml.jackson.module))
+  val bokeh                   = "io.continuum.bokeh"        %          "bokeh_2.10"           %       "0.2" 
+  val wisp                    = "com.quantifind"            %%            "wisp"              %      "0.0.2" excludeAll(ExclusionRule("com.google.guava"))
   // wisp deps on jackson-module-scala_2.10 v2.4 → guava v15
   // but spark 1.2 → guava 14.0.1
   val customJacksonScala      = Seq(
