@@ -3,23 +3,57 @@
 # ~~~~
 
 # Home page
-GET     /                           controllers.Application.dash(title:String="Spark Notebook")
-POST    /new                        controllers.Application.newNotebook
-GET     /view/:name                 controllers.Application.viewNotebook(name:String, id:String)
+GET     /                                                             controllers.Application.dash(title:String="Spark Notebook")
 
-GET     /notebooks                  controllers.Application.listNotebooks
-GET     /notebooks/:name            controllers.Application.dlNotebook(name:String, id:String)
-PUT     /notebooks/:name            controllers.Application.saveNotebook(name:String, id:String, force:Boolean)
+GET     /api/config/tree                                              controllers.Application.configTree()
+GET     /api/config/common                                            controllers.Application.configCommon()
+GET     /api/config/notebook                                          controllers.Application.configNotebook()
+GET     /api/kernelspecs                                              controllers.Application.kernelSpecs()
 
-POST    /notebooks/:name            controllers.Application.dlNotebookAs(name:String, id:String, format:String)
+GET     /ws/api/kernels/:kernelId/channels                            controllers.Application.openKernel(kernelId:String, session_id:String)
+
+POST    /api/sessions                                                 controllers.Application.createSession()
+
+GET     /clusters                                                     controllers.Application.clusters()
 
 
-POST    /kernels                    controllers.Application.createKernel
+GET     /api/sessions                                                 controllers.Application.sessions()
+
+GET     /api/contents/                                                controllers.Application.contents(type:String)
+GET     /api/contents/:snb                                            controllers.Application.content(type:String, snb:String)
+GET     /api/contents/:snb/checkpoints                                controllers.Application.listCheckpoints(snb:String)
+POST    /api/contents/:snb/checkpoints                                controllers.Application.saveCheckpoint(snb:String)
+POST    /api/contents                                                 controllers.Application.newNotebook()
+POST    /api/contents/                                                controllers.Application.newNotebook()
+PATCH   /api/contents/:snb                                            controllers.Application.renameNotebook(snb:String)
+PUT     /api/contents/:snb                                            controllers.Application.saveNotebook(snb:String)
+
+GET     /notebooks/:snb                                               controllers.Application.openNotebook(snb:String)
+GET     /edit/:snb                                                    controllers.Application.openNotebook(snb:String)
+
+GET     /nbconvert/:format/:path                                      controllers.Application.dlNotebookAs(path:String, format:String)
+
+
+GET     /ws/observable/:contextId                                        controllers.Application.openObservable(contextId:String)
+
+
+
+
+POST    /new                                                          controllers.Application.newNotebookOld
+GET     /view/:name                                                   controllers.Application.viewNotebook(name:String, id:String)
+
+GET     /notebooks                                                    controllers.Application.listNotebooks
+GET     /notebooks/:name                                              controllers.Application.dlNotebook(name:String, id:String)
+PUT     /notebooks/:name                                              controllers.Application.saveNotebookOld(name:String, id:String, force:Boolean)
+
+POST    /notebooks/:name                                              controllers.Application.dlNotebookAsOld(name:String, id:String, format:String)
+
+
+POST    /kernels                                                      controllers.Application.createKernel
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET     /assets/*file                                                 controllers.Assets.at(path="/public", file)
 
 
 # Web socket
-GET     /observable/:contextId      controllers.Application.openObservable(contextId:String)
-GET     /kernels/:kernelId/:channel controllers.Application.openKernel(kernelId:String, channel:String)
+GET     /kernels/:kernelId/:channel                                   controllers.Application.openKernelOld(kernelId:String, channel:String)

@@ -14,7 +14,7 @@ trait JsWorld[I, O] extends Widget with IODataConnector[I, O] {
 
   lazy val json = JsonCodec.tSeq[O].decode(toO(data))
 
-  private lazy val js = ("playground" :: scripts.map(_.script)).map(x => s"'assets/javascripts/notebook/$x'").mkString("[", ",", "]")
+  private lazy val js = ("playground" :: scripts.map(_.script)).map(x => s"'../javascripts/notebook/$x'").mkString("[", ",", "]")
   private lazy val call =
     s"""
       function(playground, ${scripts.map(_.name).mkString(", ")}) {
@@ -35,7 +35,7 @@ trait JsWorld[I, O] extends Widget with IODataConnector[I, O] {
     <div class="container">
     {
       scopedScript(
-        s"require($js, $call);",
+        s"req($js, $call);",
         Json.obj(
           "dataId" -> dataConnection.id,
           "dataInit" -> json

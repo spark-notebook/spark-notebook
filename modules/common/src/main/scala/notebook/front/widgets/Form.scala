@@ -24,7 +24,7 @@ trait Form[D] extends SingleConnectedWidget[Map[String, String]] {
 
   lazy val toHtml = <div>{
       scopedScript(
-        s"""require( ['observable', 'knockout', 'jquery'],
+        s"""req( ['observable', 'knockout', 'jquery'],
                     function (Observable, ko, $$) {
                       var value = Observable.makeObservable(valueId);
                       var publishFormData = function(form) {

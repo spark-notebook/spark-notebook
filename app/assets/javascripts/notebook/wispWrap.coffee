@@ -1,7 +1,9 @@
 define([
+    'jquery'
     'observable'
     'knockout'
-], (Observable, ko) ->
+    'highcharts'
+], ($, Observable, ko, highcharts) ->
   (dataO, container, options) ->
     chartElement = $('<div style="min-width: 200px; height: 200px; margin: 0 auto"></div>')
     $(container).append(chartElement)

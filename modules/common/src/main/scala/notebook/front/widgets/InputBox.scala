@@ -51,7 +51,7 @@ class InputBox[T](initial: T, label:String="")(implicit t:InputType[T], val code
     val ll = <label for={id}>{label}</label>
     val in = <input id={id} type={t.tpe} name={id} data-bind="value: value">{
               scopedScript(
-                """require( ['observable', 'knockout'],
+                """req( ['observable', 'knockout'],
                             function (Observable, ko) {
                               //console.log("-----------")
                               //console.dir(this);

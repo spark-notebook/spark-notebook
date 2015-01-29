@@ -215,7 +215,8 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
                   m.invoke(o)
                 }
                 o2 match {
-                  case Some(o3) => iws(o3)
+                  case Some(o3) => 
+                    iws(o3)
                   case None =>
                     val r = o.getClass.getDeclaredMethod("rendered").invoke(o)
                     val h = r.asInstanceOf[Widget].toHtml

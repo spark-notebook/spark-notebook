@@ -1,0 +1,227 @@
+
+/**
+ * Primary styles
+ *
+ * Author: IPython Development Team
+ */
+
+@dashboard_tb_pad: 4px;
+@dashboard_lr_pad: 7px;
+// These are the total heights of the Bootstrap small and mini buttons. These values
+// are not less variables so we have to track them statically.
+@btn_small_height: 24px;
+@btn_mini_height: 22px;
+@dark_dashboard_color: @breadcrumb-color;
+
+ul#tabs {
+    margin-bottom: @dashboard_tb_pad;
+}
+
+ul#tabs a {
+    padding-top: @dashboard_tb_pad + 2px;
+    padding-bottom: @dashboard_tb_pad;
+}
+
+ul.breadcrumb {
+    a:focus, a:hover {
+        text-decoration: none;
+    }
+    i.icon-home {
+        font-size: 16px;
+        margin-right: 4px;
+    }
+    
+    span {
+        color: @dark_dashboard_color;
+    }
+}
+
+.list_toolbar {
+    padding: @dashboard_tb_pad 0 @dashboard_tb_pad 0;
+    vertical-align: middle;
+
+    .tree-buttons {
+        padding-top: 1px;
+    }
+}
+
+.list_toolbar [class*="span"] {
+    min-height: @btn_small_height;
+}
+
+.list_header {
+    font-weight: bold;
+}
+
+.list_container {
+  margin-top: @dashboard_tb_pad;
+  margin-bottom: 5*@dashboard_tb_pad;
+  border: 1px solid @table-border-color;
+  border-radius: @border-radius-base;
+}
+
+.list_container > div {
+  border-bottom: 1px solid @table-border-color;
+  &:hover .list-item{
+    background-color: red;
+  };
+}
+
+.list_container > div:last-child {
+  border: none;
+}
+
+.list_item {
+  &:hover .list_item {
+    background-color: @table-border-color;
+  };
+  a {text-decoration: none;}
+}
+
+.action_col {
+    text-align: right;
+}
+
+.list_header>div, .list_item>div {
+    padding-top: @dashboard_tb_pad;
+    padding-bottom: @dashboard_tb_pad;
+    padding-left: @dashboard_lr_pad;
+    padding-right: @dashboard_lr_pad;
+    line-height: @btn_mini_height;
+}
+
+.item_name {
+    line-height: @btn_mini_height;
+    height: @btn_small_height;
+}
+
+.item_icon {
+    font-size: 14px; 
+    color: @dark_dashboard_color;
+    margin-right: @dashboard_lr_pad;
+}
+
+.item_buttons {
+    line-height: 1em;
+    .btn {
+        min-width: 13ex;
+    }
+    .btn-toolbar();
+}
+
+.toolbar_info {
+    height: @btn_small_height;
+    line-height: @btn_small_height;
+}
+
+input.nbname_input, input.engine_num_input {
+    // These settings give these inputs a height that matches @btn_mini_height = 22
+    padding-top: 3px;
+    padding-bottom: 3px;
+    height: @btn_mini_height;
+    line-height: 14px;
+    margin: 0px;
+}
+
+input.engine_num_input {
+    width: 60px;
+}
+
+.highlight_text {
+    color: blue;
+}
+
+#project_name > .breadcrumb {
+    padding: 0px;
+    margin-bottom: 0px;
+    background-color: transparent;
+    font-weight: bold;
+   
+}
+
+.tab-content .row {
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+.folder_icon:before {
+    .icon(@fa-var-folder-o)
+}
+
+.notebook_icon:before {
+    .icon(@fa-var-book)
+}
+
+.file_icon:before {
+    .icon(@fa-var-file-o)
+}
+
+#notebook_toolbar .pull-right {
+    padding-top: 0px;
+    margin-right: -1px;
+}
+
+ul#new-menu {
+    // align right instead of left
+    left: auto;
+    right: 0;
+}
+
+.kernel-menu-icon {
+    padding-right: 12px;
+    width: 24px;
+    content: @fa-var-square-o;
+}
+
+.kernel-menu-icon:before {
+    content: @fa-var-square-o;
+}
+
+.kernel-menu-icon-current:before {
+    content: @fa-var-check;
+}
+
+#tab_content {
+    padding-top: @page-header-padding;
+}
+
+#running {
+    .panel-group{
+        .panel {
+            margin-top: 3px;
+            margin-bottom: 1em;
+
+            .panel-heading {
+                background-color: @page-backdrop-color;
+                padding-top: @dashboard_tb_pad;
+                padding-bottom: @dashboard_tb_pad;
+                padding-left: @dashboard_lr_pad;
+                padding-right: @dashboard_lr_pad;
+                line-height: @btn_mini_height;
+                
+                a:focus, a:hover {
+                    text-decoration: none;
+                }
+            }
+
+            .panel-body {
+                padding: 0px;
+
+                .list_container {
+                    margin-top: 0px;
+                    margin-bottom: 0px;
+                    border: 0px;
+                    border-radius: 0px;
+
+                    .list_item {
+                        border-bottom: 1px solid @table-border-color;
+
+                        &:last-child {
+                            border-bottom: 0px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
