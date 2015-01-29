@@ -58,14 +58,6 @@
     "cell_type" : "code",
     "source" : "sparkContext.parallelize((1 to 10)).map( x => x*i)",
     "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "collapsed" : true
-    },
-    "cell_type" : "code",
-    "source" : "1+1",
-    "outputs" : [ ]
   } ],
   "nbformat" : 4
 }

@@ -1,0 +1,133 @@
+{
+  "metadata" : {
+    "name" : "Streaming Example",
+    "user_save_timestamp" : "2014-12-23T00:59:40.737Z",
+    "auto_save_timestamp" : "2014-12-23T00:59:01.720Z",
+    "language_info" : "scala",
+    "trusted" : true
+  },
+  "cells" : [ {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : ":dp org.apache.spark % spark-streaming_2.10 % 1.2.0",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "jars: Array[String] = [Ljava.lang.String;@13465b36\nres1: scala.xml.Elem = \n<pre onclick=\"this.style.display=(this.style.display==&quot;block&quot;)?&quot;none&quot;:&quot;block&quot;\">Spark resetting with jars :\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/commons-digester/commons-digester/1.8/commons-digester-1.8.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/eclipse/jetty/jetty-server/8.1.14.v20131031/jetty-server-8.1.14.v20131031.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/commons-codec/commons-codec/1.5/commons-codec-1.5.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/io/netty/netty/3.8.0.Final/netty-3.8.0.Final.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/eclipse/jetty..."
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<pre onclick=\"this.style.display=(this.style.display==&quot;block&quot;)?&quot;none&quot;:&quot;block&quot;\">Spark resetting with jars :\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/commons-digester/commons-digester/1.8/commons-digester-1.8.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/eclipse/jetty/jetty-server/8.1.14.v20131031/jetty-server-8.1.14.v20131031.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/commons-codec/commons-codec/1.5/commons-codec-1.5.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/io/netty/netty/3.8.0.Final/netty-3.8.0.Final.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/eclipse/jetty/jetty-util/8.1.14.v20131031/jetty-util-8.1.14.v20131031.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/com/clearspring/analytics/stream/2.7.0/stream-2.7.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/eclipse/jetty/jetty-security/8.1.14.v20131031/jetty-security-8.1.14.v20131031.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/codehaus/jackson/jackson-core-asl/1.8.8/jackson-core-asl-1.8.8.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/xerial/snappy/snappy-java/1.1.1.6/snappy-java-1.1.1.6.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/commons-beanutils/commons-beanutils/1.7.0/commons-beanutils-1.7.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/hsqldb/hsqldb/1.8.0.10/hsqldb-1.8.0.10.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/eclipse/jetty/orbit/javax.servlet/3.0.0.v201112011016/javax.servlet-3.0.0.v201112011016.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/tachyonproject/tachyon-client/0.5.0/tachyon-client-0.5.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/commons-net/commons-net/2.2/commons-net-2.2.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/com/esotericsoftware/minlog/minlog/1.2/minlog-1.2.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/com/esotericsoftware/reflectasm/reflectasm/1.07/reflectasm-1.07-shaded.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/com/esotericsoftware/kryo/kryo/2.21/kryo-2.21.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/log4j/log4j/1.2.17/log4j-1.2.17.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/com/fasterxml/jackson/core/jackson-annotations/2.3.0/jackson-annotations-2.3.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/spark-project/protobuf/protobuf-java/2.5.0-spark/protobuf-java-2.5.0-spark.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/commons-httpclient/commons-httpclient/3.1/commons-httpclient-3.1.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/com/fasterxml/jackson/core/jackson-databind/2.3.1/jackson-databind-2.3.1.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/scala-lang/scala-reflect/2.10.4/scala-reflect-2.10.4.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/com/codahale/metrics/metrics-core/3.0.0/metrics-core-3.0.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/eclipse/jetty/jetty-io/8.1.14.v20131031/jetty-io-8.1.14.v20131031.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/com/codahale/metrics/metrics-graphite/3.0.0/metrics-graphite-3.0.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/apache/mesos/mesos/0.18.1/mesos-0.18.1-shaded-protobuf.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/io/netty/netty-all/4.0.23.Final/netty-all-4.0.23.Final.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/apache/zookeeper/zookeeper/3.4.5/zookeeper-3.4.5.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/com/twitter/chill_2.10/0.5.0/chill_2.10-0.5.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/roaringbitmap/RoaringBitmap/0.4.5/RoaringBitmap-0.4.5.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/com/codahale/metrics/metrics-jvm/3.0.0/metrics-jvm-3.0.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/json4s/json4s-ast_2.10/3.2.10/json4s-ast_2.10-3.2.10.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/tachyonproject/tachyon/0.5.0/tachyon-0.5.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/slf4j/jul-to-slf4j/1.7.5/jul-to-slf4j-1.7.5.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/eclipse/jetty/orbit/javax.activation/1.1.0.v201105071233/javax.activation-1.1.0.v201105071233.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/apache/spark/spark-streaming_2.10/1.2.0/spark-streaming_2.10-1.2.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/apache/commons/commons-lang3/3.3.2/commons-lang3-3.3.2.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/net/sf/py4j/py4j/0.8.2.1/py4j-0.8.2.1.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/eclipse/jetty/orbit/javax.transaction/1.1.1.v201105210645/javax.transaction-1.1.1.v201105210645.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/slf4j/jcl-over-slf4j/1.7.5/jcl-over-slf4j-1.7.5.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/apache/commons/commons-math3/3.1.1/commons-math3-3.1.1.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/eclipse/jetty/jetty-plus/8.1.14.v20131031/jetty-plus-8.1.14.v20131031.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/eclipse/jetty/jetty-xml/8.1.14.v20131031/jetty-xml-8.1.14.v20131031.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/commons-lang/commons-lang/2.4/commons-lang-2.4.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/uncommons/maths/uncommons-maths/1.2.2a/uncommons-maths-1.2.2a.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/spark-project/spark/unused/1.0.0/unused-1.0.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/net/jpountz/lz4/lz4/1.2.0/lz4-1.2.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/com/codahale/metrics/metrics-json/3.0.0/metrics-json-3.0.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/com/thoughtworks/paranamer/paranamer/2.6/paranamer-2.6.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/net/java/dev/jets3t/jets3t/0.7.1/jets3t-0.7.1.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/json4s/json4s-jackson_2.10/3.2.10/json4s-jackson_2.10-3.2.10.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/eclipse/jetty/jetty-webapp/8.1.14.v20131031/jetty-webapp-8.1.14.v20131031.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/eclipse/jetty/jetty-http/8.1.14.v20131031/jetty-http-8.1.14.v20131031.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/commons-el/commons-el/1.0/commons-el-1.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/jline/jline/0.9.94/jline-0.9.94.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/apache/curator/curator-client/2.4.0/curator-client-2.4.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/apache/hadoop/hadoop-core/1.0.4/hadoop-core-1.0.4.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/oro/oro/2.0.8/oro-2.0.8.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/apache/commons/commons-math/2.1/commons-math-2.1.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/com/google/code/findbugs/jsr305/1.3.9/jsr305-1.3.9.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/spark-project/akka/akka-actor_2.10/2.3.4-spark/akka-actor_2.10-2.3.4-spark.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/spark-project/pyrolite/2.0.1/pyrolite-2.0.1.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/commons-beanutils/commons-beanutils-core/1.8.0/commons-beanutils-core-1.8.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/commons-configuration/commons-configuration/1.6/commons-configuration-1.6.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/commons-collections/commons-collections/3.2.1/commons-collections-3.2.1.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/apache/hadoop/hadoop-client/1.0.4/hadoop-client-1.0.4.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/scala-lang/scalap/2.10.4/scalap-2.10.4.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/commons-io/commons-io/2.4/commons-io-2.4.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/eclipse/jetty/jetty-servlet/8.1.14.v20131031/jetty-servlet-8.1.14.v20131031.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/com/twitter/chill-java/0.5.0/chill-java-0.5.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/apache/curator/curator-recipes/2.4.0/curator-recipes-2.4.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/scala-lang/scala-compiler/2.10.4/scala-compiler-2.10.4.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/spark-project/akka/akka-slf4j_2.10/2.3.4-spark/akka-slf4j_2.10-2.3.4-spark.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/eclipse/jetty/jetty-continuation/8.1.14.v20131031/jetty-continuation-8.1.14.v20131031.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/com/typesafe/config/1.2.1/config-1.2.1.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/com/google/guava/guava/14.0.1/guava-14.0.1.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/com/fasterxml/jackson/core/jackson-core/2.3.1/jackson-core-2.3.1.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/com/ning/compress-lzf/1.0.0/compress-lzf-1.0.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/apache/spark/spark-network-common_2.10/1.2.0/spark-network-common_2.10-1.2.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/apache/spark/spark-core_2.10/1.2.0/spark-core_2.10-1.2.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/xmlenc/xmlenc/0.52/xmlenc-0.52.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/spark-project/akka/akka-remote_2.10/2.3.4-spark/akka-remote_2.10-2.3.4-spark.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/objenesis/objenesis/1.2/objenesis-1.2.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/apache/spark/spark-network-shuffle_2.10/1.2.0/spark-network-shuffle_2.10-1.2.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/eclipse/jetty/orbit/javax.mail.glassfish/1.4.1.v201005082020/javax.mail.glassfish-1.4.1.v201005082020.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/eclipse/jetty/jetty-jndi/8.1.14.v20131031/jetty-jndi-8.1.14.v20131031.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/slf4j/slf4j-log4j12/1.7.5/slf4j-log4j12-1.7.5.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/apache/curator/curator-framework/2.4.0/curator-framework-2.4.0.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/codehaus/jackson/jackson-mapper-asl/1.8.8/jackson-mapper-asl-1.8.8.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/json4s/json4s-core_2.10/3.2.10/json4s-core_2.10-3.2.10.jar\n/tmp/scala-notebook/aether/7f00fb92-fa2e-4044-99d9-e1197a1eae24/org/scala-lang/scala-library/2.10.4/scala-library-2.10.4.jar\n</pre>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 1
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import org.apache.spark.ui.notebook.front.widgets.SparkInfo\nimport scala.concurrent.duration._\nnew SparkInfo(sparkContext, checkInterval=1 seconds, execNumber=Some(100))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import org.apache.spark.streaming.{StreamingContext, Duration}\nval streaming = new StreamingContext(sparkContext, Duration(1000))",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import org.apache.spark.streaming.{StreamingContext, Duration}\nstreaming: org.apache.spark.streaming.StreamingContext = org.apache.spark.streaming.StreamingContext@2c770f9f\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "org.apache.spark.streaming.StreamingContext@2c770f9f"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 2
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import org.apache.spark.streaming.dstream.ConstantInputDStream\nval stream  = new ConstantInputDStream(\n                streaming, \n                sparkContext.makeRDD(Seq.fill(1000)(() => scala.util.Random.nextInt(1000)))\n              )",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import org.apache.spark.streaming.dstream.ConstantInputDStream\nstream: org.apache.spark.streaming.dstream.ConstantInputDStream[() => Int] = org.apache.spark.streaming.dstream.ConstantInputDStream@aa02f2f\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "org.apache.spark.streaming.dstream.ConstantInputDStream@aa02f2f"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 3
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val concrete = stream.map(_())",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "concrete: org.apache.spark.streaming.dstream.DStream[Int] = org.apache.spark.streaming.dstream.MappedDStream@3c5d81c8\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "org.apache.spark.streaming.dstream.MappedDStream@3c5d81c8"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 4
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import notebook._, front._, widgets._\nimport notebook.JsonCodec._\nimport play.api.libs.json._\nimport notebook.Series,Series._\n\ndef series(values:Seq[(Double, Double)]) = Seq(Series(\"Fun-DStream\", \"#4a6860\", values))\nval p = new Playground(series(Nil), List(Script(\"rickshawts\", \n                                         Json.obj(\n                                           \"renderer\" -> \"stack\",\n                                           \"fixed\" -> Json.obj(\n                                              (\"interval\" -> 1000),\n                                              (\"max\" -> 5),\n                                              (\"baseInSec\" -> 1)\n                                         )))))(seriesCodec)\nconcrete.foreachRDD { rdd => \n  val sum = rdd.reduce(_+_)\n  p(series(Seq((System.currentTimeMillis.toDouble, sum.toDouble))))\n}\nstreaming.start\np",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import notebook._\nimport front._\nimport widgets._\nimport notebook.JsonCodec._\nimport play.api.libs.json._\nimport notebook.Series\nimport Series._\nseries: (values: Seq[(Double, Double)])Seq[notebook.Series]\np: notebook.front.Playground[notebook.Series] = <Playground widget>\nres2: notebook.front.Playground[notebook.Series] = <Playground widget>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div class=\"container\">\n    <script data-this=\"{&quot;dataId&quot;:&quot;anon6e76a924f3cb879def9e8eb763ffb296&quot;,&quot;dataInit&quot;:[{&quot;name&quot;:&quot;Fun-DStream&quot;,&quot;color&quot;:&quot;#4a6860&quot;,&quot;data&quot;:[]}]}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/rickshawts'], \n      function(playground, _rickshawts) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _rickshawts,\n    \"o\": {\"renderer\":\"stack\",\"fixed\":{\"interval\":1000,\"max\":5,\"baseInSec\":1}}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script> </div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 5
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import scala.concurrent._\nimport scala.concurrent.ExecutionContext.Implicits.global\nFuture { Thread.sleep(30000) ; streaming.stop() }\n ",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import scala.concurrent._\nimport scala.concurrent.ExecutionContext.Implicits.global\nres3: scala.concurrent.Future[Unit] = scala.concurrent.impl.Promise$DefaultPromise@67289320\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "scala.concurrent.impl.Promise$DefaultPromise@67289320"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 6
+    } ]
+  } ],
+  "nbformat" : 4
+}
