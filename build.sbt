@@ -49,17 +49,18 @@ commands ++= Seq( distAll, dockerPublishLocalAll, dockerPublishAll )
 
 dependencyOverrides += "log4j" % "log4j" % "1.2.16"
 
+dependencyOverrides += guava
+
 enablePlugins(DebianPlugin)
 
 sharedSettings
 
+libraryDependencies ++= playDeps
+
 libraryDependencies ++= Seq(
-  playDep,
   akka,
   akkaRemote,
   akkaSlf4j,
-  jdbc,
-  anorm,
   cache,
   commonsIO,
   // ↓ to fix java.lang.IllegalStateException: impossible to get artifacts when data has
@@ -84,9 +85,11 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).ena
 
 lazy val subprocess =  project.in(file("modules/subprocess"))
                               .settings(
+                                libraryDependencies ++= playDeps
+                              )
+                              .settings(
                                 libraryDependencies ++= {
                                   Seq(
-                                    playDep,
                                     akka,
                                     akkaRemote,
                                     akkaSlf4j,
