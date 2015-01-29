@@ -8,7 +8,7 @@ organization := "noootsab"
 
 name := "spark-notebook"
 
-version in ThisBuild <<= (sparkVersion, hadoopVersion) { (sv, hv) => s"0.1.4-spark-$sv-hadoop-$hv" }
+version in ThisBuild <<= (sparkVersion, hadoopVersion) { (sv, hv) => s"0.2.0-spark-$sv-hadoop-$hv" }
 
 maintainer := "Andy Petrella" //Docker
 
@@ -135,7 +135,7 @@ lazy val common = Project(id = "common", base = file("modules/common"))
                                 libraryDependencies ++= Seq(
                                   bokeh,
                                   wisp
-                                ) ++ customJacksonScala
+                                )// ++ customJacksonScala
                               )
                               .settings(
                                 sharedSettings:_*

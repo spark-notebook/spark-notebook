@@ -1,0 +1,56 @@
+#notification_area {
+    .pull-right();
+    z-index: 10;
+}
+
+.indicator_area {
+    color: @navbar-default-link-color;
+    margin-left: 5px;
+    margin-right: 5px;
+    width: 11px;
+    z-index: 10;
+    text-align: center;
+}
+
+#kernel_indicator {
+    .pull-right();
+    .indicator_area();
+    width: auto;
+    border-left: 1px solid;
+    
+    .kernel_indicator_name {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+}
+
+#modal_indicator {
+    .pull-right();
+    .indicator_area();
+}
+
+.edit_mode .modal_indicator:before {
+    .icon(@fa-var-pencil)
+}
+
+.command_mode .modal_indicator:before {
+    .icon(' ');
+}
+
+.kernel_idle_icon:before {
+    .icon(@fa-var-circle-o);
+}
+
+.kernel_busy_icon:before {
+    .icon(@fa-var-circle);
+}
+
+.kernel_dead_icon:before {
+    .icon(@fa-var-bomb);
+}
+
+.kernel_disconnected_icon:before {
+    .icon(@fa-var-chain-broken);
+}
+
+

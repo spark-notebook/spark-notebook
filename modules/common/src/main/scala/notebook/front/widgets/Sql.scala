@@ -77,7 +77,7 @@ class Sql(sqlContext:SQLContext, call: String) extends Widget {
 
     lazy val toHtml = <p data-bind="text: value">{
       scopedScript(
-        """ require(
+        """ req(
               ['observable', 'knockout'],
               function (O, ko) {
                 ko.applyBindings({

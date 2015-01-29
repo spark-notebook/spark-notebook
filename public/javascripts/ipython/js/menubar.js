@@ -54,7 +54,7 @@ var IPython = (function (IPython) {
         this.element.find('#revert_notebook > a').click(function () {
         	IPython.notebook.revert_to_last_saved();
         });
-        this.element.find('#download_ipynb > a').click(function () {
+        this.element.find('#download_snb > a').click(function () {
             var notebook_id = IPython.notebook.get_notebook_id();
             var notebook_name = IPython.notebook.get_notebook_name();
             var url = $('body').data('baseProjectUrl') + 'notebooks/' + encodeURIComponent(notebook_name) + '?id=' + notebook_id + '&format=json';

@@ -1,0 +1,63 @@
+{
+  "metadata" : {
+    "name" : "Simple Spark",
+    "user_save_timestamp" : "2014-10-11T17:33:45.703Z",
+    "auto_save_timestamp" : "2015-01-10T00:02:12.659Z",
+    "language_info" : "scala",
+    "trusted" : true
+  },
+  "cells" : [ {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Spark config"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "sparkContext.getConf.toDebugString",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val count = sparkContext.makeRDD((1 to 1000).toArray).count()\n()",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### Counting"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "<strong>{count} items</strong>",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val i:Int = 2",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "i: Int = 2\n"
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "sparkContext.parallelize((1 to 10)).map( x => x*i)",
+    "outputs" : [ ]
+  } ],
+  "nbformat" : 4
+}

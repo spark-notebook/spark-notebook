@@ -1,0 +1,22 @@
+{
+  "name": "text-encoding",
+  "version": "0.0.0",
+  "homepage": "https://github.com/inexorabletash/text-encoding",
+  "authors": [
+    "Joshua Bell <inexorabletash@gmail.com>"
+  ],
+  "description": "Polyfill for the Encoding Living Standard's API",
+  "main": [ "lib/encoding.js", "lib/encoding-indexes.js" ],
+  "keywords": [
+    "decoding",
+    "encoding",
+    "living",
+    "standards"
+  ],
+  "license": "Apache-2.0",
+  "ignore": [
+    "**/.*",
+    "test",
+    "*examples*.html"
+  ]
+}

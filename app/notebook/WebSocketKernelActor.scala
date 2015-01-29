@@ -18,21 +18,22 @@ object WebSocketKernelActor {
 class WebSocketKernelActor(channel: Concurrent.Channel[JsValue], val pchannel:String, val calcService:CalcWebSocketService)(implicit system:ActorSystem) extends Actor {
   val executionCounter = new AtomicInteger(0)
 
-  if (pchannel == "iopub")
-    calcService.ioPubPromise.success(new WebSockWrapperImpl(channel))
-  else if (pchannel == "shell")
-    calcService.shellPromise.success(new WebSockWrapperImpl(channel))
+  val ws = new WebSockWrapperImpl(channel)
+  calcService.wsPromise.success(ws)
 
   def receive = {
     case json:JsValue =>
-      //logDebug("Message for " + kernelId + ":" + msg)
-
       val header   = json \ "header"
       val session  = header \ "session"
       val msgType  = header \ "msg_type"
       val content  = json \ "content"
+      val channel  = json \ "channel"
 
       msgType match {
+        case JsString("kernel_info_request") => {
+          ws.send(header, session, "info", "shell", Json.obj("language_info" -> "scala", "extension" → "scala"))
+        }
+
         case JsString("execute_request") => {
           val JsString(code) = content \ "code"
           val execCounter = executionCounter.incrementAndGet()

@@ -17,16 +17,13 @@ import notebook.client._
 class CalcWebSocketService(system: ActorSystem, initScripts: List[(String, String)], compilerArgs: List[String], remoteDeployFuture: Future[Deploy]) {
   implicit val executor = system.dispatcher
 
-  val ioPubPromise = Promise[WebSockWrapper]
-  val shellPromise = Promise[WebSockWrapper]
-
+  val wsPromise = Promise[WebSockWrapper]
   val calcActor = system.actorOf(Props( new CalcActor))
 
   class CalcActor extends Actor with ActorLogging {
     private var currentSessionOperation: Option[ActorRef] = None
     var calculator: ActorRef = null
-    var iopub: WebSockWrapper = null
-    var shell: WebSockWrapper = null
+    var ws: WebSockWrapper = null
 
     private def spawnCalculator() {
       // N.B.: without these local copies of the instance variables, we'll capture all sorts of things in our closure
@@ -38,8 +35,7 @@ class CalcWebSocketService(system: ActorSystem, initScripts: List[(String, Strin
     }
 
     override def preStart() {
-      iopub = Await.result(ioPubPromise.future, 2 minutes)
-      shell = Await.result(shellPromise.future, 2 minutes)
+      ws = Await.result(wsPromise.future, 2 minutes)
       spawnCalculator()
     }
 
@@ -53,8 +49,8 @@ class CalcWebSocketService(system: ActorSystem, initScripts: List[(String, Strin
         val operations = new SessionOperationActors(header, session)
         val operationActor = (request: @unchecked) match {
           case ExecuteRequest(counter, code) =>
-            iopub.send(header, session, "status", Json.obj("execution_state" -> "busy"))
-            iopub.send(header, session, "pyin", Json.obj("execution_count" -> counter, "code" -> code))
+            ws.send(header, session, "status", "iopub", Json.obj("execution_state" -> "busy"))
+            ws.send(header, session, "pyin",  "iopub", Json.obj("execution_count" -> counter, "code" -> code))
             operations.singleExecution(counter)
 
           case _: CompletionRequest =>
@@ -82,22 +78,22 @@ class CalcWebSocketService(system: ActorSystem, initScripts: List[(String, Strin
       def singleExecution(counter: Int) = Props(new Actor {
         def receive = {
           case StreamResponse(data, name) =>
-            iopub.send(header, session, "stream", Json.obj("data" -> data, "name" -> name))
+            ws.send(header, session, "stream", "iopub", Json.obj("text" -> data, "name" -> name))
 
           case ExecuteResponse(html) =>
-            iopub.send(header, session, "pyout", Json.obj("execution_count" -> counter, "data" -> Json.obj("text/html" -> html)))
-            iopub.send(header, session, "status", Json.obj("execution_state" -> "idle"))
-            shell.send(header, session, "execute_reply", Json.obj("execution_count" -> counter))
+            ws.send(header, session, "execute_result", "iopub", Json.obj("execution_count" -> counter, "data" -> Json.obj("text/html" -> html)))
+            ws.send(header, session, "status", "iopub", Json.obj("execution_state" -> "idle"))
+            ws.send(header, session, "execute_reply", "shell", Json.obj("execution_count" -> counter))
             context.stop(self)
 
           case ErrorResponse(msg, incomplete) =>
             if (incomplete) {
-              iopub.send(header, session, "pyincomplete", Json.obj("execution_count" -> counter, "status" -> "error"))
+              ws.send(header, session, "pyincomplete", "iopub", Json.obj("execution_count" -> counter, "status" -> "error"))
             } else {
-              iopub.send(header, session, "pyerr", Json.obj("execution_count" -> counter, "status" -> "error", "ename" -> "Error", "traceback" -> Seq(msg)))
+              ws.send(header, session, "pyerr", "iopub", Json.obj("execution_count" -> counter, "status" -> "error", "ename" -> "Error", "traceback" -> Seq(msg)))
             }
-            iopub.send(header, session, "status", Json.obj("execution_state" -> "idle"))
-            shell.send(header, session, "execute_reply", Json.obj("execution_count" -> counter))
+            ws.send(header, session, "status", "iopub", Json.obj("execution_state" -> "idle"))
+            ws.send(header, session, "execute_reply", "shell", Json.obj("execution_count" -> counter))
             context.stop(self)
         }
       })
@@ -105,7 +101,7 @@ class CalcWebSocketService(system: ActorSystem, initScripts: List[(String, Strin
       def completion = Props(new Actor {
         def receive = {
           case CompletionResponse(cursorPosition, candidates, matchedText) =>
-            shell.send(header, session, "complete_reply", Json.obj("matched_text" -> matchedText, "matches" -> candidates.map(_.toJson).toList))
+            ws.send(header, session, "complete_reply", "shell", Json.obj("matched_text" -> matchedText, "matches" -> candidates.map(_.toJson).toList))
             context.stop(self)
         }
       })
@@ -113,10 +109,11 @@ class CalcWebSocketService(system: ActorSystem, initScripts: List[(String, Strin
       def objectInfo = Props(new Actor {
         def receive = {
           case ObjectInfoResponse(found, name, callDef, callDocString) =>
-            shell.send(
+            ws.send(
               header,
               session,
               "object_info_reply",
+              "shell",
               Json.obj(
                 "found" -> found,
                 "name" -> name,

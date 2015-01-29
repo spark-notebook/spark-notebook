@@ -2,201 +2,244 @@
   "metadata" : {
     "name" : "ADAM",
     "user_save_timestamp" : "2015-01-02T15:24:17.387Z",
-    "auto_save_timestamp" : "2015-01-02T13:22:01.751Z"
+    "auto_save_timestamp" : "2015-01-02T13:22:01.751Z",
+    "language_info" : "scala",
+    "trusted" : true
   },
-  "worksheets" : [ {
-    "cells" : [ {
-      "cell_type" : "code",
-      "input" : ":local-repo /tmp/spark-notebook/repo",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 1,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "code",
-      "input" : "import sys.process._\nval master = (\"ec2-metadata --public-hostname\"!!).drop(\"public-hostname: \".size).mkString.trim",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 2,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "code",
-      "input" : "def hu(s:String) = s\"hdfs://$master:9010/temp/$s\"",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 3,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "code",
-      "input" : ":dp org.bdgenomics.adam % adam-apis % 0.15.0\n- org.apache.hadoop % hadoop-client %   _\n- org.apache.spark  %     _         %   _\n- org.scala-lang    %     _         %   _\n- org.scoverage     %     _         %   _",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 5,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "code",
-      "input" : "reset(lastChanges = _.set(\"spark.serializer\", \"org.apache.spark.serializer.KryoSerializer\")\n                     .set(\"spark.kryo.registrator\", \"org.bdgenomics.adam.serialization.ADAMKryoRegistrator\")\n                     .set(\"spark.kryoserializer.buffer.mb\", \"4\")\n                     .set(\"spark.kryo.referenceTracking\", \"true\")\n      \t\t\t\t .setMaster(s\"spark://$master:7077\")\n                     .setAppName(\"ADAM 1000genomes\")\n                     .set(\"spark.executor.memory\", \"13g\")\n)",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 6,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "code",
-      "input" : "import org.apache.hadoop.fs.{FileSystem, Path}\n\nimport org.bdgenomics.adam.converters.{ VCFLine, VCFLineConverter, VCFLineParser }\nimport org.bdgenomics.formats.avro.{Genotype, FlatGenotype}\nimport org.bdgenomics.adam.models.VariantContext\nimport org.bdgenomics.adam.rdd.ADAMContext._\nimport org.bdgenomics.adam.rdd.variation.VariationContext._\nimport org.bdgenomics.adam.rdd.ADAMContext\n  \nimport org.apache.spark.rdd.RDD",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 7,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "markdown",
-      "source" : "### Population"
-    }, {
-      "cell_type" : "code",
-      "input" : "<pre>{sparkContext.getConf.toDebugString}</pre>",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 7,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "code",
-      "input" : "// populations to select\nval pops = Set(\"GBR\",\"ASW\")",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 8,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "markdown",
-      "source" : "### Panel"
-    }, {
-      "cell_type" : "code",
-      "input" : "import scala.collection.JavaConversions._\n\nval panelFile = \"/home/noootsab/Downloads/GBRASW.panel\"\nimport scala.io.Source\ndef extract(filter: (String, String) => Boolean= (s, t) => true) = Source.fromFile(panelFile).getLines().map( line => {\n  val toks = line.split(\"\\t\").toList\n  toks(0) -> toks(1)\n}).toMap//.filter( tup => filter(tup._1, tup._2) )\n  \n// panel extract from file, filtering by the 2 populations\ndef panel: java.util.Map[String,String] = \n  mapAsJavaMap(extract((sampleID: String, pop: String) => pops.contains(pop)))\n// broadcast the panel \nval bPanel = sparkContext.broadcast(panel)",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 6,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "markdown",
-      "source" : "### Genotype"
-    }, {
-      "cell_type" : "code",
-      "input" : "val vcfFile = hu(\"ALL.chr1.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf\")",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 8,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "code",
-      "input" : "val adamVariants: RDD[VariantContext] = sparkContext.adamVCFLoad(vcfFile, dict = None)",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 9,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "code",
-      "input" : "/* TODO: Uncomment if your data is too skewed on your DFS\nval variants = adamVariants.coalesce(coalesce, true)\n*/\nval variants = adamVariants",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 10,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "code",
-      "input" : "val gts:RDD[Genotype] = variants.flatMap(p => p.genotypes)\n",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 11,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "code",
-      "input" : "val output = hu(\"ALL.chr1.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.adam\")",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 13,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "markdown",
-      "source" : "### If ADAM file is not available"
-    }, {
-      "cell_type" : "code",
-      "input" : "import org.bdgenomics.adam.rdd.ADAMContext._\ngts.adamParquetSave(output)",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 14,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "markdown",
-      "source" : "### If ADAM available"
-    }, {
-      "cell_type" : "code",
-      "input" : "val gts:RDD[Genotype] = sparkContext.adamLoad(output)",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 15,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "markdown",
-      "source" : "### Count"
-    }, {
-      "cell_type" : "code",
-      "input" : "val sampleCount = gts.map(_.getSampleId.toString.hashCode).distinct.count\ns\"#Samples: $sampleCount\"",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 16,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "markdown",
-      "source" : "### Ensuring completness"
-    }, {
-      "cell_type" : "code",
-      "input" : "//utils\nimport scala.collection.JavaConverters._\nimport org.bdgenomics.formats.avro._\ndef variantId(g:Genotype):String = {\n  val name = g.getVariant.getContig.getContigName\n    val start = g.getVariant.getStart\n    val end = g.getVariant.getEnd\n    s\"$name:$start:$end\"\n}\ndef asDouble(g:Genotype):Double = g.getAlleles.asScala.count(_ != GenotypeAllele.Ref)",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 16,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "code",
-      "input" : "import org.apache.spark.SparkContext._\nval variantsById = gts.keyBy(g => variantId(g).hashCode).groupByKey.cache\n//val variantsCount = variantsById.keys.count\n//println(s\"#Variants: $variantsCount\")\nval missingVariantsRDD = variantsById.filter { case (k, it) => it.size != sampleCount }.keys",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 17,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "code",
-      "input" : "val modelDir = \"/tmp/model\"\n// saving the list of variants with missing genotypes (because cannot be used for prediction later)\n// it is a list of Int (variantId.hashCode)                              \nmissingVariantsRDD.saveAsObjectFile(modelDir + \"/missing-variants\")\n// saving the list of all variants \n// (diff with missing-variants is the list of vatiants to be used for prediction)\n// it is a list of Int (variantId.hashCode)                              \nvariantsById.keys.saveAsObjectFile(modelDir + \"/all-variants\")\n\nval missingVariants = missingVariantsRDD.collect().toSet\n\nprintln(s\"#Missing $missingVariants\")",
-      "language" : "scala",
-      "collapsed" : false,
-      "prompt_number" : 18,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "code",
-      "input" : "import org.apache.spark.mllib.linalg.{Vector=>MLVector, Vectors}\n\nval sampleToData:RDD[(String, (Double, Int))] =\ngts .filter { g => ! (missingVariants contains variantId(g).hashCode) }\n    .map { g => (g.getSampleId.toString, (asDouble(g), variantId(g).hashCode)) }\n\nval dataPerSampleId:RDD[(String, MLVector)] = sampleToData.groupByKey\n                                                          .mapValues { it =>\n                                                            Vectors.dense(\n                                                              it.toArray.sortBy(_._2).map(_._1)\n                                                            )\n                                                          }\n                                                          .cache\nval dataFrame:RDD[MLVector] = dataPerSampleId.values",
-      "language" : "scala",
-      "collapsed" : false,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "code",
-      "input" : "//val dataFrameSizes = dataFrame.map(_.size).collect()\n//println(\"Vector sizes:\")\n//  dataFrameSizes foreach (x => println(\" > \" + x))\n",
-      "language" : "scala",
-      "collapsed" : false,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "code",
-      "input" : "val kmeansStart = System.nanoTime\nprintln(\"About to run the KMeans: \" + kmeansStart)\n\nval model:KMeansModel = KMeans.train(dataFrame, 2, 10)\nval kmeansEnd = System.nanoTime\nprintln(\"Ran the KMeans in \" + (kmeansEnd - kmeansStart))\nprintln(\"KMeans centroids\")\n\nval centroids = model.clusterCenters.map { center => center.toArray.toList }\ncentroids map (c => println(s\" > ${c.mkString(\" ; \")}\"))\n\nval modelRDD: RDD[KMeansModel] = sparkContext.parallelize(List[KMeansModel](model))\nmodelRDD.saveAsObjectFile(modelDir + \"/kMeansModel\")",
-      "language" : "scala",
-      "collapsed" : false,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "code",
-      "input" : "val predictionsRDD: RDD[(String, (Int, String))] = dataPerSampleId.map(elt => {\n    (elt._1, ( model.predict(elt._2), bPanel.value.get(elt._1))) \n})\npredictionsRDD.saveAsObjectFile(modelDir + \"/predictions\")\n\ndataPerSampleId.collect().foreach { case (sampleId, vector) =>\n  val cluster = model.predict(vector)\n  println(s\"Sample [$sampleId] is in cluster #$cluster for population ${panel.get(sampleId)}\")\n}",
-      "language" : "scala",
-      "collapsed" : false,
-      "outputs" : [ ]
-    }, {
-      "cell_type" : "code",
-      "input" : "",
-      "language" : "scala",
-      "collapsed" : false,
-      "outputs" : [ ]
-    } ]
+  "cells" : [ {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : ":local-repo /tmp/spark-notebook/repo",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "import sys.process._\nval master = (\"ec2-metadata --public-hostname\"!!).drop(\"public-hostname: \".size).mkString.trim",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "def hu(s:String) = s\"hdfs://$master:9010/temp/$s\"",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : ":dp org.bdgenomics.adam % adam-apis % 0.15.0\n- org.apache.hadoop % hadoop-client %   _\n- org.apache.spark  %     _         %   _\n- org.scala-lang    %     _         %   _\n- org.scoverage     %     _         %   _",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "reset(lastChanges = _.set(\"spark.serializer\", \"org.apache.spark.serializer.KryoSerializer\")\n                     .set(\"spark.kryo.registrator\", \"org.bdgenomics.adam.serialization.ADAMKryoRegistrator\")\n                     .set(\"spark.kryoserializer.buffer.mb\", \"4\")\n                     .set(\"spark.kryo.referenceTracking\", \"true\")\n                     .setMaster(s\"spark://$master:7077\")\n                     .setAppName(\"ADAM 1000genomes\")\n                     .set(\"spark.executor.memory\", \"13g\")\n)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "import org.apache.hadoop.fs.{FileSystem, Path}\n\nimport org.bdgenomics.adam.converters.{ VCFLine, VCFLineConverter, VCFLineParser }\nimport org.bdgenomics.formats.avro.{Genotype, FlatGenotype}\nimport org.bdgenomics.adam.models.VariantContext\nimport org.bdgenomics.adam.rdd.ADAMContext._\nimport org.bdgenomics.adam.rdd.variation.VariationContext._\nimport org.bdgenomics.adam.rdd.ADAMContext\n  \nimport org.apache.spark.rdd.RDD",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true
+    },
+    "cell_type" : "markdown",
+    "source" : "### Population"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "<pre>{sparkContext.getConf.toDebugString}</pre>",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "// populations to select\nval pops = Set(\"GBR\",\"ASW\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true
+    },
+    "cell_type" : "markdown",
+    "source" : "### Panel"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "import scala.collection.JavaConversions._\n\nval panelFile = \"/home/noootsab/Downloads/GBRASW.panel\"\nimport scala.io.Source\ndef extract(filter: (String, String) => Boolean= (s, t) => true) = Source.fromFile(panelFile).getLines().map( line => {\n  val toks = line.split(\"\\t\").toList\n  toks(0) -> toks(1)\n}).toMap//.filter( tup => filter(tup._1, tup._2) )\n  \n// panel extract from file, filtering by the 2 populations\ndef panel: java.util.Map[String,String] = \n  mapAsJavaMap(extract((sampleID: String, pop: String) => pops.contains(pop)))\n// broadcast the panel \nval bPanel = sparkContext.broadcast(panel)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true
+    },
+    "cell_type" : "markdown",
+    "source" : "### Genotype"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val vcfFile = hu(\"ALL.chr1.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val adamVariants: RDD[VariantContext] = sparkContext.adamVCFLoad(vcfFile, dict = None)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "/* TODO: Uncomment if your data is too skewed on your DFS\nval variants = adamVariants.coalesce(coalesce, true)\n*/\nval variants = adamVariants",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val gts:RDD[Genotype] = variants.flatMap(p => p.genotypes)\n",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val output = hu(\"ALL.chr1.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.adam\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true
+    },
+    "cell_type" : "markdown",
+    "source" : "### If ADAM file is not available"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "import org.bdgenomics.adam.rdd.ADAMContext._\ngts.adamParquetSave(output)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true
+    },
+    "cell_type" : "markdown",
+    "source" : "### If ADAM available"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val gts:RDD[Genotype] = sparkContext.adamLoad(output)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true
+    },
+    "cell_type" : "markdown",
+    "source" : "### Count"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val sampleCount = gts.map(_.getSampleId.toString.hashCode).distinct.count\ns\"#Samples: $sampleCount\"",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true
+    },
+    "cell_type" : "markdown",
+    "source" : "### Ensuring completness"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "//utils\nimport scala.collection.JavaConverters._\nimport org.bdgenomics.formats.avro._\ndef variantId(g:Genotype):String = {\n  val name = g.getVariant.getContig.getContigName\n    val start = g.getVariant.getStart\n    val end = g.getVariant.getEnd\n    s\"$name:$start:$end\"\n}\ndef asDouble(g:Genotype):Double = g.getAlleles.asScala.count(_ != GenotypeAllele.Ref)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "import org.apache.spark.SparkContext._\nval variantsById = gts.keyBy(g => variantId(g).hashCode).groupByKey.cache\n//val variantsCount = variantsById.keys.count\n//println(s\"#Variants: $variantsCount\")\nval missingVariantsRDD = variantsById.filter { case (k, it) => it.size != sampleCount }.keys",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val modelDir = \"/tmp/model\"\n// saving the list of variants with missing genotypes (because cannot be used for prediction later)\n// it is a list of Int (variantId.hashCode)                              \nmissingVariantsRDD.saveAsObjectFile(modelDir + \"/missing-variants\")\n// saving the list of all variants \n// (diff with missing-variants is the list of vatiants to be used for prediction)\n// it is a list of Int (variantId.hashCode)                              \nvariantsById.keys.saveAsObjectFile(modelDir + \"/all-variants\")\n\nval missingVariants = missingVariantsRDD.collect().toSet\n\nprintln(s\"#Missing $missingVariants\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "import org.apache.spark.mllib.linalg.{Vector=>MLVector, Vectors}\n\nval sampleToData:RDD[(String, (Double, Int))] =\ngts .filter { g => ! (missingVariants contains variantId(g).hashCode) }\n    .map { g => (g.getSampleId.toString, (asDouble(g), variantId(g).hashCode)) }\n\nval dataPerSampleId:RDD[(String, MLVector)] = sampleToData.groupByKey\n                                                          .mapValues { it =>\n                                                            Vectors.dense(\n                                                              it.toArray.sortBy(_._2).map(_._1)\n                                                            )\n                                                          }\n                                                          .cache\nval dataFrame:RDD[MLVector] = dataPerSampleId.values",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "//val dataFrameSizes = dataFrame.map(_.size).collect()\n//println(\"Vector sizes:\")\n//  dataFrameSizes foreach (x => println(\" > \" + x))\n",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val kmeansStart = System.nanoTime\nprintln(\"About to run the KMeans: \" + kmeansStart)\n\nval model:KMeansModel = KMeans.train(dataFrame, 2, 10)\nval kmeansEnd = System.nanoTime\nprintln(\"Ran the KMeans in \" + (kmeansEnd - kmeansStart))\nprintln(\"KMeans centroids\")\n\nval centroids = model.clusterCenters.map { center => center.toArray.toList }\ncentroids map (c => println(s\" > ${c.mkString(\" ; \")}\"))\n\nval modelRDD: RDD[KMeansModel] = sparkContext.parallelize(List[KMeansModel](model))\nmodelRDD.saveAsObjectFile(modelDir + \"/kMeansModel\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val predictionsRDD: RDD[(String, (Int, String))] = dataPerSampleId.map(elt => {\n    (elt._1, ( model.predict(elt._2), bPanel.value.get(elt._1))) \n})\npredictionsRDD.saveAsObjectFile(modelDir + \"/predictions\")\n\ndataPerSampleId.collect().foreach { case (sampleId, vector) =>\n  val cluster = model.predict(vector)\n  println(s\"Sample [$sampleId] is in cluster #$cluster for population ${panel.get(sampleId)}\")\n}",
+    "outputs" : [ ]
   } ],
-  "nbformat" : 3
+  "nbformat" : 4
 }

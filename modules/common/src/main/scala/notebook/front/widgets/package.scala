@@ -23,6 +23,8 @@ package object widgets {
       withData % new UnprefixedAttribute("data-selector", s, Null)
     }.getOrElse(withData)
 
+
+
     withSelector
   }
 
@@ -40,7 +42,7 @@ package object widgets {
 
     html(<p data-bind="text: value, style: style">{
       scopedScript(
-        """ require(
+        """ req(
               ['observable', 'knockout'],
               function (O, ko) {
                 ko.applyBindings({
@@ -60,7 +62,8 @@ package object widgets {
 
     lazy val toHtml = <p data-bind="text: value">{
       scopedScript(
-        """ require(
+        """ 
+            req(
               ['observable', 'knockout'],
               function (O, ko) {
                 ko.applyBindings({

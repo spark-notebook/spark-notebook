@@ -1,0 +1,125 @@
+{
+  "metadata" : {
+    "name" : "WISP - Quick Start",
+    "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "language_info" : "scala",
+    "trusted" : true
+  },
+  "cells" : [ {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import notebook.front.third.wisp._",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import notebook.front.third.wisp._\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 3
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "Plot(Seq(SummarySeries((1 to 10) zip (10 to 100 by 10), \"line\")))",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import notebook.front.third.wisp._\nres1: notebook.front.third.wisp.Plot[Int,Int] = <Plot widget>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div class=\"container\">\n    <script data-this=\"{&quot;dataId&quot;:&quot;anone79c823d5313cb42582c3b9f04ff215d&quot;,&quot;dataInit&quot;:[{&quot;series&quot;:[{&quot;data&quot;:[{&quot;x&quot;:1,&quot;y&quot;:10},{&quot;x&quot;:2,&quot;y&quot;:20},{&quot;x&quot;:3,&quot;y&quot;:30},{&quot;x&quot;:4,&quot;y&quot;:40},{&quot;x&quot;:5,&quot;y&quot;:50},{&quot;x&quot;:6,&quot;y&quot;:60},{&quot;x&quot;:7,&quot;y&quot;:70},{&quot;x&quot;:8,&quot;y&quot;:80},{&quot;x&quot;:9,&quot;y&quot;:90},{&quot;x&quot;:10,&quot;y&quot;:100}],&quot;type&quot;:&quot;line&quot;}],&quot;exporting&quot;:{&quot;filename&quot;:&quot;chart&quot;},&quot;yAxis&quot;:[{&quot;title&quot;:{&quot;text&quot;:&quot;&quot;}}],&quot;plotOptions&quot;:{&quot;line&quot;:{&quot;turboThreshold&quot;:0}},&quot;credits&quot;:{&quot;href&quot;:&quot;&quot;,&quot;text&quot;:&quot;&quot;},&quot;chart&quot;:{&quot;zoomType&quot;:&quot;xy&quot;},&quot;title&quot;:{&quot;text&quot;:&quot;&quot;}}]}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/wispWrap'], \n      function(playground, _wispWrap) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _wispWrap,\n    \"o\": {}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script> </div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 1
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "Plot(Seq(SummarySeries((1 to 10) zip (10 to 100 by 10), \"bar\")))",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res3: notebook.front.third.wisp.Plot[Int,Int] = <Plot widget>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div class=\"container\">\n    <script data-this=\"{&quot;dataId&quot;:&quot;anon8593986f20198e8f6797882950e47f6f&quot;,&quot;dataInit&quot;:[{&quot;series&quot;:[{&quot;data&quot;:[{&quot;x&quot;:1,&quot;y&quot;:10},{&quot;x&quot;:2,&quot;y&quot;:20},{&quot;x&quot;:3,&quot;y&quot;:30},{&quot;x&quot;:4,&quot;y&quot;:40},{&quot;x&quot;:5,&quot;y&quot;:50},{&quot;x&quot;:6,&quot;y&quot;:60},{&quot;x&quot;:7,&quot;y&quot;:70},{&quot;x&quot;:8,&quot;y&quot;:80},{&quot;x&quot;:9,&quot;y&quot;:90},{&quot;x&quot;:10,&quot;y&quot;:100}],&quot;type&quot;:&quot;bar&quot;}],&quot;exporting&quot;:{&quot;filename&quot;:&quot;chart&quot;},&quot;yAxis&quot;:[{&quot;title&quot;:{&quot;text&quot;:&quot;&quot;}}],&quot;plotOptions&quot;:{&quot;bar&quot;:{&quot;turboThreshold&quot;:0}},&quot;credits&quot;:{&quot;href&quot;:&quot;&quot;,&quot;text&quot;:&quot;&quot;},&quot;chart&quot;:{&quot;zoomType&quot;:&quot;xy&quot;},&quot;title&quot;:{&quot;text&quot;:&quot;&quot;}}]}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/wispWrap'], \n      function(playground, _wispWrap) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _wispWrap,\n    \"o\": {}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script> </div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 4
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "Plot(Seq(SummarySeries((1 to 10) zip (10 to 100 by 10), \"column\")))",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res4: notebook.front.third.wisp.Plot[Int,Int] = <Plot widget>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div class=\"container\">\n    <script data-this=\"{&quot;dataId&quot;:&quot;anonaf3f94214c28662131d3ebb89e93cc1a&quot;,&quot;dataInit&quot;:[{&quot;series&quot;:[{&quot;data&quot;:[{&quot;x&quot;:1,&quot;y&quot;:10},{&quot;x&quot;:2,&quot;y&quot;:20},{&quot;x&quot;:3,&quot;y&quot;:30},{&quot;x&quot;:4,&quot;y&quot;:40},{&quot;x&quot;:5,&quot;y&quot;:50},{&quot;x&quot;:6,&quot;y&quot;:60},{&quot;x&quot;:7,&quot;y&quot;:70},{&quot;x&quot;:8,&quot;y&quot;:80},{&quot;x&quot;:9,&quot;y&quot;:90},{&quot;x&quot;:10,&quot;y&quot;:100}],&quot;type&quot;:&quot;column&quot;}],&quot;exporting&quot;:{&quot;filename&quot;:&quot;chart&quot;},&quot;yAxis&quot;:[{&quot;title&quot;:{&quot;text&quot;:&quot;&quot;}}],&quot;plotOptions&quot;:{&quot;column&quot;:{&quot;turboThreshold&quot;:0}},&quot;credits&quot;:{&quot;href&quot;:&quot;&quot;,&quot;text&quot;:&quot;&quot;},&quot;chart&quot;:{&quot;zoomType&quot;:&quot;xy&quot;},&quot;title&quot;:{&quot;text&quot;:&quot;&quot;}}]}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/wispWrap'], \n      function(playground, _wispWrap) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _wispWrap,\n    \"o\": {}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script> </div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 5
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "Plot(Seq(SummarySeries((1 to 10) zip (10 to 100 by 10), \"area\")))",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res5: notebook.front.third.wisp.Plot[Int,Int] = <Plot widget>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div class=\"container\">\n    <script data-this=\"{&quot;dataId&quot;:&quot;anon006d48710436f5955b0dec00809735be&quot;,&quot;dataInit&quot;:[{&quot;series&quot;:[{&quot;data&quot;:[{&quot;x&quot;:1,&quot;y&quot;:10},{&quot;x&quot;:2,&quot;y&quot;:20},{&quot;x&quot;:3,&quot;y&quot;:30},{&quot;x&quot;:4,&quot;y&quot;:40},{&quot;x&quot;:5,&quot;y&quot;:50},{&quot;x&quot;:6,&quot;y&quot;:60},{&quot;x&quot;:7,&quot;y&quot;:70},{&quot;x&quot;:8,&quot;y&quot;:80},{&quot;x&quot;:9,&quot;y&quot;:90},{&quot;x&quot;:10,&quot;y&quot;:100}],&quot;type&quot;:&quot;area&quot;}],&quot;exporting&quot;:{&quot;filename&quot;:&quot;chart&quot;},&quot;yAxis&quot;:[{&quot;title&quot;:{&quot;text&quot;:&quot;&quot;}}],&quot;plotOptions&quot;:{&quot;area&quot;:{&quot;turboThreshold&quot;:0}},&quot;credits&quot;:{&quot;href&quot;:&quot;&quot;,&quot;text&quot;:&quot;&quot;},&quot;chart&quot;:{&quot;zoomType&quot;:&quot;xy&quot;},&quot;title&quot;:{&quot;text&quot;:&quot;&quot;}}]}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/wispWrap'], \n      function(playground, _wispWrap) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _wispWrap,\n    \"o\": {}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script> </div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 6
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "Plot(Seq(SummarySeries((1 to 10) zip (10 to 100 by 10), \"pie\")))",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res6: notebook.front.third.wisp.Plot[Int,Int] = <Plot widget>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div class=\"container\">\n    <script data-this=\"{&quot;dataId&quot;:&quot;anon41d3d1a38cd1895053ee1784a40f8c75&quot;,&quot;dataInit&quot;:[{&quot;series&quot;:[{&quot;data&quot;:[{&quot;x&quot;:1,&quot;y&quot;:10},{&quot;x&quot;:2,&quot;y&quot;:20},{&quot;x&quot;:3,&quot;y&quot;:30},{&quot;x&quot;:4,&quot;y&quot;:40},{&quot;x&quot;:5,&quot;y&quot;:50},{&quot;x&quot;:6,&quot;y&quot;:60},{&quot;x&quot;:7,&quot;y&quot;:70},{&quot;x&quot;:8,&quot;y&quot;:80},{&quot;x&quot;:9,&quot;y&quot;:90},{&quot;x&quot;:10,&quot;y&quot;:100}],&quot;type&quot;:&quot;pie&quot;}],&quot;exporting&quot;:{&quot;filename&quot;:&quot;chart&quot;},&quot;yAxis&quot;:[{&quot;title&quot;:{&quot;text&quot;:&quot;&quot;}}],&quot;plotOptions&quot;:{},&quot;credits&quot;:{&quot;href&quot;:&quot;&quot;,&quot;text&quot;:&quot;&quot;},&quot;chart&quot;:{&quot;zoomType&quot;:&quot;xy&quot;},&quot;title&quot;:{&quot;text&quot;:&quot;&quot;}}]}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/wispWrap'], \n      function(playground, _wispWrap) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _wispWrap,\n    \"o\": {}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script> </div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 7
+    } ]
+  } ],
+  "nbformat" : 4
+}
