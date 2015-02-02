@@ -5034,8 +5034,14 @@ button.bk-bs-close {
  * -------------------------- */
 @font-face {
   font-family: 'FontAwesome';
-  src: url('/bokehjs/static/js/vendor/font-awesome-4.2.0/fonts/fontawesome-webfont.eot?v=4.2.0');
+  /*src: url('/bokehjs/static/js/vendor/font-awesome-4.2.0/fonts/fontawesome-webfont.eot?v=4.2.0');
   src: url('/bokehjs/static/js/vendor/font-awesome-4.2.0/fonts/fontawesome-webfont.eot?#iefix&v=4.2.0') format('embedded-opentype'), url('/bokehjs/static/js/vendor/font-awesome-4.2.0/fonts/fontawesome-webfont.woff?v=4.2.0') format('woff'), url('/bokehjs/static/js/vendor/font-awesome-4.2.0/fonts/fontawesome-webfont.ttf?v=4.2.0') format('truetype'), url('/bokehjs/static/js/vendor/font-awesome-4.2.0/fonts/fontawesome-webfont.svg?v=4.2.0#fontawesomeregular') format('svg');
+  */
+  src: url('/assets/ipython/components/font-awesome/fonts/fontawesome-webfont.eot?v=4.2.0');
+  src: url('/assets/ipython/components/font-awesome/fonts/fontawesome-webfont.eot?#iefix&v=4.2.0') format('embedded-opentype'),
+  		 url('/assets/ipython/components/font-awesome/fonts/fontawesome-webfont.woff?v=4.2.0') format('woff'),
+  		 url('/assets/ipython/components/font-awesome/fonts/fontawesome-webfont.ttf?v=4.2.0') format('truetype'),
+  		 url('/assets/ipython/components/font-awesome/fonts/fontawesome-webfont.svg?v=4.2.0#fontawesomeregular') format('svg');
   font-weight: normal;
   font-style: normal;
 }
