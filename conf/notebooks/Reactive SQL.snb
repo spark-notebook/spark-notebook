@@ -3,7 +3,11 @@
     "name" : "Reactive SQL",
     "user_save_timestamp" : "2014-11-07T01:29:44.985Z",
     "auto_save_timestamp" : "2014-11-08T00:18:39.903Z",
-    "language_info" : "scala",
+    "language_info" : {
+      "name" : "Scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
     "trusted" : true
   },
   "cells" : [ {

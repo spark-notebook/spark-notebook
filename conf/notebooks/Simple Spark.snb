@@ -3,7 +3,11 @@
     "name" : "Simple Spark",
     "user_save_timestamp" : "2014-10-11T17:33:45.703Z",
     "auto_save_timestamp" : "2015-01-10T00:02:12.659Z",
-    "language_info" : "scala",
+    "language_info" : {
+      "name" : "Scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
     "trusted" : true
   },
   "cells" : [ {
@@ -50,14 +54,6 @@
       "output_type" : "stream",
       "text" : "i: Int = 2\n"
     } ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "collapsed" : true
-    },
-    "cell_type" : "code",
-    "source" : "sparkContext.parallelize((1 to 10)).map( x => x*i)",
-    "outputs" : [ ]
   } ],
   "nbformat" : 4
 }

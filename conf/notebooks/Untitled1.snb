@@ -1,0 +1,34 @@
+{
+  "metadata" : {
+    "name" : "Untitled1",
+    "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "language_info" : {
+      "name" : "Scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true
+  },
+  "cells" : [ {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val a = \"ok\"",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "a: String = ok\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "ok"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 1
+    } ]
+  } ],
+  "nbformat" : 4
+}

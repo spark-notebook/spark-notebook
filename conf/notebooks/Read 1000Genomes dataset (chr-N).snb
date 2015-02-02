@@ -3,7 +3,11 @@
     "name" : "Read 1000Genomes dataset (chr-N)",
     "user_save_timestamp" : "2015-01-03T00:43:35.749Z",
     "auto_save_timestamp" : "2015-01-03T00:38:53.694Z",
-    "language_info" : "scala",
+    "language_info" : {
+      "name" : "Scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
     "trusted" : true
   },
   "cells" : [ {
