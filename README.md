@@ -425,3 +425,46 @@ In live, you can check the notebook named `Update classpath and Spark's jars`, w
 Some vizualizations (wisp) are currently using Highcharts which is **not** available for commercial or private usage!
 
 If you're in this case, please to <a href="email:andy.petrella@gmail.com">contact</a> me first.
+
+
+## KNOWN ISSUES
+
+### `User limit of inotify watches reached`
+
+When running Spark-Notebook on some Linux distribs (specifically ArchLinux), you may encounter this exception:
+
+```
+[spark-notebook] $ run
+ 
+java.io.IOException: User limit of inotify watches reached
+at sun.nio.fs.LinuxWatchService$Poller.implRegister(LinuxWatchService.java:261)
+at sun.nio.fs.AbstractPoller.processRequests(AbstractPoller.java:260)
+at sun.nio.fs.LinuxWatchService$Poller.run(LinuxWatchService.java:326)
+at java.lang.Thread.run(Thread.java:745)
+[trace] Stack trace suppressed: run last sparkNotebook/compile:run for the full output.
+[error] (sparkNotebook/compile:run) java.lang.reflect.InvocationTargetException
+[error] Total time: 1 s, completed Jan 31, 2015 7:21:58 PM 
+```
+
+This certainly means your `sysctl` configuration limits too much `inotify` watches.
+
+You must increase the parameter `fs.inotify.max_user_watches`.
+
+To get current value:
+
+```
+$ sudo sysctl -a | grep fs.inotify.max_user_watches
+fs.inotify.max_user_watches = 8192
+```
+
+To increase this value, create a new file `/etc/sysctl.d99-sysctl.conf`
+
+```
+fs.inotify.max_user_watches=100000
+```
+
+Refresh your live `sysctl` configuration:
+
+```
+$ sudo sysctl --system
+```
