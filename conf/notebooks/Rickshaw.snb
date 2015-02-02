@@ -3,7 +3,11 @@
     "name" : "Rickshaw",
     "user_save_timestamp" : "2014-12-15T00:55:09.510Z",
     "auto_save_timestamp" : "2014-12-15T00:50:41.883Z",
-    "language_info" : "scala",
+    "language_info" : {
+      "name" : "Scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
     "trusted" : true
   },
   "cells" : [ {

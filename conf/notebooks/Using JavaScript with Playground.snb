@@ -3,7 +3,11 @@
     "name" : "Using JavaScript with Playground",
     "user_save_timestamp" : "2014-12-23T01:03:45.877Z",
     "auto_save_timestamp" : "2014-12-23T01:03:15.549Z",
-    "language_info" : "scala",
+    "language_info" : {
+      "name" : "Scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
     "trusted" : true
   },
   "cells" : [ {

@@ -155,7 +155,7 @@ define([
         this.notebook_name_blacklist_re = /[\/\\:]/;
         this.nbformat = 4; // Increment this when changing the nbformat
         this.nbformat_minor = this.current_nbformat_minor = 0; // Increment this when changing the nbformat
-        this.codemirror_mode = 'ipython';
+        this.codemirror_mode = 'text/x-scala';
         this.create_elements();
         this.bind_events();
         this.kernel_selector = null;
@@ -1778,7 +1778,7 @@ define([
         if (this.metadata.language_info !== undefined) {
             var langinfo = this.metadata.language_info;
             // Mode 'null' should be plain, unhighlighted text.
-            var cm_mode = langinfo.codemirror_mode || langinfo.name || 'null';
+            var cm_mode = langinfo.codemirror_mode || langinfo.name || 'scala';
             this.set_codemirror_mode(cm_mode);
         }
 

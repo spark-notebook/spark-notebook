@@ -56,14 +56,18 @@ object NBSerializer {
   case class HeadingCell(metadata:CellMetadata, cell_type:String="heading", source: String, level: Int) extends Cell
   implicit val headingCellFormat = Json.format[HeadingCell]
 
-  case class Metadata(name: String, user_save_timestamp: Date = new Date(0), auto_save_timestamp: Date = new Date(0), language_info:String="scala", trusted:Boolean=true)
+  case class LanguageInfo(name:String, file_extension:String, codemirror_mode:String)
+  implicit val languageInfoFormat:Format[LanguageInfo] = Json.format[LanguageInfo]
+  val scala:LanguageInfo = LanguageInfo("Scala", "scala", "text/x-scala")
+
+  case class Metadata(name: String, user_save_timestamp: Date = new Date(0), auto_save_timestamp: Date = new Date(0), language_info:LanguageInfo=scala, trusted:Boolean=true)
   implicit val metadataFormat:Format[Metadata] = {
     val f = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     val r:Reads[Metadata] = (
       (JsPath \ "name").read[String] and
       (JsPath \ "user_save_timestamp").read[String].map(x => f.parse(x)) and
       (JsPath \ "auto_save_timestamp").read[String].map(x => f.parse(x)) and
-      (JsPath \ "language_info").readNullable[String].map(_.getOrElse("scala")) and
+      (JsPath \ "language_info").readNullable[LanguageInfo].map(_.getOrElse(scala)) and
       (JsPath \ "trusted").readNullable[Boolean].map(_.getOrElse(true))
     )(Metadata.apply _)
 
@@ -72,7 +76,7 @@ object NBSerializer {
         val name = JsString(m.name)
         val user_save_timestamp = JsString(f.format(m.user_save_timestamp))
         val auto_save_timestamp = JsString(f.format(m.auto_save_timestamp))
-        val language_info = JsString(m.language_info)
+        val language_info = languageInfoFormat.writes(m.language_info)
         val trusted = JsBoolean(m.trusted)
         Json.obj(
           "name" → name,

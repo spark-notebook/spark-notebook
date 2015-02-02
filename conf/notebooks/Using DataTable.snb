@@ -3,7 +3,11 @@
     "name" : "Using DataTable",
     "user_save_timestamp" : "2015-01-02T01:10:22.815Z",
     "auto_save_timestamp" : "2015-01-02T01:09:06.871Z",
-    "language_info" : "scala",
+    "language_info" : {
+      "name" : "Scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
     "trusted" : true
   },
   "cells" : [ {

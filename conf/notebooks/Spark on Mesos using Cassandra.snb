@@ -3,7 +3,11 @@
     "name" : "Spark on Mesos using Cassandra",
     "user_save_timestamp" : "2014-12-03T22:12:58.863Z",
     "auto_save_timestamp" : "2014-12-03T22:10:42.476Z",
-    "language_info" : "scala",
+    "language_info" : {
+      "name" : "Scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
     "trusted" : true
   },
   "cells" : [ {

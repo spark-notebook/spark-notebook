@@ -3,7 +3,11 @@
     "name" : "Rudimentary built-in support for shell script",
     "user_save_timestamp" : "2014-12-30T01:45:18.439Z",
     "auto_save_timestamp" : "2014-12-30T01:38:15.913Z",
-    "language_info" : "scala",
+    "language_info" : {
+      "name" : "Scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
     "trusted" : true
   },
   "cells" : [ {
