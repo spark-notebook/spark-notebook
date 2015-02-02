@@ -3,7 +3,11 @@
     "name" : "Spark Configurator",
     "user_save_timestamp" : "2014-11-15T14:53:00.549Z",
     "auto_save_timestamp" : "2014-11-23T16:50:44.642Z",
-    "language_info" : "scala",
+    "language_info" : {
+      "name" : "Scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
     "trusted" : true
   },
   "cells" : [ {

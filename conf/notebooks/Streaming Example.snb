@@ -3,7 +3,11 @@
     "name" : "Streaming Example",
     "user_save_timestamp" : "2014-12-23T00:59:40.737Z",
     "auto_save_timestamp" : "2014-12-23T00:59:01.720Z",
-    "language_info" : "scala",
+    "language_info" : {
+      "name" : "Scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
     "trusted" : true
   },
   "cells" : [ {

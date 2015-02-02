@@ -3,7 +3,11 @@
     "name" : "Using DataTable (with implicits)",
     "user_save_timestamp" : "2015-01-02T01:12:06.189Z",
     "auto_save_timestamp" : "2015-01-02T01:11:00.847Z",
-    "language_info" : "scala",
+    "language_info" : {
+      "name" : "Scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
     "trusted" : true
   },
   "cells" : [ {

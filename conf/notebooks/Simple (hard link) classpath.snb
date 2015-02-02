@@ -3,7 +3,11 @@
     "name" : "Simple (hard link) classpath",
     "user_save_timestamp" : "2014-12-03T21:59:08.437Z",
     "auto_save_timestamp" : "2014-11-22T04:12:36.158Z",
-    "language_info" : "scala",
+    "language_info" : {
+      "name" : "Scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
     "trusted" : true
   },
   "cells" : [ {
