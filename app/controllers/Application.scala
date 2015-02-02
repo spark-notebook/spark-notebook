@@ -77,7 +77,11 @@ object Application extends Controller {
         |      "spec" : {
         |        "language": "Scala",
         |        "display_name": "Apache Spark",
-        |        "language_info": "scala"
+        |        "language_info": {
+        |          "name" : "Scala",
+        |          "file_extension" : "scala",
+        |          "codemirror_mode" : "text/x-scala"
+        |        }
         |      }
         |    }
         |  }
@@ -86,7 +90,6 @@ object Application extends Controller {
       )
     )
   }
-
 
   def createSession() = Action(parse.tolerantJson)/* → posted as urlencoded form oO */ { request =>
     //{"notebook":{"path":"ADAM"},"kernel":{"id":null}}:
@@ -107,7 +110,11 @@ object Application extends Controller {
         |  "kernel": {
         |    "id": "$kernelId",
         |    "name": "spark",
-        |    "language_info": "scala"
+        |    "language_info": {
+        |      "name" : "Scala",
+        |      "file_extension" : "scala",
+        |      "codemirror_mode" : "text/x-scala"
+        |    }
         |  }
         |}
         |""".stripMargin.trim
@@ -272,78 +279,6 @@ object Application extends Controller {
     }
   )
 
-
-
-
-
-
-
-
-
-  def listNotebooks = Action {
-    Ok(nbm.listNotebooks)
-  }
-
-  def newNotebookOld = Action {
-    val name = nbm.newNotebook()
-    Redirect(routes.Application.viewNotebook(name, name))
-  }
-
-  def viewNotebook(name:String, id:String) = Action { request =>
-    Logger.info(s"View notebook. Name is '$name', id id '$id'")
-    val ws_url = s"ws:/${request.host}"
-
-    Ok(views.html.notebook(
-      nbm.name /*project?*/,
-      Map(
-        "base-project-url" -> base_project_url,
-        "base-kernel-url" -> base_kernel_url,
-        "base-observable-url" -> s"$ws_url/$base_observable_url",
-        "read-only" -> read_only,
-        "notebook-id" -> id /*getOrElse nbm.notebookId(name))*/,
-        "notebook-name" -> name
-      )
-    ))
-  }
-
-  def saveNotebookOld(name:String, path:String, force:Boolean) = Action(parse.json) { request =>
-    val notebook = NBSerializer.fromJson(request.body)
-    try {
-      nbm.save(name, path, notebook, force)
-      Ok("saved " + name)
-    } catch {
-      case _ :NotebookExistsException => Conflict
-    }
-  }
-
-  def dlNotebook(name:String, id:String) = Action {
-    getNotebook(id, name, "json")
-  }
-
-  def dlNotebookAsOld(name:String, id:String, format:String) = Action {
-    getNotebook(id, name, format)
-  }
-
-  def createKernel = Action { implicit request:RequestHeader =>
-    startKernel(UUID.randomUUID.toString)
-  }
-
-
-  def openKernelOld(kernelId:String, pchannel:String) =  ImperativeWebsocket.using[JsValue](
-    onOpen = channel => {
-      WebSocketKernelActor.props(channel, pchannel, kernelIdToCalcService(kernelId))
-    },
-    onMessage = (msg, ref) => ref ! msg,
-    onClose = ref => {
-      Logger.info(s"Closing websockets for kernel $kernelId, $pchannel")
-      KernelManager.get(kernelId).foreach{ k =>
-        Logger.info(s"Closing kernel $kernelId, $pchannel")
-        k.shutdown()
-      }
-      ref ! akka.actor.PoisonPill
-    }
-  )
-
   def getNotebook(name: String, path: String, format: String) = {
     try {
       Logger.info(s"getNotebook: name is '$name', path is '$path' and format is '$format'")
@@ -385,28 +320,12 @@ object Application extends Controller {
         }
       }
 
-      response getOrElse NotFound("Notebook not found.")
+      response getOrElse NotFound(s"Notebook '$name' not found at $path.")
     } catch {
       case e: Exception =>
         Logger.error("Error accessing notebook %s".format(name), e)
         InternalServerError
     }
-  }
-
-  def startKernel(kernelId: String)(implicit request:RequestHeader) = {
-    val compilerArgs = config.kernel.compilerArgs.toList
-    val initScripts = config.kernel.initScripts.toList
-    val kernel = new Kernel(config.kernel.config.underlying, kernelSystem)
-    KernelManager.add(kernelId, kernel)
-
-    val service = new CalcWebSocketService(kernelSystem, initScripts, compilerArgs, kernel.remoteDeployFuture)
-    kernelIdToCalcService += kernelId -> service
-
-    val json = Json.obj(
-      "kernel_id" -> kernelId,
-      "ws_url" -> s"ws://${request.host}"
-    )
-    Ok(json)
   }
 
   // util

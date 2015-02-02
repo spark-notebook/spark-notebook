@@ -36,7 +36,7 @@ define([
     cmip
     ) {
     "use strict";
-    
+
     var Cell = cell.Cell;
 
     /* local util for codemirror */
@@ -77,9 +77,9 @@ define([
          *      it will be null and set_kernel has to be called later.
          *  options: dictionary
          *      Dictionary of keyword arguments.
-         *          events: $(Events) instance 
+         *          events: $(Events) instance
          *          config: dictionary
-         *          keyboard_manager: KeyboardManager instance 
+         *          keyboard_manager: KeyboardManager instance
          *          notebook: Notebook instance
          *          tooltip: Tooltip instance
          */
@@ -104,8 +104,8 @@ define([
         this._widgets_live = true;
 
         Cell.apply(this,[{
-            config: $.extend({}, CodeCell.options_default), 
-            keyboard_manager: options.keyboard_manager, 
+            config: $.extend({}, CodeCell.options_default),
+            keyboard_manager: options.keyboard_manager,
             events: this.events}]);
 
         // Attributes we want to override in this subclass.
@@ -125,7 +125,7 @@ define([
                 "Cmd-/" : "toggleComment",
                 "Ctrl-/" : "toggleComment"
             },
-            mode: 'ipython',
+            mode: 'text/x-scala',
             theme: 'ipython',
             matchBrackets: true
         }
@@ -160,7 +160,7 @@ define([
         var prompt = $('<div/>').addClass('prompt input_prompt');
         var inner_cell = $('<div/>').addClass('inner_cell');
         this.celltoolbar = new celltoolbar.CellToolbar({
-            cell: this, 
+            cell: this,
             notebook: this.notebook});
         inner_cell.append(this.celltoolbar.element);
         var input_area = $('<div/>').addClass('input_area');
@@ -193,7 +193,7 @@ define([
             .addClass('close')
             .html('&times;')
             .click(function() {
-                widget_area.slideUp('', function(){ 
+                widget_area.slideUp('', function(){
                     for (var i = 0; i < that.widget_views.length; i++) {
                         var view = that.widget_views[i];
                         view.remove();
@@ -203,7 +203,7 @@ define([
                         view.off('comm:dead', that._widget_dead);
                     }
                     that.widget_views = [];
-                    widget_subarea.html(''); 
+                    widget_subarea.html('');
                 });
             })
             .appendTo(widget_prompt);
@@ -212,9 +212,9 @@ define([
         cell.append(input).append(widget_area).append(output);
         this.element = cell;
         this.output_area = new outputarea.OutputArea({
-            selector: output, 
-            prompt_area: true, 
-            events: this.events, 
+            selector: output,
+            prompt_area: true,
+            events: this.events,
             keyboard_manager: this.keyboard_manager});
         this.completer = new completer.Completer(this, this.events);
     };
@@ -363,8 +363,8 @@ define([
                 this.completer.startCompletion();
                 return true;
             }
-        } 
-        
+        }
+
         // keyboard event wasn't one of those unique to code cells, let's see
         // if it's one of the generic ones (i.e. check edit mode shortcuts)
         return Cell.prototype.handle_codemirror_keyevent.apply(this, [editor, event]);
@@ -413,7 +413,7 @@ define([
             this.kernel.clear_callbacks_for_msg(this.last_msg_id);
         }
         var callbacks = this.get_callbacks();
-        
+
         var old_msg_id = this.last_msg_id;
         this.last_msg_id = this.kernel.execute(this.get_text(), callbacks, {silent: false, store_history: true,
             stop_on_error : stop_on_error});
@@ -424,7 +424,7 @@ define([
         this.render();
         this.events.trigger('execute.CodeCell', {cell: this});
     };
-    
+
     /**
      * Construct the default callbacks for
      * @method get_callbacks
@@ -440,17 +440,17 @@ define([
                 }
             },
             iopub : {
-                output : function() { 
+                output : function() {
                     that.output_area.handle_output.apply(that.output_area, arguments);
-                }, 
-                clear_output : function() { 
+                },
+                clear_output : function() {
                     that.output_area.handle_clear_output.apply(that.output_area, arguments);
-                }, 
+                },
             },
             input : $.proxy(this._handle_input_request, this)
         };
     };
-    
+
     CodeCell.prototype._open_with_pager = function (payload) {
         this.events.trigger('open_with_text.Pager', payload);
     };
@@ -499,7 +499,7 @@ define([
         // Always execute, even if we are already in the rendered state
         return cont;
     };
-    
+
     CodeCell.prototype.select_all = function () {
         var start = {line: 0, ch: 0};
         var nlines = this.code_mirror.lineCount();

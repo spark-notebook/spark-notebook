@@ -31,7 +31,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
 
   def notebookFile(name: String) = {
     val basePath = notebookDir.getCanonicalPath
-    val fileName = name + extension//URLEncoder.encode(name, "UTF-8") + extension
+    val fileName = URLDecoder.decode(name) + extension//URLEncoder.encode(name, "UTF-8") + extension
     val nbFile = new File(basePath, fileName)
     Logger.info(s"Load notebook. canonical file path: ${nbFile.getCanonicalPath}")
     /* This check is probably not strictly necessary due to URL encoding of name (should escape any path traversal components), but let's be safe */
@@ -68,7 +68,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
    */
   def getNotebook(name: String, path: String) = {
     val nameToUse = name
-    Logger.info(s"getNotebook $name")
+    Logger.info(s"getNotebook $name at path $path")
     for (notebook <- load(nameToUse)) yield {
       val data = FileUtils.readFileToString(notebookFile(nameToUse))
       val df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss z'('Z')'")
