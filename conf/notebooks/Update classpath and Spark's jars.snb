@@ -3,7 +3,11 @@
     "name" : "Update classpath and Spark's jars",
     "user_save_timestamp" : "2202-01-31T14:58:20.607Z",
     "auto_save_timestamp" : "2015-01-14T14:53:53.626Z",
-    "language_info" : "scala",
+    "language_info" : {
+      "name" : "Scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
     "trusted" : true
   },
   "cells" : [ {

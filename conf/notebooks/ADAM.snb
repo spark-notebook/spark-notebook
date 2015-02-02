@@ -3,7 +3,11 @@
     "name" : "ADAM",
     "user_save_timestamp" : "2015-01-02T15:24:17.387Z",
     "auto_save_timestamp" : "2015-01-02T13:22:01.751Z",
-    "language_info" : "scala",
+    "language_info" : {
+      "name" : "Scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
     "trusted" : true
   },
   "cells" : [ {
