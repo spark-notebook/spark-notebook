@@ -65,7 +65,7 @@ class ReplCalculator(initScripts: List[(String, String)], compilerArgs: List[Str
   var repo:File = {
     val tmp = new File(System.getProperty("java.io.tmpdir"))
 
-    val snb = new File(tmp, "scala-notebook")
+    val snb = new File(tmp, "spark-notebook")
     if (!snb.exists) snb.mkdirs
 
     val aether = new File(snb, "aether")

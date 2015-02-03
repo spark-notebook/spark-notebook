@@ -56,7 +56,7 @@ object Deps extends java.io.Serializable {
 
   def parseInclude(s:String):Option[ArtifactMD] = {
     s.headOption.filter(_ != '-').map(_ => s.dropWhile(_=='+').trim).flatMap { line =>
-      line.split("%").toList match {
+      line.replaceAll("\"", "").split("%").toList match {
         case List(g, a, v) =>
           Some(ArtifactMD(g.trim, a.trim, v.trim))
         case _             =>
@@ -72,7 +72,7 @@ object Deps extends java.io.Serializable {
   }
   def parseExclude(s:String):Option[ArtifactSelector] = {
     s.headOption.filter(_ == '-').map(_ => s.dropWhile(_=='-').trim).flatMap { line =>
-      line.split("%").toList match {
+      line.replaceAll("\"", "").split("%").toList match {
         case List(g, a, v) =>
           Some(ArtifactSelector(parsePartialExclude(g), parsePartialExclude(a), parsePartialExclude(v)))
         case _             =>
