@@ -238,7 +238,8 @@ return new function () {
     };
   };
 
-  setTimeout(function() { this.start(); }, 1); //avoid pre-init of IPython → .kernel.id is null
+  var me = this;
+  setTimeout(function() { me.start(); }, 1); //avoid pre-init of IPython → .kernel.id is null
 };
 
 });
