@@ -218,17 +218,17 @@ return new function () {
       $(this).remove();
 
       function req(requirements, callback) {
-        require(requirements, function () { 
-          callback.apply(scope, arguments); 
+        require(requirements, function () {
+          callback.apply(scope, arguments);
         });
       }
 
-      return function () { 
-        (function() { 
-          with (data) { 
-            eval(source); 
-          } 
-        }).call(scope); 
+      return function () {
+        (function() {
+          with (data) {
+            eval(source);
+          }
+        }).call(scope);
       };
     });
     return function () {
@@ -238,7 +238,7 @@ return new function () {
     };
   };
 
-  this.start();
+  setTimeout(function() { this.start(); }, 1); //avoid pre-init of IPython → .kernel.id is null
 };
 
 });
