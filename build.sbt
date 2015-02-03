@@ -67,6 +67,7 @@ libraryDependencies ++= Seq(
   //   not been loaded. IvyNode = org.apache.commons#commons-exec;1.1
   //   encountered when using hadoop "2.0.0-cdh4.2.0"
   commonsExec,
+  commonsCodec,
   ningAsyncHttpClient, // for aether to work...
   "org.scala-lang" % "scala-library" % "2.10.4",
   "org.scala-lang" % "scala-reflect" % "2.10.4",

@@ -15,6 +15,8 @@ import notebook.NBSerializer._
 
 class NotebookManager(val name: String, val notebookDir: File) {
 
+  Logger.info("Notebook directory is: " + notebookDir.getCanonicalPath)
+
   val extension = ".snb"
 
   def listNotebooks = {
