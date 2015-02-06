@@ -40,7 +40,7 @@ object Repos extends java.io.Serializable {
   def s3(id:String, name:String, url:String, key:String, secret:String) = Repos.apply(id, name, url, Some(key), Some(secret))
 }
 
-case class ArtifactMD(group:String, artifact:String, version:String)
+case class ArtifactMD(group:String, artifact:String, version:String, extension:Option[String]=None, classifier:Option[String]=None)
 case class ArtifactSelector(group:Option[String]=None, artifact:Option[String]=None, version:Option[String]=None)
 object ArtifactSelector {
   def apply(group:String, artifact:String, version:String):ArtifactSelector =
@@ -59,6 +59,8 @@ object Deps extends java.io.Serializable {
       line.replaceAll("\"", "").split("%").toList match {
         case List(g, a, v) =>
           Some(ArtifactMD(g.trim, a.trim, v.trim))
+        case List(g, a, v, p) =>
+          Some(ArtifactMD(g.trim, a.trim, v.trim, Some(p.trim)))
         case _             =>
           None
       }
@@ -101,9 +103,9 @@ object Deps extends java.io.Serializable {
       def accept(node:DependencyNode, parents:java.util.List[DependencyNode] ):Boolean = {
         val ex = exclusions exists { case f =>
                   val na = node.getDependency.getArtifact
-                  val a = ArtifactMD(na.getGroupId, na.getArtifactId, na.getVersion)
+                  val a = ArtifactMD(na.getGroupId, na.getArtifactId, na.getVersion, Option(na.getExtension))
                   val sa = parents.map(n => n.getDependency.getArtifact)
-                                  .map(na => ArtifactMD(na.getGroupId, na.getArtifactId, na.getVersion))
+                                  .map(na => ArtifactMD(na.getGroupId, na.getArtifactId, na.getVersion, Option(na.getExtension)))
                                   .toSet
                   f.isDefinedAt((a, sa)) && f(a, sa)
                 }
@@ -111,7 +113,7 @@ object Deps extends java.io.Serializable {
       }
     }
 
-    val artifact = new DefaultArtifact(include.group, include.artifact, "", "jar", include.version)
+    val artifact = new DefaultArtifact(include.group, include.artifact, "", include.extension.getOrElse("jar"), include.version)
     val deps:Set[Artifact] =  new Aether(remotes, repo).resolve(
                                 artifact,
                                 "runtime",
