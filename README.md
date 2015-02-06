@@ -53,7 +53,10 @@ Long story short, there are several ways to start the spark notebook quickly (ev
  * Docker image
  * DEB package
 
-However, there are several flavors for these distribtions that depends on the Spark version and Hadoop version you are using.
+However, there are several flavors for these distributions that depends on the Spark version and Hadoop version you are using.
+
+#### Requirements
+* Make sure you're running at least Java 7 (`sudo apt-get install openjdk-7-jdk`).
 
 #### ZIP
 The zip distributions are publicly available in the bucket: <a href="http://s3.eu-central-1.amazonaws.com/spark-notebook/index.html">s3://spark-notebook</a>.
