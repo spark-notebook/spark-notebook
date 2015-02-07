@@ -183,7 +183,7 @@ class ReplCalculator(initScripts: List[(String, String)], compilerArgs: List[Str
                 log.debug(s"Received sql code: [$n] $sql")
                 val qs = "\"\"\""
                 //if (!sqlGen.parts.isEmpty) {
-                  val name = Option(n).map(nm => s"val $nm = ").getOrElse ("")
+                  val name = Option(n).map(nm => s"@transient val $nm = ").getOrElse ("")
                   val c = s"""
                     import notebook.front.widgets.Sql
                     import notebook.front.widgets.Sql._
@@ -208,7 +208,7 @@ class ReplCalculator(initScripts: List[(String, String)], compilerArgs: List[Str
     log.info("ReplCalculator preStart")
 
     val dummyScript = ("dummy", () => s"""val dummy = ();\n""")
-    val SparkHookScript = ("class server", () => s"""val _5C4L4_N0T3800K_5P4RK_HOOK = "${repl.classServerUri.get}";\n""")
+    val SparkHookScript = ("class server", () => s"""@transient val _5C4L4_N0T3800K_5P4RK_HOOK = "${repl.classServerUri.get}";\n""")
 
     def eval(script: () => String):Unit = {
       val sc = script()
