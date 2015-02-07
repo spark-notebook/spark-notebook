@@ -49,6 +49,30 @@
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
+    "source" : "## Setting up the running env."
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Setting Spark with ADAM libs (this has to be done first because it resets variables)"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : ":local-repo /tmp/spark-notebook/repo",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : ":dp org.bdgenomics.adam % adam-apis % 0.15.0\n- org.apache.hadoop % hadoop-client %   _\n- org.apache.spark  %     _         %   _\n- org.scala-lang    %     _         %   _\n- org.scoverage     %     _         %   _",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
     "source" : "## The process"
   }, {
     "metadata" : { },
@@ -84,31 +108,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val adamFileOnS3 = \"s3://med-at-scale/1000genomes/ALL.chr1.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.adam\"",
-    "outputs" : [ ]
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "## Setting up the running env."
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "Setting Spark with ADAM libs"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : ":local-repo /tmp/spark-notebook/repo",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : ":dp org.bdgenomics.adam % adam-apis % 0.15.0\n- org.apache.hadoop % hadoop-client %   _\n- org.apache.spark  %     _         %   _\n- org.scala-lang    %     _         %   _\n- org.scoverage     %     _         %   _",
+    "source" : "val adamFileOnS3 = \"s3n://med-at-scale/1000genomes/ALL.chr1.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.adam\"",
     "outputs" : [ ]
   }, {
     "metadata" : { },
