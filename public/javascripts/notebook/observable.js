@@ -1,4 +1,4 @@
-define(['jquery', 'knockout', 'equiv'], function ($, ko, equiv) {
+define(['jquery', 'base/js/events', 'knockout', 'equiv'], function ($, events, ko, equiv) {
 
 return new function () {
 
@@ -239,7 +239,15 @@ return new function () {
   };
 
   var me = this;
-  setTimeout(function() { me.start(); }, 1); //avoid pre-init of IPython → .kernel.id is null
+  if (IPython.notebook && IPython.notebook.kernel && IPython.notebook.kernel.id) {
+      me.start();
+  } else {
+    events.on('app_initialized.NotebookApp', function(o) {
+      alert("ok")
+      me.start(); //avoid pre-init of IPython → .kernel.id is null
+    });
+  }
+
 };
 
 });
