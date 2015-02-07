@@ -9,10 +9,16 @@ Spark Notebook
 <!-- MarkdownTOC depth=4 autolink=true bracket=round -->
 
 - [Description](#description)
+  - [Discussions](#discussions)
+  - [Mailing list](#mailing-list)
+    - [Spark Notebook Dev](#spark-notebook-dev)
+    - [Spark Notebook User](#spark-notebook-user)
 - [Launch](#launch)
   - [Using a release](#using-a-release)
+    - [Requirements](#requirements)
     - [ZIP](#zip)
     - [Docker](#docker)
+    - [boot2docker (Mac OS X)](#boot2docker-mac-os-x)
     - [DEB](#deb)
   - [From the sources](#from-the-sources)
     - [Procedure](#procedure)
@@ -33,6 +39,8 @@ Spark Notebook
   - [Update _Notebook_ `ClassPath`](#update-_notebook_-classpath)
   - [Update __Spark__ dependencies (`spark.jars`)](#update-__spark__-dependencies-sparkjars)
 - [IMPORTANT](#important)
+- [KNOWN ISSUES](#known-issues)
+  - [`User limit of inotify watches reached`](#user-limit-of-inotify-watches-reached)
 
 <!-- /MarkdownTOC -->
 
@@ -43,6 +51,24 @@ The main intent of this tool is to create [reproducible analysis](http://simplys
 This is achieved through an interactive web-based editor that can combine Scala code, SQL queries, Markup or even JavaScript in a collaborative manner.
 
 The usage of Spark comes out of the box, and is simply enabled by the implicit variable named `sparkContext`.
+
+### Discussions
+C'mon on [gitter](https://gitter.im/andypetrella/spark-notebook?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)!
+
+### Mailing list
+There are two different mailing lists, each aiming to specific discussions:
+
+#### Spark Notebook Dev
+
+Then [spark-notebook-dev](https://groups.google.com/forum/?hl=fr#!forum/spark-notebook-dev) mailing list for all threads regarding implementation, architecture, features and what not related to fix or enhance the project.
+
+Email: [spark-notebook-dev@googlegroups.com](mailto:spark-notebook-dev@googlegroups.com).
+
+#### Spark Notebook User
+
+The [spark-notebook-user](https://groups.google.com/forum/?hl=fr#!forum/spark-notebook-user) is for almost everything else than dev, which are questions, bugs, complains, or hopefully some kindness :-D.
+
+Email: [spark-notebook-user@googlegroups.com](mailto:spark-notebook-user@googlegroups.com).
 
 Launch
 ------
@@ -65,9 +91,9 @@ The zip distributions are publicly available in the bucket: <a href="http://s3.e
 
 Here is an example how to use it:
 ```
-wget https://s3.eu-central-1.amazonaws.com/spark-notebook/zip/spark-notebook-0.1.4-spark-1.2.0-hadoop-1.0.4.zip
-unzip spark-notebook-0.1.4-spark-1.2.0-hadoop-1.0.4.zip
-cd spark-notebook-0.1.4-spark-1.2.0-hadoop-1.0.4
+wget https://s3.eu-central-1.amazonaws.com/spark-notebook/zip/spark-notebook-0.2.0-spark-1.2.0-hadoop-1.0.4.zip
+unzip spark-notebook-0.2.0-spark-1.2.0-hadoop-1.0.4.zip
+cd spark-notebook-0.2.0-spark-1.2.0-hadoop-1.0.4
 ./bin/spark-notebook
 ```
 
@@ -77,17 +103,25 @@ If you're a Docker user, the following procedure will be even simpler!
 **Checkout** the needed version <a href="https://registry.hub.docker.com/u/andypetrella/spark-notebook/tags/manage/">here</a>.
 
 ```
-docker pull andypetrella/spark-notebook:0.1.4-spark-1.2.0-hadoop-1.0.4
-docker run -p 9000:9000 andypetrella/spark-notebook:0.1.4-spark-1.2.0-hadoop-1.0.4
+docker pull andypetrella/spark-notebook:0.2.0-spark-1.2.0-hadoop-1.0.4
+docker run -p 9000:9000 andypetrella/spark-notebook:0.2.0-spark-1.2.0-hadoop-1.0.4
 ```
+
+#### boot2docker (Mac OS X)
+On Mac OS X, you need something like _boot2docker_ to use docker. However, port forwarding needs an extra command necessary for it to work (cf [this](http://stackoverflow.com/questions/28381903/spark-notebook-not-loading-with-docker) and [this](http://stackoverflow.com/questions/21653164/map-ports-so-you-can-access-docker-running-apps-from-osx-host) SO questions).
+
+```
+VBoxManage modifyvm "boot2docker-vm" --natpf1 "tcp-port9000,tcp,,9000,,9000"
+```
+
 
 #### DEB
-Using debian packages is one of the standard, hence the spark notebook is also available in this form (from v0.1.4):
+Using debian packages is one of the standard, hence the spark notebook is also available in this form (from v0.2.0):
 
 
 ```
-wget https://s3.eu-central-1.amazonaws.com/spark-notebook/deb/spark-notebook-0.1.4-spark-1.2.0-hadoop-1.0.4_all.deb
-sudo dpkg -i spark-notebook-0.1.4-spark-1.2.0-hadoop-1.0.4.zip
+wget https://s3.eu-central-1.amazonaws.com/spark-notebook/deb/spark-notebook-0.2.0-spark-1.2.0-hadoop-1.0.4_all.deb
+sudo dpkg -i spark-notebook-0.2.0-spark-1.2.0-hadoop-1.0.4.zip
 sudo spark-notebook
 ```
 
