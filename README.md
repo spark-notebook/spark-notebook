@@ -66,7 +66,7 @@ Email: [spark-notebook-dev@googlegroups.com](mailto:spark-notebook-dev@googlegro
 
 #### Spark Notebook User
 
-The [spark-notebook-user](https://groups.google.com/forum/?hl=fr#!forum/spark-notebook-user) is for almost everything else than dev, which are questions, bugs, complains, or hopefully grantings :-D.
+The [spark-notebook-user](https://groups.google.com/forum/?hl=fr#!forum/spark-notebook-user) is for almost everything else than dev, which are questions, bugs, complains, or hopefully some kindness :-D.
 
 Email: [spark-notebook-user@googlegroups.com](mailto:spark-notebook-user@googlegroups.com).
 
