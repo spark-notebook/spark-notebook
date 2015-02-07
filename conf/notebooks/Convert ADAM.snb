@@ -21,6 +21,18 @@
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
+    "source" : "Setting Spark with ADAM libs"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : ":dp org.bdgenomics.adam % adam-apis % 0.15.0\n- org.apache.hadoop % hadoop-client %   _\n- org.apache.spark  %     _         %   _\n- org.scala-lang    %     _         %   _\n- org.scoverage     %     _         %   _",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
     "source" : "Check the master name to construct the HDFS and configure Spark"
   }, {
     "metadata" : {
@@ -41,18 +53,6 @@
     },
     "cell_type" : "code",
     "source" : "def hu(s:String) = s\"hdfs://$master:9010/temp/$s\"\nval vcfFile = hu(\"ALL.chr1.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf\")\nval outputFile = vcfFile+\".adam\"  ",
-    "outputs" : [ ]
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "Setting Spark with ADAM libs"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "collapsed" : true
-    },
-    "cell_type" : "code",
-    "source" : ":dp org.bdgenomics.adam % adam-apis % 0.15.0\n- org.apache.hadoop % hadoop-client %   _\n- org.apache.spark  %     _         %   _\n- org.scala-lang    %     _         %   _\n- org.scoverage     %     _         %   _",
     "outputs" : [ ]
   }, {
     "metadata" : { },
