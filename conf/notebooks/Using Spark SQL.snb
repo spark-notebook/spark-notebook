@@ -1,0 +1,152 @@
+{
+  "metadata" : {
+    "name" : "Using Spark SQL",
+    "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "language_info" : {
+      "name" : "Scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true
+  },
+  "cells" : [ {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "case class Quote(stock:String, date:String, price:Double) extends java.io.Serializable",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "defined class Quote\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 1
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "//define sql context\nval sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)\n\n// createSchemaRDD is used to implicitly convert an RDD to a SchemaRDD.\nimport sqlContext.createSchemaRDD",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "sqlContext: org.apache.spark.sql.SQLContext = org.apache.spark.sql.SQLContext@3d809896\nimport sqlContext.createSchemaRDD\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 2
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "def $(k:String)=sys.env(k)\nval hadoopConf = sparkContext.hadoopConfiguration;\nhadoopConf.set(\"fs.s3n.impl\", \"org.apache.hadoop.fs.s3native.NativeS3FileSystem\")\nhadoopConf.set(\"fs.s3.awsAccessKeyId\", $(\"AWS_ACCESS_KEY_ID\"))\nhadoopConf.set(\"fs.s3.awsSecretAccessKey\", $(\"AWS_SECRET_ACCESS_KEY\"))\nhadoopConf.set(\"fs.s3n.awsAccessKeyId\", $(\"AWS_ACCESS_KEY_ID\"))\nhadoopConf.set(\"fs.s3n.awsSecretAccessKey\", $(\"AWS_SECRET_ACCESS_KEY\"))\n()",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "$: (k: String)String\nhadoopConf: org.apache.hadoop.conf.Configuration = Configuration: core-default.xml, core-site.xml, mapred-default.xml, mapred-site.xml\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 3
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val quotes = sparkContext//.textFile(\"/home/noootsab/data/closes.csv\")\n                         .textFile(\"s3n://spark-notebook-data/closes.csv\")\n                         .map(_.split(\",\").toList)\n                         .map{ case s::d::p::Nil => Quote(s, d, p.toDouble) }\n                         .persist(org.apache.spark.storage.StorageLevel.DISK_ONLY)\nquotes.name = \"quotes\"",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "<console>:34: warning: match may not be exhaustive.\nIt would fail on the following input: List(_, _, _, _)\n                                .map{ case s::d::p::Nil => Quote(s, d, p.toDouble) }\n                                    ^\nquotes: org.apache.spark.rdd.RDD[Quote] = quotes MappedRDD[3] at map at <console>:34\nquotes.name: String = quotes\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "quotes"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 4
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "//quotes.count",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "quotes.registerTempTable(\"quotes\")",
+    "outputs" : [ {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 6
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : ":sql[byDate] SELECT date, count(*) as c FROM quotes WHERE date >= '{String: date}' and price >= {Int: price} GROUP BY date",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import notebook.front.widgets.Sql\nimport notebook.front.widgets.Sql._\nbyDate: notebook.front.widgets.Sql = <Sql widget>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<label for=\"input-anon3aa2b784da57e9926961ff053bf6c71c\">date</label><input id=\"input-anon3aa2b784da57e9926961ff053bf6c71c\" type=\"text\" name=\"input-anon3aa2b784da57e9926961ff053bf6c71c\" data-bind=\"value: value\"><script data-selector=\"#input-anon3aa2b784da57e9926961ff053bf6c71c\" data-this=\"{&quot;valueId&quot;:&quot;anon3aa2b784da57e9926961ff053bf6c71c&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req( ['observable', 'knockout'],\n                            function (Observable, ko) {\n                              //console.log(\"-----------\")\n                              //console.dir(this);\n                              //console.dir(valueId);\n                              ko.applyBindings({\n                                value: Observable.makeObservable(valueId)\n                              }, this);\n                            }\n                          )/*]]>*/</script></input><label for=\"input-anonf1da844ff756771e893ac4bcb99d651d\">price</label><input id=\"input-anonf1da844ff756771e893ac4bcb99d651d\" type=\"number\" name=\"input-anonf1da844ff756771e893ac4bcb99d651d\" data-bind=\"value: value\"><script data-selector=\"#input-anonf1da844ff756771e893ac4bcb99d651d\" data-this=\"{&quot;valueId&quot;:&quot;anonf1da844ff756771e893ac4bcb99d651d&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req( ['observable', 'knockout'],\n                            function (Observable, ko) {\n                              //console.log(\"-----------\")\n                              //console.dir(this);\n                              //console.dir(valueId);\n                              ko.applyBindings({\n                                value: Observable.makeObservable(valueId)\n                              }, this);\n                            }\n                          )/*]]>*/</script></input><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon532558fa0dc233bb4c132ef07921c965&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/ req(\n              ['observable', 'knockout'],\n              function (O, ko) {\n                ko.applyBindings({\n                    value: O.makeObservable(valueId)\n                  },\n                  this\n                );\n              }\n            );\n        /*]]>*/</script></p>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 7
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "byDate.react[String](\n  rddResult => rddResult.collect().toList.toString,// → change date to Long then keep count as Long\n  out//use wisp updated with result of the previous function\n)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res4: notebook.front.SingleConnectedWidget[String] = <anon$1 widget>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon63305547819d78278293dd9e9558ae11&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\n            req(\n              ['observable', 'knockout'],\n              function (O, ko) {\n                ko.applyBindings({\n                    value: O.makeObservable(valueId)\n                  },\n                  this\n                );\n              }\n            );\n        /*]]>*/</script></p>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 8
+    } ]
+  } ],
+  "nbformat" : 4
+}
