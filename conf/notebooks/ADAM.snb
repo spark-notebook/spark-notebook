@@ -24,6 +24,14 @@
       "collapsed" : true
     },
     "cell_type" : "code",
+    "source" : ":dp org.bdgenomics.adam % adam-apis % 0.15.0\n- org.apache.hadoop % hadoop-client %   _\n- org.apache.spark  %     _         %   _\n- org.scala-lang    %     _         %   _\n- org.scoverage     %     _         %   _",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
     "source" : "import sys.process._\nval master = (\"ec2-metadata --public-hostname\"!!).drop(\"public-hostname: \".size).mkString.trim",
     "outputs" : [ ]
   }, {
@@ -33,14 +41,6 @@
     },
     "cell_type" : "code",
     "source" : "def hu(s:String) = s\"hdfs://$master:9010/temp/$s\"",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "collapsed" : true
-    },
-    "cell_type" : "code",
-    "source" : ":dp org.bdgenomics.adam % adam-apis % 0.15.0\n- org.apache.hadoop % hadoop-client %   _\n- org.apache.spark  %     _         %   _\n- org.scala-lang    %     _         %   _\n- org.scoverage     %     _         %   _",
     "outputs" : [ ]
   }, {
     "metadata" : {
