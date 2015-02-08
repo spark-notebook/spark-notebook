@@ -58,7 +58,7 @@ object NBSerializer {
 
   case class LanguageInfo(name:String, file_extension:String, codemirror_mode:String)
   implicit val languageInfoFormat:Format[LanguageInfo] = Json.format[LanguageInfo]
-  val scala:LanguageInfo = LanguageInfo("Scala", "scala", "text/x-scala")
+  val scala:LanguageInfo = LanguageInfo("scala", "scala", "text/x-scala")
 
   case class Metadata(name: String, user_save_timestamp: Date = new Date(0), auto_save_timestamp: Date = new Date(0), language_info:LanguageInfo=scala, trusted:Boolean=true)
   implicit val metadataFormat:Format[Metadata] = {

@@ -4597,7 +4597,7 @@
   option("indentUnit", 2, loadMode, true);
   option("indentWithTabs", false);
   option("smartIndent", true);
-  option("tabSize", 4, function(cm) {
+  option("tabSize", 2, function(cm) {
     resetModeState(cm);
     clearCaches(cm);
     regChange(cm);

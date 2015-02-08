@@ -34,7 +34,7 @@ class WebSocketKernelActor(channel: Concurrent.Channel[JsValue], val pchannel:St
           ws.send(header, session, "info", "shell",
                   Json.obj(
                       "language_info" -> Json.obj(
-                        "name"            → "Scala",
+                        "name"            → "scala",
                         "file_extension"  → "scala",
                         "codemirror_mode" → "text/x-scala"
                       ),
