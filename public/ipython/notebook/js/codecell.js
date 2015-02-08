@@ -20,6 +20,7 @@ define([
     'notebook/js/completer',
     'notebook/js/celltoolbar',
     'codemirror/lib/codemirror',
+    'codemirror/mode/clike/clike',
     'codemirror/mode/python/python',
     'notebook/js/codemirror-ipython'
 ], function(IPython,

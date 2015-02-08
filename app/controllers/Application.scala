@@ -75,10 +75,11 @@ object Application extends Controller {
         |      "name": "spark",
         |      "resources": {},
         |      "spec" : {
-        |        "language": "Scala",
+        |        "language": "scala",
         |        "display_name": "Apache Spark",
+        |
         |        "language_info": {
-        |          "name" : "Scala",
+        |          "name" : "scala",
         |          "file_extension" : "scala",
         |          "codemirror_mode" : "text/x-scala"
         |        }
