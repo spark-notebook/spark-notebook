@@ -21,7 +21,7 @@
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "This notebook is the foundation of a talk give at [Scala IO 2014]() by [@xtordoir](https://twitter.com/xtordoir) and [@noootsab](https://twitter.com/noootsab).\n\nThe idea was to explore the possibilities offered by the combination of Apache Spark and ADAM. \nExploration was the only purpose, hence the analysis by itself is known to have flaws but it is enough to validate the interest they are still pushing in ADAM. "
+    "source" : "This notebook is the foundation of a talk give at [Scala IO 2014](http://www.slideshare.net/noootsab/lightning-fast-genomics-with-spark-adam-and-scala) by [@xtordoir](https://twitter.com/xtordoir) and [@noootsab](https://twitter.com/noootsab).\n\nThe idea was to explore the possibilities offered by the combination of Apache Spark and ADAM. \nExploration was the only purpose, hence the analysis by itself is known to have flaws but it is enough to validate the interest they are still pushing in ADAM. "
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
