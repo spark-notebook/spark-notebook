@@ -22,6 +22,7 @@ object Shared {
     libraryDependencies <++= (sparkVersion, hadoopVersion, jets3tVersion) { (sv, hv, jv) =>
       val libs = Seq(
         //sparkRepl(sv), → spark-repl:1.2.0 not yet published → lib/spark-repl_2.10-1.2.0-notebook.jar to be used
+        breeze,
         sparkSQL(sv),
         hadoopClient(hv),
         jets3t(jv)
