@@ -1,15 +1,21 @@
 package notebook.util
 
-import scala.collection.JavaConversions._
-import com.jcabi.aether.Aether
 import java.util.Arrays
+
+import scala.collection.JavaConversions._
+import scala.util.Try
+
+import com.typesafe.config.{ConfigFactory, Config}
+
 import org.apache.maven.project.MavenProject
-import org.sonatype.aether.repository.RemoteRepository
+import org.sonatype.aether.repository.{RemoteRepository, Proxy => AetherProxy}
 import org.sonatype.aether.repository.Authentication
 import org.sonatype.aether.artifact.Artifact
 import org.sonatype.aether.util.artifact.DefaultArtifact
 import org.sonatype.aether.graph._
 import org.sonatype.aether.util.filter.ExclusionsDependencyFilter
+import com.jcabi.aether.Aether
+
 
 object Repos extends java.io.Serializable {
   @transient val central = new RemoteRepository(
@@ -24,6 +30,9 @@ object Repos extends java.io.Serializable {
     "https://oss.sonatype.org/content/repositories/releases/"
   )
 
+  val config = ConfigFactory.load().getConfig("remote-repos")
+  val proxy = Try(config.getConfig("proxy")).toOption
+
   // helper
   def apply(id:String, name:String, url:String, username:Option[String] = None, password:Option[String] = None) = {
     val r = new RemoteRepository(id, name, url)
@@ -32,6 +41,19 @@ object Repos extends java.io.Serializable {
       p <- password
     } {
       r.setAuthentication(new Authentication(u, p))
+    }
+    for {
+      p        <- proxy
+      protocol <- Try(p.getString("protocol")).toOption
+      host     <- Try(p.getString("host")).toOption
+      port     <- Try(p.getInt("port")).toOption
+    } {
+      val auth = (for {
+        username <- Try(p.getString("username")).toOption
+        password <- Try(p.getString("password")).toOption
+      } yield new Authentication(username, password)).getOrElse(null)
+      val px = new AetherProxy(protocol, host, port, auth)
+      r.setProxy(px)
     }
     r
   }
@@ -122,7 +144,6 @@ object Deps extends java.io.Serializable {
 
     val newJars = deps.map(_.getFile.getPath).toSet.toList
     newJars
-
   }
 
 }

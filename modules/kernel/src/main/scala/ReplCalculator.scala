@@ -109,7 +109,6 @@ class ReplCalculator(initScripts: List[(String, String)], compilerArgs: List[Str
                       (Some(u), Some(p))
                     case _                             => (None, None)
                   }
-
                 }.getOrElse((None, None))
                 val rem = Repos(id.trim,tpe.trim,url.trim,username,password)
                 remotes = rem :: remotes
