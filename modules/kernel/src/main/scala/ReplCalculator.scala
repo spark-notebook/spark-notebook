@@ -3,6 +3,8 @@ package client
 
 import java.io.{File, FileWriter}
 
+import scala.util.{Try, Success=>TSuccess, Failure=>TFailure}
+
 import akka.actor.{ActorLogging, Props, Actor}
 import kernel._
 
@@ -105,7 +107,7 @@ class ReplCalculator(initScripts: List[(String, String)], compilerArgs: List[Str
                       val u = if (username.startsWith("$")) sys.env.get(username.tail).get else username
                       val p = if (password.startsWith("$")) sys.env.get(password.tail).get else password
                       (Some(u), Some(p))
-                    case _                        => (None, None)
+                    case _                             => (None, None)
                   }
 
                 }.getOrElse((None, None))
@@ -129,31 +131,39 @@ class ReplCalculator(initScripts: List[(String, String)], compilerArgs: List[Str
                 val excludes = lines map (Deps.parseExclude _) collect { case Some(x) => x }
                 val excludesFns = excludes map (Deps.transitiveExclude _)
 
-                val deps = includes.flatMap(a => Deps.resolve(a, excludesFns)(remotes, repo)).toList
-
-                repl.evaluate("""
-                  sparkContext.stop()
-                """)._1 match {
-                  case Failure(str) =>
-                    log.error("Error in :cp: \n%s".format(str))
-                  case _ =>
-                    log.info("CP reload processed successfully")
+                val tryDeps:Try[List[String]] = includes.foldLeft(Try(List.empty[String])) { case (t, a) =>
+                  t flatMap { l => Try(l ::: Deps.resolve(a, excludesFns)(remotes, repo)) }
                 }
-                val (_r, replay) = repl.addCp(deps)
-                _repl = Some(_r)
-                preStartLogic()
-                replay()
 
-                s"""
-                  |//updating deps
-                  |jars = (${ deps.mkString("List(\"", "\",\"", "\")") } ::: jars.toList).distinct.toArray
-                  |//restarting spark
-                  |reset()
-                  |
-                  |<pre onclick='this.style.display=(this.style.display=="block")?"none":"block"'>Spark resetting with jars :
-                  |{ jars.mkString("\\n") }
-                  |</pre>
-                """.stripMargin
+                tryDeps match {
+                  case TSuccess(deps) =>
+                    repl.evaluate("""
+                      sparkContext.stop()
+                    """)._1 match {
+                      case Failure(str) =>
+                        log.error("Error in :dp: \n%s".format(str))
+                      case _ =>
+                        log.info("CP reload processed successfully")
+                    }
+                    val (_r, replay) = repl.addCp(deps)
+                    _repl = Some(_r)
+                    preStartLogic()
+                    replay()
+
+                    s"""
+                      |//updating deps
+                      |jars = (${ deps.mkString("List(\"", "\",\"", "\")") } ::: jars.toList).distinct.toArray
+                      |//restarting spark
+                      |reset()
+                      |
+                      |<pre onclick='this.style.display=(this.style.display=="block")?"none":"block"'>Spark resetting with jars :
+                      |{ jars.mkString("\\n") }
+                      |</pre>
+                    """.stripMargin
+                  case TFailure(ex) =>
+                    log.error(ex, "Cannot add dependencies")
+                    s""" <p style="color:red">${ex.getMessage}</p> """
+                }
 
               case cpRegex(cp) =>
                 val jars = cp.trim().split("\n").toList.map(_.trim()).filter(_.size > 0)
