@@ -10,14 +10,11 @@ GET     /api/config/common                                            controller
 GET     /api/config/notebook                                          controllers.Application.configNotebook()
 GET     /api/kernelspecs                                              controllers.Application.kernelSpecs()
 
-GET     /ws/api/kernels/:kernelId/channels                            controllers.Application.openKernel(kernelId:String, session_id:String)
-
 POST    /api/sessions                                                 controllers.Application.createSession()
-
-GET     /clusters                                                     controllers.Application.clusters()
-
-
 GET     /api/sessions                                                 controllers.Application.sessions()
+
+POST    /api/kernels/:kernelId/restart                                controllers.Application.restartKernel(kernelId:String)
+
 
 GET     /api/contents/                                                controllers.Application.contents(type:String)
 GET     /api/contents/:snb                                            controllers.Application.content(type:String, snb:String)
@@ -28,14 +25,19 @@ POST    /api/contents/                                                controller
 PATCH   /api/contents/:snb                                            controllers.Application.renameNotebook(snb:String)
 PUT     /api/contents/:snb                                            controllers.Application.saveNotebook(snb:String)
 
+
 GET     /notebooks/:snb                                               controllers.Application.openNotebook(snb:String)
 GET     /edit/:snb                                                    controllers.Application.openNotebook(snb:String)
 
 GET     /files/*path                                                  controllers.Application.dlNotebookAs(path:String, format:String="json")
 GET     /nbconvert/:format/*path                                      controllers.Application.dlNotebookAs(path:String, format:String)
 
+GET     /clusters                                                     controllers.Application.clusters()
 
+
+# Web Sockets
 GET     /ws/observable/:contextId                                     controllers.Application.openObservable(contextId:String)
+GET     /ws/api/kernels/:kernelId/channels                            controllers.Application.openKernel(kernelId:String)
 
 
 # Map static resources from the /public folder to the /assets URL path

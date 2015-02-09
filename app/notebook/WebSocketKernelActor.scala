@@ -11,11 +11,11 @@ import notebook.server._
 import notebook.client._
 
 object WebSocketKernelActor {
-  def props(channel: Concurrent.Channel[JsValue], pchannel:String, calcService:CalcWebSocketService)(implicit system:ActorSystem):ActorRef =
-    system.actorOf(Props(new WebSocketKernelActor(channel, pchannel, calcService)))
+  def props(channel: Concurrent.Channel[JsValue], calcService:CalcWebSocketService)(implicit system:ActorSystem):ActorRef =
+    system.actorOf(Props(new WebSocketKernelActor(channel, calcService)))
 }
 
-class WebSocketKernelActor(channel: Concurrent.Channel[JsValue], val pchannel:String, val calcService:CalcWebSocketService)(implicit system:ActorSystem) extends Actor {
+class WebSocketKernelActor(channel: Concurrent.Channel[JsValue], val calcService:CalcWebSocketService)(implicit system:ActorSystem) extends Actor {
   val executionCounter = new AtomicInteger(0)
 
   val ws = new WebSockWrapperImpl(channel)

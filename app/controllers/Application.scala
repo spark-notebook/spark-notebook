@@ -92,39 +92,40 @@ object Application extends Controller {
     )
   }
 
-  def createSession() = Action(parse.tolerantJson)/* → posted as urlencoded form oO */ { request =>
-    //{"notebook":{"path":"ADAM"},"kernel":{"id":null}}:
-    val json:JsValue = request.body
-    val kernelId = Try((json \ "kernel" \ "id").as[String]).toOption.getOrElse(UUID.randomUUID.toString)
-
+  private [this] def newSession(kernelId:Option[String]=None) = {
+    val kId = kernelId.getOrElse(UUID.randomUUID.toString)
     val compilerArgs = config.kernel.compilerArgs.toList
     val initScripts = config.kernel.initScripts.toList
     val kernel = new Kernel(config.kernel.config.underlying, kernelSystem)
-    KernelManager.add(kernelId, kernel)
+    KernelManager.add(kId, kernel)
 
     val service = new CalcWebSocketService(kernelSystem, initScripts, compilerArgs, kernel.remoteDeployFuture)
-    kernelIdToCalcService += kernelId -> service
+    kernelIdToCalcService += kId -> service
 
-    Ok(Json.parse(
-        s"""
-        |{
-        |  "kernel": {
-        |    "id": "$kernelId",
-        |    "name": "spark",
-        |    "language_info": {
-        |      "name" : "Scala",
-        |      "file_extension" : "scala",
-        |      "codemirror_mode" : "text/x-scala"
-        |    }
-        |  }
-        |}
-        |""".stripMargin.trim
-      )
+    Json.parse(
+      s"""
+      |{
+      |  "id": "$kId",
+      |  "name": "spark",
+      |  "language_info": {
+      |    "name" : "Scala",
+      |    "file_extension" : "scala",
+      |    "codemirror_mode" : "text/x-scala"
+      |  }
+      |}
+      |""".stripMargin.trim
     )
   }
 
+  def createSession() = Action(parse.tolerantJson)/* → posted as urlencoded form oO */ { request =>
+    val json:JsValue = request.body
+    val kernelId = Try((json \ "kernel" \ "id").as[String]).toOption
+    val k = newSession(kernelId)
+    Ok(Json.obj("kernel" → k))
+  }
+
   def sessions() = Action {
-    Ok(Json.obj())
+    Ok(Json.obj()) // TODO
   }
 
   def clusters() = Action {
@@ -187,18 +188,30 @@ object Application extends Controller {
     ))
   }
 
-  def openKernel(kernelId:String, sessionId:String, pchannel:String="fixme") =  ImperativeWebsocket.using[JsValue](
-    onOpen = channel => WebSocketKernelActor.props(channel, pchannel, kernelIdToCalcService(kernelId)),
+  private [this] def closeKernel(kernelId:String) = {
+    KernelManager.get(kernelId).foreach{ k =>
+      Logger.info(s"Closing kernel $kernelId")
+      k.shutdown()
+      KernelManager.remove(kernelId)
+    }
+  }
+
+  def openKernel(kernelId:String) =  ImperativeWebsocket.using[JsValue](
+    onOpen = channel => WebSocketKernelActor.props(channel, kernelIdToCalcService(kernelId)),
     onMessage = (msg, ref) => ref ! msg,
     onClose = ref => {
-      Logger.info(s"Closing websockets for kernel $kernelId, $pchannel")
-      KernelManager.get(kernelId).foreach{ k =>
-        Logger.info(s"Closing kernel $kernelId, $pchannel")
-        k.shutdown()
-      }
+      Logger.info(s"Closing websockets for kernel $kernelId")
+      closeKernel(kernelId)
       ref ! akka.actor.PoisonPill
     }
   )
+
+  def restartKernel(kernelId:String) = Action { request =>
+    //shouldn't do anything since onClose should be called in openKernel (stopChannels is call in the front)
+    // /!\ this won't kill the underneath actor!!!
+    closeKernel(kernelId)
+    Ok(newSession())
+  }
 
   def listCheckpoints(snb:String) = Action { request =>
     Ok(Json.parse(
