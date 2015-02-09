@@ -69,4 +69,8 @@ object KernelManager {
   def add(id:String, kernel: Kernel) {
     kernels += id -> kernel
   }
+
+  def remove(id:String) {
+    kernels -= id
+  }
 }
