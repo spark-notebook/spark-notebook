@@ -310,14 +310,6 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "for (cc<-confMat.keys) yield cc",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
     "source" : "<table>\n<tr><td></td><td>#0</td><td>#1</td><td>#2</td></tr>\n{ for (popu <- confMat) yield\n  <tr><td>{popu._1}</td> { for (cnt <- popu._2) yield \n    <td>{cnt}</td>\n  }\n  </tr>\n}\n</table>",
     "outputs" : [ ]
   } ],
