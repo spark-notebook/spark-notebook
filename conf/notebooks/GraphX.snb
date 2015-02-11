@@ -57,7 +57,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : ":sh du -h /tmp/github.json",
@@ -81,7 +81,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "raw.count",
@@ -105,7 +105,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "json.take(2).toList",
@@ -185,7 +185,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "val cc = graph.connectedComponents",
