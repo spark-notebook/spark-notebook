@@ -35,6 +35,8 @@ resolvers in ThisBuild ++=  Seq(
                               "cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos"
                             )
 
+EclipseKeys.skipParents in ThisBuild := false
+							
 compileOrder := CompileOrder.Mixed
 
 publishMavenStyle := false
