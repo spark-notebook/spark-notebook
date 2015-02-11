@@ -4,7 +4,7 @@
     "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
     "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
     "language_info" : {
-      "name" : "Scala",
+      "name" : "scala",
       "file_extension" : "scala",
       "codemirror_mode" : "text/x-scala"
     },
@@ -29,18 +29,7 @@
     },
     "cell_type" : "code",
     "source" : ":local-repo /tmp/repo",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res1: String = Repo changed to /tmp/repo!\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "Repo changed to /tmp/repo!"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 1
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -52,18 +41,7 @@
     },
     "cell_type" : "code",
     "source" : ":dp org.apache.spark % spark-streaming_2.10 % 1.2.0\norg.apache.spark % spark-streaming-twitter_2.10 % 1.2.0\n- org.apache.spark % spark-core_2.10 % _\n- org.apache.hadoop % _ % _",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "jars: Array[String] = [Ljava.lang.String;@2ba32b8f\nres1: scala.xml.Elem = \n<pre onclick=\"this.style.display=(this.style.display==&quot;block&quot;)?&quot;none&quot;:&quot;block&quot;\">Spark resetting with jars :\n/tmp/repo/org/eclipse/jetty/jetty-io/8.1.14.v20131031/jetty-io-8.1.14.v20131031.jar\n/tmp/repo/org/eclipse/jetty/orbit/javax.servlet/3.0.0.v201112011016/javax.servlet-3.0.0.v201112011016.jar\n/tmp/repo/org/eclipse/jetty/jetty-continuation/8.1.14.v20131031/jetty-continuation-8.1.14.v20131031.jar\n/tmp/repo/org/eclipse/jetty/jetty-server/8.1.14.v20131031/jetty-server-8.1.14.v20131031.jar\n/tmp/repo/org/twitter4j/twitter4j-core/3.0.3/twitter4j-core-3.0.3.jar\n/tmp/repo/org/scala-lang/scala-library/2.10.4/scala-library-2.10.4.jar\n/tmp/repo/org/spark-project/spark/unused/1.0.0/unused-1.0...."
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<pre onclick=\"this.style.display=(this.style.display==&quot;block&quot;)?&quot;none&quot;:&quot;block&quot;\">Spark resetting with jars :\n/tmp/repo/org/eclipse/jetty/jetty-io/8.1.14.v20131031/jetty-io-8.1.14.v20131031.jar\n/tmp/repo/org/eclipse/jetty/orbit/javax.servlet/3.0.0.v201112011016/javax.servlet-3.0.0.v201112011016.jar\n/tmp/repo/org/eclipse/jetty/jetty-continuation/8.1.14.v20131031/jetty-continuation-8.1.14.v20131031.jar\n/tmp/repo/org/eclipse/jetty/jetty-server/8.1.14.v20131031/jetty-server-8.1.14.v20131031.jar\n/tmp/repo/org/twitter4j/twitter4j-core/3.0.3/twitter4j-core-3.0.3.jar\n/tmp/repo/org/scala-lang/scala-library/2.10.4/scala-library-2.10.4.jar\n/tmp/repo/org/spark-project/spark/unused/1.0.0/unused-1.0.0.jar\n/tmp/repo/org/apache/spark/spark-streaming-twitter_2.10/1.2.0/spark-streaming-twitter_2.10-1.2.0.jar\n/tmp/repo/org/twitter4j/twitter4j-stream/3.0.3/twitter4j-stream-3.0.3.jar\n/tmp/repo/org/eclipse/jetty/jetty-http/8.1.14.v20131031/jetty-http-8.1.14.v20131031.jar\n/tmp/repo/org/apache/spark/spark-streaming_2.10/1.2.0/spark-streaming_2.10-1.2.0.jar\n</pre>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 2
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -79,18 +57,7 @@
     },
     "cell_type" : "code",
     "source" : "def $(s:String) = sys.env(s)\nSystem.setProperty(\"twitter4j.oauth.consumerKey\", $(\"TWITTER_CONSUMER_KEY\"))\nSystem.setProperty(\"twitter4j.oauth.consumerSecret\", $(\"TWITTER_CONSUMER_SECRET\"))\nSystem.setProperty(\"twitter4j.oauth.accessToken\", $(\"TWITTER_ACCESS_TOKEN\"))\nSystem.setProperty(\"twitter4j.oauth.accessTokenSecret\", $(\"TWITTER_ACCESS_TOKEN_SECRET\"))\n\"twitter settings done!\"",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "$: (s: String)String\nres2: String = twitter settings done!\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "twitter settings done!"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 3
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -106,18 +73,7 @@
     },
     "cell_type" : "code",
     "source" : "import org.apache.spark.streaming.{Seconds, StreamingContext}\nimport org.apache.spark.SparkContext._\nimport org.apache.spark.streaming.twitter._\n\nval ssc = new StreamingContext(sparkContext, Seconds(2))",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "import org.apache.spark.streaming.{Seconds, StreamingContext}\nimport org.apache.spark.SparkContext._\nimport org.apache.spark.streaming.twitter._\nssc: org.apache.spark.streaming.StreamingContext = org.apache.spark.streaming.StreamingContext@4b398b21\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "org.apache.spark.streaming.StreamingContext@4b398b21"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 4
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -133,18 +89,7 @@
     },
     "cell_type" : "code",
     "source" : "val filters = Array(\"spark\", \"scala\", \"music\")",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "filters: Array[String] = Array(spark, scala, music)\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "[Ljava.lang.String;@3cda07e7"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 5
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -156,18 +101,7 @@
     },
     "cell_type" : "code",
     "source" : "val stream = TwitterUtils.createStream(ssc, None, filters)",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "stream: org.apache.spark.streaming.dstream.ReceiverInputDStream[twitter4j.Status] = org.apache.spark.streaming.twitter.TwitterInputDStream@544f57ae\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "org.apache.spark.streaming.twitter.TwitterInputDStream@544f57ae"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 6
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -183,18 +117,7 @@
     },
     "cell_type" : "code",
     "source" : "import StreamingContext._\nval hashTags = stream.flatMap(status => status.getText.split(\" \").filter(_.startsWith(\"#\")))\n\nval topCounts60 = hashTags.map((_, 1)).reduceByKeyAndWindow(_ + _, Seconds(60))\n                          .map{case (topic, count) => (count, topic)}\n                          .transform(_.sortByKey(false))",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "import StreamingContext._\nhashTags: org.apache.spark.streaming.dstream.DStream[String] = org.apache.spark.streaming.dstream.FlatMappedDStream@135b1360\ntopCounts60: org.apache.spark.streaming.dstream.DStream[(Int, String)] = org.apache.spark.streaming.dstream.TransformedDStream@40550d8d\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "org.apache.spark.streaming.dstream.TransformedDStream@40550d8d"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 7
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -206,18 +129,7 @@
     },
     "cell_type" : "code",
     "source" : "val result = out",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "result: notebook.front.SingleConnectedWidget[String]{implicit val codec: notebook.Codec[play.api.libs.json.JsValue,String]; lazy val toHtml: scala.xml.Elem} = <anon$1 widget>\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anonad2ab484aec17094be0c5dbe762b26a8&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\n            req(\n              ['observable', 'knockout'],\n              function (O, ko) {\n                ko.applyBindings({\n                    value: O.makeObservable(valueId)\n                  },\n                  this\n                );\n              }\n            );\n        /*]]>*/</script></p>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 8
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -229,14 +141,7 @@
     },
     "cell_type" : "code",
     "source" : "// Print popular hashtags\ntopCounts60.foreachRDD(rdd => {\n  val topList = rdd.take(10)\n  val r = topList.map{case (count, tag) => (tag, count)}.mkString(\"\\n\")\n  result(r)\n})\n",
-    "outputs" : [ {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 9
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -252,14 +157,7 @@
     },
     "cell_type" : "code",
     "source" : "ssc.start()",
-    "outputs" : [ {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 10
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -271,18 +169,7 @@
     },
     "cell_type" : "code",
     "source" : "ssc.stop()",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "\nPopular topics in last 60 seconds (261 total):\n > (\n > #\n > m\n > u\n > s\n > i\n > c\n > ,\n > 5\n > 4\n > )\n > \n\n > (\n > #\n > v\n > i\n > d\n > e\n > o\n > ,\n > 3\n > 0\n > )\n > \n\n > (\n > #\n > m\n > o\n > v\n > i\n > e\n > ,\n > 2\n > 9\n > )\n > \n\n > (\n > #\n > a\n > s\n > s\n > ,\n > 2\n > 9\n > )\n > \n\n > (\n > #\n > l\n > o\n > l\n > ,\n > 2\n > 9\n > )\n > \n\n > (\n > #\n > …\n > ,\n > 2\n > 7\n > )\n > \n\n > (\n > #\n > e\n > b\n > o\n > o\n > k\n > ,\n > 2\n > 6\n > )\n > \n\n > (\n > #\n > f\n > r\n > e\n > e\n > ,\n > 2\n > 6\n > )\n > \n\n > (\n > #\n > F\n > o\n > l\n > l\n > o\n > w\n > M\n > e\n > M\n > a\n > d\n > i\n > s\n > o\n > n\n > ,\n > 1\n > 0\n > )\n > \n\n > (\n > #\n > M\n > u\n > s\n > i\n > c\n > ,\n > 9\n > )\n\n_______________________________\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 11
-    } ]
+    "outputs" : [ ]
   } ],
   "nbformat" : 4
 }
