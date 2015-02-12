@@ -249,7 +249,7 @@ object Application extends Controller {
     }
   }
 
-  def saveNotebook(snb:String) = Action(parse.tolerantJson) { request =>
+  def saveNotebook(snb:String) = Action(parse.tolerantJson(maxLength = 1024 * 1014 /*1Mb*/)) { request =>
     val notebook = NBSerializer.fromJson(request.body \ "content")
     try {
       nbm.save(snb.dropRight(".snb".size), snb, notebook, true)
