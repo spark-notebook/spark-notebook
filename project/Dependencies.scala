@@ -18,7 +18,6 @@ object Dependencies {
   val akkaRemote              = "org.spark-project.akka"    %%         "akka-remote"          %    akkaVersion
   val akkaSlf4j               = "org.spark-project.akka"    %%          "akka-slf4j"          %    akkaVersion
 
-
   val breeze                  = "org.scalanlp"              %%         "breeze"               %       "0.10"        excludeAll(ExclusionRule("junit"), ExclusionRule("org.apache.commons", "commons-math3"))
   val defaultSparkVersion     = "1.2.0"
   def sparkRepl(v:String)     = "org.apache.spark"          %%         "spark-repl"           %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
