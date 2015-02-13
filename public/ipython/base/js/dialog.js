@@ -201,7 +201,7 @@ define(function(require) {
 
     // TODO: merge with edit_metadata  → almost identical
     var conf_cluster = function (options) {
-        options.name = options.name || "Cell";
+        options.name = options.name || "Cluster";
         var error_div = $('<div/>').css('color', 'red');
         var message =
             "Manually edit the JSON below to manipulate the configuration for this "+ options.profile + "cluster " + options.name + ".";
@@ -251,8 +251,6 @@ define(function(require) {
                             error_div.text('WARNING: Could not save invalid JSON.');
                             return false;
                         }
-                        // TODO → create and configure SparkContext wrt configuration
-                        alert("create and configure SparkContext wrt configuration");;
                         options.callback(new_conf);
                     }
                 },
@@ -263,6 +261,67 @@ define(function(require) {
         modal_obj.on('shown.bs.modal', function(){ editor.refresh(); });
     };
 
+
+    // TODO: merge with edit_metadata  → almost identical
+    var new_cluster = function (options) {
+        options.name = options.name || "Cluster";
+        var error_div = $('<div/>').css('color', 'red');
+        var message = "Create a cluster template as JSON.";
+
+        var textarea = $('<textarea/>')
+            .attr('rows', '13')
+            .attr('cols', '80')
+            .attr('name', 'conf')
+            .text(JSON.stringify(options.template || { profile: options.profile }, null, 2));
+
+        var dialogform = $('<div/>').attr('title', 'Configuration for the cluster ' + options.name)
+            .append(
+                $('<form/>').append(
+                    $('<fieldset/>').append(
+                        $('<label/>')
+                        .attr('for','conf')
+                        .text(message)
+                        )
+                        .append(error_div)
+                        .append($('<br/>'))
+                        .append(textarea)
+                    )
+            );
+        var editor = CodeMirror.fromTextArea(textarea[0], {
+            lineNumbers: true,
+            matchBrackets: true,
+            indentUnit: 2,
+            autoIndent: true,
+            mode: 'application/json',
+        });
+
+        // preformat for
+        var modal_obj = modal({
+            title: "Edit " + options.name + " Configuration",
+            body: dialogform,
+            buttons: {
+                OK: { class : "btn-primary",
+                    click: function() {
+                        /**
+                         * validate json and set it
+                         */
+                        var new_md;
+                        try {
+                            new_md = JSON.parse(editor.getValue());
+                        } catch(e) {
+                            console.log(e);
+                            error_div.text('WARNING: Could not save invalid JSON.');
+                            return false;
+                        }
+                        options.callback(new_md);
+                    }
+                },
+                Cancel: {}
+            }
+        });
+
+        modal_obj.on('shown.bs.modal', function(){ editor.refresh(); });
+    };
     var dialog = {
         modal : modal,
         kernel_modal : kernel_modal,

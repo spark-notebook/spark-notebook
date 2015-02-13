@@ -243,7 +243,6 @@ return new function () {
       me.start();
   } else {
     events.on('app_initialized.NotebookApp', function(o) {
-      alert("ok")
       me.start(); //avoid pre-init of IPython → .kernel.id is null
     });
   }

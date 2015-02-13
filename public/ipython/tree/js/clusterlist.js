@@ -18,6 +18,8 @@ define([
     }
     options = options || {};
     this.options = options;
+    this.contents = options.contents;
+    this.new_notebook = options.new_notebook;
     this.base_url = options.base_url || utils.get_body_data("baseUrl");
     this.notebook_path = options.notebook_path || utils.get_body_data("notebookPath");
   };
@@ -35,8 +37,48 @@ define([
     $('#refresh_cluster_list').click(function () {
       that.load_list();
     });
+    $('#refresh_add_cluster').click(function () {
+      that.add_cluster();
+    });
   };
 
+
+  ClusterList.prototype.add_cluster = function () {
+    var that = this;
+    dialog.conf_cluster({
+      name: "New Name",
+      profile: "New Profile ID",
+      template: {
+        name: "New Name",
+        profile: "New Profile ID",
+        template: {  "add here" : "your conf" }
+      },
+      //template: ,
+      callback: function (clusterConf) {
+        var settings = {
+          data : JSON.stringify(clusterConf),
+          processData : false,
+          cache : false,
+          type : "POST",
+          dataType : "json",
+          success : $.proxy(that.add_cluster_success, that),
+          error : utils.log_ajax_error,
+        };
+        var url = utils.url_join_encode(that.base_url, 'clusters');
+        $.ajax(url, settings);
+      },
+      keyboard_manager: that.keyboard_manager
+    });
+
+  };
+
+  ClusterList.prototype.add_cluster_success = function (data, status, xhr) {
+    var element = $('<div/>');
+    var item = new ClusterItem(element, this.options);
+    item.update_state(data);
+    element.data('item', item);
+    this.element.append(element);
+  };
 
   ClusterList.prototype.load_list = function () {
     var settings = {
@@ -73,6 +115,8 @@ define([
     this.element = $(element);
     this.base_url = options.base_url || utils.get_body_data("baseUrl");
     this.notebook_path = options.notebook_path || utils.get_body_data("notebookPath");
+    this.new_notebook = options.new_notebook;
+
     this.data = null;
     this.style();
   };
@@ -106,30 +150,9 @@ define([
     create_button.click(function (e) {
       dialog.conf_cluster({
           profile: that.profile,
-          template: that.template,
-          callback: function (conf) {
-              alert("TODO: create the notebook with the configuration: " + JSON.stringify(conf))
-              var settings = {
-              cache : false,
-              data : clusterConf,
-              type : "POST",
-              dataType : "json",
-              success : function (data, status, xhr) {
-                that.update_state(data);
-              },
-              error : function (xhr, status, error) {
-                status_col.text("error starting cluster");
-                utils.log_ajax_error(xhr, status, error);
-              }
-            };
-            status_col.text('starting');
-            var url = utils.url_join_encode(
-              that.base_url,
-              'clusters',
-              that.data.profile,
-              'start'
-            );
-            $.ajax(url, settings);
+          template: that.data.template,
+          callback: function (clusterConf) {
+            that.new_notebook.new_notebook("spark", clusterConf);
           },
           name: that.name,
           keyboard_manager: that.keyboard_manager

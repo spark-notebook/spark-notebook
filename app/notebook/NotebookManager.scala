@@ -45,9 +45,9 @@ class NotebookManager(val name: String, val notebookDir: File) {
     Stream.from(1) map { i => base + i } filterNot { fn => notebookFile(fn).exists() } head
   }
 
-  def newNotebook() = {
+  def newNotebook(customMetadata:Option[JsObject]=None) = {
     val name = incrementFileName("Untitled")
-    val nb = Notebook(Some(new Metadata(name)), Some(Nil), None, None, None)
+    val nb = Notebook(Some(new Metadata(name, custom=customMetadata)), Some(Nil), None, None, None)
     val path = name+extension
     save(name, path, nb, false)
     name
@@ -61,7 +61,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
       val path = name
     	save(name, path, Notebook(Some(new Metadata(name)), oldNB.cells, oldNB.worksheets, oldNB.autosaved, None), false)
     	path
-    } getOrElse newNotebook
+    } getOrElse newNotebook()
   }
 
   /**

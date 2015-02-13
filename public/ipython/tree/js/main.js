@@ -40,7 +40,7 @@ require([
     "use strict";
 
     page = new page.Page();
-    
+
     var common_options = {
         base_url: utils.get_body_data("baseUrl"),
         notebook_path: utils.get_body_data("notebookPath"),
@@ -50,22 +50,21 @@ require([
     common_options.config = cfg;
     var common_config = new config.ConfigSection('common', common_options);
     common_config.load();
-    
+
     var session_list = new sesssionlist.SesssionList($.extend({
-        events: events}, 
+        events: events},
         common_options));
     var contents = new contents_service.Contents($.extend({
         events: events},
         common_options));
     var notebook_list = new notebooklist.NotebookList('#notebook_list', $.extend({
         contents: contents,
-        session_list:  session_list}, 
+        session_list:  session_list},
         common_options));
-    var cluster_list = new clusterlist.ClusterList('#cluster_list', common_options);
     var kernel_list = new kernellist.KernelList('#running_list',  $.extend({
-        session_list:  session_list}, 
+        session_list:  session_list},
         common_options));
-    
+
     var terminal_list;
     if (utils.get_body_data("terminalsAvailable") === "True") {
         terminal_list = new terminallist.TerminalList('#terminal_list', common_options);
@@ -79,6 +78,10 @@ require([
             common_options
         )
     );
+    var cluster_list = new clusterlist.ClusterList('#cluster_list', $.extend({
+        contents: contents,
+        new_notebook: new_buttons},
+        common_options));
 
     var interval_id=0;
     // auto refresh every xx secondes, no need to be fast,
@@ -137,15 +140,15 @@ require([
     events.trigger('app_initialized.DashboardApp');
     utils.load_extensions_from_config(cfg);
     utils.load_extensions_from_config(common_config);
-    
+
     // bound the upload method to the on change of the file select list
     $("#alternate_upload").change(function (event){
         notebook_list.handleFilesUpload(event,'form');
     });
-    
+
     // set hash on tab click
     $("#tabs").find("a").click(function(e) {
-        // Prevent the document from jumping when the active tab is changed to a 
+        // Prevent the document from jumping when the active tab is changed to a
         // tab that has a lot of content.
         e.preventDefault();
 
@@ -158,7 +161,7 @@ require([
             window.location.hash = hash;
         }
     });
-    
+
     // load tab if url hash
     if (window.location.hash) {
         $("#tabs").find("a[href=" + window.location.hash + "]").click();
