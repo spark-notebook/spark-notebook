@@ -7,7 +7,7 @@ define(function(require) {
     var CodeMirror = require('codemirror/lib/codemirror');
     var IPython = require('base/js/namespace');
     var $ = require('jquery');
-    
+
     /**
      * A wrapper around bootstrap modal for easier use
      * Pass it an option dictionary with the following properties:
@@ -24,13 +24,13 @@ define(function(require) {
      *    - notebook : notebook instance
      *    - keyboard_manager: keyboard manager instance.
      *
-     *  Unlike bootstrap modals, the backdrop options is set by default 
+     *  Unlike bootstrap modals, the backdrop options is set by default
      *  to 'static'.
      *
-     *  The rest of the options are passed as is to bootstrap modals. 
+     *  The rest of the options are passed as is to bootstrap modals.
      *
      *  btn_options: dict with the following property:
-     *  
+     *
      *    - click : callback to trigger on click
      *    - class : css classes to add to button.
      *
@@ -71,9 +71,9 @@ define(function(require) {
                 options.body || $("<p/>")
             )
         );
-        
+
         var footer = $("<div/>").addClass("modal-footer");
-        
+
         for (var label in options.buttons) {
             var btn_opts = options.buttons[label];
             var button = $("<button/>")
@@ -98,7 +98,7 @@ define(function(require) {
                 }
             }, 0);
         });
-        
+
         // destroy modal on hide, unless explicitly asked not to
         if (options.destroy === undefined || options.destroy) {
             modal.on("hidden.bs.modal", function () {
@@ -115,13 +115,13 @@ define(function(require) {
                 options.keyboard_manager.command_mode();
             }
         });
-        
+
         if (options.keyboard_manager) {
             options.keyboard_manager.disable();
         }
 
         options.backdrop = options.backdrop || 'static';
-        
+
         return modal.modal(options);
     };
 
@@ -139,7 +139,7 @@ define(function(require) {
     var edit_metadata = function (options) {
         options.name = options.name || "Cell";
         var error_div = $('<div/>').css('color', 'red');
-        var message = 
+        var message =
             "Manually edit the JSON below to manipulate the metadata for this " + options.name + "." +
             " We recommend putting custom metadata attributes in an appropriately named sub-structure," +
             " so they don't conflict with those of others.";
@@ -149,7 +149,7 @@ define(function(require) {
             .attr('cols', '80')
             .attr('name', 'metadata')
             .text(JSON.stringify(options.md || {}, null, 2));
-        
+
         var dialogform = $('<div/>').attr('title', 'Edit the metadata')
             .append(
                 $('<form/>').append(
@@ -198,11 +198,76 @@ define(function(require) {
 
         modal_obj.on('shown.bs.modal', function(){ editor.refresh(); });
     };
-    
+
+    // TODO: merge with edit_metadata  → almost identical
+    var conf_cluster = function (options) {
+        options.name = options.name || "Cell";
+        var error_div = $('<div/>').css('color', 'red');
+        var message =
+            "Manually edit the JSON below to manipulate the configuration for this "+ options.profile + "cluster " + options.name + ".";
+
+        var textarea = $('<textarea/>')
+            .attr('rows', '13')
+            .attr('cols', '80')
+            .attr('name', 'conf')
+            .text(JSON.stringify(options.template || {}, null, 2));
+
+        var dialogform = $('<div/>').attr('title', 'Configuration for the cluster ' + options.name)
+            .append(
+                $('<form/>').append(
+                    $('<fieldset/>').append(
+                        $('<label/>')
+                        .attr('for','conf')
+                        .text(message)
+                        )
+                        .append(error_div)
+                        .append($('<br/>'))
+                        .append(textarea)
+                    )
+            );
+        var editor = CodeMirror.fromTextArea(textarea[0], {
+            lineNumbers: true,
+            matchBrackets: true,
+            indentUnit: 2,
+            autoIndent: true,
+            mode: 'application/json',
+        });
+
+        // preformat for
+        var modal_obj = modal({
+            title: "Edit " + options.name + " Configuration",
+            body: dialogform,
+            buttons: {
+                OK: { class : "btn-primary",
+                    click: function() {
+                        /**
+                         * validate json and set it
+                         */
+                        var new_conf;
+                        try {
+                            new_conf = JSON.parse(editor.getValue());
+                        } catch(e) {
+                            console.log(e);
+                            error_div.text('WARNING: Could not save invalid JSON.');
+                            return false;
+                        }
+                        // TODO → create and configure SparkContext wrt configuration
+                        alert("create and configure SparkContext wrt configuration");;
+                        options.callback(new_conf);
+                    }
+                },
+                Cancel: {}
+            }
+        });
+
+        modal_obj.on('shown.bs.modal', function(){ editor.refresh(); });
+    };
+
     var dialog = {
         modal : modal,
         kernel_modal : kernel_modal,
         edit_metadata : edit_metadata,
+        conf_cluster : conf_cluster
     };
 
     // Backwards compatability.

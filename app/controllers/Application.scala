@@ -129,7 +129,26 @@ object Application extends Controller {
   }
 
   def clusters() = Action {
-    Ok(Json.obj())
+    Ok(Json.arr(
+      Json.parse(
+        s"""
+        |{
+        |  "profile": "Standalone",
+        |  "name": "spark://...",
+        |  "status": "stopped"
+        |}
+        |""".stripMargin.trim
+      ),
+      Json.parse(
+        s"""
+        |{
+        |  "profile": "Mesos",
+        |  "name": "mesos://zk://...",
+        |  "status": "stopped"
+        |}
+        |""".stripMargin.trim
+      )
+    ))
   }
 
   def contents(`type`:String) = Action {
