@@ -8,13 +8,13 @@ define([
     'base/js/dialog',
 ], function ($, IPython, utils, dialog) {
     "use strict";
-    
+
     var NewNotebookWidget = function (selector, options) {
         this.selector = selector;
         this.base_url = options.base_url;
         this.notebook_path = options.notebook_path;
         this.contents = options.contents;
-        this.default_kernel = null;
+        this.default_kernel = "spark";
         this.kernelspecs = {};
         if (this.selector !== undefined) {
             this.element = $(selector);
@@ -22,20 +22,20 @@ define([
         }
         this.bind_events();
     };
-    
+
     NewNotebookWidget.prototype.bind_events = function () {
         var that = this;
         this.element.find('#new_notebook').click(function () {
             that.new_notebook();
         });
     };
-    
+
     NewNotebookWidget.prototype.request_kernelspecs = function () {
         /** request and then load kernel specs */
         var url = utils.url_join_encode(this.base_url, 'api/kernelspecs');
         utils.promising_ajax(url).then($.proxy(this._load_kernelspecs, this));
     };
-    
+
     NewNotebookWidget.prototype._load_kernelspecs = function (data) {
         /** load kernelspec list */
         var that = this;
@@ -70,13 +70,13 @@ define([
             menu.after(li);
         }
     };
-    
-    NewNotebookWidget.prototype.new_notebook = function (kernel_name) {
+
+    NewNotebookWidget.prototype.new_notebook = function (kernel_name, customMetadata) {
         /** create and open a new notebook */
         var that = this;
         kernel_name = kernel_name || this.default_kernel;
         var w = window.open();
-        this.contents.new_untitled(that.notebook_path, {type: "notebook"}).then(
+        this.contents.new_untitled(that.notebook_path, {type: "notebook", custom: customMetadata}).then(
             function (data) {
                 var url = utils.url_join_encode(
                     that.base_url, 'notebooks', data.path
@@ -96,6 +96,6 @@ define([
             }
         );
     };
-    
+
     return {'NewNotebookWidget': NewNotebookWidget};
 });

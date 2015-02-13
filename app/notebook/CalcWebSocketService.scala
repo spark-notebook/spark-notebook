@@ -14,11 +14,11 @@ import notebook.client._
 /**
  * Provides a web-socket interface to the Calculator
  */
-class CalcWebSocketService(system: ActorSystem, initScripts: List[(String, String)], compilerArgs: List[String], remoteDeployFuture: Future[Deploy]) {
+class CalcWebSocketService(system: ActorSystem, customSparkConf:Option[Map[String, String]], initScripts: List[(String, String)], compilerArgs: List[String], remoteDeployFuture: Future[Deploy]) {
   implicit val executor = system.dispatcher
 
   val wsPromise = Promise[WebSockWrapper]
-  val calcActor = system.actorOf(Props( new CalcActor))
+  val calcActor = system.actorOf(Props( new CalcActor ))
 
   class CalcActor extends Actor with ActorLogging {
     private var currentSessionOperation: Option[ActorRef] = None
@@ -30,8 +30,9 @@ class CalcWebSocketService(system: ActorSystem, initScripts: List[(String, Strin
       // that we don't want, then akka's attempts at serialization will fail and kittens everywhere will cry.
       val kCompilerArgs = compilerArgs
       val kInitScripts = initScripts
+      val kCustomSparkConf = customSparkConf
       val remoteDeploy = Await.result(remoteDeployFuture, 2 minutes)
-      calculator = context.actorOf(Props(new ReplCalculator(kInitScripts, kCompilerArgs)).withDeploy(remoteDeploy))
+      calculator = context.actorOf(Props(new ReplCalculator(kInitScripts, kCustomSparkConf, kCompilerArgs)).withDeploy(remoteDeploy))
     }
 
     override def preStart() {
@@ -127,4 +128,3 @@ class CalcWebSocketService(system: ActorSystem, initScripts: List[(String, Strin
     }
   }
 }
-

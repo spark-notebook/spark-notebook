@@ -16,7 +16,7 @@ import org.apache.spark.repl.SparkILoop
 
 @transient val uri = _5C4L4_N0T3800K_5P4RK_HOOK
 
-@transient var conf = new SparkConf()
+@transient var conf = new SparkConf().setAll(_5C4L4_N0T3800K_5P4RK_C0NF.toList)
 
 @transient var sparkContext:SparkContext = _
 
@@ -25,6 +25,7 @@ def reset(appName:String="Notebook", lastChanges:(SparkConf=>Unit)=(_:SparkConf)
   conf.setMaster(sparkMaster.getOrElse("local[*]"))
       .setAppName(appName)
       .set("spark.repl.class.uri", uri)
+      .setAll(_5C4L4_N0T3800K_5P4RK_C0NF.toList)
 
   execMemory foreach (v => conf.set("spark.executor.memory", v))
   execUri foreach (v => conf.set("spark.executor.uri", v))
