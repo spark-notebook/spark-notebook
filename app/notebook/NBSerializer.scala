@@ -60,7 +60,9 @@ object NBSerializer {
   implicit val languageInfoFormat:Format[LanguageInfo] = Json.format[LanguageInfo]
   val scala:LanguageInfo = LanguageInfo("scala", "scala", "text/x-scala")
 
-  case class Metadata(name: String, user_save_timestamp: Date = new Date(0), auto_save_timestamp: Date = new Date(0), language_info:LanguageInfo=scala, trusted:Boolean=true)
+  case class Metadata(name: String, user_save_timestamp: Date = new Date(0),
+                      auto_save_timestamp: Date = new Date(0), language_info:LanguageInfo=scala,
+                      trusted:Boolean=true, custom:Option[JsObject]=None)
   implicit val metadataFormat:Format[Metadata] = {
     val f = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     val r:Reads[Metadata] = (
@@ -68,7 +70,8 @@ object NBSerializer {
       (JsPath \ "user_save_timestamp").read[String].map(x => f.parse(x)) and
       (JsPath \ "auto_save_timestamp").read[String].map(x => f.parse(x)) and
       (JsPath \ "language_info").readNullable[LanguageInfo].map(_.getOrElse(scala)) and
-      (JsPath \ "trusted").readNullable[Boolean].map(_.getOrElse(true))
+      (JsPath \ "trusted").readNullable[Boolean].map(_.getOrElse(true)) and
+      (JsPath \ "custom").readNullable[JsObject]
     )(Metadata.apply _)
 
     val w:Writes[Metadata] =
@@ -83,7 +86,8 @@ object NBSerializer {
           "user_save_timestamp" → user_save_timestamp,
           "auto_save_timestamp" → auto_save_timestamp,
           "language_info" → language_info,
-          "trusted" → trusted
+          "trusted" → trusted,
+          "custom" → m.custom
         )
       }
 

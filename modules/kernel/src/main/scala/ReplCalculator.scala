@@ -51,9 +51,10 @@ case class ObjectInfoResponse(found: Boolean, name: String, callDef: String, cal
 
 /**
  * @param initScripts List of scala source strings to be executed during REPL startup.
+ * @param customSparkConf Map configuring the notebook (spark configuration).
  * @param compilerArgs Command line arguments to pass to the REPL compiler
  */
-class ReplCalculator(initScripts: List[(String, String)], compilerArgs: List[String]) extends Actor with akka.actor.ActorLogging {
+class ReplCalculator(initScripts: List[(String, String)], customSparkConf:Option[Map[String, String]], compilerArgs: List[String]) extends Actor with akka.actor.ActorLogging {
   private var _repl:Option[Repl] = None
 
   private def repl:Repl = _repl getOrElse {
@@ -125,14 +126,7 @@ class ReplCalculator(initScripts: List[(String, String)], compilerArgs: List[Str
 
               case dpRegex(cp) =>
                 log.debug("Fetching deps using repos: " + remotes.mkString(" -- "))
-                val lines = cp.trim().split("\n").toList.map(_.trim()).filter(_.size > 0).toSet
-                val includes = lines map (Deps.parseInclude _) collect { case Some(x) => x }
-                val excludes = lines map (Deps.parseExclude _) collect { case Some(x) => x }
-                val excludesFns = excludes map (Deps.transitiveExclude _)
-
-                val tryDeps:Try[List[String]] = includes.foldLeft(Try(List.empty[String])) { case (t, a) =>
-                  t flatMap { l => Try(l ::: Deps.resolve(a, excludesFns)(remotes, repo)) }
-                }
+                val tryDeps = Deps.script(cp, remotes, repo)
 
                 tryDeps match {
                   case TSuccess(deps) =>
@@ -155,9 +149,7 @@ class ReplCalculator(initScripts: List[(String, String)], compilerArgs: List[Str
                       |//restarting spark
                       |reset()
                       |
-                      |<pre onclick='this.style.display=(this.style.display=="block")?"none":"block"'>Spark resetting with jars :
-                      |{ jars.mkString("\\n") }
-                      |</pre>
+                      |jars.toList
                     """.stripMargin
                   case TFailure(ex) =>
                     log.error(ex, "Cannot add dependencies")
@@ -219,6 +211,13 @@ class ReplCalculator(initScripts: List[(String, String)], compilerArgs: List[Str
     val dummyScript = ("dummy", () => s"""val dummy = ();\n""")
     val SparkHookScript = ("class server", () => s"""@transient val _5C4L4_N0T3800K_5P4RK_HOOK = "${repl.classServerUri.get}";\n""")
 
+    val CustomSparkConfFromNotebookMD = ("custom conf", () => s"""
+      |@transient val _5C4L4_N0T3800K_5P4RK_C0NF:Map[String, String] = Map(
+      |  ${customSparkConf.getOrElse(Map.empty[String, String]).map{ case (k, v) => "( \"" + k + "\"  → \"" + v + "\" )"}.mkString(",") }
+      |)\n
+      """.stripMargin
+    )
+
     def eval(script: () => String):Unit = {
       val sc = script()
       if (sc.trim.length > 0) {
@@ -233,7 +232,7 @@ class ReplCalculator(initScripts: List[(String, String)], compilerArgs: List[Str
       } else ()
     }
 
-    val allInitScrips: List[(String, () => String)] = dummyScript :: SparkHookScript :: initScripts.map(x => (x._1, () => x._2))
+    val allInitScrips: List[(String, () => String)] = dummyScript :: SparkHookScript :: CustomSparkConfFromNotebookMD :: initScripts.map(x => (x._1, () => x._2))
     for ((name, script) <- allInitScrips) {
 
       println(s" INIT SCRIPT: $name")

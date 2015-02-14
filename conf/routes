@@ -33,6 +33,7 @@ GET     /files/*path                                                  controller
 GET     /nbconvert/:format/*path                                      controllers.Application.dlNotebookAs(path:String, format:String)
 
 GET     /clusters                                                     controllers.Application.clusters()
+POST    /clusters                                                     controllers.Application.addCluster()
 
 
 # Web Sockets
