@@ -3,18 +3,22 @@ package controllers
 import java.util.UUID
 
 import scala.util.Try
-import scala.concurrent.Promise
+import scala.concurrent.{Promise, Future}
+import scala.concurrent.duration._
 
 import play.api._
 import play.api.mvc._
 import play.api.mvc.BodyParsers.parse._
-import play.api.libs.json._
+import play.api.libs.functional.syntax._
 import play.api.libs.iteratee._
 import play.api.libs.iteratee.Concurrent.Channel
+import play.api.libs.json._
 
 import com.typesafe.config._
 
 import akka.actor._
+import akka.pattern.ask
+import akka.util.Timeout
 
 import notebook._
 import notebook.server._
@@ -92,16 +96,28 @@ object Application extends Controller {
     )
   }
 
-  private [this] def newSession(kernelId:Option[String]=None) = {
+  private [this] def newSession(kernelId:Option[String]=None, notebookPath:Option[String]=None) = {
     val kId = kernelId.getOrElse(UUID.randomUUID.toString)
     val compilerArgs = config.kernel.compilerArgs.toList
     val initScripts = config.kernel.initScripts.toList
     val kernel = new Kernel(config.kernel.config.underlying, kernelSystem)
     KernelManager.add(kId, kernel)
 
-    val service = new CalcWebSocketService(kernelSystem, initScripts, compilerArgs, kernel.remoteDeployFuture)
+    val r = Reads.map[String]
+
+    // Load the notebook → get the metadata → get custom → git it to CalcWebSocketService
+    val custom:Option[Map[String, String]] = for {
+      p <- notebookPath
+      n <- nbm.load(p.dropRight(".snb".size))
+      m <- n.metadata
+      c <- m.custom
+      _ = Logger.info("CUSTOM::: " + c)
+      map <- r.reads(c).asOpt
+    } yield map
+    val service = new CalcWebSocketService(kernelSystem, custom, initScripts, compilerArgs, kernel.remoteDeployFuture)
     kernelIdToCalcService += kId -> service
 
+    // todo add MD?
     Json.parse(
       s"""
       |{
@@ -120,16 +136,38 @@ object Application extends Controller {
   def createSession() = Action(parse.tolerantJson)/* → posted as urlencoded form oO */ { request =>
     val json:JsValue = request.body
     val kernelId = Try((json \ "kernel" \ "id").as[String]).toOption
-    val k = newSession(kernelId)
+    val notebookPath = Try((json \ "notebook" \ "path").as[String]).toOption
+    val k = newSession(kernelId, notebookPath)
     Ok(Json.obj("kernel" → k))
   }
 
   def sessions() = Action {
-    Ok(Json.obj()) // TODO
+    Ok(Json.obj()) // TODO using kernelIdToCalcService
   }
 
-  def clusters() = Action {
-    Ok(Json.obj())
+
+  val clustersActor = kernelSystem.actorOf(Props( new NotebookClusters ))
+  implicit val GetClustersTimeout = Timeout(60 seconds)
+
+  def clusters() = Action.async {
+    implicit val ec = kernelSystem.dispatcher
+    (clustersActor ? NotebookClusters.All).map { case all:List[JsObject] =>
+      Ok(JsArray(all))
+    }
+  }
+
+  def addCluster() = Action.async(parse.tolerantJson) { request =>
+    val json = request.body
+    implicit val ec = kernelSystem.dispatcher
+    json match {
+      case o:JsObject =>
+        (clustersActor ? NotebookClusters.Add((json \ "name").as[String], o)).map { case cluster:JsObject =>
+          Ok(cluster)
+        }
+      case _ => Future {
+        BadRequest("Add cluster needs an object, got: " + json)
+      }
+    }
   }
 
   def contents(`type`:String) = Action {
@@ -159,8 +197,15 @@ object Application extends Controller {
     getNotebook(name, name+".snb", "json")
   }
 
-  def newNotebook() = Action {
-    val name = nbm.newNotebook()
+  def newNotebook() = Action(parse.tolerantText) { request =>
+    val text = request.body
+    val customMetadata = Try(text).flatMap(j => Try(Json.parse(j) \ "custom")).toOption flatMap {
+      case x:JsObject  => Some(x)
+      case `JsNull`    => None
+      case y           => throw new RuntimeException("Cannot created notebook with " + y)
+    }
+
+    val name = nbm.newNotebook(customMetadata)
     Logger.info("new: " + name)
     Redirect(routes.Application.content("notebook", name))
   }
@@ -210,7 +255,9 @@ object Application extends Controller {
     //shouldn't do anything since onClose should be called in openKernel (stopChannels is call in the front)
     // /!\ this won't kill the underneath actor!!!
     closeKernel(kernelId)
-    Ok(newSession())
+
+    // TODO → the notebookPath here!!!
+    Ok(newSession(notebookPath=None))
   }
 
   def listCheckpoints(snb:String) = Action { request =>
