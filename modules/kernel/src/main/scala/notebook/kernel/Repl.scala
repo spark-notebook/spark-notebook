@@ -11,10 +11,11 @@ import java.io.{StringWriter, PrintWriter, ByteArrayOutputStream}
 import java.net.{URLDecoder, JarURLConnection}
 import java.util.ArrayList
 
-import collection.JavaConversions
-import collection.JavaConversions._
-import xml.{NodeSeq, Text}
+import scala.collection.JavaConversions
+import scala.collection.JavaConversions._
+import scala.xml.{NodeSeq, Text}
 import scala.util.control.NonFatal
+import scala.util.Try
 
 import org.apache.spark.repl.{HackSparkILoop, SparkILoop, SparkJLineCompletion}
 
@@ -203,27 +204,31 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
                   request.importsTrailer
                 )
             if (line.compile(renderObjectCode)) {
-              val renderedClass2 = Class.forName(
-                line.pathTo("$rendered")+"$", true, interp.classLoader
-              )
+              try {
+                val renderedClass2 = Class.forName(
+                  line.pathTo("$rendered")+"$", true, interp.classLoader
+                )
 
-              val o = renderedClass2.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get()
+                val o = renderedClass2.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get()
 
-              def iws(o:Any):NodeSeq = {
-                val iw = o.getClass.getMethods.find(_.getName == "$iw")
-                val o2 = iw map { m =>
-                  m.invoke(o)
+                def iws(o:Any):NodeSeq = {
+                  val iw = o.getClass.getMethods.find(_.getName == "$iw")
+                  val o2 = iw map { m =>
+                    m.invoke(o)
+                  }
+                  o2 match {
+                    case Some(o3) =>
+                      iws(o3)
+                    case None =>
+                      val r = o.getClass.getDeclaredMethod("rendered").invoke(o)
+                      val h = r.asInstanceOf[Widget].toHtml
+                      h
+                  }
                 }
-                o2 match {
-                  case Some(o3) => 
-                    iws(o3)
-                  case None =>
-                    val r = o.getClass.getDeclaredMethod("rendered").invoke(o)
-                    val h = r.asInstanceOf[Widget].toHtml
-                    h
-                }
+                iws(o)
+              } catch {
+                case e => <span style="color:red;">Ooops, exception in the cell: {e.getMessage}</span>
               }
-              iws(o)
             } else {
               // a line like println(...) is technically a val, but returns null for some reason
               // so wrap it in an option in case that happens...
