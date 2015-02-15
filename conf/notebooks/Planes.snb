@@ -8,7 +8,8 @@
       "file_extension" : "scala",
       "codemirror_mode" : "text/x-scala"
     },
-    "trusted" : true
+    "trusted" : true,
+    "custom" : null
   },
   "cells" : [ {
     "metadata" : { },
@@ -41,7 +42,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : ":dp\norg.apache.spark % spark-mllib_2.10 % 1.2.0\n- org.apache.spark % spark-core_2.10 % _\n- org.apache.hadoop % _ % _",
@@ -109,7 +110,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "val count = data.count",
@@ -133,10 +134,10 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val airports = data.filter(x => x(16)!=\"NA\" && x(17)!=\"NA\").flatMap(x => x(16) :: x(17) :: Nil).distinct.collect().toList\nlayout(15, airports map text)",
+    "source" : "val airports:List[String] = data.filter(x => x(16)!=\"NA\" && x(17)!=\"NA\").flatMap(x => x(16) :: x(17) :: Nil).distinct.collect().toList\n@transient val _l = layout(15, airports map text)",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -189,7 +190,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "histFor(\"SFO\")",
@@ -201,7 +202,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "histFor(\"LIT\")",
@@ -229,7 +230,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "val features = head.slice(0, 8) ::: head.slice(11, 15) ::: List(head(16), head(17)) ::: head.slice(18, 21)\nlayout(8, features.zipWithIndex.map (x => text(x.toString)))",
@@ -244,7 +245,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val selected = data .filter(x => x.slice(0,21).forall(_ != \"NA\"))\n                    .map { x =>\n                      //todo → broadcast\n                      val airports = \"ABE,ABI,ABQ,ABY,ACK,ACT,ACV,ACY,ADK,ADQ,AEX,AGS,AKN,ALB,ALO,AMA,ANC,ASE,ATL,ATW,AUS,AVL,AVP,AZO,BDL,BET,BFL,BGM,BGR,BHM,BIL,BIS,BJI,BLI,BMI,BNA,BOI,BOS,BPT,BQK,BQN,BRO,BRW,BTM,BTR,BTV,BUF,BUR,BWI,BZN,CAE,CAK,CDC,CDV,CEC,CHA,CHO,CHS,CIC,CID,CLD,CLE,CLL,CLT,CMH,CMI,CMX,COD,COS,CPR,CRP,CRW,CSG,CVG,CWA,CYS,DAB,DAL,DAY,DBQ,DCA,DEN,DFW,DHN,DLG,DLH,DRO,DSM,DTW,EGE,EKO,ELM,ELP,ERI,EUG,EVV,EWN,EWR,EYW,FAI,FAR,FAT,FAY,FCA,FLG,FLL,FLO,FNT,FSD,FSM,FWA,GCC,GEG,GFK,GGG,GJT,GNV,GPT,GRB,GRK,GRR,GSO,GSP,GST,GTF,GTR,GUC,HDN,HHH,HLN,HNL,HOU,HPN,HRL,HSV,HTS,IAD,IAH,ICT,IDA,ILM,IND,INL,IPL,ISP,ITH,ITO,IYK,JAC,JAN,JAX,JFK,JNU,KOA,KTN,LAN,LAS,LAW,LAX,LBB,LCH,LEX,LFT,LGA,LGB,LIH,LIT,LMT,LNK,LRD,LSE,LWB,LWS,LYH,MAF,MBS,MCI,MCN,MCO,MDT,MDW,MEI,MEM,MFE,MFR,MGM,MHT,MIA,MKE,MKG,MLB,MLI,MLU,MOB,MOD,MOT,MQT,MRY,MSN,MSO,MSP,MSY,MTJ,MYR,OAJ,OAK,OGD,OGG,OKC,OMA,OME,ONT,ORD,ORF,OTH,OTZ,OXR,PBI,PDX,PFN,PHF,PHL,PHX,PIA,PIH,PIR,PIT,PLN,PMD,PNS,PSC,PSE,PSG,PSP,PUB,PVD,PWM,RAP,RDD,RDM,RDU,RFD,RHI,RIC,RKS,RNO,ROA,ROC,ROW,RST,RSW,SAN,SAT,SAV,SBA,SBN,SBP,SCC,SCE,SDF,SEA,SFO,SGF,SGU,SHV,SIT,SJC,SJT,SJU,SLC,SLE,SMF,SMX,SNA,SPI,SPS,SRQ,STL,STT,STX,SUN,SUX,SWF,SYR,TEX,TLH,TOL,TPA,TRI,TUL,TUP,TUS,TVC,TWF,TXK,TYR,TYS,VLD,VPS,WRG,WYS,XNA,YAK,YKM,YUM\".split(\",\").toList\n                      val ori = airports.indexOf(x(16)).toString\n                      val des = airports.indexOf(x(17)).toString\n                      val all = x.slice(0, 8) ++ x.slice(11, 15) ++ Array(ori, des) ++ x.slice(18, 21)\n                      LabeledPoint(x(15).toDouble, new DenseVector(all.map(_.toDouble)))\n                    }",
+    "source" : "val selected = data .filter(x => x.slice(0,21).forall(_ != \"NA\"))\n                    .map { x =>\n                      //todo → broadcast\n                      //val airports = \"ABE,ABI,ABQ,ABY,ACK,ACT,ACV,ACY,ADK,ADQ,AEX,AGS,AKN,ALB,ALO,AMA,ANC,ASE,ATL,ATW,AUS,AVL,AVP,AZO,BDL,BET,BFL,BGM,BGR,BHM,BIL,BIS,BJI,BLI,BMI,BNA,BOI,BOS,BPT,BQK,BQN,BRO,BRW,BTM,BTR,BTV,BUF,BUR,BWI,BZN,CAE,CAK,CDC,CDV,CEC,CHA,CHO,CHS,CIC,CID,CLD,CLE,CLL,CLT,CMH,CMI,CMX,COD,COS,CPR,CRP,CRW,CSG,CVG,CWA,CYS,DAB,DAL,DAY,DBQ,DCA,DEN,DFW,DHN,DLG,DLH,DRO,DSM,DTW,EGE,EKO,ELM,ELP,ERI,EUG,EVV,EWN,EWR,EYW,FAI,FAR,FAT,FAY,FCA,FLG,FLL,FLO,FNT,FSD,FSM,FWA,GCC,GEG,GFK,GGG,GJT,GNV,GPT,GRB,GRK,GRR,GSO,GSP,GST,GTF,GTR,GUC,HDN,HHH,HLN,HNL,HOU,HPN,HRL,HSV,HTS,IAD,IAH,ICT,IDA,ILM,IND,INL,IPL,ISP,ITH,ITO,IYK,JAC,JAN,JAX,JFK,JNU,KOA,KTN,LAN,LAS,LAW,LAX,LBB,LCH,LEX,LFT,LGA,LGB,LIH,LIT,LMT,LNK,LRD,LSE,LWB,LWS,LYH,MAF,MBS,MCI,MCN,MCO,MDT,MDW,MEI,MEM,MFE,MFR,MGM,MHT,MIA,MKE,MKG,MLB,MLI,MLU,MOB,MOD,MOT,MQT,MRY,MSN,MSO,MSP,MSY,MTJ,MYR,OAJ,OAK,OGD,OGG,OKC,OMA,OME,ONT,ORD,ORF,OTH,OTZ,OXR,PBI,PDX,PFN,PHF,PHL,PHX,PIA,PIH,PIR,PIT,PLN,PMD,PNS,PSC,PSE,PSG,PSP,PUB,PVD,PWM,RAP,RDD,RDM,RDU,RFD,RHI,RIC,RKS,RNO,ROA,ROC,ROW,RST,RSW,SAN,SAT,SAV,SBA,SBN,SBP,SCC,SCE,SDF,SEA,SFO,SGF,SGU,SHV,SIT,SJC,SJT,SJU,SLC,SLE,SMF,SMX,SNA,SPI,SPS,SRQ,STL,STT,STX,SUN,SUX,SWF,SYR,TEX,TLH,TOL,TPA,TRI,TUL,TUP,TUS,TVC,TWF,TXK,TYR,TYS,VLD,VPS,WRG,WYS,XNA,YAK,YKM,YUM\".split(\",\").toList\n                      val ori = airports.indexOf(x(16)).toString\n                      val des = airports.indexOf(x(17)).toString\n                      val all = x.slice(0, 8) ++ x.slice(11, 15) ++ Array(ori, des) ++ x.slice(18, 21)\n                      LabeledPoint(x(15).toDouble, new DenseVector(all.map(_.toDouble)))\n                    }",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -277,7 +278,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "layout(\n  3,\n  testData.take(20).toList\n          .map(point => (point.label, model.predict(point.features)))\n          .flatMap { case (x,y) => List(x,y, x-y) } \n          .map(x => text(x.toString))\n)",
@@ -292,7 +293,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "// Evaluate model on test instances and compute test error\nval labelsAndPredictions = testData.take(100).toList.map { point =>\n  val prediction = model.predict(point.features)\n  (point.label, prediction)\n}//model.predict(testData.take(1).toList.head.features)\nval testMSE = {\n  val vs = labelsAndPredictions.map{ case(v, p) => math.pow((v - p), 2) }\n  val mean = vs.sum / vs.size\n  mean\n}\nprintln(\"Test Mean Squared Error = \" + testMSE)",
+    "source" : "import org.apache.spark.SparkContext._ // gives access to org.apache.spark.rdd.DoubleRDDFunctions containing `mean`\n\n// Evaluate model on test instances and compute test error\nval labelsAndPredictions = testData.map { point =>\n  val prediction = model.predict(point.features)\n  (point.label, prediction)\n}\nval testMSE = labelsAndPredictions.map{ case(v, p) => math.pow((v - p), 2)}.mean()\nList(\n\"Test Mean Squared Error: \" + testMSE + \".\",\n\"Hence, squared: \" + scala.math.sqrt(testMSE) + \".\"\n)",
     "outputs" : [ ]
   }, {
     "metadata" : { },
