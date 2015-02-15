@@ -1,0 +1,115 @@
+{
+  "metadata" : {
+    "name" : "Untitled3",
+    "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "custom" : null
+  },
+  "cells" : [ {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val rdd = sparkContext.textFile(\"/var/log/syslog\")",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "rdd: org.apache.spark.rdd.RDD[String] = /var/log/syslog MappedRDD[1] at textFile at <console>:26\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "/var/log/syslog MappedRDD[1] at textFile at &lt;console&gt;:26"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 5
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "rdd.count",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res4: Long = 786\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "786"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 6
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val c = rdd.map(_(0)).distinct",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "c: org.apache.spark.rdd.RDD[Char] = MappedRDD[5] at distinct at <console>:28\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "MappedRDD[5] at distinct at &lt;console&gt;:28"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 7
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val log = sparkContext.textFile(\"/home/Sources/noootsab/spark-notebook/logs/sn-session.log\")",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "log: org.apache.spark.rdd.RDD[String] = /home/Sources/noootsab/spark-notebook/logs/sn-session.log MappedRDD[7] at textFile at <console>:26\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "/home/Sources/noootsab/spark-notebook/logs/sn-session.log MappedRDD[7] at textFile at &lt;console&gt;:26"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 8
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "log.map { l =>\n  val L = l + c\n  L\n}",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res5: org.apache.spark.rdd.RDD[String] = MappedRDD[8] at map at <console>:33\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "MappedRDD[8] at map at &lt;console&gt;:33"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 9
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "raw",
+    "source" : ""
+  } ],
+  "nbformat" : 4
+}
