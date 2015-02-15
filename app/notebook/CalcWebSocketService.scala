@@ -50,8 +50,8 @@ class CalcWebSocketService(system: ActorSystem, customSparkConf:Option[Map[Strin
         val operations = new SessionOperationActors(header, session)
         val operationActor = (request: @unchecked) match {
           case ExecuteRequest(counter, code) =>
-            ws.send(header, session, "status", "iopub", Json.obj("execution_state" -> "busy"))
-            ws.send(header, session, "pyin",  "iopub", Json.obj("execution_count" -> counter, "code" -> code))
+            ws.send(header, session, "status", "iopub", Json.obj("execution_state" → "busy"))
+            ws.send(header, session, "pyin",  "iopub", Json.obj("execution_count" → counter, "code" → code))
             operations.singleExecution(counter)
 
           case _: CompletionRequest =>
@@ -79,22 +79,22 @@ class CalcWebSocketService(system: ActorSystem, customSparkConf:Option[Map[Strin
       def singleExecution(counter: Int) = Props(new Actor {
         def receive = {
           case StreamResponse(data, name) =>
-            ws.send(header, session, "stream", "iopub", Json.obj("text" -> data, "name" -> name))
+            ws.send(header, session, "stream", "iopub", Json.obj("text" → data, "name" → name))
 
           case ExecuteResponse(html) =>
-            ws.send(header, session, "execute_result", "iopub", Json.obj("execution_count" -> counter, "data" -> Json.obj("text/html" -> html)))
-            ws.send(header, session, "status", "iopub", Json.obj("execution_state" -> "idle"))
-            ws.send(header, session, "execute_reply", "shell", Json.obj("execution_count" -> counter))
+            ws.send(header, session, "execute_result", "iopub", Json.obj("execution_count" → counter, "data" → Json.obj("text/html" → html)))
+            ws.send(header, session, "status", "iopub", Json.obj("execution_state" → "idle"))
+            ws.send(header, session, "execute_reply", "shell", Json.obj("execution_count" → counter))
             context.stop(self)
 
           case ErrorResponse(msg, incomplete) =>
             if (incomplete) {
-              ws.send(header, session, "pyincomplete", "iopub", Json.obj("execution_count" -> counter, "status" -> "error"))
+              ws.send(header, session, "pyincomplete", "iopub", Json.obj("execution_count" → counter, "status" → "error"))
             } else {
-              ws.send(header, session, "pyerr", "iopub", Json.obj("execution_count" -> counter, "status" -> "error", "ename" -> "Error", "traceback" -> Seq(msg)))
+              ws.send(header, session, "pyerr", "iopub", Json.obj("execution_count" → counter, "status" → "error", "ename" → "Error", "traceback" → Seq(msg)))
             }
-            ws.send(header, session, "status", "iopub", Json.obj("execution_state" -> "idle"))
-            ws.send(header, session, "execute_reply", "shell", Json.obj("execution_count" -> counter))
+            ws.send(header, session, "status", "iopub", Json.obj("execution_state" → "idle"))
+            ws.send(header, session, "execute_reply", "shell", Json.obj("execution_count" → counter))
             context.stop(self)
         }
       })
@@ -102,7 +102,7 @@ class CalcWebSocketService(system: ActorSystem, customSparkConf:Option[Map[Strin
       def completion = Props(new Actor {
         def receive = {
           case CompletionResponse(cursorPosition, candidates, matchedText) =>
-            ws.send(header, session, "complete_reply", "shell", Json.obj("matched_text" -> matchedText, "matches" -> candidates.map(_.toJson).toList))
+            ws.send(header, session, "complete_reply", "shell", Json.obj("matched_text" → matchedText, "matches" → candidates.map(_.toJson).toList, "cursor_start" → (cursorPosition-matchedText.size), "cursor_end" → cursorPosition))
             context.stop(self)
         }
       })
@@ -116,10 +116,10 @@ class CalcWebSocketService(system: ActorSystem, customSparkConf:Option[Map[Strin
               "object_info_reply",
               "shell",
               Json.obj(
-                "found" -> found,
-                "name" -> name,
-                "call_def" -> callDef,
-                "call_docstring" -> "Description TBD"
+                "found" → found,
+                "name" → name,
+                "call_def" → callDef,
+                "call_docstring" → "Description TBD"
               )
             )
             context.stop(self)

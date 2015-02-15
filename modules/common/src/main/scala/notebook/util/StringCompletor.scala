@@ -7,9 +7,7 @@ import play.api.libs.json._
  */
 
 case class Match(matchedValue: String, metadata: Map[String, String]) {
-  def toJson = JsObject(
-    ("completion" → JsString(matchedValue)) :: (metadata.map { case (name, value) => (name → JsString(value)) } toList)
-  )
+  def toJson = JsString(matchedValue)
 }
 
 object Match {
