@@ -1,10 +1,3 @@
-/*
- * Copyright (c) 2013  Bridgewater Associates, LP
- *
- * Distributed under the terms of the Modified BSD License.  The full license is in
- * the file COPYING, distributed as part of this software.
- */
-
 package notebook.kernel
 
 import java.io.{StringWriter, PrintWriter, ByteArrayOutputStream}
@@ -232,7 +225,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
             } else {
               // a line like println(...) is technically a val, but returns null for some reason
               // so wrap it in an option in case that happens...
-              Option(line.call("$result")) map { result => Text(result.toString) } getOrElse NodeSeq.Empty
+              Option(line.call("$result")) map { result => Text(try { result.toString } catch { case e => "Fail to `toString` the result: " + e.getMessage }) } getOrElse NodeSeq.Empty
             }
           } else {
             NodeSeq.Empty

@@ -50,7 +50,7 @@ class WebSocketKernelActor(channel: Concurrent.Channel[JsValue], val calcService
         }
 
         case JsString("complete_request") => {
-          val JsString(line) = content \ "line";
+          val JsString(line) = content \ "code";
           val JsNumber(cursorPos) = content \ "cursor_pos"
           calcService.calcActor ! SessionRequest(header, session, CompletionRequest(line, cursorPos.toInt))
         }
