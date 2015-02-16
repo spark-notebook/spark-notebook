@@ -54,18 +54,46 @@ case class ObjectInfoResponse(found: Boolean, name: String, callDef: String, cal
  * @param customSparkConf Map configuring the notebook (spark configuration).
  * @param compilerArgs Command line arguments to pass to the REPL compiler
  */
-class ReplCalculator(initScripts: List[(String, String)], customSparkConf:Option[Map[String, String]], compilerArgs: List[String]) extends Actor with akka.actor.ActorLogging {
-  private var _repl:Option[Repl] = None
+class ReplCalculator(
+  customLocalRepo:Option[String],
+  customRepos:Option[List[String]],
+  customDeps:Option[String],
+  customImports:Option[String],
+  customSparkConf:Option[Map[String, String]],
+  initScripts: List[(String, String)],
+  compilerArgs: List[String]
+) extends Actor with akka.actor.ActorLogging {
 
-  private def repl:Repl = _repl getOrElse {
-    val r = new Repl(compilerArgs, Nil)
-    _repl = Some(r)
-    r
+  private val repoRegex = "(?s)^:local-repo\\s*(.+)\\s*$".r
+  private val remoteRegex = "(?s)^:remote-repo\\s*(.+)\\s*$".r
+  private val authRegex = """(?s)^\s*\(([^\)]+)\)\s*$""".r
+  private val credRegex = """"([^"]+)"\s*,\s*"([^"]+)"""".r //"
+
+  private val cpRegex = "(?s)^:cp\\s*(.+)\\s*$".r
+  private val dpRegex = "(?s)^:dp\\s*(.+)\\s*$".r
+  private val sqlRegex = "(?s)^:sql(?:\\[([a-zA-Z0-9][a-zA-Z0-9]*)\\])?\\s*(.+)\\s*$".r
+  private val shRegex = "(?s)^:sh\\s*(.+)\\s*$".r
+
+  private def remoreRepo(r:String):(String, RemoteRepository) = {
+    val id::tpe::url::rest = r.split("%").toList
+    val (username, password):(Option[String],Option[String]) = rest.headOption.map { auth =>
+      auth match {
+        case authRegex(usernamePassword)   =>
+          val (username, password) = usernamePassword match { case credRegex(username, password) => (username, password) }
+          val u = if (username.startsWith("$")) sys.env.get(username.tail).get else username
+          val p = if (password.startsWith("$")) sys.env.get(password.tail).get else password
+          (Some(u), Some(p))
+        case _                             => (None, None)
+      }
+    }.getOrElse((None, None))
+    val rem = Repos(id.trim,tpe.trim,url.trim,username,password)
+    val logR = r.replaceAll("\"", "\\\\\"")
+    (logR, rem)
   }
 
-  var remotes:List[RemoteRepository] = List(Repos.central, Repos.oss)
+  var remotes:List[RemoteRepository] = List(Repos.central, Repos.oss) ::: customRepos.getOrElse(List.empty[String]).map(remoreRepo _).map(_._2)
 
-  var repo:File = {
+  var repo:File = customLocalRepo.map(x => new File(x)).getOrElse{
     val tmp = new File(System.getProperty("java.io.tmpdir"))
 
     val snb = new File(tmp, "spark-notebook")
@@ -82,15 +110,36 @@ class ReplCalculator(initScripts: List[(String, String)], customSparkConf:Option
 
   def codeRepo = new File(repo, "code")
 
-  private val repoRegex = "(?s)^:local-repo\\s*(.+)\\s*$".r
-  private val remoteRegex = "(?s)^:remote-repo\\s*(.+)\\s*$".r
-  private val authRegex = """(?s)^\s*\(([^\)]+)\)\s*$""".r
-  private val credRegex = """"([^"]+)"\s*,\s*"([^"]+)"""".r //"
+  val (depsJars, depsScript):(List[String],(String, ()=>String)) = customDeps.map { d =>
+    val deps = Deps.script(d, remotes, repo).toOption.getOrElse(List.empty[String])
+    (deps, ("deps", () => s"""
+                    |val CustomJars = ${ deps.mkString("Array(\"", "\",\"", "\")") }
+                    |
+                    """.stripMargin))
+  }.getOrElse((List.empty[String], ("deps", () => "val CustomJars = Array.empty[String]\n")))
 
-  private val cpRegex = "(?s)^:cp\\s*(.+)\\s*$".r
-  private val dpRegex = "(?s)^:dp\\s*(.+)\\s*$".r
-  private val sqlRegex = "(?s)^:sql(?:\\[([a-zA-Z0-9][a-zA-Z0-9]*)\\])?\\s*(.+)\\s*$".r
-  private val shRegex = "(?s)^:sh\\s*(.+)\\s*$".r
+
+
+  ("deps", () => customDeps.map { d =>
+
+    val deps = Deps.script(d, remotes, repo).toOption.getOrElse(List.empty[String])
+
+    (deps, s"""
+    |val CustomJars = ${ deps.mkString("Array(\"", "\",\"", "\")") }
+    |
+    """.stripMargin)
+  }.getOrElse((List.empty[String], "val CustomJars = Array.empty[String]\n")))
+
+  val ImportsScripts = ("imports", () => customImports.map(_ + "\n").getOrElse("\n"))
+
+  private var _repl:Option[Repl] = None
+
+  private def repl:Repl = _repl getOrElse {
+    val r = new Repl(compilerArgs, depsJars)
+    _repl = Some(r)
+    r
+  }
+
 
   // Make a child actor so we don't block the execution on the main thread, so that interruption can work
   private val executor = context.actorOf(Props(new Actor {
@@ -100,28 +149,15 @@ class ReplCalculator(initScripts: List[(String, String)], customSparkConf:Option
           val newCode =
             code match {
               case remoteRegex(r) =>
-                val id::tpe::url::rest = r.split("%").toList
-                val (username, password):(Option[String],Option[String]) = rest.headOption.map { auth =>
-                  auth match {
-                    case authRegex(usernamePassword)   =>
-                      val (username, password) = usernamePassword match { case credRegex(username, password) => (username, password) }
-                      val u = if (username.startsWith("$")) sys.env.get(username.tail).get else username
-                      val p = if (password.startsWith("$")) sys.env.get(password.tail).get else password
-                      (Some(u), Some(p))
-                    case _                             => (None, None)
-                  }
-                }.getOrElse((None, None))
-                val rem = Repos(id.trim,tpe.trim,url.trim,username,password)
-                remotes = rem :: remotes
-                val logR = r.replaceAll("\"", "\\\\\"")
-
+                log.debug("Adding remote repo: " + r)
+                val (logR, remote) = remoreRepo(r)
+                remotes = remote :: remotes
                 s""" "Remote repo added: $logR!" """
 
               case repoRegex(r) =>
-                //TODO... probably copying the existing one would be better
+                log.debug("Updating local repo: " + r)
                 repo = new File(r.trim)
                 repo.mkdirs
-
                 s""" "Repo changed to ${repo.getAbsolutePath}!" """
 
               case dpRegex(cp) =>
@@ -220,6 +256,7 @@ class ReplCalculator(initScripts: List[(String, String)], customSparkConf:Option
 
     def eval(script: () => String):Unit = {
       val sc = script()
+      println("script is :\n" + sc)
       if (sc.trim.length > 0) {
         val (result, _) = repl.evaluate(sc)
         result match {
@@ -232,7 +269,7 @@ class ReplCalculator(initScripts: List[(String, String)], customSparkConf:Option
       } else ()
     }
 
-    val allInitScrips: List[(String, () => String)] = dummyScript :: SparkHookScript :: CustomSparkConfFromNotebookMD :: initScripts.map(x => (x._1, () => x._2))
+    val allInitScrips: List[(String, () => String)] = dummyScript :: SparkHookScript :: depsScript :: ImportsScripts :: CustomSparkConfFromNotebookMD :: initScripts.map(x => (x._1, () => x._2))
     for ((name, script) <- allInitScrips) {
 
       println(s" INIT SCRIPT: $name")

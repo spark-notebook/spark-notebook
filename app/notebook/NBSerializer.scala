@@ -60,9 +60,17 @@ object NBSerializer {
   implicit val languageInfoFormat:Format[LanguageInfo] = Json.format[LanguageInfo]
   val scala:LanguageInfo = LanguageInfo("scala", "scala", "text/x-scala")
 
-  case class Metadata(name: String, user_save_timestamp: Date = new Date(0),
-                      auto_save_timestamp: Date = new Date(0), language_info:LanguageInfo=scala,
-                      trusted:Boolean=true, custom:Option[JsObject]=None)
+  case class Metadata(name: String,
+                      user_save_timestamp: Date = new Date(0),
+                      auto_save_timestamp: Date = new Date(0),
+                      language_info:LanguageInfo=scala,
+                      trusted:Boolean=true,
+                      customLocalRepo:Option[String]=None,
+                      customRepos:Option[List[String]]=None,
+                      customDeps:Option[String]=None,
+                      customImports:Option[String]=None,
+                      customSparkConf:Option[JsObject]=None
+                    )
   implicit val metadataFormat:Format[Metadata] = {
     val f = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     val r:Reads[Metadata] = (
@@ -71,7 +79,11 @@ object NBSerializer {
       (JsPath \ "auto_save_timestamp").read[String].map(x => f.parse(x)) and
       (JsPath \ "language_info").readNullable[LanguageInfo].map(_.getOrElse(scala)) and
       (JsPath \ "trusted").readNullable[Boolean].map(_.getOrElse(true)) and
-      (JsPath \ "custom").readNullable[JsObject]
+      (JsPath \ "customLocalRepo").readNullable[String] and
+      (JsPath \ "customRepos").readNullable[List[String]] and
+      (JsPath \ "customDeps").readNullable[String] and
+      (JsPath \ "customImports").readNullable[String] and
+      (JsPath \ "customSparkConf").readNullable[JsObject]
     )(Metadata.apply _)
 
     val w:Writes[Metadata] =
@@ -85,9 +97,13 @@ object NBSerializer {
           "name" → name,
           "user_save_timestamp" → user_save_timestamp,
           "auto_save_timestamp" → auto_save_timestamp,
-          "language_info" → language_info,
-          "trusted" → trusted,
-          "custom" → m.custom
+          "language_info"       → language_info,
+          "trusted"             → trusted,
+          "customLocalRepo"     → m.customLocalRepo,
+          "customRepos"         → m.customRepos,
+          "customDeps"          → m.customDeps,
+          "customImports"       → m.customImports,
+          "customSparkConf"     → m.customSparkConf
         )
       }
 

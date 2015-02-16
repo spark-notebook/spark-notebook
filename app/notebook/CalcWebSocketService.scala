@@ -1,6 +1,8 @@
 package notebook
 package server
 
+import java.io.File
+
 import scala.concurrent._
 import scala.concurrent.duration._
 
@@ -14,7 +16,17 @@ import notebook.client._
 /**
  * Provides a web-socket interface to the Calculator
  */
-class CalcWebSocketService(system: ActorSystem, customSparkConf:Option[Map[String, String]], initScripts: List[(String, String)], compilerArgs: List[String], remoteDeployFuture: Future[Deploy]) {
+class CalcWebSocketService(
+  system: ActorSystem,
+  customLocalRepo:Option[String],
+  customRepos:Option[List[String]],
+  customDeps:Option[String],
+  customImports:Option[String],
+  customSparkConf:Option[Map[String, String]],
+  initScripts: List[(String, String)],
+  compilerArgs: List[String],
+  remoteDeployFuture: Future[Deploy]) {
+
   implicit val executor = system.dispatcher
 
   val wsPromise = Promise[WebSockWrapper]
@@ -29,10 +41,23 @@ class CalcWebSocketService(system: ActorSystem, customSparkConf:Option[Map[Strin
       // N.B.: without these local copies of the instance variables, we'll capture all sorts of things in our closure
       // that we don't want, then akka's attempts at serialization will fail and kittens everywhere will cry.
       val kCompilerArgs = compilerArgs
-      val kInitScripts = initScripts
+      val kCustomLocalRepo = customLocalRepo
+      val kCustomRepos = customRepos
+      val kCustomDeps = customDeps
+      val kCustomImports = customImports
       val kCustomSparkConf = customSparkConf
+      val kInitScripts = initScripts
       val remoteDeploy = Await.result(remoteDeployFuture, 2 minutes)
-      calculator = context.actorOf(Props(new ReplCalculator(kInitScripts, kCustomSparkConf, kCompilerArgs)).withDeploy(remoteDeploy))
+      calculator = context.actorOf {
+        Props(new ReplCalculator( kCustomLocalRepo,
+                                  kCustomRepos,
+                                  kCustomDeps,
+                                  kCustomImports,
+                                  kCustomSparkConf,
+                                  kInitScripts,
+                                  kCompilerArgs)
+        ).withDeploy(remoteDeploy)
+      }
     }
 
     override def preStart() {

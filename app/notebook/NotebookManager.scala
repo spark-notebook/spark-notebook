@@ -45,9 +45,20 @@ class NotebookManager(val name: String, val notebookDir: File) {
     Stream.from(1) map { i => base + i } filterNot { fn => notebookFile(fn).exists() } head
   }
 
-  def newNotebook(customMetadata:Option[JsObject]=None) = {
+  def newNotebook(
+    customLocalRepo:Option[String]=None,
+    customRepos:Option[List[String]]=None,
+    customDeps:Option[String]=None,
+    customImports:Option[String]=None,
+    customSparkConf:Option[JsObject]=None) = {
     val name = incrementFileName("Untitled")
-    val nb = Notebook(Some(new Metadata(name, custom=customMetadata)), Some(Nil), None, None, None)
+    val nb =  Notebook(
+                Some(new Metadata(name, customLocalRepo=customLocalRepo, customRepos=customRepos, customDeps=customDeps, customImports=customImports, customSparkConf=customSparkConf)),
+                Some(Nil),
+                None,
+                None,
+                None
+              )
     val path = name+extension
     save(name, path, nb, false)
     name
