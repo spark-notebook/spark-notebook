@@ -13,6 +13,7 @@ import com.quantifind.charts.highcharts.{Series=>HSeries, _ }
 import com.quantifind.charts.Highcharts
 
 case class SummarySeries[A:Numeric, B:Numeric](data:Seq[(A,B)], chart:String, f:HSeries=>HSeries=identity[HSeries] _) {
+
   import Highchart._
   lazy val series:HSeries = {
     val series = chart match {
@@ -31,17 +32,21 @@ case class SummarySeries[A:Numeric, B:Numeric](data:Seq[(A,B)], chart:String, f:
   }
 }
 
-case class Plot[A:Numeric, B:Numeric](override val data: Seq[SummarySeries[A,B]], f:Highchart=>Highchart=identity[Highchart])
+case class Plot[A:Numeric, B:Numeric](override val data: Seq[SummarySeries[A,B]], f:Highchart=>Highchart=identity[Highchart], xCat:Option[Seq[String]]=None, yCat:Option[Seq[String]]=None)
   extends JsWorld[SummarySeries[A,B], Highchart] {
 
-    import Highchart._
+  import Highchart._
   override val scripts: List[Script] = List(Script("wispWrap", JsObject(Nil)))
   override val snippets:List[String] = Nil
 
   override lazy val toO:Seq[SummarySeries[A,B]]=>Seq[Highchart] =
-    (ds:Seq[SummarySeries[A,B]]) =>
-      Seq(f(Highchart(ds.map(ss => ss.series) )))
-
+    (ds:Seq[SummarySeries[A,B]]) => {
+      val h = f(Highchart(ds.map(ss => ss.series)))
+      val x = xCat.map(x => h.copy(xAxis = Some(h.xAxis.getOrElse(Array.empty[Axis]) ++ Array(Axis(categories=Some(x.toArray)))))).getOrElse(h)
+      val y = yCat.map(y => h.copy(yAxis = Some(h.yAxis.getOrElse(Array.empty[Axis]) ++ Array(Axis(categories=Some(y.toArray)))))).getOrElse(x)
+      Seq(y)
+    }
+      
   lazy val singleToO = ???
 
   implicit val singleCodec:Codec[JsValue, Highchart] = new Codec[JsValue, Highchart] {
