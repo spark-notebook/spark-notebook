@@ -6,7 +6,7 @@ Spark Notebook
 
 *Fork of the amazing [scala-notebook](https://github.com/Bridgewater/scala-notebook), yet focusing on Massive Dataset Analysis using [Apache Spark](http://spark.apache.org).*
 
-<!-- MarkdownTOC depth=4 autolink=true bracket=round -->
+<!-- MarkdownTOC depth=5 autolink=true bracket=round -->
 
 - [Description](#description)
   - [Discussions](#discussions)
@@ -22,6 +22,10 @@ Spark Notebook
     - [DEB](#deb)
   - [From the sources](#from-the-sources)
     - [Procedure](#procedure)
+      - [Download the code](#download-the-code)
+      - [Launch the server](#launch-the-server)
+      - [Change relevant versions](#change-relevant-versions)
+      - [Create your distribution](#create-your-distribution)
 - [Use](#use)
 - [Features](#features)
   - [Use/Reconfigure Spark](#usereconfigure-spark)
@@ -129,7 +133,7 @@ sudo spark-notebook
 
 
 ### From the sources
-The spark notebook requires a [Java(TM)](http://en.wikipedia.org/wiki/Java_(programming_language)) environment (aka JVM) as runtime and [Play 2.2.6](https://www.playframework.com/documentation/2.2.6/Home) to build it.
+The spark notebook requires a [Java(TM)](http://en.wikipedia.org/wiki/Java_(programming_language)) environment (aka JVM) as runtime and [SBT](http://www.scala-sbt.org/) to build it.
 
 Of course, you will also need a working [GIT](http://git-scm.com/) installation to download the code and build it.
 
@@ -139,8 +143,9 @@ Of course, you will also need a working [GIT](http://git-scm.com/) installation 
 git clone https://github.com/andypetrella/spark-notebook.git
 cd spark-notebook
 ```
+
 ##### Launch the server
-Enter the `play console` by running `play` within the `spark-notebook` folder:
+Enter the `sbt console` by running `sbt` within the `spark-notebook` folder:
 ```
 [info] Loading global plugins from /home/noootsab/.sbt/0.13/plugins
 [info] Loading project definition from /home/Sources/noootsab/spark-notebook/project
@@ -159,7 +164,16 @@ play 2.2.6 built with Scala 2.10.3 (running Java 1.7.0_72), http://www.playframe
 [spark-notebook] $
 ```
 
-To create your distribution
+##### Change relevant versions
+When using **Spark** we generally have to take a lot of care with the **Spark** version itself but also the **Hadoop** version.
+There is another dependency which is tricky to update, the **jets3t** one.
+
+To update that, you can pass those version as properties, here is an example with the current default ones:
+```
+sbt -Dspark.version="spark.version", "1.2.0" -D"hadoop.version"="1.0.4" -D"jets3t.version"="0.7.1"
+```
+
+##### Create your distribution
 ```
 [spark-notebook] $ dist
 ```
