@@ -147,14 +147,18 @@ object Deps extends java.io.Serializable {
   }
 
   def script(cp:String, remotes:List[RemoteRepository], repo:java.io.File):Try[List[String]] = {
+    //println(" -------------- DP --------------- ")
     val lines = cp.trim().split("\n").toList.map(_.trim()).filter(_.size > 0).toSet
     val includes = lines map (Deps.parseInclude _) collect { case Some(x) => x }
+    //println(includes)
     val excludes = lines map (Deps.parseExclude _) collect { case Some(x) => x }
+    //println(excludes)
     val excludesFns = excludes map (Deps.transitiveExclude _)
 
     val tryDeps:Try[List[String]] = includes.foldLeft(Try(List.empty[String])) { case (t, a) =>
       t flatMap { l => Try(l ::: Deps.resolve(a, excludesFns)(remotes, repo)) }
     }
+    //println(tryDeps)
     tryDeps
   }
 

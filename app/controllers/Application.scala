@@ -23,6 +23,7 @@ import akka.util.Timeout
 import notebook._
 import notebook.server._
 import notebook.kernel.remote._
+import notebook.NBSerializer.Metadata
 
 object AppUtils {
   import play.api.Play.current
@@ -105,16 +106,40 @@ object Application extends Controller {
 
     val r = Reads.map[String]
 
-    // Load the notebook → get the metadata → get custom → git it to CalcWebSocketService
-    val custom:Option[Map[String, String]] = for {
+    // Load the notebook → get the metadata
+    val md:Option[Metadata] = for {
       p <- notebookPath
       n <- nbm.load(p.dropRight(".snb".size))
       m <- n.metadata
-      c <- m.custom
-      _ = Logger.info("CUSTOM::: " + c)
+    } yield m
+
+    val customLocalRepo:Option[String] = md.flatMap(_.customLocalRepo)
+
+    val customRepos:Option[List[String]] = md.flatMap(_.customRepos)
+
+    val customDeps:Option[String] = md.flatMap(_.customDeps)
+
+    val customImports:Option[String] = md.flatMap(_.customImports)
+
+    val customSparkConf:Option[Map[String, String]] = for {
+      m <- md
+      c <- m.customSparkConf
+      _ = Logger.info("customSparkConf >> " + c)
       map <- r.reads(c).asOpt
     } yield map
-    val service = new CalcWebSocketService(kernelSystem, custom, initScripts, compilerArgs, kernel.remoteDeployFuture)
+
+
+
+    val service = new CalcWebSocketService( kernelSystem,
+                                            customLocalRepo,
+                                            customRepos,
+                                            customDeps,
+                                            customImports,
+                                            customSparkConf,
+                                            initScripts,
+                                            compilerArgs,
+                                            kernel.remoteDeployFuture
+                                          )
     kernelIdToCalcService += kId -> service
 
     // todo add MD?
@@ -156,6 +181,26 @@ object Application extends Controller {
     }
   }
 
+  /**
+   *  {
+   *    "name": "Med At Scale",
+   *    "profile": "Local",
+   *    "template": {
+   *      "customLocalRepo" : "/home/noootsab/.m2/repository",
+   *      "customRepos"     : [
+   *        "s3-repo % default % s3://<bucket-name>/<path-to-repo> % (\"$AWS_ACCESS_KEY_ID\", \"$AWS_SECRET_ACCESS_KEY\")",
+   *        "local % default % file://home/noootsab/.m2/repository"
+   *      ],
+   *      "customDeps"      : "med-at-scale        %  ga4gh-model-java % 0.1.0-SNAPSHOT\norg.apache.avro     %  avro-ipc         % 1.7.6\n- org.mortbay.jetty % org.eclipse.jetty % _",
+   *      "customImports"   : "import scala.util.Random\n",
+   *      "customSparkConf" : {
+   *        "spark.app.name": "Notebook",
+   *        "spark.master": "local[8]",
+   *        "spark.executor.memory": "1G"
+   *      }
+   *    }
+   *  }
+   */
   def addCluster() = Action.async(parse.tolerantJson) { request =>
     val json = request.body
     implicit val ec = kernelSystem.dispatcher
@@ -197,15 +242,53 @@ object Application extends Controller {
     getNotebook(name, name+".snb", "json")
   }
 
+
   def newNotebook() = Action(parse.tolerantText) { request =>
     val text = request.body
-    val customMetadata = Try(text).flatMap(j => Try(Json.parse(j) \ "custom")).toOption flatMap {
-      case x:JsObject  => Some(x)
-      case `JsNull`    => None
-      case y           => throw new RuntimeException("Cannot created notebook with " + y)
-    }
+    Logger.warn(text)
+    val custom = for {
+      x <- Try(Json.parse(request.body))
+      t <- Try((x \ "custom").as[JsObject])
+    } yield t
 
-    val name = nbm.newNotebook(customMetadata)
+    val customLocalRepo = (for {
+      t <- custom
+      j <- Try((t \ "customLocalRepo").as[String])
+    } yield j).toOption
+
+    val customRepos = (for {
+      t <- custom
+      j <- Try((t \ "customRepos").as[List[String]])
+    } yield j).toOption
+
+    val customDeps = (for {
+      t <- custom
+      j <- Try((t \ "customDeps").as[String])
+    } yield j).toOption
+
+    val customImports = (for {
+      t <- custom
+      j <- Try((t \ "customImports").as[String])
+    } yield j).toOption
+
+    val customMetadata = (for {
+      t <- custom
+      j <- Try(t \ "customSparkConf") if j.isInstanceOf[JsObject]
+    } yield j.asInstanceOf[JsObject]).toOption
+
+    Logger.info("*****************************************************************")
+    Logger.info(customLocalRepo.toString)
+    Logger.info(customRepos.toString)
+    Logger.info(customDeps.toString)
+    Logger.info(customImports.toString)
+    Logger.info(customMetadata.toString)
+
+    val name = nbm.newNotebook(
+      customLocalRepo,
+      customRepos,
+      customDeps,
+      customImports,
+      customMetadata)
     Logger.info("new: " + name)
     Redirect(routes.Application.content("notebook", name))
   }
