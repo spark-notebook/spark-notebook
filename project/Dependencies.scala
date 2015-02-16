@@ -19,12 +19,12 @@ object Dependencies {
   val akkaSlf4j               = "org.spark-project.akka"    %%          "akka-slf4j"          %    akkaVersion
 
   val breeze                  = "org.scalanlp"              %%         "breeze"               %       "0.10"        excludeAll(ExclusionRule("junit"), ExclusionRule("org.apache.commons", "commons-math3"))
-  val defaultSparkVersion     = "1.2.0"
+  val defaultSparkVersion     = sys.props.getOrElse("spark.version", "1.2.0")
   def sparkRepl(v:String)     = "org.apache.spark"          %%         "spark-repl"           %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
   def sparkSQL(v:String)      = "org.apache.spark"          %%         "spark-sql"            %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
-  val defaultHadoopVersion    = "1.0.4"
+  val defaultHadoopVersion    = sys.props.getOrElse("hadoop.version", "1.0.4")
   def hadoopClient(v:String)  = "org.apache.hadoop"         %         "hadoop-client"         %         v           excludeAll(ExclusionRule("org.apache.commons", "commons-exec"))
-  val defaultJets3tVersion    = "0.7.1"
+  val defaultJets3tVersion    = sys.props.getOrElse("jets3t.version", "0.7.1")
   def jets3t(v:String)        = "net.java.dev.jets3t"       %            "jets3t"             %         v           force()
 
   val commonsIO               = "org.apache.commons"        %          "commons-io"           %      "1.3.2"
