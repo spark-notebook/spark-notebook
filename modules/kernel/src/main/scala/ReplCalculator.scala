@@ -256,7 +256,7 @@ class ReplCalculator(
 
     def eval(script: () => String):Unit = {
       val sc = script()
-      println("script is :\n" + sc)
+      log.debug("script is :\n" + sc)
       if (sc.trim.length > 0) {
         val (result, _) = repl.evaluate(sc)
         result match {
@@ -271,10 +271,7 @@ class ReplCalculator(
 
     val allInitScrips: List[(String, () => String)] = dummyScript :: SparkHookScript :: depsScript :: ImportsScripts :: CustomSparkConfFromNotebookMD :: initScripts.map(x => (x._1, () => x._2))
     for ((name, script) <- allInitScrips) {
-
-      println(s" INIT SCRIPT: $name")
-      println(script)
-
+      log.info(s" INIT SCRIPT: $name")
       eval(script)
     }
   }
