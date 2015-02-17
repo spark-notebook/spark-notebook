@@ -1,0 +1,53 @@
+{
+  "Example local": {
+    "profile": "Local",
+    "name": "Example local",
+    "status": "stopped",
+    "template" : {
+      "customLocalRepo" : null,
+      "customRepos"     : null,
+      "customDeps"      : null,
+      "customImports"   : null,
+      "customSparkConf" : {
+        "spark.app.name": "Notebook",
+        "spark.master": "local[8]",
+        "spark.executor.memory": "1G"
+      }
+    }
+  },
+  "Example standalone": {
+    "profile": "Standalone",
+    "name": "Example standalone",
+    "status": "stopped",
+    "template" : {
+      "customLocalRepo" : null,
+      "customRepos"     : null,
+      "customDeps"      : null,
+      "customImports"   : null,
+      "customSparkConf" : {
+        "spark.app.name": "Notebook",
+        "spark.master": "spark://<home>:<port>",
+        "spark.executor.memory": "5G"
+      }
+    }
+  },
+  "Example mesos":{
+    "profile": "Mesos",
+    "name": "Example mesos",
+    "status": "stopped",
+    "template" : {
+      "customLocalRepo" : null,
+      "customRepos"     : null,
+      "customDeps"      : null,
+      "customImports"   : null,
+      "customSparkConf" : {
+        "spark.app.name": "Notebook",
+        "spark.master": "mesos://<master>:<port>",
+        "spark.executor.memory": "512m",
+        "spark.executor.uri": "hdfs://<spark>.tgz",
+        "spark.driver.host": "<host>",
+        "spark.local.dir": "<path>"
+      }
+    }
+  }
+}

@@ -28,9 +28,10 @@ import notebook.NBSerializer.Metadata
 object AppUtils {
   import play.api.Play.current
 
-  lazy val config = NotebookConfig(current.configuration.getConfig("manager").get)
-  lazy val nbm = new NotebookManager(config.projectName, config.notebooksDir)
+  lazy val config               = NotebookConfig(current.configuration.getConfig("manager").get)
+  lazy val nbm                  = new NotebookManager(config.projectName, config.notebooksDir)
   lazy val notebookServerConfig = current.configuration.getConfig("notebook-server").get.underlying
+  lazy val clustersConf         = config.config.getConfig("clusters").get
 
   lazy val kernelSystem =  ActorSystem( "NotebookServer",
                                         notebookServerConfig,
@@ -51,6 +52,9 @@ object Application extends Controller {
   implicit def kernelSystem =  AppUtils.kernelSystem
 
   val kernelIdToCalcService = collection.mutable.Map[String, CalcWebSocketService]()
+
+  val clustersActor = kernelSystem.actorOf(Props(NotebookClusters(AppUtils.clustersConf)))
+  implicit val GetClustersTimeout = Timeout(60 seconds)
 
   val project = "Spark Notebook" //TODO from application.conf
   val base_project_url = "/"
@@ -170,9 +174,6 @@ object Application extends Controller {
     Ok(Json.obj()) // TODO using kernelIdToCalcService
   }
 
-
-  val clustersActor = kernelSystem.actorOf(Props( new NotebookClusters ))
-  implicit val GetClustersTimeout = Timeout(60 seconds)
 
   def clusters() = Action.async {
     implicit val ec = kernelSystem.dispatcher
