@@ -28,20 +28,35 @@ Spark Notebook
       - [Create your distribution](#create-your-distribution)
 - [Use](#use)
 - [Features](#features)
-  - [Use/Reconfigure Spark](#usereconfigure-spark)
+- [Configure Spark](#configure-spark)
+  - [Preconfigure Spark](#preconfigure-spark)
+    - [Set local repository](#set-local-repository)
+    - [Add remote repositories](#add-remote-repositories)
+    - [Import (download) dependencies](#import-download-dependencies)
+    - [Default import statements](#default-import-statements)
+    - [Spark Conf](#spark-conf)
+    - [Example](#example)
+    - [Create a preconfigured notebook](#create-a-preconfigured-notebook)
+      - [Update preconfigurations in metadata](#update-preconfigurations-in-metadata)
   - [Use the `form`](#use-the-form)
   - [The `reset` function](#the-reset-function)
   - [Keep an eye on your tasks](#keep-an-eye-on-your-tasks)
-  - [Using (Spark)SQL](#using-sparksql)
-    - [Static SQL](#static-sql)
-    - [Dynamic SQL](#dynamic-sql)
-    - [Show case](#show-case)
-  - [Interacting with JavaScript](#interacting-with-javascript)
+- [Using (Spark)SQL](#using-sparksql)
+  - [Static SQL](#static-sql)
+  - [Dynamic SQL](#dynamic-sql)
+  - [Show case](#show-case)
+- [Shell scripts `:sh`](#shell-scripts-sh)
+- [Interacting with JavaScript](#interacting-with-javascript)
   - [Plotting with D3](#plotting-with-d3)
+  - [WISP](#wisp)
   - [Timeseries with  Rickshaw](#timeseries-with--rickshaw)
   - [Dynamic update of data and plot using Scala's `Future`](#dynamic-update-of-data-and-plot-using-scalas-future)
-  - [Update _Notebook_ `ClassPath`](#update-_notebook_-classpath)
-  - [Update __Spark__ dependencies (`spark.jars`)](#update-__spark__-dependencies-sparkjars)
+- [Update _Notebook_ `ClassPath`](#update-_notebook_-classpath)
+- [Update __Spark__ dependencies (`spark.jars`)](#update-__spark__-dependencies-sparkjars)
+  - [Set `local-repo`](#set-local-repo)
+  - [Add `remote-repo`](#add-remote-repo)
+    - [`remote-repo` with authentication](#remote-repo-with-authentication)
+  - [Download and add dependencies](#download-and-add-dependencies)
 - [IMPORTANT](#important)
 - [KNOWN ISSUES](#known-issues)
   - [`User limit of inotify watches reached`](#user-limit-of-inotify-watches-reached)
@@ -198,13 +213,113 @@ In both case, the `scala-notebook` will open a new tab with your notebook in it,
 
 Features
 --------
-### Use/Reconfigure Spark
+
+## Configure Spark
+Another way to configure Spark is to 
 Since this project aims directly the usage of Spark, a [SparkContext](https://github.com/apache/spark/blob/master/core%2Fsrc%2Fmain%2Fscala%2Forg%2Fapache%2Fspark%2FSparkContext.scala) is added to the environment and can directly be used without additional effort.
 
 ![Example using Spark](https://raw.github.com/andypetrella/spark-notebook/master/images/simplest-spark.png)
 
+By default, Spark will start with a regular/basic configuration. There are different ways to customize the embedded Spark to your needs.
 
-Spark will start with a regular/basic configuration. There are different ways to customize the embedded Spark to your needs.
+### Preconfigure Spark
+The cleanest way to configure Spark is actually to use the preconfiguration feature available in the **clusters** tab.
+
+The basic idea is to configure a **template** that will act as a factory for notebooks:
+![Clusters](https://raw.github.com/andypetrella/spark-notebook/master/images/clusters.png)
+
+Then you'll have to fill some informations as Json, where you'll have to give a `name` and specify a `profile`. But specially:
+ 
+#### Set local repository
+When adding dependencies, it can be interesting to preconfigure a repository where some dependencies have been already fetched.
+
+This will save the dependency manager to download the internet.
+
+```json
+    "customLocalRepo" : "/<home>/.m2/repository",
+```
+
+#### Add remote repositories
+
+Some dependencies might not be available from usual repositories.
+
+While the context `:remote-repo` is available from the notebook, we can also add them right in the preconfiguration:
+
+```json
+    "customRepos"     : [
+      "s3-repo % default % s3://<bucket-name>/<path-to-repo> % (\"$AWS_ACCESS_KEY_ID\", \"$AWS_SECRET_ACCESS_KEY\")",
+      "local % default % file://<home>/.m2/repository"
+    ],
+```
+
+#### Import (download) dependencies
+
+Adding dependencies in the classpath **and** in the spark context can be done, this way (see also `:dp`).
+
+```json
+    "customDeps"      : "med-at-scale        %  ga4gh-model-java % 0.1.0-SNAPSHOT\norg.apache.avro     %  avro-ipc         % 1.7.6\n- org.mortbay.jetty % org.eclipse.jetty % _",
+```
+
+
+#### Default import statements
+
+Some package, classes, types, functions and so forth could be automatically imported, by using:
+
+```json
+    "customImports"   : "import scala.util.Random\n",
+```
+
+#### Spark Conf
+
+Apache Spark needs some configuration to access clusters, tune the memory and [many others](http://spark.apache.org/docs/latest/configuration.html).
+
+For this configuration to be shareable, and you don't want to use the `reset` functions, you can add:
+
+```json
+    "customSparkConf" : {
+      "spark.app.name": "Notebook",
+      "spark.master": "local[8]",
+      "spark.executor.memory": "1G"
+    }
+```
+
+#### Example
+```json
+{
+  "name": "My cluster conf",
+  "profile": "Local",
+  "template": {
+    "customLocalRepo" : "/<home>/.m2/repository",
+    "customRepos"     : [
+      "s3-repo % default % s3://<bucket-name>/<path-to-repo> % (\"$AWS_ACCESS_KEY_ID\", \"$AWS_SECRET_ACCESS_KEY\")",
+      "local % default % file://<home>/.m2/repository"
+    ],
+    "customDeps"      : "med-at-scale        %  ga4gh-model-java % 0.1.0-SNAPSHOT\norg.apache.avro     %  avro-ipc         % 1.7.6\n- org.mortbay.jetty % org.eclipse.jetty % _",
+    "customImports"   : "import scala.util.Random\n",
+    "customSparkConf" : {
+      "spark.app.name": "Notebook",
+      "spark.master": "local[8]",
+      "spark.executor.memory": "1G"
+    }
+  }
+}
+```
+
+![Clusters](https://raw.github.com/andypetrella/spark-notebook/master/images/conf_cluster.png)
+
+#### Create a preconfigured notebook
+Now you can use the configuration, by clicking `create`
+![Clusters](https://raw.github.com/andypetrella/spark-notebook/master/images/create_pre_notebook.png)
+
+You'll have the hand on the configuration (fine tuning) before creating the notebook:
+![Clusters](https://raw.github.com/andypetrella/spark-notebook/master/images/conf_new_notebook.png)
+
+##### Update preconfigurations in metadata
+Actually, the configuration are stored in the `metadata` of the notebooks.
+
+To change them, simply go to `edit > Edit Notebook Metadata` and you'll have:
+![Clusters](https://raw.github.com/andypetrella/spark-notebook/master/images/edit_conf_notebook.png)
+
 
 ### Use the `form`
 In order to adapt the configuration of the `SparkContext`, one can add the widget `notebook.front.widgets.Spark`.
@@ -258,7 +373,7 @@ Counting the words of a [wikipedia dump](http://en.wikipedia.org/wiki/Wikipedia:
 ![Showing progress](https://raw.github.com/andypetrella/spark-notebook/master/images/spark-tracker.png)
 
 
-### Using (Spark)SQL
+## Using (Spark)SQL
 Spark comes with this handy and cool feature that we can write some SQL queries rather than boilerplating with
 Scala or whatever code, with the clear advantage that the resulting DAG is optimized.
 
@@ -269,7 +384,7 @@ dataRDD.registerTempTable("data")
 ```
 Now, we can play with SQL in two different ways, the static and the dynamic ones.
 
-#### Static SQL
+### Static SQL
 Then we can play with this `data` table like so:
 ```
 :sql select col1 from data where col2 == 'thingy'
@@ -288,7 +403,7 @@ This variable is reactive meaning that it react to the change of the SQL result.
 
 The power of this reactivity is increased when we use SQL with dynamic parts.
 
-#### Dynamic SQL
+### Dynamic SQL
 A dynamic SQL is looking like a static SQL but where specific tokens are used. Such tokens are taking the form: {`type`: `variableName`}.
 
 When executing the command, the notebook will produce a form by generating on input for each dynamic part. See the show case below.
@@ -304,13 +419,20 @@ When changing the value in the inputs, the SQL is compiled on the server and the
 Again, the result is completely reactive, hence using the `react` function is mandatory to use the underlying SchemaRDD (when it becomes valid!).
 
 
-#### Show case
+### Show case
 This is how it looks like in the notebook:
 
 ![Using SQL](https://raw.github.com/andypetrella/spark-notebook/master/images/reactive-spark-sql.png)
 
 
-### Interacting with JavaScript
+## Shell scripts `:sh`
+There is a way to easily use (rudimentary) shell scripts via the `:sh` context.
+
+```sh
+:sh ls -la ~/data
+```
+
+## Interacting with JavaScript
 Showing numbers can be good but great analysis reports should include relevant charts, for that we need JavaScript to manipulate the notebook's DOM.
 
 For that purpose, a notebook can use the `Playground` abstraction. It allows us to create data in Scala and use it in predefined JavaScript functions (located under `assets/javascripts/notebook`) or even JavaScript snippets (that is, written straight in the notebook as a Scala `String` to be sent to the JavaScript interpreter).
@@ -340,6 +462,27 @@ For instance, `linePlot` is used like so:
 
 
 > Note: This is subject to future change because it would be better to use `playground` for this purpose.
+
+### [WISP](https://github.com/quantifind/wisp)
+WISP is really easy to use to draw plots, however a simple wrapper has been created to ease the integration.
+
+First import the helper:
+```scala
+import notebook.front.third.wisp._
+```
+
+Here is how you can draw an area chart:
+```scala
+Plot(Seq(SummarySeries((0 to 9) zip (10 to 100 by 10), "area")))
+```
+
+And a bar plot with category values
+```scala
+import com.quantifind.charts.highcharts.Axis
+Plot(Seq(SummarySeries((0 to 9) zip (10 to 100 by 10), "column")),
+    xCat = Some(Seq("a", "b", "c", "d", "e", "f", "g", "h", "i", "j"))
+)
+```
 
 ### Timeseries with  [Rickshaw](http://code.shutterstock.com/rickshaw/)
 Plotting timeseries is very common, for this purpose the spark notebook includes Rickshaw that quickly enables handsome timeline charts.
@@ -392,7 +535,7 @@ The results will be:
 ![Update Timeseries Result](https://raw.github.com/andypetrella/spark-notebook/master/images/dyn-ts.gif)
 
 
-### Update _Notebook_ `ClassPath`
+## Update _Notebook_ `ClassPath`
 Keeping your notebook runtime updated with the libraries you need in the classpath is usually cumbersome as it requires updating the server configuration in the SBT definition and restarting the system. Which is pretty sad because it requires a restart, rebuild and is not contextual to the notebook!
 
 Hence, a dedicated context has been added to the block, `:cp` which allows us to add specifiy __local paths__ to jars that will be part of the classpath.
@@ -429,14 +572,46 @@ Here is what it'll look like in the notebook:
 
 ![Simple Classpath](https://raw.github.com/andypetrella/spark-notebook/master/images/simple-cp.png)
 
-### Update __Spark__ dependencies (`spark.jars`)
+## Update __Spark__ dependencies (`spark.jars`)
 So you use Spark, hence you know that it's not enough to have the jars locally added to the Driver's classpath.
 
 Indeed, workers needs to have them in their classpath. One option would be to update the list of jars (`spark.jars` property) provided to the `SparkConf` using the `reset` function.
 
 However, this can be very tricky when we need to add jars that have themselves plenty of dependencies.
 
-However, there is another context available to update both the classpath on the notebook and in Spark
+Thus, there is another context available to update both the classpath on the notebook and in Spark. Before introducing it, we need first to introduce two other concepts.
+
+### Set `local-repo`
+When updating you dependencies, you can either leave the system create a repo (temporary) for you where it'll fetch the dependencies.
+
+Or, you can set it yourself by using the `:local-repo` this way:
+```
+:local-repo /path/to/repo
+```
+
+This way, you can reuse local dependencies or reuse pre-downloaded ones.
+
+### Add `remote-repo`
+
+To instruct the system where to look for dependencies, you'll have to use the `:remote-repo` context:
+```
+:remote-repo oss-sonatype % default % https://oss.sonatype.org/content/repositories/releases/
+```
+
+Above we defined a repo named `oss-sonatype` with `default` structure at localtion `https://oss.sonatype.org/content/repositories/releases/`.
+
+#### `remote-repo` with authentication
+
+Some repos (on S3 for instance) require authentication, for this you can add them **literally** or using **env variables**:
+
+```
+:remote-repo :remote-repo s3-repo % default % s3://<bucket-name>/<path-to-repo> % ("$AWS_ACCESS_KEY_ID", "$AWS_SECRET_ACCESS_KEY")
+```
+
+
+
+### Download and add dependencies
+So to add dependencies based on the context that has been set using the above contexts can be done using `:dp`.
 
 ```
 :dp
