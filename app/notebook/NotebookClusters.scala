@@ -1,14 +1,17 @@
 package notebook
 package server
 
+import java.io.{File, FileInputStream, FileWriter}
+
 import scala.concurrent._
 import scala.concurrent.duration._
 
 import akka.actor._
 
+import play.api.{Configuration, Logger}
 import play.api.libs.json._
 
-class NotebookClusters(initClusters: Map[String, JsObject] = NotebookClusters.examples) extends Actor with ActorLogging {
+class NotebookClusters(store:File, initClusters: Map[String, JsObject]) extends Actor with ActorLogging {
   import NotebookClusters._
 
   var clusters:Map[String, JsObject] = initClusters
@@ -16,10 +19,28 @@ class NotebookClusters(initClusters: Map[String, JsObject] = NotebookClusters.ex
   def receive = {
     case Add(name, o)    =>
       clusters = clusters + (name → o)
+      dump()
       sender ! o
-    case Remove(name, o) => clusters = clusters - name
-    case Get(name)       => sender ! clusters.get(name)
-    case All             => sender ! clusters.values.toList
+
+    case Remove(name, o) =>
+      clusters = clusters - name
+      dump()
+
+    case Get(name)       =>
+      sender ! clusters.get(name)
+
+    case All             =>
+      sender ! clusters.values.toList
+  }
+
+  def dump() {
+    val j = Json.prettyPrint(JsObject(clusters.toSeq))
+    val w = new FileWriter(store, false)
+    try {
+      w.write(j)
+    } finally {
+      w.close
+    }
   }
 }
 
@@ -29,45 +50,32 @@ object NotebookClusters {
   case class Get(name:String)
   case object All
 
-  val standalone = """
-  |{
-  |  "spark.app.name": "Notebook",
-  |  "spark.master": "spark://<master>:<port>",
-  |  "spark.executor.memory": "512m"
-  |}
-  """.stripMargin
+  def apply(config: Configuration):NotebookClusters = {
+    val clustersFile = config.getString("file").map(new File(_)).getOrElse(new File("./conf/clusters"))
 
-  val mesos = """
-  |{
-  |  "spark.app.name": "Notebook",
-  |  "spark.master": "mesos://<master>:<port>",
-  |  "spark.executor.memory": "512m",
-  |  "spark.executor.uri": "hdfs://<spark>.tgz",
-  |  "spark.driver.host": "<host>",
-  |  "spark.local.dir": "<path>"
-  |}
-  """.stripMargin
+    val source = scala.io.Source.fromFile(clustersFile)
+    val lines = source.mkString
+    source.close()
 
-  val examples:Map[String, JsObject] = Map(
-    ("Standalone" → Json.parse(
-      s"""
-      |{
-      |  "profile": "Standalone",
-      |  "name": "ec2 <host>",
-      |  "status": "stopped",
-      |  "template" : $standalone
-      |}
-      |""".stripMargin.trim
-    ).asInstanceOf[JsObject]),
-    ("Mesos" → Json.parse(
-      s"""
-      |{
-      |  "profile": "Mesos",
-      |  "name": "Integration env",
-      |  "status": "stopped",
-      |  "template" : $mesos
-      |}
-      |""".stripMargin.trim
-    ).asInstanceOf[JsObject])
-  )
+    val j = Json.parse(lines)
+    val init = j match {
+      case JsArray(xs)     =>
+        val v = xs.map(x => ((x \ "name").as[String], x)).toMap
+        val m = v.collect{case x@(_, o:JsObject) => x}.toMap.asInstanceOf[Map[String, JsObject]]
+        if (m.size != v.size) {
+          Logger.warn("Some items have been discarded from clusters → no Json Objects!")
+        }
+        m
+
+      case o@JsObject(xs)  =>
+        val v = o.value
+        val m = v.collect{case x@(_, o:JsObject) => x}.toMap.asInstanceOf[Map[String, JsObject]]
+        if (m.size != v.size) {
+          Logger.warn("Some items have been discarded from clusters → no Json Objects!")
+        }
+        m
+      case x               => throw new IllegalStateException("Cannot load clusters got: " + x)
+    }
+    new NotebookClusters(clustersFile, init)
+  }
 }
