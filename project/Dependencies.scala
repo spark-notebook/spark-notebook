@@ -23,7 +23,7 @@ object Dependencies {
   def sparkRepl(v:String)     = "org.apache.spark"          %%         "spark-repl"           %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
   def sparkSQL(v:String)      = "org.apache.spark"          %%         "spark-sql"            %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
   val defaultHadoopVersion    = sys.props.getOrElse("hadoop.version", "1.0.4")
-  def hadoopClient(v:String)  = "org.apache.hadoop"         %         "hadoop-client"         %         v           excludeAll(ExclusionRule("org.apache.commons", "commons-exec"))
+  def hadoopClient(v:String)  = "org.apache.hadoop"         %         "hadoop-client"         %         v           excludeAll(ExclusionRule("org.apache.commons", "commons-exec"), ExclusionRule("commons-codec", "commons-codec"))
   val defaultJets3tVersion    = sys.props.getOrElse("jets3t.version", "0.7.1")
   def jets3t(v:String)        = "net.java.dev.jets3t"       %            "jets3t"             %         v           force()
 
@@ -70,7 +70,7 @@ object Dependencies {
   }
 
   val crossConf = Map(
-    SparkVersion.`1.2.0` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.3.0`, `2.4.0`) }
+    SparkVersion.`1.2.0` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`) }
   )
 
   val extraConf:Map[(SparkVersion.Value, HadoopVersion.Value), List[sbt.Def.Setting[_]]] = Map(

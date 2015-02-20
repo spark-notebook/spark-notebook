@@ -1,0 +1,472 @@
+{
+  "metadata" : {
+    "name" : "Local Analysis with Adam",
+    "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customSparkConf" : null
+  },
+  "cells" : [ {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : ":local-repo /tmp/spark-notebook/repo",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res1: String = Repo changed to /tmp/spark-notebook/repo!\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "Repo changed to /tmp/spark-notebook/repo!"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 1
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : ":dp org.bdgenomics.adam % adam-apis % 0.16.0\n- org.apache.hadoop % hadoop-client %   _\n- org.apache.spark  % spark-core    %   _\n- org.scala-lang    %     _         %   _\n- org.scoverage     %     _         %   _\n+ org.apache.spark  %  spark-mllib_2.10  % 1.2.0",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "jars: Array[String] = [Ljava.lang.String;@18ca6667\nres2: List[String] = List(/tmp/spark-notebook/repo/org/apache/curator/curator-recipes/2.4.0/curator-recipes-2.4.0.jar, /tmp/spark-notebook/repo/org/spire-math/spire_2.10/0.7.4/spire_2.10-0.7.4.jar, /tmp/spark-notebook/repo/commons-io/commons-io/2.4/commons-io-2.4.jar, /tmp/spark-notebook/repo/org/spark-project/spark/unused/1.0.0/unused-1.0.0.jar, /tmp/spark-notebook/repo/com/github/rwl/jtransforms/2.4.0/jtransforms-2.4.0.jar, /tmp/spark-notebook/repo/net/jpountz/lz4/lz4/1.2.0/lz4-1.2.0.jar, /tmp/spark-notebook/repo/org/xerial/snappy/snappy-java/1.1.1.6/snappy-java-1.1.1.6.jar, /tmp/spark-notebook/repo/commons-net/commons-net/2.2/commons-net-2.2.jar, /tmp/spark-notebook/repo/org/json4s/json4s-jackson_2.10/3.2.10/json4s-jackson_2.10-3.2.1..."
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<table><tr><td>/tmp/spark-notebook/repo/org/apache/curator/curator-recipes/2.4.0/curator-recipes-2.4.0.jar</td></tr><tr><td>/tmp/spark-notebook/repo/org/spire-math/spire_2.10/0.7.4/spire_2.10-0.7.4.jar</td></tr><tr><td>/tmp/spark-notebook/repo/commons-io/commons-io/2.4/commons-io-2.4.jar</td></tr><tr><td>/tmp/spark-notebook/repo/org/spark-project/spark/unused/1.0.0/unused-1.0.0.jar</td></tr><tr><td>/tmp/spark-notebook/repo/com/github/rwl/jtransforms/2.4.0/jtransforms-2.4.0.jar</td></tr><tr><td>/tmp/spark-notebook/repo/net/jpountz/lz4/lz4/1.2.0/lz4-1.2.0.jar</td></tr><tr><td>/tmp/spark-notebook/repo/org/xerial/snappy/snappy-java/1.1.1.6/snappy-java-1.1.1.6.jar</td></tr><tr><td>/tmp/spark-notebook/repo/commons-net/commons-net/2.2/commons-net-2.2.jar</td></tr><tr><td>/tmp/spark-notebook/repo/org/json4s/json4s-jackson_2.10/3.2.10/json4s-jackson_2.10-3.2.10.jar</td></tr><tr><td>/tmp/spark-notebook/repo/org/json4s/json4s-ast_2.10/3.2.10/json4s-ast_2.10-3.2.10.jar</td></tr><tr><td>/tmp/spark-notebook/repo/org/apache/mesos/mesos/0.18.1/mesos-0.18.1-shaded-protobuf.jar</td></tr><tr><td>/tmp/spark-notebook/repo/org/spark-project/pyrolite/2.0.1/pyrolite-2.0.1.jar</td></tr><tr><td>/tmp/spark-notebook/repo/com/twitter/chill-java/0.5.0/chill-java-0.5.0.jar</td></tr><tr><td>/tmp/spark-notebook/repo/org/slf4j/slf4j-log4j12/1.7.5/slf4j-log4j12-1.7.5.jar</td></tr><tr><td>/tmp/spark-notebook/repo/org/eclipse/jetty/jetty-server/8.1.14.v20131031/jetty-server-8.1.14.v20131031.jar</td></tr><tr><td>/tmp/spark-notebook/repo/org/tachyonproject/tachyon-client/0.5.0/tachyon-client-0.5.0.jar</td></tr><tr><td>/tmp/spark-notebook/repo/com/clearspring/analytics/stream/2.7.0/stream-2.7.0.jar</td></tr><tr><td>/tmp/spark-notebook/repo/com/twitter/parquet-generator/1.6.0rc3/parquet-generator-1.6.0rc3.jar</td></tr><tr><td>/tmp/spark-notebook/repo/jline/jline/0.9.94/jline-0.9.94.jar</td></tr><tr><td>/tmp/spark-notebook/repo/org/apache/spark/spark-sql_2.10/1.2.0/spark-sql_2.10-1.2.0.jar</td></tr><tr><td>/tmp/spark-notebook/repo/org/slf4j/jcl-over-slf4j/1.7.5/jcl-over-slf4j-1.7.5.jar</td></tr><tr><td>/tmp/spark-notebook/repo/org/codehaus/jackson/jackson-mapper-asl/1.8.8/jackson-mapper-asl-1.8.8.jar</td></tr><tr><td>/tmp/spark-notebook/repo/net/sourceforge/f2j/arpack_combined_all/0.1/arpack_combined_all-0.1.jar</td></tr><tr><td>/tmp/spark-notebook/repo/io/netty/netty/3.8.0.Final/netty-3.8.0.Final.jar</td></tr><tr><td>...</td></tr></table>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 2
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "reset(lastChanges = _.set(\"spark.serializer\", \"org.apache.spark.serializer.KryoSerializer\")\n                     .set(\"spark.kryo.registrator\", \"org.bdgenomics.adam.serialization.ADAMKryoRegistrator\")\n                     .set(\"spark.kryoserializer.buffer.mb\", \"4\")\n                     .set(\"spark.kryo.referenceTracking\", \"true\")\n                     .setAppName(\"ADAM 1000genomes\")\n                     .set(\"spark.executor.memory\", \"3g\")\n)",
+    "outputs" : [ {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 3
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import org.apache.hadoop.fs.{FileSystem, Path}\n//import org.bdgenomics.adam.converters.{ VCFLine, VCFLineConverter, VCFLineParser }\nimport org.bdgenomics.formats.avro.{Genotype, FlatGenotype}\nimport org.bdgenomics.adam.models.VariantContext\nimport org.bdgenomics.adam.rdd.ADAMContext._\nimport org.bdgenomics.adam.rdd.ADAMContext\nimport org.apache.spark.rdd.RDD",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import org.apache.hadoop.fs.{FileSystem, Path}\nimport org.bdgenomics.formats.avro.{Genotype, FlatGenotype}\nimport org.bdgenomics.adam.models.VariantContext\nimport org.bdgenomics.adam.rdd.ADAMContext._\nimport org.bdgenomics.adam.rdd.ADAMContext\nimport org.apache.spark.rdd.RDD\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 4
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import sys.process._\nval vcf = \"/tmp/6-sample.vcf\"\nif (!new java.io.File(vcf).exists) {\n  new java.net.URL(\"http://med-at-scale.s3.amazonaws.com/samples/6-sample.vcf\")  #> new java.io.File(vcf) !!\n}\n",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "warning: there were 1 feature warning(s); re-run with -feature for details\nimport sys.process._\nvcf: String = /tmp/6-sample.vcf\nres4: Any = ()\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "()"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 5
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val gts: RDD[Genotype] = sparkContext.loadGenotypes(vcf)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "gts: org.apache.spark.rdd.RDD[org.bdgenomics.formats.avro.Genotype] = FlatMappedRDD[2] at flatMap at ADAMContext.scala:464\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "FlatMappedRDD[2] at flatMap at ADAMContext.scala:464"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 6
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val localAdam = vcf+\"6\"+\".adam\"",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "localAdam: String = /tmp/6-sample.vcf6.adam\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "/tmp/6-sample.vcf6.adam"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 10
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import org.bdgenomics.adam.rdd.ADAMContext._\ngts.adamParquetSave(localAdam)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import org.bdgenomics.adam.rdd.ADAMContext._\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 11
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val gts2:RDD[Genotype] = sparkContext.loadGenotypes(localAdam)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "gts2: org.apache.spark.rdd.RDD[org.bdgenomics.formats.avro.Genotype] = MappedRDD[6] at map at ADAMContext.scala:172\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "MappedRDD[6] at map at ADAMContext.scala:172"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 12
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "gts2.first",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res7: org.bdgenomics.formats.avro.Genotype = {\"variant\": {\"contig\": {\"contigName\": \"6\", \"contigLength\": null, \"contigMD5\": null, \"referenceURL\": null, \"assembly\": null, \"species\": null}, \"start\": 1098044, \"end\": 1098045, \"referenceAllele\": \"G\", \"alternateAllele\": \"C\", \"svAllele\": null}, \"variantCallingAnnotations\": {\"variantCallErrorProbability\": 100.0, \"variantIsPassing\": true, \"variantFilters\": [], \"readDepth\": 15014, \"downsampled\": null, \"baseQRankSum\": null, \"clippingRankSum\": null, \"fisherStrandBiasPValue\": null, \"haplotypeScore\": null, \"inbreedingCoefficient\": null, \"rmsMapQ\": null, \"mapq0Reads\": null, \"mqRankSum\": null, \"variantQualityByDepth\": null, \"readPositionRankSum\": null, \"vqslod\": null, \"culprit\": null, \"usedForNegativeTrainingSet\": null, \"usedForPositiveTrainingSet\": nul..."
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "{&quot;variant&quot;: {&quot;contig&quot;: {&quot;contigName&quot;: &quot;6&quot;, &quot;contigLength&quot;: null, &quot;contigMD5&quot;: null, &quot;referenceURL&quot;: null, &quot;assembly&quot;: null, &quot;species&quot;: null}, &quot;start&quot;: 1098044, &quot;end&quot;: 1098045, &quot;referenceAllele&quot;: &quot;G&quot;, &quot;alternateAllele&quot;: &quot;C&quot;, &quot;svAllele&quot;: null}, &quot;variantCallingAnnotations&quot;: {&quot;variantCallErrorProbability&quot;: 100.0, &quot;variantIsPassing&quot;: true, &quot;variantFilters&quot;: [], &quot;readDepth&quot;: 15014, &quot;downsampled&quot;: null, &quot;baseQRankSum&quot;: null, &quot;clippingRankSum&quot;: null, &quot;fisherStrandBiasPValue&quot;: null, &quot;haplotypeScore&quot;: null, &quot;inbreedingCoefficient&quot;: null, &quot;rmsMapQ&quot;: null, &quot;mapq0Reads&quot;: null, &quot;mqRankSum&quot;: null, &quot;variantQualityByDepth&quot;: null, &quot;readPositionRankSum&quot;: null, &quot;vqslod&quot;: null, &quot;culprit&quot;: null, &quot;usedForNegativeTrainingSet&quot;: null, &quot;usedForPositiveTrainingSet&quot;: null}, &quot;sampleId&quot;: &quot;HG00096&quot;, &quot;sampleDescription&quot;: null, &quot;processingDescription&quot;: null, &quot;alleles&quot;: [&quot;Ref&quot;, &quot;Ref&quot;], &quot;expectedAlleleDosage&quot;: null, &quot;referenceReadDepth&quot;: null, &quot;alternateReadDepth&quot;: null, &quot;readDepth&quot;: null, &quot;minReadDepth&quot;: null, &quot;genotypeQuality&quot;: null, &quot;genotypeLikelihoods&quot;: [], &quot;nonReferenceLikelihoods&quot;: [], &quot;strandBiasComponents&quot;: [], &quot;splitFromMultiAllelic&quot;: false, &quot;isPhased&quot;: true, &quot;phaseSetId&quot;: null, &quot;phaseQuality&quot;: null}"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 13
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "// populations to select\nval pops = Set(\"GBR\", \"ASW\", \"CHB\")",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "pops: scala.collection.immutable.Set[String] = Set(GBR, ASW, CHB)\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "Set(GBR, ASW, CHB)"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 14
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val panelFile = \"/tmp/ALL.panel\"\ns\"wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/integrated_call_samples_v3.20130502.ALL.panel -O ${panelFile}\"!!",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "warning: there were 1 feature warning(s); re-run with -feature for details\npanelFile: String = /tmp/ALL.panel\nres8: String = \"\"\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 15
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import scala.io.Source\ndef extract(filter: (String, String) => Boolean= (s, t) => true) = Source.fromFile(panelFile).getLines().map( line => {\n  val toks = line.split(\"\\t\").toList\n  toks(0) -> toks(1)\n}).toMap.filter( tup => filter(tup._1, tup._2) )\n  \n// panel extract from file, filtering by the 2 populations\ndef panel: Map[String,String] = \n  extract((sampleID: String, pop: String) => pops.contains(pop)) \n  \n// broadcast the panel \nval bPanel = sparkContext.broadcast(panel)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import scala.io.Source\nextract: (filter: (String, String) => Boolean)scala.collection.immutable.Map[String,String]\npanel: Map[String,String]\nbPanel: org.apache.spark.broadcast.Broadcast[Map[String,String]] = Broadcast(4)\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "Broadcast(4)"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 16
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val finalGts = gts2.filter(g =>  bPanel.value.contains(g.getSampleId))",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "finalGts: org.apache.spark.rdd.RDD[org.bdgenomics.formats.avro.Genotype] = FilteredRDD[7] at filter at <console>:57\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "FilteredRDD[7] at filter at &lt;console&gt;:57"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 17
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val sampleCount = finalGts.map(_.getSampleId.toString.hashCode).distinct.count\ns\"#Samples: $sampleCount\"",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "sampleCount: Long = 255\nres9: String = #Samples: 255\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "#Samples: 255"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 18
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "//utils\nimport scala.collection.JavaConverters._\nimport org.bdgenomics.formats.avro._\ndef variantId(g:Genotype):String = {\n  val name = g.getVariant.getContig.getContigName\n    val start = g.getVariant.getStart\n    val end = g.getVariant.getEnd\n    s\"$name:$start:$end\"\n}\ndef asDouble(g:Genotype):Double = g.getAlleles.asScala.count(_ != GenotypeAllele.Ref)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import scala.collection.JavaConverters._\nimport org.bdgenomics.formats.avro._\nvariantId: (g: org.bdgenomics.formats.avro.Genotype)String\nasDouble: (g: org.bdgenomics.formats.avro.Genotype)Double\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 19
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import org.apache.spark.SparkContext._\n// A VARIANT SHOULD HAVE sampleCount GENOTYPES\nval variantsById = finalGts.keyBy(g => variantId(g).hashCode).groupByKey.cache\nval missingVariantsRDD = variantsById.filter { case (k, it) => it.size != sampleCount }.keys\n\n// IF SAVING LIST OF MISSING VARIANTS IS REQUIRED...\n//missingVariantsRDD.saveAsObjectFile(hu(\"/model/missing-variants\"))\n\n// could be broadcased as well...\nval missingVariants = missingVariantsRDD.collect().toSet",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import org.apache.spark.SparkContext._\nvariantsById: org.apache.spark.rdd.RDD[(Int, Iterable[org.bdgenomics.formats.avro.Genotype])] = ShuffledRDD[13] at groupByKey at <console>:71\nmissingVariantsRDD: org.apache.spark.rdd.RDD[Int] = MappedRDD[15] at keys at <console>:72\nmissingVariants: scala.collection.immutable.Set[Int] = Set(-1204059027, -664348693, 648598023, -954555014, 675234500, -1826335315, -1778573329, -1323904278, -689304855, 1847923513, -11690175, -1356298851, 1568633220, 823340903, 1489361209, 1823013437, -1712759773, 1159433529, 263919723, 1845806579, 134248681, -204602923, -699270765, -1320130321, -1228021670, -1476053663, -1351234689, -457713779, 1885591595, 174554599, -1357917389, -2144376393, 1413251731, 1509815013, 1861478947, -1241825629, 328840487, 47321959, 53554084..."
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "Set(-1204059027, -664348693, 648598023, -954555014, 675234500, -1826335315, -1778573329, -1323904278, -689304855, 1847923513, -11690175, -1356298851, 1568633220, 823340903, 1489361209, 1823013437, -1712759773, 1159433529, 263919723, 1845806579, 134248681, -204602923, -699270765, -1320130321, -1228021670, -1476053663, -1351234689, -457713779, 1885591595, 174554599, -1357917389, -2144376393, 1413251731, 1509815013, 1861478947, -1241825629, 328840487, 47321959, 535540849, -915452670, 939528755, -11698301, -1011962699, 96653779, -681315805, -1018480331, 1252616701, 1334020477, -2067106949, 1790210273, -468114973, -1529212606, 1580585675, 13378293, 801940736, 2023420779)"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 20
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val completeGts = finalGts.filter { g => ! (missingVariants contains variantId(g).hashCode) }",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "completeGts: org.apache.spark.rdd.RDD[org.bdgenomics.formats.avro.Genotype] = FilteredRDD[16] at filter at <console>:78\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "FilteredRDD[16] at filter at &lt;console&gt;:78"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 21
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val sampleToData: RDD[(String, (Double, Int))] =\n    completeGts.map { g => (g.getSampleId.toString, (asDouble(g), variantId(g).hashCode)) }\n\nval groupedSampleToData = sampleToData.groupByKey",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "sampleToData: org.apache.spark.rdd.RDD[(String, (Double, Int))] = MappedRDD[17] at map at <console>:83\ngroupedSampleToData: org.apache.spark.rdd.RDD[(String, Iterable[(Double, Int)])] = ShuffledRDD[18] at groupByKey at <console>:85\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "ShuffledRDD[18] at groupByKey at &lt;console&gt;:85"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 22
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import org.apache.spark.mllib.linalg.{Vector=>MLVector, Vectors}\ndef makeSortedVector(gts: Iterable[(Double, Int)]): MLVector = Vectors.dense( gts.toArray.sortBy(_._2).map(_._1) )\n\nval dataPerSampleId:RDD[(String, MLVector)] =\n    groupedSampleToData.mapValues { it =>\n        makeSortedVector(it)\n    }\n\nval dataFrame:RDD[MLVector] = dataPerSampleId.values",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import org.apache.spark.mllib.linalg.{Vector=>MLVector, Vectors}\nmakeSortedVector: (gts: Iterable[(Double, Int)])org.apache.spark.mllib.linalg.Vector\ndataPerSampleId: org.apache.spark.rdd.RDD[(String, org.apache.spark.mllib.linalg.Vector)] = MappedValuesRDD[19] at mapValues at <console>:92\ndataFrame: org.apache.spark.rdd.RDD[org.apache.spark.mllib.linalg.Vector] = MappedRDD[20] at values at <console>:96\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "MappedRDD[20] at values at &lt;console&gt;:96"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 23
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import org.apache.spark.mllib.clustering.{KMeans,KMeansModel}\nval model: KMeansModel = KMeans.train(dataFrame, 3, 10)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import org.apache.spark.mllib.clustering.{KMeans, KMeansModel}\nmodel: org.apache.spark.mllib.clustering.KMeansModel = org.apache.spark.mllib.clustering.KMeansModel@e8d622d\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "org.apache.spark.mllib.clustering.KMeansModel@e8d622d"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 24
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val predictions: RDD[(String, (Int, String))] = dataPerSampleId.map(elt => {\n    (elt._1, ( model.predict(elt._2), bPanel.value.getOrElse(elt._1, \"\"))) \n})",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "predictions: org.apache.spark.rdd.RDD[(String, (Int, String))] = MappedRDD[56] at map at <console>:98\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "MappedRDD[56] at map at &lt;console&gt;:98"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 25
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val confMat = predictions.collect.toMap.values\n    .groupBy(_._2).mapValues(_.map(_._1))\n    .mapValues(xs => (1 to 3).map( i => xs.count(_ == i-1)).toList)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "confMat: scala.collection.immutable.Map[String,List[Int]] = Map(GBR -> List(66, 13, 12), ASW -> List(11, 1, 49), CHB -> List(47, 55, 1))\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "Map(GBR -&gt; List(66, 13, 12), ASW -&gt; List(11, 1, 49), CHB -&gt; List(47, 55, 1))"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 26
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "<table>\n<tr><td></td><td>#0</td><td>#1</td><td>#2</td></tr>\n{ for (popu <- confMat) yield\n  <tr><td>{popu._1}</td> { for (cnt <- popu._2) yield \n    <td>{cnt}</td>\n  }\n  </tr>\n}\n</table>",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res10: scala.xml.Elem = \n<table>\n<tr><td></td><td>#0</td><td>#1</td><td>#2</td></tr>\n<tr><td>GBR</td> <td>66</td><td>13</td><td>12</td>\n  </tr><tr><td>ASW</td> <td>11</td><td>1</td><td>49</td>\n  </tr><tr><td>CHB</td> <td>47</td><td>55</td><td>1</td>\n  </tr>\n</table>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<table>\n<tr><td></td><td>#0</td><td>#1</td><td>#2</td></tr>\n<tr><td>GBR</td> <td>66</td><td>13</td><td>12</td>\n  </tr><tr><td>ASW</td> <td>11</td><td>1</td><td>49</td>\n  </tr><tr><td>CHB</td> <td>47</td><td>55</td><td>1</td>\n  </tr>\n</table>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 27
+    } ]
+  } ],
+  "nbformat" : 4
+}
