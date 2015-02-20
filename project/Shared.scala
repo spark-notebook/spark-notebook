@@ -25,7 +25,8 @@ object Shared {
         breeze,
         sparkSQL(sv),
         hadoopClient(hv),
-        jets3t(jv)
+        jets3t(jv),
+        commonsCodec
       )
       libs
     },
