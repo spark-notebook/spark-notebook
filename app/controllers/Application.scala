@@ -187,17 +187,19 @@ object Application extends Controller {
    *    "name": "Med At Scale",
    *    "profile": "Local",
    *    "template": {
-   *      "customLocalRepo" : "/home/noootsab/.m2/repository",
-   *      "customRepos"     : [
-   *        "s3-repo % default % s3://<bucket-name>/<path-to-repo> % (\"$AWS_ACCESS_KEY_ID\", \"$AWS_SECRET_ACCESS_KEY\")",
-   *        "local % default % file://home/noootsab/.m2/repository"
-   *      ],
-   *      "customDeps"      : "med-at-scale        %  ga4gh-model-java % 0.1.0-SNAPSHOT\norg.apache.avro     %  avro-ipc         % 1.7.6\n- org.mortbay.jetty % org.eclipse.jetty % _",
-   *      "customImports"   : "import scala.util.Random\n",
-   *      "customSparkConf" : {
-   *        "spark.app.name": "Notebook",
-   *        "spark.master": "local[8]",
-   *        "spark.executor.memory": "1G"
+   *      customLocalRepo": "/tmp/spark-notebook/repo",
+   *      customRepos": null,
+   *      customDeps": "org.bdgenomics.adam % adam-apis % 0.15.0\n - org.apache.hadoop % hadoop-client %   _\n - org.apache.spark  % spark-core    %   _\n - org.scala-lang    %     _         %   _\n - org.scoverage     %     _         %   _\n + org.apache.spark  %  spark-mllib_2.10  % 1.2.0",
+   *      customImports": "import org.apache.hadoop.fs.{FileSystem, Path}\n import org.bdgenomics.adam.converters.{ VCFLine, VCFLineConverter, VCFLineParser }\n import org.bdgenomics.formats.avro.{Genotype, FlatGenotype}\n import org.bdgenomics.adam.models.VariantContext\n import org.bdgenomics.adam.rdd.ADAMContext._\n import org.bdgenomics.adam.rdd.variation.VariationContext._\n import org.bdgenomics.adam.rdd.ADAMContext\n import org.apache.spark.rdd.RDD",
+   *      customSparkConf": {
+   *        spark.app.name": "Local Adam Analysis",
+   *        spark.master": "local[8]",
+   *        spark.executor.memory": "1G",
+   *        spark.serializer": "org.apache.spark.serializer.KryoSerializer",
+   *        spark.kryo.registrator": "org.bdgenomics.adam.serialization.ADAMKryoRegistrator",
+   *        spark.kryoserializer.buffer.mb": "4",
+   *        spark.kryo.referenceTracking": "true",
+   *        spark.executor.memory": "2g"
    *      }
    *    }
    *  }
@@ -277,20 +279,12 @@ object Application extends Controller {
       j <- Try(t \ "customSparkConf") if j.isInstanceOf[JsObject]
     } yield j.asInstanceOf[JsObject]).toOption
 
-    Logger.info("*****************************************************************")
-    Logger.info(customLocalRepo.toString)
-    Logger.info(customRepos.toString)
-    Logger.info(customDeps.toString)
-    Logger.info(customImports.toString)
-    Logger.info(customMetadata.toString)
-
     val name = nbm.newNotebook(
       customLocalRepo,
       customRepos,
       customDeps,
       customImports,
       customMetadata)
-    Logger.info("new: " + name)
     Redirect(routes.Application.content("notebook", name))
   }
 
