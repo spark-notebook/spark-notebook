@@ -66,7 +66,7 @@ object Dependencies {
 
   object HadoopVersion extends Enumeration {
     type HadoopVersion = Value
-    val `1.0.4`, `2.0.0-cdh4.2.0`, `2.3.0`, `2.4.0` = Value
+    val `1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0` = Value
   }
 
   val crossConf = Map(
