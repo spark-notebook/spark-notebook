@@ -2,9 +2,11 @@ package controllers
 
 import java.util.UUID
 
-import scala.util.Try
+import scala.util.{Try, Success, Failure}
 import scala.concurrent.{Promise, Future}
 import scala.concurrent.duration._
+import scala.reflect.ClassTag
+
 
 import play.api._
 import play.api.mvc._
@@ -187,11 +189,11 @@ object Application extends Controller {
    *    "name": "Med At Scale",
    *    "profile": "Local",
    *    "template": {
-   *      customLocalRepo": "/tmp/spark-notebook/repo",
-   *      customRepos": null,
-   *      customDeps": "org.bdgenomics.adam % adam-apis % 0.15.0\n - org.apache.hadoop % hadoop-client %   _\n - org.apache.spark  % spark-core    %   _\n - org.scala-lang    %     _         %   _\n - org.scoverage     %     _         %   _\n + org.apache.spark  %  spark-mllib_2.10  % 1.2.0",
-   *      customImports": "import org.apache.hadoop.fs.{FileSystem, Path}\n import org.bdgenomics.adam.converters.{ VCFLine, VCFLineConverter, VCFLineParser }\n import org.bdgenomics.formats.avro.{Genotype, FlatGenotype}\n import org.bdgenomics.adam.models.VariantContext\n import org.bdgenomics.adam.rdd.ADAMContext._\n import org.bdgenomics.adam.rdd.variation.VariationContext._\n import org.bdgenomics.adam.rdd.ADAMContext\n import org.apache.spark.rdd.RDD",
-   *      customSparkConf": {
+   *      "customLocalRepo": "/tmp/spark-notebook/repo",
+   *      "customRepos": [],
+   *      "customDeps": "org.bdgenomics.adam % adam-apis % 0.15.0\n - org.apache.hadoop % hadoop-client %   _\n - org.apache.spark  % spark-core    %   _\n - org.scala-lang    %     _         %   _\n - org.scoverage     %     _         %   _\n + org.apache.spark  %  spark-mllib_2.10  % 1.2.0",
+   *      "customImports": "import org.apache.hadoop.fs.{FileSystem, Path}\n import org.bdgenomics.adam.converters.{ VCFLine, VCFLineConverter, VCFLineParser }\n import org.bdgenomics.formats.avro.{Genotype, FlatGenotype}\n import org.bdgenomics.adam.models.VariantContext\n import org.bdgenomics.adam.rdd.ADAMContext._\n import org.bdgenomics.adam.rdd.variation.VariationContext._\n import org.bdgenomics.adam.rdd.ADAMContext\n import org.apache.spark.rdd.RDD",
+   *      "customSparkConf": {
    *        spark.app.name": "Local Adam Analysis",
    *        spark.master": "local[8]",
    *        spark.executor.memory": "1G",
@@ -218,74 +220,101 @@ object Application extends Controller {
     }
   }
 
-  def contents(`type`:String) = Action {
+  def contents(`type`:String, path:String="/") = Action {
     //todo → dirs
-    val a = Option(config.notebooksDir.listFiles.toList)
-      .getOrElse(Nil)
-      .filter(_.isFile)
-      .map { f =>
-        f.getName
-      }.map { n =>
-        Json.obj(
-          "type" → "file",
-          "name" → n.dropRight(".snb".size),
-          "path" → n //todo → build relative path
-        )
-      }
+    val lengthToRoot = config.notebooksDir.getAbsolutePath.size + 1
+    val baseDir = new java.io.File(config.notebooksDir, path)
 
-    Ok(Json.obj(
-      "content" → a
-    ))
+    if (`type` == "directory") {
+      val content = Option(baseDir.listFiles.toList)
+                      .getOrElse(Nil)
+                      .map { f =>
+                        val n = f.getName
+                        if (f.isFile && n.endsWith(".snb")) {
+                          Json.obj(
+                            "type" → "notebook",
+                            "name" → n.dropRight(".snb".size),
+                            "path" → f.getAbsolutePath.drop(lengthToRoot) //todo → build relative path
+                          )
+                        } else if (f.isFile) {
+                          Json.obj(
+                            "type" → "file",
+                            "name" → n,
+                            "path" → f.getAbsolutePath.drop(lengthToRoot) //todo → build relative path
+                          )
+                        } else {
+                          Json.obj(
+                            "type" → "directory",
+                            "name" → n,
+                            "path" → f.getAbsolutePath.drop(lengthToRoot) //todo → build relative path
+                          )
+                        }
+                      }
+      Ok(Json.obj(
+        "content" → content
+      ))
+    } else if (`type` == "notebook") {
+      Logger.info("content: " + path)
+      val name = if (path.endsWith(".snb")) {path.dropRight(".snb".size)} else {path}
+      getNotebook(name, path, "json")
+    } else {
+      BadRequest("Dunno what to do with contents for " + `type` + "at " + path)
+    }
   }
 
-  def content(`type`:String, snb:String) = Action {
-    require(`type` == "notebook") // ?
-    Logger.info("content: " + snb)
-    val name = if (snb.endsWith(".snb")) {snb.dropRight(".snb".size)} else {snb}
-    getNotebook(name, name+".snb", "json")
-  }
-
-
-  def newNotebook() = Action(parse.tolerantText) { request =>
-    val text = request.body
-    Logger.warn(text)
-    val custom = for {
-      x <- Try(Json.parse(request.body))
-      t <- Try((x \ "custom").as[JsObject])
-    } yield t
-
-    val customLocalRepo = (for {
-      t <- custom
-      j <- Try((t \ "customLocalRepo").as[String])
-    } yield j).toOption
-
-    val customRepos = (for {
-      t <- custom
-      j <- Try((t \ "customRepos").as[List[String]])
-    } yield j).toOption
-
-    val customDeps = (for {
-      t <- custom
-      j <- Try((t \ "customDeps").as[String])
-    } yield j).toOption
-
-    val customImports = (for {
-      t <- custom
-      j <- Try((t \ "customImports").as[String])
-    } yield j).toOption
+  def createNotebook(path:String, custom:JsObject) = {
+    Logger.info("Creating notebook")
+    val customLocalRepo = Try((custom \ "customLocalRepo").as[String]).toOption
+    val customRepos = Try((custom \ "customRepos").as[List[String]]).toOption
+    val customDeps = Try((custom \ "customDeps").as[String]).toOption
+    val customImports = Try((custom \ "customImports").as[String]).toOption
 
     val customMetadata = (for {
-      t <- custom
-      j <- Try(t \ "customSparkConf") if j.isInstanceOf[JsObject]
+      j <- Try(custom \ "customSparkConf") if j.isInstanceOf[JsObject]
     } yield j.asInstanceOf[JsObject]).toOption
 
-    val name = nbm.newNotebook(
-      customLocalRepo,
-      customRepos,
-      customDeps,
-      customImports,
-      customMetadata)
-    Redirect(routes.Application.content("notebook", name))
+    val fpath = nbm.newNotebook(
+                    path,
+                    customLocalRepo,
+                    customRepos,
+                    customDeps,
+                    customImports,
+                    customMetadata)
+    Try(Redirect(routes.Application.contents("notebook", fpath)))
+  }
+
+  def copyingNb(fromPath:String) = {
+    Logger.info("Copying notebook:" + fromPath)
+    val np = nbm.copyNotebook(fromPath)
+    Try(Ok(Json.obj("path" → np)))
+  }
+
+  def newNotebook(path:String="/") = Action(parse.tolerantText) { request =>
+    val text = request.body
+    val tryJson = Try(Json.parse(request.body))
+
+    def findkey[T](x:JsValue, k:String)(init:T)(implicit m:ClassTag[T]):Try[T] =
+      (x \ k) match {
+        case j:JsUndefined => Failure(new IllegalArgumentException("No " + k))
+        case JsNull => Success(init)
+        case o if m.runtimeClass == o.getClass => Success(o.asInstanceOf[T])
+        case x => Failure(new IllegalArgumentException("Bad type: " + x))
+      }
+
+
+    lazy val custom = for {
+      x <- tryJson
+      t <- findkey[JsObject](x, "custom")(Json.obj())
+      n <- createNotebook(path, t)
+    } yield n
+
+    lazy val copyFrom = for {
+      x <- tryJson
+      t <- findkey[JsString](x, "copy_from")(JsString(""))
+      n <- copyingNb(t.value)
+    } yield n
+
+    (custom orElse copyFrom).get
   }
 
   def openNotebook(name:String) = Action { request =>
@@ -359,10 +388,10 @@ object Application extends Controller {
     ))
   }
 
-  def renameNotebook(snb:String) = Action(parse.tolerantJson) { request =>
+  def renameNotebook(path:String) = Action(parse.tolerantJson) { request =>
     val notebook = (request.body \ "path").as[String]
     try {
-      nbm.rename(snb, notebook)
+      nbm.rename(path, notebook)
 
       Ok(Json.obj(
         "type" → "file",
@@ -374,15 +403,28 @@ object Application extends Controller {
     }
   }
 
-  def saveNotebook(snb:String) = Action(parse.tolerantJson(maxLength = 1024 * 1024 /*1Mb*/)) { request =>
+  def saveNotebook(path:String) = Action(parse.tolerantJson(maxLength = 1024 * 1024 /*1Mb*/)) { request =>
     val notebook = NBSerializer.fromJson(request.body \ "content")
     try {
-      nbm.save(snb.dropRight(".snb".size), snb, notebook, true)
+      nbm.save(path, notebook, true)
 
       Ok(Json.obj(
-        "type" → "file",
-        "name" → snb,
-        "path" → snb //todo → rebuild relative path
+        "type" → "notebook",
+        "name" → notebook.metadata.get.name,
+        "path" → path
+      ))
+    } catch {
+      case _ :NotebookExistsException => Conflict
+    }
+  }
+
+  def deleteNotebook(path:String) = Action{ request =>
+    try {
+      nbm.deleteNotebook(path)
+
+      Ok(Json.obj(
+        "type" → "notebook",
+        "path" → path
       ))
     } catch {
       case _ :NotebookExistsException => Conflict
@@ -393,7 +435,7 @@ object Application extends Controller {
     getNotebook(path.dropRight(".snb".size), path, format)
   }
 
-  def dash(title:String) = Action {
+  def dash(title:String, path:String=base_kernel_url) = Action {
     Ok(views.html.projectdashboard(
       title,
       Map(
@@ -402,10 +444,10 @@ object Application extends Controller {
         "base-kernel-url" → base_kernel_url,
         "read-only" → read_only,
         "base-url" → base_project_url,
-        "notebook-path" → base_kernel_url,
+        "notebook-path" → path,
         "terminals-available" → terminals_available
       ),
-      Breadcrumbs()
+      Breadcrumbs("/", path.split("/").toList.map(x => Crumb("todo", x)))
     ))
   }
 
@@ -421,7 +463,7 @@ object Application extends Controller {
   def getNotebook(name: String, path: String, format: String) = {
     try {
       Logger.info(s"getNotebook: name is '$name', path is '$path' and format is '$format'")
-      val response = nbm.getNotebook(name, path).map { case (lastMod, name, data) =>
+      val response = nbm.getNotebook(path).map { case (lastMod, name, data, path) =>
         format match {
           case "json" =>
             val j = Json.parse(data)

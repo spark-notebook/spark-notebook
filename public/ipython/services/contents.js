@@ -108,7 +108,11 @@ define(function(require) {
    *    type: model type to create ('notebook', 'file', or 'directory')
    */
   Contents.prototype.new_untitled = function(path, options) {
-    options.custom = options.custom.originalEvent?null:options.custom
+    if (options.type !== "notebook") {
+      //options.custom = null
+    } else if (options.type === "notebook") {
+      options.custom = options.custom.originalEvent?null:options.custom
+    }
     var data = JSON.stringify({
       ext: options.ext,
       type: options.type,
