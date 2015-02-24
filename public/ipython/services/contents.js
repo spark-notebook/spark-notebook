@@ -108,7 +108,11 @@ define(function(require) {
    *    type: model type to create ('notebook', 'file', or 'directory')
    */
   Contents.prototype.new_untitled = function(path, options) {
-    options.custom = options.custom.originalEvent?null:options.custom
+    if (options.type !== "notebook") {
+      //options.custom = null
+    } else if (options.type === "notebook") {
+      options.custom = options.custom.originalEvent?null:options.custom
+    }
     var data = JSON.stringify({
       ext: options.ext,
       type: options.type,
@@ -180,10 +184,12 @@ define(function(require) {
      */
     var url = this.api_url(to_dir);
 
+    console.warn("Temporary for notebook only!");
+
     var settings = {
       processData : false,
       type: "POST",
-      data: JSON.stringify({copy_from: from_file}),
+      data: JSON.stringify({type: "notebook", copy_from: from_file}),
       dataType : "json",
     };
     return utils.promising_ajax(url, settings);

@@ -366,7 +366,7 @@ define([
                 var name = item.data('name');
                 var path = item.data('path');
                 var message = 'Are you sure you want to duplicate ' + name + '?';
-                var copy_from = {copy_from : path};
+                var copy_from = {type: "notebook", copy_from : path};
                 IPython.dialog.modal({
                     title : "Duplicate " + name,
                     body : message,

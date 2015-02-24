@@ -37,14 +37,14 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : ":dp org.bdgenomics.adam % adam-apis % 0.16.0\n- org.apache.hadoop % hadoop-client %   _\n- org.apache.spark  % spark-core    %   _\n- org.scala-lang    %     _         %   _\n- org.scoverage     %     _         %   _\n+ org.apache.spark  %  spark-mllib_2.10  % 1.2.0",
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "jars: Array[String] = [Ljava.lang.String;@18ca6667\nres2: List[String] = List(/tmp/spark-notebook/repo/org/apache/curator/curator-recipes/2.4.0/curator-recipes-2.4.0.jar, /tmp/spark-notebook/repo/org/spire-math/spire_2.10/0.7.4/spire_2.10-0.7.4.jar, /tmp/spark-notebook/repo/commons-io/commons-io/2.4/commons-io-2.4.jar, /tmp/spark-notebook/repo/org/spark-project/spark/unused/1.0.0/unused-1.0.0.jar, /tmp/spark-notebook/repo/com/github/rwl/jtransforms/2.4.0/jtransforms-2.4.0.jar, /tmp/spark-notebook/repo/net/jpountz/lz4/lz4/1.2.0/lz4-1.2.0.jar, /tmp/spark-notebook/repo/org/xerial/snappy/snappy-java/1.1.1.6/snappy-java-1.1.1.6.jar, /tmp/spark-notebook/repo/commons-net/commons-net/2.2/commons-net-2.2.jar, /tmp/spark-notebook/repo/org/json4s/json4s-jackson_2.10/3.2.10/json4s-jackson_2.10-3.2.1..."
+      "text" : "jars: Array[String] = [Ljava.lang.String;@4e2853a\nres2: List[String] = List(/tmp/spark-notebook/repo/org/apache/curator/curator-recipes/2.4.0/curator-recipes-2.4.0.jar, /tmp/spark-notebook/repo/org/spire-math/spire_2.10/0.7.4/spire_2.10-0.7.4.jar, /tmp/spark-notebook/repo/commons-io/commons-io/2.4/commons-io-2.4.jar, /tmp/spark-notebook/repo/org/spark-project/spark/unused/1.0.0/unused-1.0.0.jar, /tmp/spark-notebook/repo/com/github/rwl/jtransforms/2.4.0/jtransforms-2.4.0.jar, /tmp/spark-notebook/repo/net/jpountz/lz4/lz4/1.2.0/lz4-1.2.0.jar, /tmp/spark-notebook/repo/org/xerial/snappy/snappy-java/1.1.1.6/snappy-java-1.1.1.6.jar, /tmp/spark-notebook/repo/commons-net/commons-net/2.2/commons-net-2.2.jar, /tmp/spark-notebook/repo/org/json4s/json4s-jackson_2.10/3.2.10/json4s-jackson_2.10-3.2.10..."
     }, {
       "metadata" : { },
       "data" : {
@@ -97,11 +97,11 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "warning: there were 1 feature warning(s); re-run with -feature for details\nimport sys.process._\nvcf: String = /tmp/6-sample.vcf\nres4: Any = ()\n"
+      "text" : "warning: there were 1 feature warning(s); re-run with -feature for details\nimport sys.process._\nvcf: String = /tmp/6-sample.vcf\nres4: Any = \"\"\n"
     }, {
       "metadata" : { },
       "data" : {
-        "text/html" : "()"
+        "text/html" : ""
       },
       "output_type" : "execute_result",
       "execution_count" : 5
@@ -142,7 +142,7 @@
         "text/html" : "/tmp/6-sample.vcf6.adam"
       },
       "output_type" : "execute_result",
-      "execution_count" : 10
+      "execution_count" : 7
     } ]
   }, {
     "metadata" : {
@@ -161,7 +161,7 @@
         "text/html" : ""
       },
       "output_type" : "execute_result",
-      "execution_count" : 11
+      "execution_count" : 8
     } ]
   }, {
     "metadata" : {
@@ -173,14 +173,14 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "gts2: org.apache.spark.rdd.RDD[org.bdgenomics.formats.avro.Genotype] = MappedRDD[6] at map at ADAMContext.scala:172\n"
+      "text" : "gts2: org.apache.spark.rdd.RDD[org.bdgenomics.formats.avro.Genotype] = MappedRDD[5] at map at ADAMContext.scala:172\n"
     }, {
       "metadata" : { },
       "data" : {
-        "text/html" : "MappedRDD[6] at map at ADAMContext.scala:172"
+        "text/html" : "MappedRDD[5] at map at ADAMContext.scala:172"
       },
       "output_type" : "execute_result",
-      "execution_count" : 12
+      "execution_count" : 9
     } ]
   }, {
     "metadata" : {
@@ -192,14 +192,7 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "res7: org.bdgenomics.formats.avro.Genotype = {\"variant\": {\"contig\": {\"contigName\": \"6\", \"contigLength\": null, \"contigMD5\": null, \"referenceURL\": null, \"assembly\": null, \"species\": null}, \"start\": 1098044, \"end\": 1098045, \"referenceAllele\": \"G\", \"alternateAllele\": \"C\", \"svAllele\": null}, \"variantCallingAnnotations\": {\"variantCallErrorProbability\": 100.0, \"variantIsPassing\": true, \"variantFilters\": [], \"readDepth\": 15014, \"downsampled\": null, \"baseQRankSum\": null, \"clippingRankSum\": null, \"fisherStrandBiasPValue\": null, \"haplotypeScore\": null, \"inbreedingCoefficient\": null, \"rmsMapQ\": null, \"mapq0Reads\": null, \"mqRankSum\": null, \"variantQualityByDepth\": null, \"readPositionRankSum\": null, \"vqslod\": null, \"culprit\": null, \"usedForNegativeTrainingSet\": null, \"usedForPositiveTrainingSet\": nul..."
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "{&quot;variant&quot;: {&quot;contig&quot;: {&quot;contigName&quot;: &quot;6&quot;, &quot;contigLength&quot;: null, &quot;contigMD5&quot;: null, &quot;referenceURL&quot;: null, &quot;assembly&quot;: null, &quot;species&quot;: null}, &quot;start&quot;: 1098044, &quot;end&quot;: 1098045, &quot;referenceAllele&quot;: &quot;G&quot;, &quot;alternateAllele&quot;: &quot;C&quot;, &quot;svAllele&quot;: null}, &quot;variantCallingAnnotations&quot;: {&quot;variantCallErrorProbability&quot;: 100.0, &quot;variantIsPassing&quot;: true, &quot;variantFilters&quot;: [], &quot;readDepth&quot;: 15014, &quot;downsampled&quot;: null, &quot;baseQRankSum&quot;: null, &quot;clippingRankSum&quot;: null, &quot;fisherStrandBiasPValue&quot;: null, &quot;haplotypeScore&quot;: null, &quot;inbreedingCoefficient&quot;: null, &quot;rmsMapQ&quot;: null, &quot;mapq0Reads&quot;: null, &quot;mqRankSum&quot;: null, &quot;variantQualityByDepth&quot;: null, &quot;readPositionRankSum&quot;: null, &quot;vqslod&quot;: null, &quot;culprit&quot;: null, &quot;usedForNegativeTrainingSet&quot;: null, &quot;usedForPositiveTrainingSet&quot;: null}, &quot;sampleId&quot;: &quot;HG00096&quot;, &quot;sampleDescription&quot;: null, &quot;processingDescription&quot;: null, &quot;alleles&quot;: [&quot;Ref&quot;, &quot;Ref&quot;], &quot;expectedAlleleDosage&quot;: null, &quot;referenceReadDepth&quot;: null, &quot;alternateReadDepth&quot;: null, &quot;readDepth&quot;: null, &quot;minReadDepth&quot;: null, &quot;genotypeQuality&quot;: null, &quot;genotypeLikelihoods&quot;: [], &quot;nonReferenceLikelihoods&quot;: [], &quot;strandBiasComponents&quot;: [], &quot;splitFromMultiAllelic&quot;: false, &quot;isPhased&quot;: true, &quot;phaseSetId&quot;: null, &quot;phaseQuality&quot;: null}"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 13
+      "text" : "org.apache.spark.SparkException: Job aborted due to stage failure: Task 0 in stage 1.0 failed 1 times, most recent failure: Lost task 0.0 in stage 1.0 (TID 3, localhost): java.lang.ArrayStoreException: org.apache.avro.generic.GenericData$Record\n\tat scala.runtime.ScalaRunTime$.array_update(ScalaRunTime.scala:88)\n\tat scala.Array$.slowcopy(Array.scala:81)\n\tat scala.Array$.copy(Array.scala:107)\n\tat scala.collection.mutable.ResizableArray$class.copyToArray(ResizableArray.scala:77)\n\tat scala.collection.mutable.ArrayBuffer.copyToArray(ArrayBuffer.scala:47)\n\tat scala.collection.TraversableOnce$class.copyToArray(TraversableOnce.scala:241)\n\tat scala.collection.AbstractTraversable.copyToArray(Traversable.scala:105)\n\tat scala.collection.TraversableOnce$class.toArray(TraversableOnce.scala:249)\n\tat scala.collection.AbstractTraversable.toArray(Traversable.scala:105)\n\tat scala.collection.TraversableOnce$class.toArray(TraversableOnce.scala:252)\n\tat scala.collection.AbstractIterator.toArray(Iterator.scala:1157)\n\tat org.apache.spark.rdd.RDD$$anonfun$26.apply(RDD.scala:1081)\n\tat org.apache.spark.rdd.RDD$$anonfun$26.apply(RDD.scala:1081)\n\tat org.apache.spark.SparkContext$$anonfun$runJob$4.apply(SparkContext.scala:1314)\n\tat org.apache.spark.SparkContext$$anonfun$runJob$4.apply(SparkContext.scala:1314)\n\tat org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:61)\n\tat org.apache.spark.scheduler.Task.run(Task.scala:56)\n\tat org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:196)\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)\n\tat java.lang.Thread.run(Thread.java:745)\n\nDriver stacktrace:\n\tat org.apache.spark.scheduler.DAGScheduler.org$apache$spark$scheduler$DAGScheduler$$failJobAndIndependentStages(DAGScheduler.scala:1214)\n\tat org.apache.spark.scheduler.DAGScheduler$$anonfun$abortStage$1.apply(DAGScheduler.scala:1203)\n\tat org.apache.spark.scheduler.DAGScheduler$$anonfun$abortStage$1.apply(DAGScheduler.scala:1202)\n\tat scala.collection.mutable.ResizableArray$class.foreach(ResizableArray.scala:59)\n\tat scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:47)\n\tat org.apache.spark.scheduler.DAGScheduler.abortStage(DAGScheduler.scala:1202)\n\tat org.apache.spark.scheduler.DAGScheduler$$anonfun$handleTaskSetFailed$1.apply(DAGScheduler.scala:696)\n\tat org.apache.spark.scheduler.DAGScheduler$$anonfun$handleTaskSetFailed$1.apply(DAGScheduler.scala:696)\n\tat scala.Option.foreach(Option.scala:236)\n\tat org.apache.spark.scheduler.DAGScheduler.handleTaskSetFailed(DAGScheduler.scala:696)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessActor$$anonfun$receive$2.applyOrElse(DAGScheduler.scala:1420)\n\tat akka.actor.Actor$class.aroundReceive(Actor.scala:465)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessActor.aroundReceive(DAGScheduler.scala:1375)\n\tat akka.actor.ActorCell.receiveMessage(ActorCell.scala:516)\n\tat akka.actor.ActorCell.invoke(ActorCell.scala:487)\n\tat akka.dispatch.Mailbox.processMailbox(Mailbox.scala:238)\n\tat akka.dispatch.Mailbox.run(Mailbox.scala:220)\n\tat akka.dispatch.ForkJoinExecutorConfigurator$AkkaForkJoinTask.exec(AbstractDispatcher.scala:393)\n\tat scala.concurrent.forkjoin.ForkJoinTask.doExec(ForkJoinTask.java:260)\n\tat scala.concurrent.forkjoin.ForkJoinPool$WorkQueue.runTask(ForkJoinPool.java:1339)\n\tat scala.concurrent.forkjoin.ForkJoinPool.runWorker(ForkJoinPool.java:1979)\n\tat scala.concurrent.forkjoin.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:107)\n\n"
     } ]
   }, {
     "metadata" : {
@@ -218,7 +211,7 @@
         "text/html" : "Set(GBR, ASW, CHB)"
       },
       "output_type" : "execute_result",
-      "execution_count" : 14
+      "execution_count" : 11
     } ]
   }, {
     "metadata" : {
@@ -230,14 +223,14 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "warning: there were 1 feature warning(s); re-run with -feature for details\npanelFile: String = /tmp/ALL.panel\nres8: String = \"\"\n"
+      "text" : "warning: there were 1 feature warning(s); re-run with -feature for details\npanelFile: String = /tmp/ALL.panel\nres7: String = \"\"\n"
     }, {
       "metadata" : { },
       "data" : {
         "text/html" : ""
       },
       "output_type" : "execute_result",
-      "execution_count" : 15
+      "execution_count" : 12
     } ]
   }, {
     "metadata" : {
@@ -256,7 +249,7 @@
         "text/html" : "Broadcast(4)"
       },
       "output_type" : "execute_result",
-      "execution_count" : 16
+      "execution_count" : 13
     } ]
   }, {
     "metadata" : {
@@ -268,14 +261,14 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "finalGts: org.apache.spark.rdd.RDD[org.bdgenomics.formats.avro.Genotype] = FilteredRDD[7] at filter at <console>:57\n"
+      "text" : "finalGts: org.apache.spark.rdd.RDD[org.bdgenomics.formats.avro.Genotype] = FilteredRDD[6] at filter at <console>:57\n"
     }, {
       "metadata" : { },
       "data" : {
-        "text/html" : "FilteredRDD[7] at filter at &lt;console&gt;:57"
+        "text/html" : "FilteredRDD[6] at filter at &lt;console&gt;:57"
       },
       "output_type" : "execute_result",
-      "execution_count" : 17
+      "execution_count" : 14
     } ]
   }, {
     "metadata" : {
@@ -287,14 +280,7 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "sampleCount: Long = 255\nres9: String = #Samples: 255\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "#Samples: 255"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 18
+      "text" : "org.apache.spark.SparkException: Job aborted due to stage failure: Task 1 in stage 2.0 failed 1 times, most recent failure: Lost task 1.0 in stage 2.0 (TID 5, localhost): java.lang.ClassCastException: org.apache.avro.generic.GenericData$Record cannot be cast to org.bdgenomics.formats.avro.Genotype\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$anonfun$1.apply(<console>:57)\n\tat scala.collection.Iterator$$anon$14.hasNext(Iterator.scala:390)\n\tat scala.collection.Iterator$$anon$11.hasNext(Iterator.scala:327)\n\tat scala.collection.Iterator$$anon$11.hasNext(Iterator.scala:327)\n\tat org.apache.spark.util.collection.ExternalSorter.insertAll(ExternalSorter.scala:202)\n\tat org.apache.spark.shuffle.sort.SortShuffleWriter.write(SortShuffleWriter.scala:58)\n\tat org.apache.spark.scheduler.ShuffleMapTask.runTask(ShuffleMapTask.scala:68)\n\tat org.apache.spark.scheduler.ShuffleMapTask.runTask(ShuffleMapTask.scala:41)\n\tat org.apache.spark.scheduler.Task.run(Task.scala:56)\n\tat org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:196)\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)\n\tat java.lang.Thread.run(Thread.java:745)\n\nDriver stacktrace:\n\tat org.apache.spark.scheduler.DAGScheduler.org$apache$spark$scheduler$DAGScheduler$$failJobAndIndependentStages(DAGScheduler.scala:1214)\n\tat org.apache.spark.scheduler.DAGScheduler$$anonfun$abortStage$1.apply(DAGScheduler.scala:1203)\n\tat org.apache.spark.scheduler.DAGScheduler$$anonfun$abortStage$1.apply(DAGScheduler.scala:1202)\n\tat scala.collection.mutable.ResizableArray$class.foreach(ResizableArray.scala:59)\n\tat scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:47)\n\tat org.apache.spark.scheduler.DAGScheduler.abortStage(DAGScheduler.scala:1202)\n\tat org.apache.spark.scheduler.DAGScheduler$$anonfun$handleTaskSetFailed$1.apply(DAGScheduler.scala:696)\n\tat org.apache.spark.scheduler.DAGScheduler$$anonfun$handleTaskSetFailed$1.apply(DAGScheduler.scala:696)\n\tat scala.Option.foreach(Option.scala:236)\n\tat org.apache.spark.scheduler.DAGScheduler.handleTaskSetFailed(DAGScheduler.scala:696)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessActor$$anonfun$receive$2.applyOrElse(DAGScheduler.scala:1420)\n\tat akka.actor.Actor$class.aroundReceive(Actor.scala:465)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessActor.aroundReceive(DAGScheduler.scala:1375)\n\tat akka.actor.ActorCell.receiveMessage(ActorCell.scala:516)\n\tat akka.actor.ActorCell.invoke(ActorCell.scala:487)\n\tat akka.dispatch.Mailbox.processMailbox(Mailbox.scala:238)\n\tat akka.dispatch.Mailbox.run(Mailbox.scala:220)\n\tat akka.dispatch.ForkJoinExecutorConfigurator$AkkaForkJoinTask.exec(AbstractDispatcher.scala:393)\n\tat scala.concurrent.forkjoin.ForkJoinTask.doExec(ForkJoinTask.java:260)\n\tat scala.concurrent.forkjoin.ForkJoinPool$WorkQueue.runTask(ForkJoinPool.java:1339)\n\tat scala.concurrent.forkjoin.ForkJoinPool.runWorker(ForkJoinPool.java:1979)\n\tat scala.concurrent.forkjoin.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:107)\n\n"
     } ]
   }, {
     "metadata" : {
@@ -313,7 +299,7 @@
         "text/html" : ""
       },
       "output_type" : "execute_result",
-      "execution_count" : 19
+      "execution_count" : 16
     } ]
   }, {
     "metadata" : {
@@ -325,14 +311,7 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "import org.apache.spark.SparkContext._\nvariantsById: org.apache.spark.rdd.RDD[(Int, Iterable[org.bdgenomics.formats.avro.Genotype])] = ShuffledRDD[13] at groupByKey at <console>:71\nmissingVariantsRDD: org.apache.spark.rdd.RDD[Int] = MappedRDD[15] at keys at <console>:72\nmissingVariants: scala.collection.immutable.Set[Int] = Set(-1204059027, -664348693, 648598023, -954555014, 675234500, -1826335315, -1778573329, -1323904278, -689304855, 1847923513, -11690175, -1356298851, 1568633220, 823340903, 1489361209, 1823013437, -1712759773, 1159433529, 263919723, 1845806579, 134248681, -204602923, -699270765, -1320130321, -1228021670, -1476053663, -1351234689, -457713779, 1885591595, 174554599, -1357917389, -2144376393, 1413251731, 1509815013, 1861478947, -1241825629, 328840487, 47321959, 53554084..."
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "Set(-1204059027, -664348693, 648598023, -954555014, 675234500, -1826335315, -1778573329, -1323904278, -689304855, 1847923513, -11690175, -1356298851, 1568633220, 823340903, 1489361209, 1823013437, -1712759773, 1159433529, 263919723, 1845806579, 134248681, -204602923, -699270765, -1320130321, -1228021670, -1476053663, -1351234689, -457713779, 1885591595, 174554599, -1357917389, -2144376393, 1413251731, 1509815013, 1861478947, -1241825629, 328840487, 47321959, 535540849, -915452670, 939528755, -11698301, -1011962699, 96653779, -681315805, -1018480331, 1252616701, 1334020477, -2067106949, 1790210273, -468114973, -1529212606, 1580585675, 13378293, 801940736, 2023420779)"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 20
+      "text" : "<console>:70: error: not found: value sampleCount\n       val missingVariantsRDD = variantsById.filter { case (k, it) => it.size != sampleCount }.keys\n                                                                                 ^\n"
     } ]
   }, {
     "metadata" : {
@@ -344,14 +323,7 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "completeGts: org.apache.spark.rdd.RDD[org.bdgenomics.formats.avro.Genotype] = FilteredRDD[16] at filter at <console>:78\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "FilteredRDD[16] at filter at &lt;console&gt;:78"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 21
+      "text" : "<console>:67: error: not found: value missingVariants\n       val completeGts = finalGts.filter { g => ! (missingVariants contains variantId(g).hashCode) }\n                                                   ^\n"
     } ]
   }, {
     "metadata" : {
@@ -363,14 +335,7 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "sampleToData: org.apache.spark.rdd.RDD[(String, (Double, Int))] = MappedRDD[17] at map at <console>:83\ngroupedSampleToData: org.apache.spark.rdd.RDD[(String, Iterable[(Double, Int)])] = ShuffledRDD[18] at groupByKey at <console>:85\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "ShuffledRDD[18] at groupByKey at &lt;console&gt;:85"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 22
+      "text" : "<console>:54: error: value groupByKey is not a member of org.apache.spark.rdd.RDD[(String, (Double, Int))]\n       val groupedSampleToData = sampleToData.groupByKey\n                                              ^\n<console>:52: error: not found: value completeGts\n           completeGts.map { g => (g.getSampleId.toString, (asDouble(g), variantId(g).hashCode)) }\n           ^\n"
     } ]
   }, {
     "metadata" : {
@@ -382,14 +347,7 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "import org.apache.spark.mllib.linalg.{Vector=>MLVector, Vectors}\nmakeSortedVector: (gts: Iterable[(Double, Int)])org.apache.spark.mllib.linalg.Vector\ndataPerSampleId: org.apache.spark.rdd.RDD[(String, org.apache.spark.mllib.linalg.Vector)] = MappedValuesRDD[19] at mapValues at <console>:92\ndataFrame: org.apache.spark.rdd.RDD[org.apache.spark.mllib.linalg.Vector] = MappedRDD[20] at values at <console>:96\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "MappedRDD[20] at values at &lt;console&gt;:96"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 23
+      "text" : "<console>:55: error: not found: value groupedSampleToData\n           groupedSampleToData.mapValues { it =>\n           ^\n<console>:59: error: value values is not a member of org.apache.spark.rdd.RDD[(String, org.apache.spark.mllib.linalg.Vector)]\n       val dataFrame:RDD[MLVector] = dataPerSampleId.values\n                                                     ^\n"
     } ]
   }, {
     "metadata" : {
@@ -401,14 +359,7 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "import org.apache.spark.mllib.clustering.{KMeans, KMeansModel}\nmodel: org.apache.spark.mllib.clustering.KMeansModel = org.apache.spark.mllib.clustering.KMeansModel@e8d622d\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "org.apache.spark.mllib.clustering.KMeansModel@e8d622d"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 24
+      "text" : "<console>:48: error: not found: value dataFrame\n       val model: KMeansModel = KMeans.train(dataFrame, 3, 10)\n                                             ^\n"
     } ]
   }, {
     "metadata" : {
@@ -420,14 +371,7 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "predictions: org.apache.spark.rdd.RDD[(String, (Int, String))] = MappedRDD[56] at map at <console>:98\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "MappedRDD[56] at map at &lt;console&gt;:98"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 25
+      "text" : "<console>:57: error: not found: value dataPerSampleId\n       val predictions: RDD[(String, (Int, String))] = dataPerSampleId.map(elt => {\n                                                       ^\n"
     } ]
   }, {
     "metadata" : {
@@ -439,14 +383,7 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "confMat: scala.collection.immutable.Map[String,List[Int]] = Map(GBR -> List(66, 13, 12), ASW -> List(11, 1, 49), CHB -> List(47, 55, 1))\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "Map(GBR -&gt; List(66, 13, 12), ASW -&gt; List(11, 1, 49), CHB -&gt; List(47, 55, 1))"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 26
+      "text" : "<console>:47: error: not found: value predictions\n       val confMat = predictions.collect.toMap.values\n                     ^\n"
     } ]
   }, {
     "metadata" : {
@@ -458,14 +395,7 @@
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "res10: scala.xml.Elem = \n<table>\n<tr><td></td><td>#0</td><td>#1</td><td>#2</td></tr>\n<tr><td>GBR</td> <td>66</td><td>13</td><td>12</td>\n  </tr><tr><td>ASW</td> <td>11</td><td>1</td><td>49</td>\n  </tr><tr><td>CHB</td> <td>47</td><td>55</td><td>1</td>\n  </tr>\n</table>\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<table>\n<tr><td></td><td>#0</td><td>#1</td><td>#2</td></tr>\n<tr><td>GBR</td> <td>66</td><td>13</td><td>12</td>\n  </tr><tr><td>ASW</td> <td>11</td><td>1</td><td>49</td>\n  </tr><tr><td>CHB</td> <td>47</td><td>55</td><td>1</td>\n  </tr>\n</table>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 27
+      "text" : "<console>:50: error: not found: value confMat\n{ for (popu <- confMat) yield\n               ^\n"
     } ]
   } ],
   "nbformat" : 4

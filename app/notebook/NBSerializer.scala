@@ -132,7 +132,9 @@ object NBSerializer {
   case class Worksheet(cells: List[Cell])
   implicit val worksheetFormat = Json.format[Worksheet]
 
-  case class Notebook(metadata: Option[Metadata]=None, cells:Option[List[Cell]]=Some(Nil), worksheets: Option[List[Worksheet]]=None, autosaved: Option[List[Worksheet]]=None, nbformat: Option[Int]) {
+  case class Notebook(metadata: Option[Metadata]=None, cells:Option[List[Cell]]=Some(Nil),
+    worksheets: Option[List[Worksheet]]=None, autosaved: Option[List[Worksheet]]=None,
+    nbformat: Option[Int]) {
     def name = metadata.map(_.name).getOrElse("Anonymous")
   }
   implicit val notebookFormat = Json.format[Notebook]

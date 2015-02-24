@@ -3,7 +3,8 @@
 # ~~~~
 
 # Home page
-GET     /                                                             controllers.Application.dash(title:String="Spark Notebook")
+GET     /                                                             controllers.Application.dash(title:String="Spark Notebook", path:String="/")
+GET     /tree/*path                                                   controllers.Application.dash(title:String="Spark Notebook", path:String)
 
 GET     /api/config/tree                                              controllers.Application.configTree()
 GET     /api/config/common                                            controllers.Application.configCommon()
@@ -16,17 +17,19 @@ GET     /api/sessions                                                 controller
 POST    /api/kernels/:kernelId/restart                                controllers.Application.restartKernel(kernelId:String)
 
 
-GET     /api/contents/                                                controllers.Application.contents(type:String)
-GET     /api/contents/:snb                                            controllers.Application.content(type:String, snb:String)
-GET     /api/contents/:snb/checkpoints                                controllers.Application.listCheckpoints(snb:String)
-POST    /api/contents/:snb/checkpoints                                controllers.Application.saveCheckpoint(snb:String)
-POST    /api/contents                                                 controllers.Application.newNotebook()
-POST    /api/contents/                                                controllers.Application.newNotebook()
-PATCH   /api/contents/:snb                                            controllers.Application.renameNotebook(snb:String)
-PUT     /api/contents/:snb                                            controllers.Application.saveNotebook(snb:String)
+GET     /api/contents/                                                controllers.Application.contents(type:String, path:String="/")
+GET     /api/contents/*path                                           controllers.Application.contents(type:String, path:String)
+GET     /api/contents/*snb/checkpoints                                controllers.Application.listCheckpoints(snb:String)
+POST    /api/contents/*snb/checkpoints                                controllers.Application.saveCheckpoint(snb:String)
+POST    /api/contents                                                 controllers.Application.newContent(path:String="/")
+POST    /api/contents/                                                controllers.Application.newContent(path:String="/")
+POST    /api/contents/*path                                           controllers.Application.newContent(path:String)
+PATCH   /api/contents/*path                                           controllers.Application.renameNotebook(path:String)
+PUT     /api/contents/*path                                           controllers.Application.saveNotebook(path:String)
+DELETE  /api/contents/*path                                           controllers.Application.deleteNotebook(path:String)
 
 
-GET     /notebooks/:snb                                               controllers.Application.openNotebook(snb:String)
+GET     /notebooks/*snb                                               controllers.Application.openNotebook(snb:String)
 GET     /edit/:snb                                                    controllers.Application.openNotebook(snb:String)
 
 GET     /files/*path                                                  controllers.Application.dlNotebookAs(path:String, format:String="json")
