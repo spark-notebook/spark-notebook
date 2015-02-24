@@ -10,4 +10,6 @@ project/target/
 target/
 logs/
 Time+Serie+Demo.snb
-server/src/main/scala/BreezeAndbokehTesti.scala
+server/src/main/scala/BreezeAndbokehTest.scala
+conf/notebooks/Untitled*
+adam.log
