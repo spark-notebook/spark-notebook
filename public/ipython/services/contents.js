@@ -184,10 +184,12 @@ define(function(require) {
      */
     var url = this.api_url(to_dir);
 
+    console.warn("Temporary for notebook only!");
+
     var settings = {
       processData : false,
       type: "POST",
-      data: JSON.stringify({copy_from: from_file}),
+      data: JSON.stringify({type: "notebook", copy_from: from_file}),
       dataType : "json",
     };
     return utils.promising_ajax(url, settings);
