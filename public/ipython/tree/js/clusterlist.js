@@ -47,11 +47,19 @@ define([
     var that = this;
     dialog.conf_cluster({
       name: "New Name",
-      profile: "New Profile ID",
+      profile: "Profile ID",
       template: {
         name: "New Name",
-        profile: "New Profile ID",
-        template: {  "add here" : "your conf" }
+        profile: "Profile ID",
+        template: {
+          customLocalRepo: "path to local repo OR null",
+          customRepos: [ "add remote repo" ],
+          customDeps: "add dependencies in a single string separated with \\n",
+          customImports: "add import in a single string separated with \\n",
+          customSparkConf: {
+            "spark.master": "local[*]"
+          }
+        }
       },
       //template: ,
       callback: function (clusterConf) {
