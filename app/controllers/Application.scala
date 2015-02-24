@@ -1,12 +1,12 @@
 package controllers
 
 import java.util.UUID
+import java.io.File
 
 import scala.util.{Try, Success, Failure}
 import scala.concurrent.{Promise, Future}
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
-
 
 import play.api._
 import play.api.mvc._
@@ -289,10 +289,7 @@ object Application extends Controller {
     Try(Ok(Json.obj("path" → np)))
   }
 
-  def newNotebook(path:String="/") = Action(parse.tolerantText) { request =>
-    val text = request.body
-    val tryJson = Try(Json.parse(request.body))
-
+  def newNotebook(path:String, tryJson:Try[JsValue]) = {
     def findkey[T](x:JsValue, k:String)(init:T)(implicit m:ClassTag[T]):Try[T] =
       (x \ k) match {
         case j:JsUndefined => Failure(new IllegalArgumentException("No " + k))
@@ -314,7 +311,36 @@ object Application extends Controller {
       n <- copyingNb(t.value)
     } yield n
 
-    (custom orElse copyFrom).get
+    (custom orElse copyFrom)
+  }
+
+  def newDirectory(path:String) = {
+    val base = new File(AppUtils.config.notebooksDir, path)
+    val parent = base.getParentFile()
+    val newDir = new File(parent, "dir")
+    newDir.mkdirs()
+    Try(Ok(Json.obj("path" → (newDir.getAbsolutePath.drop(parent.getAbsolutePath.size)))))
+  }
+
+  def newFile(path:String) = {
+    val base = new File(AppUtils.config.notebooksDir, path)
+    val parent = base.getParentFile()
+    val newF = new File(parent, "file")
+    newF.createNewFile()
+    Try(Ok(Json.obj("path" → (newF.getAbsolutePath.drop(parent.getAbsolutePath.size)))))
+  }
+
+  def newContent(path:String="/") = Action(parse.tolerantText) { request =>
+    val text = request.body
+    val tryJson = Try(Json.parse(request.body))
+
+    tryJson.flatMap { json =>
+      (json \ "type").as[String] match {
+        case "directory" => newDirectory(path)
+        case "notebook" => newNotebook(path, tryJson)
+        case "file" => newFile(path)
+      }
+    }.get
   }
 
   def openNotebook(name:String) = Action { request =>
