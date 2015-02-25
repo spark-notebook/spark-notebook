@@ -2,6 +2,7 @@ package controllers
 
 import java.util.UUID
 import java.io.File
+import java.net.URLDecoder
 
 import scala.util.{Try, Success, Failure}
 import scala.concurrent.{Promise, Future}
@@ -220,8 +221,8 @@ object Application extends Controller {
     }
   }
 
-  def contents(`type`:String, path:String="/") = Action {
-    //todo → dirs
+  def contents(`type`:String, p:String="/") = Action {
+    val path = URLDecoder.decode(p)
     val lengthToRoot = config.notebooksDir.getAbsolutePath.size + 1
     val baseDir = new java.io.File(config.notebooksDir, path)
 
@@ -262,8 +263,9 @@ object Application extends Controller {
     }
   }
 
-  def createNotebook(path:String, custom:JsObject) = {
-    Logger.info("Creating notebook")
+  def createNotebook(p:String, custom:JsObject) = {
+    val path = URLDecoder.decode(p)
+    Logger.info(s"Creating notebook at $path")
     val customLocalRepo = Try((custom \ "customLocalRepo").as[String]).toOption
     val customRepos = Try((custom \ "customRepos").as[List[String]]).toOption
     val customDeps = Try((custom \ "customDeps").as[String]).toOption
@@ -283,7 +285,8 @@ object Application extends Controller {
     Try(Redirect(routes.Application.contents("notebook", fpath)))
   }
 
-  def copyingNb(fromPath:String) = {
+  def copyingNb(fp:String) = {
+    val fromPath = URLDecoder.decode(fp)
     Logger.info("Copying notebook:" + fromPath)
     val np = nbm.copyNotebook(fromPath)
     Try(Ok(Json.obj("path" → np)))
@@ -315,6 +318,7 @@ object Application extends Controller {
   }
 
   def newDirectory(path:String) = {
+    Logger.info("New dir:" + path)
     val base = new File(AppUtils.config.notebooksDir, path)
     val parent = base.getParentFile()
     val newDir = new File(parent, "dir")
@@ -323,6 +327,7 @@ object Application extends Controller {
   }
 
   def newFile(path:String) = {
+    Logger.info("New file:" + path)
     val base = new File(AppUtils.config.notebooksDir, path)
     val parent = base.getParentFile()
     val newF = new File(parent, "file")
@@ -330,7 +335,8 @@ object Application extends Controller {
     Try(Ok(Json.obj("path" → (newF.getAbsolutePath.drop(parent.getAbsolutePath.size)))))
   }
 
-  def newContent(path:String="/") = Action(parse.tolerantText) { request =>
+  def newContent(p:String="/") = Action(parse.tolerantText) { request =>
+    val path = URLDecoder.decode(p)
     val text = request.body
     val tryJson = Try(Json.parse(request.body))
 
@@ -343,13 +349,13 @@ object Application extends Controller {
     }.get
   }
 
-  def openNotebook(name:String) = Action { request =>
-    val path = name
-    Logger.info(s"View notebook. Name is '$name' at '$path'")
+  def openNotebook(p:String) = Action { request =>
+    val path = URLDecoder.decode(p)
+    Logger.info(s"View notebook '$path'")
     val ws_url = s"ws:/${request.host}/ws"
 
     Ok(views.html.notebook(
-      nbm.name /*project?*/,
+      nbm.name,
       Map(
         "base-url" -> base_project_url,
         "ws-url" -> ws_url,
@@ -358,8 +364,7 @@ object Application extends Controller {
         "base-kernel-url" -> base_kernel_url,
         "base-observable-url" -> s"$ws_url/$base_observable_url",
         "read-only" -> read_only,
-        //"notebook-id" -> id /*getOrElse nbm.notebookId(name))*/,
-        "notebook-name" -> name,
+        "notebook-name" -> nbm.name,
         "notebook-path" -> path,
         "notebook-writable" -> "true"
       )
@@ -414,37 +419,43 @@ object Application extends Controller {
     ))
   }
 
-  def renameNotebook(path:String) = Action(parse.tolerantJson) { request =>
+  def renameNotebook(p:String) = Action(parse.tolerantJson) { request =>
+    val path = URLDecoder.decode(p)
     val notebook = (request.body \ "path").as[String]
+    Logger.info("RENAME → " + path + " to " + notebook)
     try {
-      nbm.rename(path, notebook)
+      val (newname, newpath) = nbm.rename(path, notebook)
 
       Ok(Json.obj(
         "type" → "file",
-        "name" → notebook,
-        "path" → notebook //todo → rebuild relative path
+        "name" → newname,
+        "path" → newpath
       ))
     } catch {
       case _ :NotebookExistsException => Conflict
     }
   }
 
-  def saveNotebook(path:String) = Action(parse.tolerantJson(maxLength = 1024 * 1024 /*1Mb*/)) { request =>
+  def saveNotebook(p:String) = Action(parse.tolerantJson(maxLength = 1024 * 1024 /*1Mb*/)) { request =>
+    val path = URLDecoder.decode(p)
+    Logger.info("SAVE → " + path)
     val notebook = NBSerializer.fromJson(request.body \ "content")
     try {
-      nbm.save(path, notebook, true)
+      val (name, savedPath) = nbm.save(path, notebook, true)
 
       Ok(Json.obj(
         "type" → "notebook",
-        "name" → notebook.metadata.get.name,
-        "path" → path
+        "name" → name,
+        "path" → savedPath
       ))
     } catch {
       case _ :NotebookExistsException => Conflict
     }
   }
 
-  def deleteNotebook(path:String) = Action{ request =>
+  def deleteNotebook(p:String) = Action{ request =>
+    val path = URLDecoder.decode(p)
+    Logger.info("DELETE → " + path)
     try {
       nbm.deleteNotebook(path)
 
@@ -457,11 +468,15 @@ object Application extends Controller {
     }
   }
 
-  def dlNotebookAs(path:String, format:String) = Action {
+  def dlNotebookAs(p:String, format:String) = Action {
+    val path = URLDecoder.decode(p)
+    Logger.info("DL → " + path + " as " + format)
     getNotebook(path.dropRight(".snb".size), path, format)
   }
 
-  def dash(title:String, path:String=base_kernel_url) = Action {
+  def dash(title:String, p:String=base_kernel_url) = Action {
+    val path = URLDecoder.decode(p)
+    Logger.info("DASH → " + path)
     Ok(views.html.projectdashboard(
       title,
       Map(

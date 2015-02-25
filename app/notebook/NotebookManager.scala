@@ -22,10 +22,14 @@ class NotebookManager(val name: String, val notebookDir: File) {
   def getName(path:String) = path.split("/").filter(!_.isEmpty).last.dropRight(extension.size)
 
   def notebookFile(path: String) = {
+    Logger.info(s"Load notebook. initial path: ${path}")
     val basePath = notebookDir.getCanonicalPath
+    Logger.info(s"Load notebook. base canonical file path: ${basePath}")
     val decodedPath = URLDecoder.decode(path)
+    Logger.info(s"Load notebook. decodedPath: ${decodedPath}")
     val nbFile = new File(basePath, decodedPath)
     Logger.info(s"Load notebook. canonical file path: ${nbFile.getCanonicalPath}")
+    Logger.info(s"Load notebook. absolute file path: ${nbFile.getAbsolutePath}")
     /* This check is probably not strictly necessary due to URL encoding of name (should escape any path traversal components), but let's be safe */
     require(nbFile.getCanonicalPath.startsWith(basePath), "Unable to access notebook outside of notebooks path.")
     nbFile
@@ -86,7 +90,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
   }
 
 
-  def rename(newpath: String, path: String) = {
+  def rename(path: String, newpath: String) = {
     val newname = getName(newpath)
     val oldfile = notebookFile(path)
     load(path).map { notebook =>
@@ -95,12 +99,15 @@ class NotebookManager(val name: String, val notebookDir: File) {
       oldfile.renameTo(newfile)
       FileUtils.writeStringToFile(newfile, NBSerializer.write(nb))
     }
+    (newname, newpath)
   }
 
-  def save(path: String, notebook: Notebook, overwrite: Boolean) {
+  def save(path: String, notebook: Notebook, overwrite: Boolean) = {
     val file = notebookFile(path)
     if (!overwrite && file.exists()) throw new NotebookExistsException("Notebook " + path + " already exists.")
     FileUtils.writeStringToFile(file, NBSerializer.write(notebook))
+    val nb = load(path)
+    (nb.get.metadata.get.name, path)
   }
 
   def load(path: String): Option[Notebook] = {
