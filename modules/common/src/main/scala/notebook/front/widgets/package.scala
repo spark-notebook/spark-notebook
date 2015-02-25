@@ -1,12 +1,13 @@
 package notebook.front
 
 import xml.{NodeSeq, UnprefixedAttribute, Null}
-
 import play.api.libs.json._
-
-import notebook._, front._, widgets._
-import notebook._, JSBus._
+import notebook._
+import notebook._
 import JsonCodec._
+import scala.util.Random
+import play.api.libs.json.Json.JsValueWrapper
+import play.api.libs.json.Json.JsValueWrapper
 
 /**
  * This package contains primitive widgets that can be used in the child environment.
@@ -127,15 +128,116 @@ package object widgets {
 
 
   def html(html: NodeSeq): Widget = new SimpleWidget(html)
-
-  def layout(width: Int, contents: Seq[Widget]): Widget = html(
+  
+  def barChart(width: Int, jsons: Seq[(String, Any)]) = {
+    val id = Math.abs(Random.nextInt).toString
+    
+    	<svg id={ "bar"+id } width="400px" height="400px"
+       xmlns="http://www.w3.org/2000/svg" version="1.1">
+    	{
+      scopedScript(
+        s""" req(
+              ['d3', 'dimple'],
+              function (O, x) {
+                var svg = d3.select("#bar${id}");
+    		  	var chart = new dimple.chart(svg, data);
+    		  	chart.addCategoryAxis("x", "${jsons(0)._1.trim}");
+    		  	chart.addMeasureAxis("y", "${jsons(1)._1.trim}");
+    		  	chart.addSeries(null, dimple.plot.bar);
+    		  	chart.draw();
+          
+              });
+        """,
+        Json.obj( "data" -> (jsons grouped width map { row =>  Json.obj(row.map( f => f._1.trim -> toJson(f._2) ):_*)  }).toSeq    )
+      )
+    } </svg>
+    
+  }
+  
+  def pieChart(width: Int, jsons: Seq[(String, Any)]) = {
+    val id = Math.abs(Random.nextInt).toString
+    
+	    <svg id={ "pie"+id } width="400px" height="400px"
+       xmlns="http://www.w3.org/2000/svg" version="1.1">
+	    {
+	      scopedScript(
+	        s""" req(
+	              ['d3', 'dimple'],
+	              function (O, x) {
+	                  var svg = d3.select("#pie${id}");
+				      var myChart = new dimple.chart(svg, data);
+				      myChart.setBounds(30, 30, 370, 370);
+	        		  myChart.addMeasureAxis("p", "${jsons(1)._1.trim}");
+				      myChart.addSeries("${jsons(0)._1.trim}", dimple.plot.pie);
+				      myChart.addLegend(350, 30, 80, 200, "left");
+				      myChart.draw();
+	              });
+	        """,
+	        Json.obj( "data" -> (jsons grouped width map { row =>  Json.obj(row.map( f => f._1.trim -> toJson(f._2) ):_*)  }).toSeq    )
+	      )
+	    } 
+    </svg>
+    
+  }
+  
+  def tabControl(pages: Seq[(String, scala.xml.Elem)]) = {
+    val tabControlId = Math.abs(Random.nextInt).toString
+    html(
+    <div class="tabs">
+    	{
+	      scopedScript(
+	        s""" req(
+	              [],
+	              function (O, x) {
+	                  console.log("pippo");
+	              });
+	        """
+	      )
+    	}	
+    <ul>{
+    	pages.zipWithIndex map { p: ((String, scala.xml.Elem), Int) => 
+		    <li>
+    			<a href={ "#tab"+tabControlId+"-"+p._2 }><i class={p._1._1} />{ "Tab"+p._2 }</a>
+    		</li>
+		  }
+    }
+    </ul>
+    <div id={ "tab"+tabControlId }>
+      	
+    	{
+		  pages.zipWithIndex map { p: ((String, scala.xml.Elem), Int) => 
+		    <div id={ "tabs"+tabControlId+"-"+p._2 }>
+	    	{ p._1._2 }
+	    	</div>
+		  }
+    	}
+    </div>
+</div>
+	  )
+  }
+ 
+  
+  def toJson(obj: Any): JsValueWrapper = { 
+    obj match {
+          case v: Int => JsNumber(v)
+          case v: Float => JsNumber(v)
+          case v: Double => JsNumber(v)
+          case v: String => JsString(v)
+          case v: Boolean => JsBoolean(v)
+          case v: Any => JsString(v.toString)
+        }
+  }
+  
+  def layout(width: Int, contents: Seq[Widget], headers: Seq[Widget] = Nil): Widget = html(table(width, contents, headers ))
+    
+  def table(width: Int, contents: Seq[Widget], headers: Seq[Widget] = Nil) = 
     <table>{
-      contents grouped width map { row =>
+      (headers ++ contents) grouped width map { row =>
         <tr>{
           row map { html => <td>{html}</td> }
         }</tr>
       }
-    }</table>)
+    }</table>
 
   def row(contents: Widget*) = layout(contents.length, contents)
   def column(contents: Widget*) = layout(1, contents)
