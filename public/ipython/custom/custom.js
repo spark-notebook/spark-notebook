@@ -80,3 +80,67 @@
  * @class customjs
  * @static
  */
+
+require([
+    'base/js/namespace',
+    'base/js/events',
+    "jquery",
+    //"widgets/js/manager",
+    //"widgets/js/widget",
+    //"widgets/js/widget_output"
+], function(IPython, events, $/*, manager, widget, output*/) {
+      events.on('kernel_ready.Kernel', function(event, content){
+      console.log("Creating OutputView for notebook-bg-logs");
+      var kernel = content.kernel;
+      kernel.widget_manager.create_model({
+        model_name: 'WidgetModel',
+        widget_class: 'IPython.OutputArea'//'IPython.html.widgets.widget_output.OutputView'
+      }).then(
+        function(model) {
+          console.log('Create model success!', model);
+
+          model.set("_view_name", "OutputView");
+          model.set("_view_module", "widgets/js/widget_output");
+
+          var view = kernel.widget_manager.create_view(model, {});
+          console.log('Create view success!', view);
+
+          view.then(function(view) {
+            $("#notebook-bg-logs").append(view.$el);
+            kernel.execute('SparkNotebookBgLog', {
+              iopub : {
+                output : function() {
+                    var msg = arguments[0];
+                    if (msg.header.msg_type === 'stream') {
+                      //nothing
+                      // so that the output stream is not shown, only the result
+                      console.log(msg);
+                    } else {
+                      view.output_area.handle_output.apply(view.output_area, arguments);
+                    }
+                },
+                clear_output : function() {
+                    view.output_area.handle_clear_output.apply(view.output_area, arguments);
+                },
+            },
+            });
+          });
+
+        },
+        $.proxy(console.error, console)
+      );
+
+      //var o = new output.OutputView({el: $("#notebook-bg-logs"), model: new widget.WidgetModel(manager)}/*$("#notebook-bg-logs")*/);
+      //console.log("OutputView for notebook-bg-logs");
+      //console.log(o);
+    });
+});
+
+
+
+
+
+
+
+
+

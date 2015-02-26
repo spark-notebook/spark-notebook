@@ -1,7 +1,9 @@
 import java.io.{File, FileReader, BufferedReader}
 
-import notebook._, front.widgets._, front.third.d3._
+import notebook._, front._, widgets._, third.d3._
+import notebook.JsonCodec._
 import notebook.util._
+
 
 import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.repl.SparkILoop
@@ -20,7 +22,10 @@ import org.apache.spark.repl.SparkILoop
 
 @transient var sparkContext:SparkContext = _
 
+val SparkNotebookBgLog = ul(20)
+
 def reset(appName:String="Notebook", lastChanges:(SparkConf=>Unit)=(_:SparkConf)=>()):Unit = {
+  SparkNotebookBgLog.append("Calling reset")
   conf = new SparkConf()
   conf.setMaster(sparkMaster.getOrElse("local[*]"))
       .setAppName(appName)
@@ -35,8 +40,14 @@ def reset(appName:String="Notebook", lastChanges:(SparkConf=>Unit)=(_:SparkConf)
 
   lastChanges(conf)
 
-  if (sparkContext != null) sparkContext.stop()
+  if (sparkContext != null) {
+    SparkNotebookBgLog.append("Stopping Spark Context")
+    sparkContext.stop()
+    SparkNotebookBgLog.append("Spark Context stopped")
+  }
+  SparkNotebookBgLog.append("Starting Spark Context")
   sparkContext = new SparkContext(conf)
+  SparkNotebookBgLog.append("Stopping Spark Context")
 }
 
 reset()
@@ -50,5 +61,7 @@ def stopSpark() = sparkContext.stop()
 @transient implicit val updateSparkContex:SparkContext=>Unit = (sc:SparkContext) => {
   sparkContext = sc
 }
+
+SparkNotebookBgLog.append("Initialized!")
 
 "init.sc done!"
