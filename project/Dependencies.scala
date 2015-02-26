@@ -19,7 +19,7 @@ object Dependencies {
   val akkaSlf4j               = "org.spark-project.akka"    %%          "akka-slf4j"          %    akkaVersion
 
   val breeze                  = "org.scalanlp"              %%         "breeze"               %       "0.10"        excludeAll(ExclusionRule("junit"), ExclusionRule("org.apache.commons", "commons-math3"))
-  val defaultSparkVersion     = sys.props.getOrElse("spark.version", "1.2.0")
+  val defaultSparkVersion     = sys.props.getOrElse("spark.version", "1.2.1")
   def sparkRepl(v:String)     = "org.apache.spark"          %%         "spark-repl"           %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
   def sparkSQL(v:String)      = "org.apache.spark"          %%         "spark-sql"            %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
   val defaultHadoopVersion    = sys.props.getOrElse("hadoop.version", "1.0.4")
@@ -61,7 +61,7 @@ object Dependencies {
 
   object SparkVersion extends Enumeration {
     type SparkVersion = Value
-    val `1.2.0` = Value
+    val `1.2.0`, `1.2.1` = Value
   }
 
   object HadoopVersion extends Enumeration {
@@ -70,7 +70,8 @@ object Dependencies {
   }
 
   val crossConf = Map(
-    SparkVersion.`1.2.0` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`) }
+    SparkVersion.`1.2.0` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`) },
+    SparkVersion.`1.2.1` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`) }
   )
 
   val extraConf:Map[(SparkVersion.Value, HadoopVersion.Value), List[sbt.Def.Setting[_]]] = Map(

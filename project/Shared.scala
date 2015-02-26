@@ -18,6 +18,19 @@ object Shared {
     libraryDependencies += guava
   )
 
+  val repl:Seq[Def.Setting[_]] =  {
+    val lib = libraryDependencies <++=  (sparkVersion, hadoopVersion, jets3tVersion) { (sv, hv, jv) =>
+                                          if (sv != "1.2.0") Seq(sparkRepl(sv)) else Seq.empty
+                                        }
+    val unmanaged = 
+      unmanagedJars in Compile  ++= (if (sparkVersion.value == "1.2.0") 
+                                      Seq((baseDirectory in "sparkNotebook").value / "temp/spark-repl_2.10-1.2.0-notebook.jar")
+                                    else 
+                                      Seq.empty)
+                                    
+    lib ++ unmanaged
+  }
+
   lazy val sparkSettings:Seq[Def.Setting[_]] = Seq(
     libraryDependencies <++= (sparkVersion, hadoopVersion, jets3tVersion) { (sv, hv, jv) =>
       val libs = Seq(
@@ -29,7 +42,6 @@ object Shared {
         commonsCodec
       )
       libs
-    },
-    unmanagedJars in Compile += (baseDirectory in "sparkNotebook").value / "lib/spark-repl_2.10-1.2.0-notebook.jar"
-  )
+    }
+  ) ++  repl
 }

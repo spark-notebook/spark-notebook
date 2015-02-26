@@ -8,7 +8,7 @@ organization := "noootsab"
 
 name := "spark-notebook"
 
-version in ThisBuild <<= (sparkVersion, hadoopVersion) { (sv, hv) => s"0.2.2-spark-$sv-hadoop-$hv" }
+version in ThisBuild <<= (sparkVersion, hadoopVersion) { (sv, hv) => s"0.3.0-spark-$sv-hadoop-$hv" }
 
 maintainer := "Andy Petrella" //Docker
 
