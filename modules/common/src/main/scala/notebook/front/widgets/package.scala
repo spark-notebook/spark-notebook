@@ -183,30 +183,34 @@ package object widgets {
   def tabControl(pages: Seq[(String, scala.xml.Elem)]) = {
     val tabControlId = Math.abs(Random.nextInt).toString
     html(
-    <div class="tabs">
-    	{
-	      scopedScript(
-	        s""" req(
-	              [],
-	              function (O, x) {
-	                  console.log("pippo");
-	              });
+    <div >
+    	<script>{
+	        s""" 
+	        	$$('li').first().addClass('active');
+	        	$$('.tab-content div').first().addClass('active');
+    			$$('#ul${tabControlId} a').click(function(){
+    				$$('.active').removeClass('active');
+    				var id = $$(this).attr('href');
+    				$$(id).addClass('active');
+    				$$(this).parent().addClass('active');
+    			});
 	        """
-	      )
-    	}	
-    <ul>{
+	      }
+    	</script>	
+    <ul class="nav nav-tabs" id={ "ul"+tabControlId }>{
     	pages.zipWithIndex map { p: ((String, scala.xml.Elem), Int) => 
 		    <li>
-    			<a href={ "#tab"+tabControlId+"-"+p._2 }><i class={p._1._1} />{ "Tab"+p._2 }</a>
+    			<a href={ "#tab"+tabControlId+"-"+p._2 }><i class={p._1._1} />{ p._1._1 }</a>
     		</li>
 		  }
     }
     </ul>
-    <div id={ "tab"+tabControlId }>
+
+    <div class="tab-content" id={ "tab"+tabControlId }>
       	
     	{
 		  pages.zipWithIndex map { p: ((String, scala.xml.Elem), Int) => 
-		    <div id={ "tabs"+tabControlId+"-"+p._2 }>
+		    <div class="tab-pane" id={ "tab"+tabControlId+"-"+p._2 }>
 	    	{ p._1._2 }
 	    	</div>
 		  }
