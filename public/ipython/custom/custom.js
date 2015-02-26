@@ -107,23 +107,28 @@ require([
 
           view.then(function(view) {
             $("#notebook-bg-logs").append(view.$el);
-            kernel.execute('SparkNotebookBgLog', {
-              iopub : {
-                output : function() {
-                    var msg = arguments[0];
-                    if (msg.header.msg_type === 'stream') {
-                      //nothing
-                      // so that the output stream is not shown, only the result
-                      console.log(msg);
-                    } else {
-                      view.output_area.handle_output.apply(view.output_area, arguments);
-                    }
-                },
-                clear_output : function() {
-                    view.output_area.handle_clear_output.apply(view.output_area, arguments);
-                },
-            },
-            });
+            function connect() {
+              view.output_area.clear_output(false /*wait*/);
+              kernel.execute('SparkNotebookBgLog', {
+                iopub : {
+                  output : function() {
+                      var msg = arguments[0];
+                      if (msg.header.msg_type === 'stream') {
+                        //nothing
+                        // so that the output stream is not shown, only the result
+                        console.log(msg);
+                      } else {
+                        view.output_area.handle_output.apply(view.output_area, arguments);
+                      }
+                  },
+                  clear_output : function() {
+                      view.output_area.handle_clear_output.apply(view.output_area, arguments);
+                  }
+              },
+              });
+            };
+            //setInterval(connect, 5000);
+            connect()
           });
 
         },
