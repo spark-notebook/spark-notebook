@@ -141,6 +141,7 @@ package object widgets {
               function (O, x) {
                 var svg = d3.select("#bar${id}");
     		  	var chart = new dimple.chart(svg, data);
+        		chart.setBounds(30, 20, 380, 360);
     		  	chart.addCategoryAxis("x", "${jsons(0)._1.trim}");
     		  	chart.addMeasureAxis("y", "${jsons(1)._1.trim}");
     		  	chart.addSeries(null, dimple.plot.bar);
@@ -166,7 +167,7 @@ package object widgets {
 	              function (O, x) {
 	                  var svg = d3.select("#pie${id}");
 				      var myChart = new dimple.chart(svg, data);
-				      myChart.setBounds(30, 30, 370, 370);
+				      myChart.setBounds(50, 50, 350, 350);
 	        		  myChart.addMeasureAxis("p", "${jsons(1)._1.trim}");
 				      myChart.addSeries("${jsons(0)._1.trim}", dimple.plot.pie);
 				      myChart.addLegend(350, 30, 80, 200, "left");
@@ -183,13 +184,14 @@ package object widgets {
   def tabControl(pages: Seq[(String, scala.xml.Elem)]) = {
     val tabControlId = Math.abs(Random.nextInt).toString
     html(
-    <div >
+    <div style="width:600px; height:450px;" >
     	<script>{
 	        s""" 
-	        	$$('li').first().addClass('active');
-	        	$$('.tab-content div').first().addClass('active');
+	        	$$('#ul${tabControlId} li').first().addClass('active');
+	        	$$('#tab${tabControlId} div').first().addClass('active');
     			$$('#ul${tabControlId} a').click(function(){
-    				$$('.active').removeClass('active');
+    				$$('#tab${tabControlId} div.active').removeClass('active');
+    				$$('#ul${tabControlId} li.active').removeClass('active');
     				var id = $$(this).attr('href');
     				$$(id).addClass('active');
     				$$(this).parent().addClass('active');
@@ -235,13 +237,14 @@ package object widgets {
   def layout(width: Int, contents: Seq[Widget], headers: Seq[Widget] = Nil): Widget = html(table(width, contents, headers ))
     
   def table(width: Int, contents: Seq[Widget], headers: Seq[Widget] = Nil) = 
-    <table>{
+    <div>
+  	<table>{
       (headers ++ contents) grouped width map { row =>
         <tr>{
           row map { html => <td>{html}</td> }
         }</tr>
       }
-    }</table>
+    }</table></div>
 
   def row(contents: Widget*) = layout(contents.length, contents)
   def column(contents: Widget*) = layout(1, contents)

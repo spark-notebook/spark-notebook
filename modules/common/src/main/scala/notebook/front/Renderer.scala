@@ -50,44 +50,71 @@ trait LowPriorityRenderers {
       val numOfFields = 2
       val headers: Seq[String] = List("Key", "Value")
       
-      def normalize(obj: Any): Seq[String] = Reflector.toFieldValueArray(obj).map(_.toString)
+      var firstElem = x.head
+      
+      
+      def normalize(obj: Any): Seq[Any] = Reflector.toFieldValueArray(obj)
       
       val xSeq = x.toSeq
-      val values: Seq[String] = if (xSeq.lengthCompare(25) < 0) (xSeq flatMap normalize) else (xSeq.take(24) flatMap normalize) :+ "..."
+      val values: Seq[String] = if (xSeq.lengthCompare(25) < 0) ((xSeq flatMap normalize).map(_.toString)) else ((xSeq.take(24) flatMap normalize).map(_.toString) :+ "...")
       
-      widgets.layout(numOfFields, values.map(v => widgets.text(v)), headers.map(v => widgets.text(v)))
+      val table = widgets.table(numOfFields, values.map(v => widgets.text(v)), headers.map(v => widgets.text(v)))
+      
+      if(isNumber(firstElem._2)){
+    	  	def toJson(obj: Any) = Reflector.toObjArray(obj)
+			val jsons = if (xSeq.lengthCompare(25) < 0) (xSeq flatMap toJson) else (xSeq.take(24) flatMap toJson)
+			val tabs = ("bar", widgets.barChart(numOfFields, jsons)) :: ("pie", widgets.pieChart(numOfFields, jsons)) :: ("table",table) :: Nil
+			widgets.tabControl(tabs.reverse)
+      }else{
+			widgets.html(table)
+      }
+      
     }
   }
   
   implicit object seqAsTable extends Renderer[Seq[_]] {
     def render(x: Seq[_]) = {
       
-      if(x.isEmpty){
-        widgets.layout(0, Seq(widgets.text("")))
-        
-      }else{
-        val numOfFields = Reflector.numOfFields(x.head)
-        val headers: Seq[String] = if(numOfFields > 1) Reflector.toFieldNameArray(x.head) else Nil
+      x match {
+        case Nil => widgets.layout(0, Seq(widgets.text("")))
+        case _ => {
+        			var firstElem = x.head
+        			var numOfFields = if(firstElem.isInstanceOf[String]) 1 else Reflector.numOfFields(firstElem)
+			        
+			        val data = if(numOfFields == 1){
+			        	firstElem match {
+			        	  case o @ (_:Int | _:Float | _:Double ) => x.zipWithIndex.map(e => (e._2, e._1))
+			        	  case _ => x
+			        	}
+			        }else{ x }
+        			
+        			firstElem = data.head
+        			numOfFields = if(firstElem.isInstanceOf[String]) 1 else Reflector.numOfFields(firstElem)
+        			val members = Reflector.toFieldValueArray(firstElem)
+			        
+        			val headers: Seq[String] = if(numOfFields > 1) Reflector.toFieldNameArray(data.head) else Nil
+			        
+			        def normalize(obj: Any): Seq[Any] = if(numOfFields > 1) Reflector.toFieldValueArray(obj) else Seq(obj)
+			      
+			        val values: Seq[String] =( if (data.lengthCompare(25) < 0) ((data flatMap normalize ).map(_.toString)) else ((data.take(24) flatMap normalize).map(_.toString) :+ "...")) 
+			        
+			        
+			        val table = widgets.table(numOfFields, values.map(v => widgets.text(v)), headers.map(v => widgets.text(v)))
+			        if(numOfFields == 2 && isNumber(members(1)) ){
+			          
+			        	def toJson(obj: Any) = Reflector.toObjArray(obj)
+			        	val jsons = if (data.lengthCompare(25) < 0) (data flatMap toJson) else (data.take(24) flatMap toJson)
+			        	val tabs = ("bar", widgets.barChart(numOfFields, jsons)) :: ("pie", widgets.pieChart(numOfFields, jsons)) :: ("table",table) :: Nil
+			        	widgets.tabControl(tabs.reverse)
+			        }else{
+			        	widgets.html(table)
+			        }
+			         
+			        
+        	}
+      }	
       
-        def numOfCols = if(numOfFields > 1) numOfFields else 1
-        def normalize(obj: Any): Seq[Any] = if(numOfFields > 1) Reflector.toFieldValueArray(obj) else Seq(obj)
       
-        val values: Seq[String] =( if (x.lengthCompare(25) < 0) ((x flatMap normalize ).map(_.toString)) else ((x.take(24) flatMap normalize).map(_.toString) :+ "...")) 
-        
-        val members = Reflector.toFieldValueArray(x.head)
-        
-        var tabs: List[(String, scala.xml.Elem)] = Nil
-        if(numOfFields == 2 && isNumber(members(1)) ){
-          
-        	def toJson(obj: Any) = Reflector.toObjArray(obj)
-        	val jsons = if (x.lengthCompare(25) < 0) (x flatMap toJson) else (x.take(24) flatMap toJson)
-        	
-        	tabs = tabs :+ ("bar", widgets.barChart(numOfCols, jsons))
-        	tabs = tabs :+ ("pie", widgets.pieChart(numOfCols, jsons))
-        }
-        tabs = tabs :+ ("table", widgets.table(numOfCols, values.map(v => widgets.text(v)), headers.map(v => widgets.text(v))))
-        widgets.tabControl(tabs)
-      }
       
     }
   }
