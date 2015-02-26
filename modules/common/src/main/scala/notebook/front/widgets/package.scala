@@ -57,6 +57,48 @@ package object widgets {
       )}</p>)
   }
 
+  def ul(capacity:Int=10) = new DataConnector[String] with Widget {
+    implicit val singleCodec:Codec[JsValue, String] = strings
+
+    var data = Seq.empty[String]
+
+    lazy val toHtml = <ul data-bind="foreach: value">
+      <li data-bind="text: $data"></li>{
+        scopedScript(
+          """
+              req(
+                ['observable', 'knockout'],
+                function (O, ko) {
+                  ko.applyBindings({
+                      value: O.makeObservable(valueId)
+                    },
+                    this
+                  );
+                }
+              );
+          """,
+          Json.obj("valueId" -> dataConnection.id)
+        )
+      }</ul>
+
+    override def apply(d:Seq[String]) = {
+      data = if (d.size > capacity) {
+         d.drop(d.size - capacity)
+      } else {
+        d
+      }
+      super.apply(data)
+    }
+
+    def append(s:String) = {
+      apply(data :+ s)
+    }
+
+    def appendAll(s:Seq[String]) = {
+      apply(data ++ s)
+    }
+  }
+
   def out = new SingleConnectedWidget[String] {
     implicit val codec:Codec[JsValue, String] = formatToCodec(Format.of[String])
 

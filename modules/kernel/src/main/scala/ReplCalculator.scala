@@ -143,6 +143,25 @@ class ReplCalculator(
 
   // Make a child actor so we don't block the execution on the main thread, so that interruption can work
   private val executor = context.actorOf(Props(new Actor {
+    def eval(b: => String, notify:Boolean=true)(success: => String = "", failure: String=>String=(s:String)=>"Error evaluating " + b + ": "+ s) {
+      repl.evaluate(b)._1 match {
+        case Failure(str) =>
+          if (notify) {
+            eval(s"""
+              SparkNotebookBgLog.append("${failure(str)}")
+            """,false)()
+          }
+          log.error(failure(str))
+        case _ =>
+          if (notify) {
+            eval(s"""
+              SparkNotebookBgLog.append("${success}")
+            """,false)()
+          }
+          log.info(success)
+      }
+    }
+
     def receive = {
       case ExecuteRequest(_, code) =>
         val (result, _) = {
@@ -162,18 +181,24 @@ class ReplCalculator(
 
               case dpRegex(cp) =>
                 log.debug("Fetching deps using repos: " + remotes.mkString(" -- "))
+                eval("""
+                  SparkNotebookBgLog.append("Resolving deps")
+                """, false)()
                 val tryDeps = Deps.script(cp, remotes, repo)
+                eval("""
+                  SparkNotebookBgLog.append("Deps resolved")
+                """, false)()
 
                 tryDeps match {
                   case TSuccess(deps) =>
-                    repl.evaluate("""
+                    eval("""
+                      SparkNotebookBgLog.append("Stopping Spark Context")
                       sparkContext.stop()
-                    """)._1 match {
-                      case Failure(str) =>
-                        log.error("Error in :dp: \n%s".format(str))
-                      case _ =>
-                        log.info("CP reload processed successfully")
-                    }
+                      SparkNotebookBgLog.append("Spark Context stopped")
+                    """)(
+                      "CP reload processed successfully",
+                      (str:String) => "Error in :dp: \n%s".format(str)
+                    )
                     val (_r, replay) = repl.addCp(deps)
                     _repl = Some(_r)
                     preStartLogic()
@@ -183,8 +208,9 @@ class ReplCalculator(
                       |//updating deps
                       |jars = (${ deps.mkString("List(\"", "\",\"", "\")") } ::: jars.toList).distinct.toArray
                       |//restarting spark
+                      |SparkNotebookBgLog.append("Resetting Spark Context with new jars")
                       |reset()
-                      |
+                      |SparkNotebookBgLog.append("Spark Context restarted")
                       |jars.toList
                     """.stripMargin
                   case TFailure(ex) =>
@@ -195,7 +221,9 @@ class ReplCalculator(
               case cpRegex(cp) =>
                 val jars = cp.trim().split("\n").toList.map(_.trim()).filter(_.size > 0)
                 repl.evaluate("""
+                  SparkNotebookBgLog.append("Stopping Spark Context")
                   sparkContext.stop()
+                  SparkNotebookBgLog.append("Spark Context stopped")
                 """)._1 match {
                   case Failure(str) =>
                     log.error("Error in :cp: \n%s".format(str))
@@ -206,7 +234,10 @@ class ReplCalculator(
                 _repl = Some(_r)
                 preStartLogic()
                 replay()
-                s""" "Classpath CHANGED!" """
+                s"""
+                  SparkNotebookBgLog.append("Classpath changed")
+                  "Classpath CHANGED!"
+                """
 
               case shRegex(sh) =>
                 val ps = "\""+sh.replaceAll("\\s*\\|\\s*", "\" #\\| \"").replaceAll("\\s*&&\\s*", "\" #&& \"")+"\""
