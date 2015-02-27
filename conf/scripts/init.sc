@@ -22,7 +22,7 @@ import org.apache.spark.repl.SparkILoop
 
 @transient var sparkContext:SparkContext = _
 
-val SparkNotebookBgLog = ul(20)
+@transient val SparkNotebookBgLog = ul(20)
 
 def reset(appName:String="Notebook", lastChanges:(SparkConf=>Unit)=(_:SparkConf)=>()):Unit = {
   SparkNotebookBgLog.append("Calling reset")
