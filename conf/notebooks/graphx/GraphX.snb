@@ -8,7 +8,12 @@
       "file_extension" : "scala",
       "codemirror_mode" : "text/x-scala"
     },
-    "trusted" : true
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customSparkConf" : null
   },
   "cells" : [ {
     "metadata" : { },
@@ -36,7 +41,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : ":dp  org.apache.spark % spark-graphx_2.10 % 1.2.0\n- org.apache.spark % spark-core_2.10 % _\n- org.apache.hadoop % _ % _\ncom.fasterxml.jackson.module   %  jackson-module-scala_2.10     %    2.3.3",
+    "source" : ":dp  org.apache.spark % spark-graphx_2.10 % 1.2.1\n- org.apache.spark % spark-core_2.10 % _\n- org.apache.hadoop % _ % _\ncom.fasterxml.jackson.module   %  jackson-module-scala_2.10     %    2.3.3",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -57,7 +62,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : ":sh du -h /tmp/github.json",
@@ -81,7 +86,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "raw.count",
@@ -105,7 +110,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "json.take(2).toList",
@@ -185,7 +190,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "val cc = graph.connectedComponents",
@@ -205,7 +210,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "<strong style=\"color: red\">{cc.vertices.map(_._2).distinct.count}</strong>",

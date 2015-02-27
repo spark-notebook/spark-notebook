@@ -16,7 +16,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : ":dp org.apache.spark % spark-streaming_2.10 % 1.2.0",
+    "source" : ":dp org.apache.spark % spark-streaming_2.10 % 1.2.1",
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",

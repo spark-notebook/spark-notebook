@@ -9,7 +9,11 @@
       "codemirror_mode" : "text/x-scala"
     },
     "trusted" : true,
-    "custom" : null
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customSparkConf" : null
   },
   "cells" : [ {
     "metadata" : { },
@@ -45,7 +49,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : ":dp\norg.apache.spark % spark-mllib_2.10 % 1.2.0\n- org.apache.spark % spark-core_2.10 % _\n- org.apache.hadoop % _ % _",
+    "source" : ":dp\norg.apache.spark % spark-mllib_2.10 % 1.2.1\n- org.apache.spark % spark-core_2.10 % _\n- org.apache.hadoop % _ % _",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -293,19 +297,23 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "import org.apache.spark.SparkContext._ // gives access to org.apache.spark.rdd.DoubleRDDFunctions containing `mean`\n\n// Evaluate model on test instances and compute test error\nval labelsAndPredictions = testData.map { point =>\n  val prediction = model.predict(point.features)\n  (point.label, prediction)\n}\nval testMSE = labelsAndPredictions.map{ case(v, p) => math.pow((v - p), 2)}.mean()\nList(\n\"Test Mean Squared Error: \" + testMSE + \".\",\n\"Hence, squared: \" + scala.math.sqrt(testMSE) + \".\"\n)",
+    "source" : "import org.apache.spark.SparkContext._ // gives access to org.apache.spark.rdd.DoubleRDDFunctions containing `mean`\n\n// Evaluate model on test instances and compute test error\nval labelsAndPredictions = testData.map { point =>\n  val prediction = model.predict(point.features)\n  (point.label, prediction)\n}.cache()\nval testMSE = labelsAndPredictions.map{ case(v, p) => math.pow((v - p), 2)}.mean()\nList(\n\"Test Mean Squared Error: \" + testMSE + \".\",\n\"Hence, squared: \" + scala.math.sqrt(testMSE) + \".\"\n)",
     "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "Plot time!"
+    "source" : "### Plot time!"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "We could try to use the full `testData`, however it can either break the **driver** with memory problems (depending on how much memory it has) or the **browser** due to the amount of data to plot.\n\nHence, we're going to plot a smaller part of it, feel free to update the code for more insights using the plots."
   }, {
     "metadata" : {
       "trusted" : true,
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "Plot(Seq(\n  SummarySeries((1 to labelsAndPredictions.size) zip labelsAndPredictions.map(_._1), \"line\", _.copy(color=Some(\"darkblue\"), name=Some(\"Training\"))),\n  SummarySeries((1 to labelsAndPredictions.size) zip labelsAndPredictions.map(_._2), \"line\", _.copy(color=Some(\"lightgreen\"), name=Some(\"Prediction\")))\n)) ++ Plot(Seq(\n  SummarySeries((1 to labelsAndPredictions.size) zip labelsAndPredictions.sortBy(_._1).map(_._1), \"line\", _.copy(color=Some(\"darkblue\"), name=Some(\"Training\"))),\n  SummarySeries((1 to labelsAndPredictions.size) zip labelsAndPredictions.sortBy(_._1).map(_._2), \"line\", _.copy(color=Some(\"lightgreen\"), name=Some(\"Prediction\")))\n))",
+    "source" : "val labelsAndPredictionsCount = labelsAndPredictions.count.toInt\nval labelsAndPredictionsSortedByLabel = labelsAndPredictions.sortBy(_._1).cache()\n\n// sampling to avoid memory or rendereing problems\nval seed = 123456L\nval takeCount = 100\nval somePredictions = labelsAndPredictions.takeSample(false, takeCount, seed)\nval somePredictionsSorted = labelsAndPredictionsSortedByLabel.takeSample(false, takeCount, seed)\n\nPlot(Seq(\n  SummarySeries((1 to takeCount) zip somePredictions.map(_._1), \"line\", _.copy(color=Some(\"darkblue\"), name=Some(\"Training\"))),\n  SummarySeries((1 to takeCount) zip somePredictions.map(_._2), \"line\", _.copy(color=Some(\"lightgreen\"), name=Some(\"Prediction\")))\n)) ++ Plot(Seq(\n  SummarySeries((1 to takeCount) zip somePredictionsSorted.map(_._1), \"line\", _.copy(color=Some(\"darkblue\"), name=Some(\"Training\"))),\n  SummarySeries((1 to takeCount) zip somePredictionsSorted.map(_._2), \"line\", _.copy(color=Some(\"lightgreen\"), name=Some(\"Prediction\")))\n))",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -314,7 +322,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "println(\"Learned regression forest model:\\n\" + model.toDebugString)",

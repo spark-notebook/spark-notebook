@@ -29,7 +29,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : ":dp org.bdgenomics.adam % adam-apis % 0.16.0\n- org.apache.hadoop % hadoop-client %   _\n- org.apache.spark  % spark-core    %   _\n- org.scala-lang    %     _         %   _\n- org.scoverage     %     _         %   _\n+ org.apache.spark  %  spark-mllib_2.10  % 1.2.0",
+    "source" : ":dp org.bdgenomics.adam % adam-apis % 0.16.0\n- org.apache.hadoop % hadoop-client %   _\n- org.apache.spark  % spark-core    %   _\n- org.scala-lang    %     _         %   _\n- org.scoverage     %     _         %   _\n+ org.apache.spark  %  spark-mllib_2.10  % 1.2.1",
     "outputs" : [ ]
   }, {
     "metadata" : {

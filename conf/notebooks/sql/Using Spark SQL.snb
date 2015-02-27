@@ -8,7 +8,12 @@
       "file_extension" : "scala",
       "codemirror_mode" : "text/x-scala"
     },
-    "trusted" : true
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customSparkConf" : null
   },
   "cells" : [ {
     "metadata" : { },
@@ -48,7 +53,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val quotes = sparkContext//.textFile(\"/home/noootsab/data/closes.csv\")\n                         .textFile(\"s3n://spark-notebook-data/closes.csv\")\n                         .map(_.split(\",\").toList)\n                         .map{ case s::d::p::Nil => Quote(s, d, p.toDouble) }\n                         .persist(org.apache.spark.storage.StorageLevel.DISK_ONLY) // cache!\nquotes.name = \"quotes\"",
+    "source" : "val quotes = sparkContext//.textFile(\"/tmp/data/closes.csv\")\n                         .textFile(\"s3n://spark-notebook-data/closes.csv\")\n                         .map(_.split(\",\").toList)\n                         .map{ case s::d::p::Nil => Quote(s, d, p.toDouble) }\n                         .persist(org.apache.spark.storage.StorageLevel.DISK_ONLY) // cache!\nquotes.name = \"quotes\"",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -104,7 +109,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "byDate.react[String](\n  rddResult => rddResult.collect().toList,// → change date to Long then keep count as Long\n  out//use wisp updated with result of the previous function\n)",
+    "source" : "byDate.react[String](\n  rddResult => rddResult.collect().toList.toString,// → change date to Long then keep count as Long\n  out//use wisp updated with result of the previous function\n)",
     "outputs" : [ ]
   } ],
   "nbformat" : 4

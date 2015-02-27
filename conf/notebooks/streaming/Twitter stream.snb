@@ -8,7 +8,12 @@
       "file_extension" : "scala",
       "codemirror_mode" : "text/x-scala"
     },
-    "trusted" : true
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customSparkConf" : null
   },
   "cells" : [ {
     "metadata" : { },
@@ -37,10 +42,10 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : ":dp org.apache.spark % spark-streaming_2.10 % 1.2.0\norg.apache.spark % spark-streaming-twitter_2.10 % 1.2.0\n- org.apache.spark % spark-core_2.10 % _\n- org.apache.hadoop % _ % _",
+    "source" : ":dp org.apache.spark % spark-streaming_2.10 % 1.2.1\norg.apache.spark % spark-streaming-twitter_2.10 % 1.2.1\n- org.apache.spark % spark-core_2.10 % _\n- org.apache.hadoop % _ % _",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -168,7 +173,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "ssc.stop()",
+    "source" : "// commented to all 'run all' :-D\n//ssc.stop()",
     "outputs" : [ ]
   } ],
   "nbformat" : 4
