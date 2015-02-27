@@ -57,8 +57,8 @@ package object widgets {
       )}</p>)
   }
 
-  def ul(capacity:Int=10) = new DataConnector[String] with Widget {
-    implicit val singleCodec:Codec[JsValue, String] = strings
+  def ul(capacity:Int=10) = new DataConnectedWidget[String] {
+    implicit val singleCodec:Codec[JsValue, String] = JsonCodec.strings
 
     var data = Seq.empty[String]
 
