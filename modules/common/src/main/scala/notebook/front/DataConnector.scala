@@ -22,6 +22,7 @@ trait IOSingleConnector[I, O] {
 trait SingleConnector[T] extends IOSingleConnector[T,T] {
   val toO:T=>T = identity[T] _
 }
+trait SingleConnectedWidget[T] extends SingleConnector[T] with Widget
 
 trait IODataConnector[I,O] extends IOSingleConnector[Seq[I], Seq[O]] {
   implicit def singleCodec:Codec[JsValue, O]
@@ -37,5 +38,4 @@ trait DataConnector[T] extends IODataConnector[T, T] {
 
   override lazy val toO:Seq[T]=>Seq[T] = identity[Seq[T]]
 }
-
-trait SingleConnectedWidget[T] extends SingleConnector[T] with Widget
+trait DataConnectedWidget[T] extends DataConnector[T] with Widget
