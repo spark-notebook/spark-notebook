@@ -16,7 +16,7 @@ import org.apache.spark.{SparkContext, SparkConf}
 @transient val addedJars: Array[String] = {    val envJars = sys.env.get("ADD_JARS")
   val propJars = sys.props.get("spark.jars").flatMap { p => if (p == "") None else Some(p) }
   val jars = propJars.orElse(envJars).getOrElse("")
-  Utils.resolveURIs(jars).split(",").filter(_.nonEmpty)
+  notebook.Utils.resolveURIs(jars).split(",").filter(_.nonEmpty)
 }
 
 @transient var jars = (addedJars ++ CustomJars).distinct
