@@ -18,6 +18,7 @@ object Dependencies {
   val akkaRemote              = "org.spark-project.akka"    %%         "akka-remote"          %    akkaVersion
   val akkaSlf4j               = "org.spark-project.akka"    %%          "akka-slf4j"          %    akkaVersion
 
+  val defaultScalaVersion     = sys.props.getOrElse("scala.version", "2.10.4")
   val breeze                  = "org.scalanlp"              %%         "breeze"               %       "0.10"        excludeAll(ExclusionRule("junit"), ExclusionRule("org.apache.commons", "commons-math3"))
   val defaultSparkVersion     = sys.props.getOrElse("spark.version", "1.2.1")
   def sparkRepl(v:String)     = "org.apache.spark"          %%         "spark-repl"           %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
@@ -44,7 +45,7 @@ object Dependencies {
   val ningAsyncHttpClient     = "com.ning"                  %       "async-http-client"       %     "[1.6.5, 1.6.5]" force()
 
   // Viz
-  val bokeh                   = "io.continuum.bokeh"        %          "bokeh_2.10"           %       "0.2"
+  val bokeh                   = "io.continuum.bokeh"        %%            "bokeh"             %       "0.2"
   val wisp                    = "com.quantifind"            %%            "wisp"              %      "0.0.2" excludeAll(ExclusionRule("com.google.guava"))
   // wisp deps on jackson-module-scala_2.10 v2.4 → guava v15
   // but spark 1.2 → guava 14.0.1
@@ -92,7 +93,7 @@ object Dependencies {
   def forAll[T](name:String, logS:String=>String, logH:String=>String, ts:List[sbt.TaskKey[_]]) = {
     Command.command(name) { state =>
       val extracted = Project.extract(state)
-      println(s"Running command $name")
+      println(s"Running command $name using scala " + extracted.get(scalaVersion))
       crossConf foreach { case (sv, hvs) =>
         val svS = extractEnumVersionName(sv.toString)
         println(logS(svS))
@@ -138,6 +139,20 @@ object Dependencies {
     logS = sv => s" > Building: dist for Spark $sv",
     logH = hv => s"   > with hadoop $hv",
     (packageBin in Universal) :: (packageBin in Debian) :: Nil
+  )
+
+  def distZips = forAll(
+    "distZips",
+    logS = sv => s" > Building: dist for Spark $sv",
+    logH = hv => s"   > with hadoop $hv",
+    (packageBin in Universal) :: Nil
+  )
+
+  def distDebs = forAll(
+    "distDebs",
+    logS = sv => s" > Building: dist for Spark $sv",
+    logH = hv => s"   > with hadoop $hv",
+    (packageBin in Debian) :: Nil
   )
 
   def dockerPublishLocalAll = forAll(

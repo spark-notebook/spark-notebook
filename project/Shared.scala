@@ -10,11 +10,18 @@ object Shared {
 
   lazy val jets3tVersion = SettingKey[String]("x-jets3t-version")
 
+  lazy val jlineDef      = SettingKey[(String, String)]("x-jline-def")
+
   lazy val sharedSettings:Seq[Def.Setting[_]] = Seq(
-    scalaVersion := "2.10.4",
-    sparkVersion  :=  defaultSparkVersion,
-    hadoopVersion :=  defaultHadoopVersion,
-    jets3tVersion :=  defaultJets3tVersion,
+    scalaVersion        :=  defaultScalaVersion,
+    sparkVersion        :=  defaultSparkVersion,
+    hadoopVersion       :=  defaultHadoopVersion,
+    jets3tVersion       :=  defaultJets3tVersion,
+    jlineDef            :=  (if (defaultScalaVersion.startsWith("2.10")) {
+                              ("org.scala-lang", defaultScalaVersion)
+                            } else {
+                              ("jline", "2.12")
+                            }),
     libraryDependencies += guava
   )
 
@@ -22,12 +29,12 @@ object Shared {
     val lib = libraryDependencies <++=  (sparkVersion, hadoopVersion, jets3tVersion) { (sv, hv, jv) =>
                                           if (sv != "1.2.0") Seq(sparkRepl(sv)) else Seq.empty
                                         }
-    val unmanaged = 
-      unmanagedJars in Compile  ++= (if (sparkVersion.value == "1.2.0") 
+    val unmanaged =
+      unmanagedJars in Compile  ++= (if (sparkVersion.value == "1.2.0")
                                       Seq((baseDirectory in "sparkNotebook").value / "temp/spark-repl_2.10-1.2.0-notebook.jar")
-                                    else 
+                                    else
                                       Seq.empty)
-                                    
+
     lib ++ unmanaged
   }
 

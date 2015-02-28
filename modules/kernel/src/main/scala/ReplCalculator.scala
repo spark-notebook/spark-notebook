@@ -10,8 +10,6 @@ import kernel._
 
 import org.sonatype.aether.repository.RemoteRepository
 
-import org.apache.spark.repl.HackSparkILoop
-
 import notebook.util.{Deps, Match, Repos}
 import notebook.front._
 import notebook.front.widgets._

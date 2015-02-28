@@ -1,6 +1,5 @@
 package notebook.kernel.pfork
 
-import concurrent.ops
 import collection.mutable
 import collection.JavaConversions._
 import org.apache.commons.exec._
