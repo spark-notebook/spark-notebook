@@ -133,7 +133,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val result = out",
+    "source" : "val result = ul(10)\n",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -145,7 +145,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "// Print popular hashtags\ntopCounts60.foreachRDD(rdd => {\n  val topList = rdd.take(10)\n  val r = topList.map{case (count, tag) => (tag, count)}.mkString(\"\\n\")\n  result(r)\n})\n",
+    "source" : "// Print popular hashtags\ntopCounts60.foreachRDD(rdd => {\n  val topList = rdd.take(10).toList\n  val r = topList.map{case (count, tag) => s\"$tag: $count\"}\n  result(r)\n})\n",
     "outputs" : [ ]
   }, {
     "metadata" : { },
