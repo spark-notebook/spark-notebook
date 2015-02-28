@@ -8,7 +8,9 @@ organization := "noootsab"
 
 name := "spark-notebook"
 
-version in ThisBuild <<= (sparkVersion, hadoopVersion) { (sv, hv) => s"0.3.0-spark-$sv-hadoop-$hv" }
+scalaVersion := defaultScalaVersion
+
+version in ThisBuild <<= (scalaVersion, sparkVersion, hadoopVersion) { (sc, sv, hv) => s"0.3.0-scala-$sc-spark-$sv-hadoop-$hv" }
 
 maintainer := "Andy Petrella" //Docker
 
@@ -17,8 +19,6 @@ dockerExposedPorts in Docker := Seq(9000, 9443) //Docker
 dockerRepository := Some("andypetrella") //Docker
 
 packageName in Docker := "spark-notebook"
-
-scalaVersion := defaultScalaVersion
 
 ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) }
 
