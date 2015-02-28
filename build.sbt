@@ -71,9 +71,9 @@ libraryDependencies ++= Seq(
   commonsExec,
   commonsCodec,
   ningAsyncHttpClient, // for aether to work...
-  "org.scala-lang" % "scala-library" % "2.10.4",
-  "org.scala-lang" % "scala-reflect" % "2.10.4",
-  "org.scala-lang" % "scala-compiler" % "2.10.4"
+  "org.scala-lang" % "scala-library" % defaultScalaVersion,
+  "org.scala-lang" % "scala-reflect" % defaultScalaVersion,
+  "org.scala-lang" % "scala-compiler" % defaultScalaVersion
 )
 
 lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).enablePlugins(SbtWeb)
