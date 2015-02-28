@@ -18,7 +18,7 @@ dockerRepository := Some("andypetrella") //Docker
 
 packageName in Docker := "spark-notebook"
 
-scalaVersion := "2.10.4"
+scalaVersion := defaultScalaVersion
 
 ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) }
 
@@ -36,7 +36,7 @@ resolvers in ThisBuild ++=  Seq(
                             )
 
 EclipseKeys.skipParents in ThisBuild := false
-							
+
 compileOrder := CompileOrder.Mixed
 
 publishMavenStyle := false
@@ -47,7 +47,7 @@ scalacOptions += "-deprecation"
 
 scalacOptions ++= Seq("-Xmax-classfile-name", "100")
 
-commands ++= Seq( distAll, dockerPublishLocalAll, dockerPublishAll )
+commands ++= Seq( distZips, distDebs, distAll, dockerPublishLocalAll, dockerPublishAll )
 
 dependencyOverrides += "log4j" % "log4j" % "1.2.16"
 
@@ -77,8 +77,8 @@ libraryDependencies ++= Seq(
 )
 
 lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).enablePlugins(SbtWeb)
-    .aggregate(subprocess, observable, common, kernel)
-    .dependsOn(subprocess, observable, common, kernel)
+    .aggregate(subprocess, observable, common, spark, kernel)
+    .dependsOn(subprocess, observable, common, spark, kernel)
     .settings(
       sharedSettings:_*
     ).settings(
@@ -150,7 +150,7 @@ lazy val common = Project(id = "common", base = file("modules/common"))
                                 sparkSettings:_*
                               )
 
-lazy val kernel = Project(id = "kernel", base = file("modules/kernel"))
+lazy val spark = Project(id = "spark", base = file("modules/spark"))
                               .dependsOn(common, subprocess, observable)
                               .settings(
                                 libraryDependencies ++= Seq(
@@ -160,9 +160,15 @@ lazy val kernel = Project(id = "kernel", base = file("modules/kernel"))
                                   commonsIO
                                 ),
                                 libraryDependencies ++= Seq(
-                                  "org.scala-lang" % "jline" % scalaVersion.value,
+                                  jlineDef.value._1 % "jline" % jlineDef.value._2,
                                   "org.scala-lang" % "scala-compiler" % scalaVersion.value
-                                )
+                                ),
+                                 unmanagedSourceDirectories in Compile +=
+                                  (sourceDirectory in Compile).value / ("scala_" + (scalaBinaryVersion.value match {
+                                    case v if v startsWith "2.10" => "2.10"
+                                    case v if v startsWith "2.11" => "2.11"
+                                    case v => throw new IllegalArgumentException("Bad scala version: " + v)
+                                  }))
                               )
                               .settings(
                                 sharedSettings:_*
@@ -171,6 +177,16 @@ lazy val kernel = Project(id = "kernel", base = file("modules/kernel"))
                                 sparkSettings:_*
                               )
 
-
-
-
+lazy val kernel = Project(id = "kernel", base = file("modules/kernel"))
+                              .dependsOn(common, subprocess, observable, spark)
+                              .settings(
+                                libraryDependencies ++= Seq(
+                                  akkaRemote,
+                                  akkaSlf4j,
+                                  slf4jLog4j,
+                                  commonsIO
+                                )
+                              )
+                              .settings(
+                                sharedSettings:_*
+                              )

@@ -82,7 +82,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "quotes.registerTempTable(\"quotes\")",

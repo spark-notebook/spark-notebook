@@ -10,7 +10,6 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
 import scala.concurrent._
 import duration.Duration
-import concurrent.ops
 
 import com.sun.org.apache.xpath.internal.functions.FuncTrue
 

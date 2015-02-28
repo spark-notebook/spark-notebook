@@ -37,7 +37,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : ":local-repo /home/noootsab/.m2/repository",
+    "source" : ":local-repo /tmp/repository",
     "outputs" : [ ]
   }, {
     "metadata" : { },

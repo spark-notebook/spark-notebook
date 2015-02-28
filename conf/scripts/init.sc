@@ -6,15 +6,20 @@ import notebook.util._
 
 
 import org.apache.spark.{SparkContext, SparkConf}
-import org.apache.spark.repl.SparkILoop
-
 
 
 @transient var execUri = Option(System.getenv("SPARK_EXECUTOR_URI"))
 @transient var execMemory = Option(System.getenv("SPARK_EXECUTOR_MEMORY"))
 @transient var sparkHome = Option(System.getenv("SPARK_HOME"))
 @transient var sparkMaster = Option(System.getenv("MASTER"))
-@transient var jars = (SparkILoop.getAddedJars ++ CustomJars).distinct
+
+@transient val addedJars: Array[String] = {    val envJars = sys.env.get("ADD_JARS")
+  val propJars = sys.props.get("spark.jars").flatMap { p => if (p == "") None else Some(p) }
+  val jars = propJars.orElse(envJars).getOrElse("")
+  Utils.resolveURIs(jars).split(",").filter(_.nonEmpty)
+}
+
+@transient var jars = (addedJars ++ CustomJars).distinct
 
 @transient val uri = _5C4L4_N0T3800K_5P4RK_HOOK
 
