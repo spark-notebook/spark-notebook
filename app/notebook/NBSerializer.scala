@@ -94,7 +94,7 @@ object NBSerializer {
         val language_info = languageInfoFormat.writes(m.language_info)
         val trusted = JsBoolean(m.trusted)
         Json.obj(
-          "name" → name,
+          "name"                → name,
           "user_save_timestamp" → user_save_timestamp,
           "auto_save_timestamp" → auto_save_timestamp,
           "language_info"       → language_info,
