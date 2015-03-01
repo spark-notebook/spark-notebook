@@ -116,7 +116,7 @@ object Application extends Controller {
     // Load the notebook → get the metadata
     val md:Option[Metadata] = for {
       p <- notebookPath
-      n <- nbm.load(p.dropRight(".snb".size))
+      n <- nbm.load(p)
       m <- n.metadata
     } yield m
 
