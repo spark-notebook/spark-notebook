@@ -67,12 +67,12 @@ object Dependencies {
 
   object HadoopVersion extends Enumeration {
     type HadoopVersion = Value
-    val `1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0` = Value
+    val `1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0-cdh5.3.2` = Value
   }
 
   val crossConf = Map(
-    SparkVersion.`1.2.0` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`) },
-    SparkVersion.`1.2.1` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`) }
+    SparkVersion.`1.2.0` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0-cdh5.3.2`) },
+    SparkVersion.`1.2.1` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0-cdh5.3.2`) }
   )
 
   val extraConf:Map[(SparkVersion.Value, HadoopVersion.Value), List[sbt.Def.Setting[_]]] = Map(
