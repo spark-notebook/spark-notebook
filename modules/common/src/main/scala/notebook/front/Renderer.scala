@@ -5,6 +5,7 @@ import runtime.BoxedUnit
 import notebook.util._
 import play.api.libs.json.JsObject
 import play.api.libs.json.Json.JsValueWrapper
+import java.util.Date
 
 /**
  * Typeclass for rendering objects of a specific type. Implement one of these and import it
@@ -70,12 +71,17 @@ trait LowPriorityRenderers {
 	    
 	    
 	    val table = widgets.table(numOfFields, values.map(v => widgets.text(v)), headers.map(v => widgets.text(v)))
-	    if(numOfFields == 2 && isNumber(members(1)) ){
+	    
+	    if(numOfFields == 2){
+	      
+	    	val line = isNumber(members(0)) && isNumber(members(1))
+	    	val bar = isNumber(members(1))
+	    	val pie = (!isNumber(members(0))) || firstElem.isInstanceOf[MapPoint]
 	      
 	    	def toJson(obj: Any) = Reflector.toObjArray(obj)
 	    	val jsons = if (data.lengthCompare(25) < 0) (data flatMap toJson) else (data.take(24) flatMap toJson)
-	    	val tabs = ("bar-chart", widgets.barChart(numOfFields, jsons)) :: ("pie-chart", widgets.pieChart(numOfFields, jsons)) :: ("table",table) :: Nil
-	    	widgets.tabControl(tabs.reverse)
+	    	val tabs = ("line-chart", widgets.lineChart(numOfFields, jsons)) :: ("bar-chart", widgets.barChart(numOfFields, jsons)) :: ("pie-chart", widgets.pieChart(numOfFields, jsons)) :: ("table",table) :: Nil
+	    	widgets.tabControl(tabs.filter( t => (t._1 == "line-chart" && line) || (t._1 == "bar-chart" && bar) || (t._1 == "pie-chart" && pie) || t._1 == "table").reverse)
 	    }else{
 	    	widgets.html(table)
 	    }
@@ -110,6 +116,7 @@ trait LowPriorityRenderers {
   }
   
   def isNumber(obj: Any) = obj.isInstanceOf[Int] || obj.isInstanceOf[Float] || obj.isInstanceOf[Double]
+  def isDate(obj: Any) = obj.isInstanceOf[Date]
 }
 
 
