@@ -30,7 +30,7 @@ object Shared {
                                           if (sv != "1.2.0") Seq(sparkRepl(sv)) else Seq.empty
                                         }
     val unmanaged =
-      unmanagedJars in Compile  ++= (if (sparkVersion.value == "1.2.0")
+      unmanagedJars in Compile  ++= (if (sparkVersion.value == "1.2.0" && !scalaVersion.value.startsWith("2.11"))
                                       Seq((baseDirectory in "sparkNotebook").value / "temp/spark-repl_2.10-1.2.0-notebook.jar")
                                     else
                                       Seq.empty)
@@ -41,8 +41,8 @@ object Shared {
   lazy val sparkSettings:Seq[Def.Setting[_]] = Seq(
     libraryDependencies <++= (sparkVersion, hadoopVersion, jets3tVersion) { (sv, hv, jv) =>
       val libs = Seq(
-        //sparkRepl(sv), → spark-repl:1.2.0 not yet published → lib/spark-repl_2.10-1.2.0-notebook.jar to be used
         breeze,
+        sparkCore(sv),
         sparkSQL(sv),
         hadoopClient(hv),
         jets3t(jv),

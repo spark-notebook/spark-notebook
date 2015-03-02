@@ -21,8 +21,9 @@ object Dependencies {
   val defaultScalaVersion     = sys.props.getOrElse("scala.version", "2.10.4")
   val breeze                  = "org.scalanlp"              %%         "breeze"               %       "0.10"        excludeAll(ExclusionRule("junit"), ExclusionRule("org.apache.commons", "commons-math3"))
   val defaultSparkVersion     = sys.props.getOrElse("spark.version", "1.2.1")
+  def sparkCore(v:String)     = "org.apache.spark"          %%         "spark-core"           %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
   def sparkRepl(v:String)     = "org.apache.spark"          %%         "spark-repl"           %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
-  def sparkSQL(v:String)      = "org.apache.spark"          %%         "spark-sql"            %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
+  def sparkSQL (v:String)     = "org.apache.spark"          %%         "spark-sql"            %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
   val defaultHadoopVersion    = sys.props.getOrElse("hadoop.version", "1.0.4")
   def hadoopClient(v:String)  = "org.apache.hadoop"         %         "hadoop-client"         %         v           excludeAll(ExclusionRule("org.apache.commons", "commons-exec"), ExclusionRule("commons-codec", "commons-codec"))
   val defaultJets3tVersion    = sys.props.getOrElse("jets3t.version", "0.7.1")
@@ -81,7 +82,17 @@ object Dependencies {
         Shared.jets3tVersion := "0.9.0",
         Shared.jets3tVersion in "common" := "0.9.0",
         Shared.jets3tVersion in "kernel" := "0.9.0",
-        Shared.jets3tVersion in "subprocess" := "0.9.0"
+        Shared.jets3tVersion in "subprocess" := "0.9.0",
+        Shared.jets3tVersion in "spark" := "0.9.0"
+      )
+    },
+    (SparkVersion.`1.2.1`, List(HadoopVersion.`2.3.0`)) → {
+      List(
+        Shared.jets3tVersion := "0.9.0",
+        Shared.jets3tVersion in "common" := "0.9.0",
+        Shared.jets3tVersion in "kernel" := "0.9.0",
+        Shared.jets3tVersion in "subprocess" := "0.9.0",
+        Shared.jets3tVersion in "spark" := "0.9.0"
       )
     }
   ).flatMap { case ((s,hs), sg) =>
@@ -93,8 +104,19 @@ object Dependencies {
   def forAll[T](name:String, logS:String=>String, logH:String=>String, ts:List[sbt.TaskKey[_]]) = {
     Command.command(name) { state =>
       val extracted = Project.extract(state)
-      println(s"Running command $name using scala " + extracted.get(scalaVersion))
-      crossConf foreach { case (sv, hvs) =>
+      val scalaActualVersion = extracted.get(scalaVersion)
+      println(s"Running command $name using scala " + scalaActualVersion)
+      crossConf
+      .filter { case (sv, hvs) =>
+        val svS = extractEnumVersionName(sv.toString)
+        if (scalaActualVersion.startsWith("2.11") && svS == "1.2.0") {
+          println("Skipping build for scala " + scalaActualVersion + " and spark " + "1.2.0. Because REPL has been built for it.")
+          false
+        } else {
+          true
+        }
+      }
+      .foreach { case (sv, hvs) =>
         val svS = extractEnumVersionName(sv.toString)
         println(logS(svS))
         hvs foreach { hv =>
@@ -106,11 +128,13 @@ object Dependencies {
             Shared.sparkVersion in "common" := svS,
             Shared.sparkVersion in "kernel" := svS,
             Shared.sparkVersion in "subprocess" := svS,
+            Shared.sparkVersion in "spark" := svS,
 
             Shared.hadoopVersion := hvS,
             Shared.hadoopVersion in "common" := hvS,
             Shared.hadoopVersion in "kernel" := hvS,
-            Shared.hadoopVersion in "subprocess" := hvS
+            Shared.hadoopVersion in "subprocess" := hvS,
+            Shared.hadoopVersion in "spark" := hvS
           )
 
           val extraSettings = extraConf.get((sv, hv)).getOrElse(Nil)
