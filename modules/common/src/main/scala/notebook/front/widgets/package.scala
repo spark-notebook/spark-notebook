@@ -132,7 +132,7 @@ package object widgets {
   def barChart(width: Int, jsons: Seq[(String, Any)]) = {
     val id = Math.abs(Random.nextInt).toString
     
-    	<svg id={ "bar"+id } width="400px" height="400px"
+    	<svg id={ "bar"+id } width="600px" height="400px"
        xmlns="http://www.w3.org/2000/svg" version="1.1">
     	{
       scopedScript(
@@ -141,7 +141,7 @@ package object widgets {
               function (O, x) {
                 var svg = d3.select("#bar${id}");
     		  	var chart = new dimple.chart(svg, data);
-        		chart.setBounds(30, 20, 380, 360);
+        		chart.setBounds(50, 20, 540, 350);
     		  	chart.addCategoryAxis("x", "${jsons(0)._1.trim}");
     		  	chart.addMeasureAxis("y", "${jsons(1)._1.trim}");
     		  	chart.addSeries(null, dimple.plot.bar);
@@ -158,7 +158,7 @@ package object widgets {
   def pieChart(width: Int, jsons: Seq[(String, Any)]) = {
     val id = Math.abs(Random.nextInt).toString
     
-	    <svg id={ "pie"+id } width="400px" height="400px"
+	    <svg id={ "pie"+id } width="600px" height="400px"
        xmlns="http://www.w3.org/2000/svg" version="1.1">
 	    {
 	      scopedScript(
@@ -167,10 +167,10 @@ package object widgets {
 	              function (O, x) {
 	                  var svg = d3.select("#pie${id}");
 				      var myChart = new dimple.chart(svg, data);
-				      myChart.setBounds(50, 50, 350, 350);
+				      myChart.setBounds(100, 30, 380, 360);
 	        		  myChart.addMeasureAxis("p", "${jsons(1)._1.trim}");
 				      myChart.addSeries("${jsons(0)._1.trim}", dimple.plot.pie);
-				      myChart.addLegend(350, 30, 80, 200, "left");
+				      myChart.addLegend(20, 30, 40, 350, "left");
 				      myChart.draw();
 	              });
 	        """,
@@ -184,7 +184,7 @@ package object widgets {
   def tabControl(pages: Seq[(String, scala.xml.Elem)]) = {
     val tabControlId = Math.abs(Random.nextInt).toString
     html(
-    <div style="width:600px; height:450px;" >
+    <div >
     	<script>{
 	        s""" 
 	        	$$('#ul${tabControlId} li').first().addClass('active');
@@ -202,7 +202,7 @@ package object widgets {
     <ul class="nav nav-tabs" id={ "ul"+tabControlId }>{
     	pages.zipWithIndex map { p: ((String, scala.xml.Elem), Int) => 
 		    <li>
-    			<a href={ "#tab"+tabControlId+"-"+p._2 }><i class={p._1._1} />{ p._1._1 }</a>
+    			<a href={ "#tab"+tabControlId+"-"+p._2 }><i class={ "fa fa-"+p._1._1} /></a>
     		</li>
 		  }
     }
@@ -237,8 +237,8 @@ package object widgets {
   def layout(width: Int, contents: Seq[Widget], headers: Seq[Widget] = Nil): Widget = html(table(width, contents, headers ))
     
   def table(width: Int, contents: Seq[Widget], headers: Seq[Widget] = Nil) = 
-    <div>
-  	<table>{
+    <div class="table-container table-responsive">
+  	<table class="table">{
       (headers ++ contents) grouped width map { row =>
         <tr>{
           row map { html => <td>{html}</td> }
