@@ -155,6 +155,32 @@ package object widgets {
     
   }
   
+  def lineChart(width: Int, jsons: Seq[(String, Any)]) = {
+    val id = Math.abs(Random.nextInt).toString
+    <div>
+    	<svg id={ "line"+id } width="600px" height="400px"
+       xmlns="http://www.w3.org/2000/svg" version="1.1">
+    	{
+      scopedScript(
+        s""" req(
+              ['d3', 'dimple'],
+              function (O, x) {
+                var svg = d3.select("#line${id}");
+    		  	var chart = new dimple.chart(svg, data);
+        		chart.setBounds(50, 20, 540, 350);
+    		  	var x = chart.addCategoryAxis("x", "${jsons(0)._1.trim}");
+    		  	chart.addMeasureAxis("y", "${jsons(1)._1.trim}");
+    		  	chart.addSeries(null, dimple.plot.line);
+    		  	chart.draw();
+          
+              });
+        """,
+        Json.obj( "data" -> (jsons grouped width map { row =>  Json.obj(row.map( f => f._1.trim -> toJson(f._2) ):_*)  }).toSeq    )
+      )
+    } </svg></div>
+    
+  }
+  
   def pieChart(width: Int, jsons: Seq[(String, Any)]) = {
     val id = Math.abs(Random.nextInt).toString
     <div>
