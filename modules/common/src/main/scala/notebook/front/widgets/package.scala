@@ -131,7 +131,7 @@ package object widgets {
   
   def barChart(width: Int, jsons: Seq[(String, Any)]) = {
     val id = Math.abs(Random.nextInt).toString
-    
+    <div>
     	<svg id={ "bar"+id } width="600px" height="400px"
        xmlns="http://www.w3.org/2000/svg" version="1.1">
     	{
@@ -151,13 +151,13 @@ package object widgets {
         """,
         Json.obj( "data" -> (jsons grouped width map { row =>  Json.obj(row.map( f => f._1.trim -> toJson(f._2) ):_*)  }).toSeq    )
       )
-    } </svg>
+    } </svg></div>
     
   }
   
   def pieChart(width: Int, jsons: Seq[(String, Any)]) = {
     val id = Math.abs(Random.nextInt).toString
-    
+    <div>
 	    <svg id={ "pie"+id } width="600px" height="400px"
        xmlns="http://www.w3.org/2000/svg" version="1.1">
 	    {
@@ -170,7 +170,7 @@ package object widgets {
 				      myChart.setBounds(100, 30, 380, 360);
 	        		  myChart.addMeasureAxis("p", "${jsons(1)._1.trim}");
 				      myChart.addSeries("${jsons(0)._1.trim}", dimple.plot.pie);
-				      myChart.addLegend(20, 30, 40, 350, "left");
+				      myChart.addLegend(20, 30, 60, 350, "left");
 				      myChart.draw();
 	              });
 	        """,
@@ -178,7 +178,7 @@ package object widgets {
 	      )
 	    } 
     </svg>
-    
+  </div>  
   }
   
   def tabControl(pages: Seq[(String, scala.xml.Elem)]) = {
@@ -187,8 +187,8 @@ package object widgets {
     <div >
     	<script>{
 	        s""" 
-	        	$$('#ul${tabControlId} li').first().addClass('active');
-	        	$$('#tab${tabControlId} div').first().addClass('active');
+	        	//$$('#ul${tabControlId} li').first().addClass('active');
+	        	//$$('#tab${tabControlId} div').first().addClass('active');
     			$$('#ul${tabControlId} a').click(function(){
     				$$('#tab${tabControlId} div.active').removeClass('active');
     				$$('#ul${tabControlId} li.active').removeClass('active');
@@ -238,13 +238,24 @@ package object widgets {
     
   def table(width: Int, contents: Seq[Widget], headers: Seq[Widget] = Nil) = 
     <div class="table-container table-responsive">
-  	<table class="table">{
-      (headers ++ contents) grouped width map { row =>
-        <tr>{
-          row map { html => <td>{html}</td> }
-        }</tr>
+  	<table class="table">
+  		<thead>{
+	      (headers) grouped width map { row =>
+	        <tr>{
+	          row map { html => <th>{html}</th> }
+	        }</tr>
+	      }
+	  }
+      </thead>
+      <tbody>{
+	      	(contents) grouped width map { row =>
+	        <tr>{
+	          row map { html => <td>{html}</td> }
+	        }</tr>
+	      }
       }
-    }</table></div>
+      </tbody>
+    </table></div>
 
   def row(contents: Widget*) = layout(contents.length, contents)
   def column(contents: Widget*) = layout(1, contents)
