@@ -163,11 +163,11 @@ lazy val spark = Project(id = "spark", base = file("modules/spark"))
                                   jlineDef.value._1 % "jline" % jlineDef.value._2,
                                   "org.scala-lang" % "scala-compiler" % scalaVersion.value
                                 ),
-                                 unmanagedSourceDirectories in Compile +=
-                                  (sourceDirectory in Compile).value / ("scala_" + (scalaBinaryVersion.value match {
-                                    case v if v startsWith "2.10" => "2.10"
-                                    case v if v startsWith "2.11" => "2.11"
-                                    case v => throw new IllegalArgumentException("Bad scala version: " + v)
+                                unmanagedSourceDirectories in Compile +=
+                                  (sourceDirectory in Compile).value / ("scala_" + ((scalaBinaryVersion.value, sparkVersion.value) match {
+                                    case (v, sv) if v startsWith "2.10" => "2.10"+"/spark-"+sv
+                                    case (v, sv) if v startsWith "2.11" => "2.11"+"/spark-"+sv
+                                    case (v, sv) => throw new IllegalArgumentException("Bad scala version: " + v)
                                   }))
                               )
                               .settings(
