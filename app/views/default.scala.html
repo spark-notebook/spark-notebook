@@ -51,6 +51,7 @@
           knockout: '@routes.Assets.at("javascripts/third/knockout")',
           'knockout-bootstrap': '@routes.Assets.at("javascripts/third/knockout-bootstrap.min")',
           d3: '@routes.Assets.at("javascripts/third/d3")',
+          dimple: '@routes.Assets.at("javascripts/third/dimple.v2.1.2")',
           rickshaw: '@routes.Assets.at("javascripts/third/rickshaw/rickshaw")',
 
           observable: '@routes.Assets.at("javascripts/notebook/observable")',
@@ -94,7 +95,7 @@
 
 </head>
 
-<!-- todo bodyclasses (=notebook_app for notebook.scala.html)  → class="" -->
+<!-- todo bodyclasses (=notebook_app for notebook.scala.html)  â†’ class="" -->
 <body class="notebook_app data" @{Html(params.map(x => s""" data-${x._1}="${x._2}" """).mkString(" "))}>
 
 
