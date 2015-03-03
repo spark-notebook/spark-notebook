@@ -2055,6 +2055,7 @@ define([
         return this.contents.rename(this.notebook_path, new_path).then(
             function (json) {
                 that.notebook_name = json.name;
+                that.metadata.name = json.name;
                 that.notebook_path = json.path;
                 that.session.rename_notebook(json.path);
                 that.events.trigger('notebook_renamed.Notebook', json);
