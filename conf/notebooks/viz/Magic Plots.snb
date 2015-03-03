@@ -1,0 +1,242 @@
+{
+  "metadata" : {
+    "name" : "Magic Plots",
+    "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customSparkConf" : null
+  },
+  "cells" : [ {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Plot list of numbers"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "1.d to 10.d by 1.d",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "warning: there were 3 deprecation warning(s); re-run with -deprecation for details\nres3: scala.collection.immutable.NumericRange[Double] = NumericRange(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0)\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n        <script> \n//$('#ul977083930 li').first().addClass('active');\n//$('#tab977083930 div').first().addClass('active');\n$('#ul977083930 a').click(function(){\n  $('#tab977083930 div.active').removeClass('active');\n  $('#ul977083930 li.active').removeClass('active');\n  var id = $(this).attr('href');\n  $(id).addClass('active');\n  $(this).parent().addClass('active');\n});\n          </script>  \n        <ul class=\"nav nav-tabs\" id=\"ul977083930\"><li>\n              <a href=\"#tab977083930-0\"><i class=\"fa fa-table\"/></a>\n            </li><li>\n              <a href=\"#tab977083930-1\"><i class=\"fa fa-bar-chart\"/></a>\n            </li><li>\n              <a href=\"#tab977083930-2\"><i class=\"fa fa-line-chart\"/></a>\n            </li></ul>\n\n        <div class=\"tab-content\" id=\"tab977083930\"><div class=\"tab-pane\" id=\"tab977083930-0\">\n            <div class=\"table-container table-responsive\">\n    <table class=\"table\">\n      <thead><tr><th>X </th><th>Y </th></tr>\n      </thead>\n      <tbody><tr><td>0</td><td>1.0</td></tr><tr><td>1</td><td>2.0</td></tr><tr><td>2</td><td>3.0</td></tr><tr><td>3</td><td>4.0</td></tr><tr><td>4</td><td>5.0</td></tr><tr><td>5</td><td>6.0</td></tr><tr><td>6</td><td>7.0</td></tr><tr><td>7</td><td>8.0</td></tr><tr><td>8</td><td>9.0</td></tr><tr><td>9</td><td>10.0</td></tr>\n      </tbody>\n    </table></div>\n            </div><div class=\"tab-pane\" id=\"tab977083930-1\">\n            <div>\n      <svg id=\"bar1651808045\" width=\"600px\" height=\"400px\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\"><script data-this=\"{&quot;data&quot;:[{&quot;X&quot;:0,&quot;Y&quot;:1.0},{&quot;X&quot;:1,&quot;Y&quot;:2.0},{&quot;X&quot;:2,&quot;Y&quot;:3.0},{&quot;X&quot;:3,&quot;Y&quot;:4.0},{&quot;X&quot;:4,&quot;Y&quot;:5.0},{&quot;X&quot;:5,&quot;Y&quot;:6.0},{&quot;X&quot;:6,&quot;Y&quot;:7.0},{&quot;X&quot;:7,&quot;Y&quot;:8.0},{&quot;X&quot;:8,&quot;Y&quot;:9.0},{&quot;X&quot;:9,&quot;Y&quot;:10.0}]}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/ req(\n['d3', 'dimple'],\nfunction (d3, dimple) {\n  var svg = d3.select(\"#bar1651808045\");\n  var chart = new dimple.chart(svg, data);\n  chart.setBounds(50, 20, 540, 350);\n  chart.addCategoryAxis(\"x\", \"X\");\n  chart.addMeasureAxis(\"y\", \"Y\");\n  chart.addSeries(null, dimple.plot.bar);\n  chart.draw();\n});\n          /*]]>*/</script></svg>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab977083930-2\">\n            <div>\n      <svg id=\"line395756438\" width=\"600px\" height=\"400px\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\"><script data-this=\"{&quot;data&quot;:[{&quot;X&quot;:0,&quot;Y&quot;:1.0},{&quot;X&quot;:1,&quot;Y&quot;:2.0},{&quot;X&quot;:2,&quot;Y&quot;:3.0},{&quot;X&quot;:3,&quot;Y&quot;:4.0},{&quot;X&quot;:4,&quot;Y&quot;:5.0},{&quot;X&quot;:5,&quot;Y&quot;:6.0},{&quot;X&quot;:6,&quot;Y&quot;:7.0},{&quot;X&quot;:7,&quot;Y&quot;:8.0},{&quot;X&quot;:8,&quot;Y&quot;:9.0},{&quot;X&quot;:9,&quot;Y&quot;:10.0}]}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n['d3', 'dimple'],\nfunction (d3, dimple) {\n  var svg = d3.select(\"#line395756438\");\n  var chart = new dimple.chart(svg, data);\n  chart.setBounds(50, 20, 540, 350);\n  var x = chart.addCategoryAxis(\"x\", \"X\");\n  chart.addMeasureAxis(\"y\", \"Y\");\n  chart.addSeries(null, dimple.plot.line);\n  chart.draw();\n});\n          /*]]>*/</script></svg>\n    </div>\n            </div></div>\n      </div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 3
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Plot a list of numerical pairs"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "(2 to 20 by 2) zip List.fill(10)(scala.util.Random.nextDouble * 10)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res30: scala.collection.immutable.IndexedSeq[(Int, Double)] = Vector((2,0.30949262935748734), (4,0.9912012657149671), (6,9.667580761671893), (8,5.839705640837646), (10,7.0041746516877215), (12,9.154117014978828), (14,5.064129578339019), (16,1.5892596001295045), (18,4.976736331515506), (20,3.6626579891471778))\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n        <script> \n//$('#ul1742711367 li').first().addClass('active');\n//$('#tab1742711367 div').first().addClass('active');\n$('#ul1742711367 a').click(function(){\n  $('#tab1742711367 div.active').removeClass('active');\n  $('#ul1742711367 li.active').removeClass('active');\n  var id = $(this).attr('href');\n  $(id).addClass('active');\n  $(this).parent().addClass('active');\n});\n          </script>  \n        <ul class=\"nav nav-tabs\" id=\"ul1742711367\"><li>\n              <a href=\"#tab1742711367-0\"><i class=\"fa fa-table\"/></a>\n            </li><li>\n              <a href=\"#tab1742711367-1\"><i class=\"fa fa-bar-chart\"/></a>\n            </li><li>\n              <a href=\"#tab1742711367-2\"><i class=\"fa fa-line-chart\"/></a>\n            </li></ul>\n\n        <div class=\"tab-content\" id=\"tab1742711367\"><div class=\"tab-pane\" id=\"tab1742711367-0\">\n            <div class=\"table-container table-responsive\">\n    <table class=\"table\">\n      <thead><tr><th>X </th><th>Y </th></tr>\n      </thead>\n      <tbody><tr><td>2</td><td>0.30949262935748734</td></tr><tr><td>4</td><td>0.9912012657149671</td></tr><tr><td>6</td><td>9.667580761671893</td></tr><tr><td>8</td><td>5.839705640837646</td></tr><tr><td>10</td><td>7.0041746516877215</td></tr><tr><td>12</td><td>9.154117014978828</td></tr><tr><td>14</td><td>5.064129578339019</td></tr><tr><td>16</td><td>1.5892596001295045</td></tr><tr><td>18</td><td>4.976736331515506</td></tr><tr><td>20</td><td>3.6626579891471778</td></tr>\n      </tbody>\n    </table></div>\n            </div><div class=\"tab-pane\" id=\"tab1742711367-1\">\n            <div>\n      <svg id=\"bar1870335417\" width=\"600px\" height=\"400px\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\"><script data-this=\"{&quot;data&quot;:[{&quot;X&quot;:2,&quot;Y&quot;:0.30949262935748734},{&quot;X&quot;:4,&quot;Y&quot;:0.9912012657149671},{&quot;X&quot;:6,&quot;Y&quot;:9.667580761671893},{&quot;X&quot;:8,&quot;Y&quot;:5.839705640837646},{&quot;X&quot;:10,&quot;Y&quot;:7.0041746516877215},{&quot;X&quot;:12,&quot;Y&quot;:9.154117014978828},{&quot;X&quot;:14,&quot;Y&quot;:5.064129578339019},{&quot;X&quot;:16,&quot;Y&quot;:1.5892596001295045},{&quot;X&quot;:18,&quot;Y&quot;:4.976736331515506},{&quot;X&quot;:20,&quot;Y&quot;:3.6626579891471778}]}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/ req(\n['d3', 'dimple'],\nfunction (d3, dimple) {\n  var svg = d3.select(\"#bar1870335417\");\n  var chart = new dimple.chart(svg, data);\n  chart.setBounds(50, 20, 540, 350);\n  chart.addCategoryAxis(\"x\", \"X\");\n  chart.addMeasureAxis(\"y\", \"Y\");\n  chart.addSeries(null, dimple.plot.bar);\n  chart.draw();\n});\n          /*]]>*/</script></svg>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab1742711367-2\">\n            <div>\n      <svg id=\"line1977258495\" width=\"600px\" height=\"400px\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\"><script data-this=\"{&quot;data&quot;:[{&quot;X&quot;:2,&quot;Y&quot;:0.30949262935748734},{&quot;X&quot;:4,&quot;Y&quot;:0.9912012657149671},{&quot;X&quot;:6,&quot;Y&quot;:9.667580761671893},{&quot;X&quot;:8,&quot;Y&quot;:5.839705640837646},{&quot;X&quot;:10,&quot;Y&quot;:7.0041746516877215},{&quot;X&quot;:12,&quot;Y&quot;:9.154117014978828},{&quot;X&quot;:14,&quot;Y&quot;:5.064129578339019},{&quot;X&quot;:16,&quot;Y&quot;:1.5892596001295045},{&quot;X&quot;:18,&quot;Y&quot;:4.976736331515506},{&quot;X&quot;:20,&quot;Y&quot;:3.6626579891471778}]}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n['d3', 'dimple'],\nfunction (d3, dimple) {\n  var svg = d3.select(\"#line1977258495\");\n  var chart = new dimple.chart(svg, data);\n  chart.setBounds(50, 20, 540, 350);\n  var x = chart.addCategoryAxis(\"x\", \"X\");\n  chart.addMeasureAxis(\"y\", \"Y\");\n  chart.addSeries(null, dimple.plot.line);\n  chart.draw();\n});\n          /*]]>*/</script></svg>\n    </div>\n            </div></div>\n      </div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 42
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Plot a list of categorical values"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "('a' to 'z').take(10).map(_.toString) zip (2 to 20 by 2)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res4: scala.collection.immutable.IndexedSeq[(String, Int)] = Vector((a,2), (b,4), (c,6), (d,8), (e,10), (f,12), (g,14), (h,16), (i,18), (j,20))\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n        <script> \n//$('#ul774969676 li').first().addClass('active');\n//$('#tab774969676 div').first().addClass('active');\n$('#ul774969676 a').click(function(){\n  $('#tab774969676 div.active').removeClass('active');\n  $('#ul774969676 li.active').removeClass('active');\n  var id = $(this).attr('href');\n  $(id).addClass('active');\n  $(this).parent().addClass('active');\n});\n          </script>  \n        <ul class=\"nav nav-tabs\" id=\"ul774969676\"><li>\n              <a href=\"#tab774969676-0\"><i class=\"fa fa-table\"/></a>\n            </li><li>\n              <a href=\"#tab774969676-1\"><i class=\"fa fa-pie-chart\"/></a>\n            </li><li>\n              <a href=\"#tab774969676-2\"><i class=\"fa fa-bar-chart\"/></a>\n            </li></ul>\n\n        <div class=\"tab-content\" id=\"tab774969676\"><div class=\"tab-pane\" id=\"tab774969676-0\">\n            <div class=\"table-container table-responsive\">\n    <table class=\"table\">\n      <thead><tr><th>X </th><th>Y </th></tr>\n      </thead>\n      <tbody><tr><td>a</td><td>2</td></tr><tr><td>b</td><td>4</td></tr><tr><td>c</td><td>6</td></tr><tr><td>d</td><td>8</td></tr><tr><td>e</td><td>10</td></tr><tr><td>f</td><td>12</td></tr><tr><td>g</td><td>14</td></tr><tr><td>h</td><td>16</td></tr><tr><td>i</td><td>18</td></tr><tr><td>j</td><td>20</td></tr>\n      </tbody>\n    </table></div>\n            </div><div class=\"tab-pane\" id=\"tab774969676-1\">\n            <div>\n      <svg id=\"pie1123147864\" width=\"600px\" height=\"400px\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\"><script data-this=\"{&quot;data&quot;:[{&quot;X&quot;:&quot;a&quot;,&quot;Y&quot;:2},{&quot;X&quot;:&quot;b&quot;,&quot;Y&quot;:4},{&quot;X&quot;:&quot;c&quot;,&quot;Y&quot;:6},{&quot;X&quot;:&quot;d&quot;,&quot;Y&quot;:8},{&quot;X&quot;:&quot;e&quot;,&quot;Y&quot;:10},{&quot;X&quot;:&quot;f&quot;,&quot;Y&quot;:12},{&quot;X&quot;:&quot;g&quot;,&quot;Y&quot;:14},{&quot;X&quot;:&quot;h&quot;,&quot;Y&quot;:16},{&quot;X&quot;:&quot;i&quot;,&quot;Y&quot;:18},{&quot;X&quot;:&quot;j&quot;,&quot;Y&quot;:20}]}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n['d3', 'dimple'],\nfunction (d3, dimple) {\n  var svg = d3.select(\"#pie1123147864\");\n  var myChart = new dimple.chart(svg, data);\n  myChart.setBounds(100, 30, 380, 360);\n  myChart.addMeasureAxis(\"p\", \"Y\");\n  myChart.addSeries(\"X\", dimple.plot.pie);\n  myChart.addLegend(20, 30, 60, 350, \"left\");\n  myChart.draw();\n});\n          /*]]>*/</script></svg>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab774969676-2\">\n            <div>\n      <svg id=\"bar1966285198\" width=\"600px\" height=\"400px\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\"><script data-this=\"{&quot;data&quot;:[{&quot;X&quot;:&quot;a&quot;,&quot;Y&quot;:2},{&quot;X&quot;:&quot;b&quot;,&quot;Y&quot;:4},{&quot;X&quot;:&quot;c&quot;,&quot;Y&quot;:6},{&quot;X&quot;:&quot;d&quot;,&quot;Y&quot;:8},{&quot;X&quot;:&quot;e&quot;,&quot;Y&quot;:10},{&quot;X&quot;:&quot;f&quot;,&quot;Y&quot;:12},{&quot;X&quot;:&quot;g&quot;,&quot;Y&quot;:14},{&quot;X&quot;:&quot;h&quot;,&quot;Y&quot;:16},{&quot;X&quot;:&quot;i&quot;,&quot;Y&quot;:18},{&quot;X&quot;:&quot;j&quot;,&quot;Y&quot;:20}]}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/ req(\n['d3', 'dimple'],\nfunction (d3, dimple) {\n  var svg = d3.select(\"#bar1966285198\");\n  var chart = new dimple.chart(svg, data);\n  chart.setBounds(50, 20, 540, 350);\n  chart.addCategoryAxis(\"x\", \"X\");\n  chart.addMeasureAxis(\"y\", \"Y\");\n  chart.addSeries(null, dimple.plot.bar);\n  chart.draw();\n});\n          /*]]>*/</script></svg>\n    </div>\n            </div></div>\n      </div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 4
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Table of tuples"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "List((1,2,3), (4,5,6))",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res5: List[(Int, Int, Int)] = List((1,2,3), (4,5,6))\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div class=\"table-container table-responsive\">\n    <table class=\"table\">\n      <thead><tr><th>_1 </th><th>_2 </th><th>_3 </th></tr>\n      </thead>\n      <tbody><tr><td>1</td><td>2</td><td>3</td></tr><tr><td>4</td><td>5</td><td>6</td></tr>\n      </tbody>\n    </table></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 5
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# Use the types, Luke"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## List of Points"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "case class Point(a:Double, b:Int)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "defined class Point\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 31
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import scala.util.Random._\nList.fill(10)(Point((nextDouble * 10000).toInt/100d , nextInt(100)))",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import scala.util.Random._\nres23: List[Point] = List(Point(62.19,1), Point(67.95,72), Point(54.98,34), Point(52.05,35), Point(64.72,15), Point(29.51,16), Point(27.01,3), Point(83.44,24), Point(51.1,21), Point(56.55,45))\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n        <script> \n//$('#ul2117590934 li').first().addClass('active');\n//$('#tab2117590934 div').first().addClass('active');\n$('#ul2117590934 a').click(function(){\n  $('#tab2117590934 div.active').removeClass('active');\n  $('#ul2117590934 li.active').removeClass('active');\n  var id = $(this).attr('href');\n  $(id).addClass('active');\n  $(this).parent().addClass('active');\n});\n          </script>  \n        <ul class=\"nav nav-tabs\" id=\"ul2117590934\"><li>\n              <a href=\"#tab2117590934-0\"><i class=\"fa fa-table\"/></a>\n            </li><li>\n              <a href=\"#tab2117590934-1\"><i class=\"fa fa-bar-chart\"/></a>\n            </li><li>\n              <a href=\"#tab2117590934-2\"><i class=\"fa fa-line-chart\"/></a>\n            </li></ul>\n\n        <div class=\"tab-content\" id=\"tab2117590934\"><div class=\"tab-pane\" id=\"tab2117590934-0\">\n            <div class=\"table-container table-responsive\">\n    <table class=\"table\">\n      <thead><tr><th>a </th><th>b </th></tr>\n      </thead>\n      <tbody><tr><td>62.19</td><td>1</td></tr><tr><td>67.95</td><td>72</td></tr><tr><td>54.98</td><td>34</td></tr><tr><td>52.05</td><td>35</td></tr><tr><td>64.72</td><td>15</td></tr><tr><td>29.51</td><td>16</td></tr><tr><td>27.01</td><td>3</td></tr><tr><td>83.44</td><td>24</td></tr><tr><td>51.1</td><td>21</td></tr><tr><td>56.55</td><td>45</td></tr>\n      </tbody>\n    </table></div>\n            </div><div class=\"tab-pane\" id=\"tab2117590934-1\">\n            <div>\n      <svg id=\"bar1286415365\" width=\"600px\" height=\"400px\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\"><script data-this=\"{&quot;data&quot;:[{&quot;a&quot;:62.19,&quot;b&quot;:1},{&quot;a&quot;:67.95,&quot;b&quot;:72},{&quot;a&quot;:54.98,&quot;b&quot;:34},{&quot;a&quot;:52.05,&quot;b&quot;:35},{&quot;a&quot;:64.72,&quot;b&quot;:15},{&quot;a&quot;:29.51,&quot;b&quot;:16},{&quot;a&quot;:27.01,&quot;b&quot;:3},{&quot;a&quot;:83.44,&quot;b&quot;:24},{&quot;a&quot;:51.1,&quot;b&quot;:21},{&quot;a&quot;:56.55,&quot;b&quot;:45}]}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/ req(\n['d3', 'dimple'],\nfunction (d3, dimple) {\n  var svg = d3.select(\"#bar1286415365\");\n  var chart = new dimple.chart(svg, data);\n  chart.setBounds(50, 20, 540, 350);\n  chart.addCategoryAxis(\"x\", \"a\");\n  chart.addMeasureAxis(\"y\", \"b\");\n  chart.addSeries(null, dimple.plot.bar);\n  chart.draw();\n});\n          /*]]>*/</script></svg>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab2117590934-2\">\n            <div>\n      <svg id=\"line1656434131\" width=\"600px\" height=\"400px\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\"><script data-this=\"{&quot;data&quot;:[{&quot;a&quot;:62.19,&quot;b&quot;:1},{&quot;a&quot;:67.95,&quot;b&quot;:72},{&quot;a&quot;:54.98,&quot;b&quot;:34},{&quot;a&quot;:52.05,&quot;b&quot;:35},{&quot;a&quot;:64.72,&quot;b&quot;:15},{&quot;a&quot;:29.51,&quot;b&quot;:16},{&quot;a&quot;:27.01,&quot;b&quot;:3},{&quot;a&quot;:83.44,&quot;b&quot;:24},{&quot;a&quot;:51.1,&quot;b&quot;:21},{&quot;a&quot;:56.55,&quot;b&quot;:45}]}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n['d3', 'dimple'],\nfunction (d3, dimple) {\n  var svg = d3.select(\"#line1656434131\");\n  var chart = new dimple.chart(svg, data);\n  chart.setBounds(50, 20, 540, 350);\n  var x = chart.addCategoryAxis(\"x\", \"a\");\n  chart.addMeasureAxis(\"y\", \"b\");\n  chart.addSeries(null, dimple.plot.line);\n  chart.draw();\n});\n          /*]]>*/</script></svg>\n    </div>\n            </div></div>\n      </div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 33
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## List of Categorical values"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "case class CategoryValue(a:String, b:Int)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "defined class CategoryValue\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 34
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "List.fill(10)(CategoryValue(nextString(10), nextInt(100)))",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res24: List[CategoryValue] = List(CategoryValue(寳敦ꎑᵦ恔㛓豰㭃쾹苬,33), CategoryValue(皹쵊ᜈ䂘⣤綎찬そݝ囮,89), CategoryValue(໤뾋ꀶ뗛뚷뫡蘥㲄⬼킃,63), CategoryValue(䬰섅쵊죺ꉩ梏䩙劑䙭୪,80), CategoryValue(Ð齻彂뻐瑷䗰⛏䦩㿓땀,87), CategoryValue(Җ槡粂Ă淽ⲏ苡᪾溢㰏,3), CategoryValue(霎䝨熐煤骯⁽뭱à鈷單,42), CategoryValue(䲆ꅸ选ླධᥟ㗻偓爓彋,6), CategoryValue(Ხ쨀꣱뉳鲷웉䧛庯诛氣,26), CategoryValue(쐔嶻Ↄᢰ椟捈ꢾ깆ງ篌,13))\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n        <script> \n//$('#ul1639834602 li').first().addClass('active');\n//$('#tab1639834602 div').first().addClass('active');\n$('#ul1639834602 a').click(function(){\n  $('#tab1639834602 div.active').removeClass('active');\n  $('#ul1639834602 li.active').removeClass('active');\n  var id = $(this).attr('href');\n  $(id).addClass('active');\n  $(this).parent().addClass('active');\n});\n          </script>  \n        <ul class=\"nav nav-tabs\" id=\"ul1639834602\"><li>\n              <a href=\"#tab1639834602-0\"><i class=\"fa fa-table\"/></a>\n            </li><li>\n              <a href=\"#tab1639834602-1\"><i class=\"fa fa-pie-chart\"/></a>\n            </li><li>\n              <a href=\"#tab1639834602-2\"><i class=\"fa fa-bar-chart\"/></a>\n            </li></ul>\n\n        <div class=\"tab-content\" id=\"tab1639834602\"><div class=\"tab-pane\" id=\"tab1639834602-0\">\n            <div class=\"table-container table-responsive\">\n    <table class=\"table\">\n      <thead><tr><th>a </th><th>b </th></tr>\n      </thead>\n      <tbody><tr><td>寳敦ꎑᵦ恔㛓豰㭃쾹苬</td><td>33</td></tr><tr><td>皹쵊ᜈ䂘⣤綎찬そݝ囮</td><td>89</td></tr><tr><td>໤뾋ꀶ뗛뚷뫡蘥㲄⬼킃</td><td>63</td></tr><tr><td>䬰섅쵊죺ꉩ梏䩙劑䙭୪</td><td>80</td></tr><tr><td>Ð齻彂뻐瑷䗰⛏䦩㿓땀</td><td>87</td></tr><tr><td>Җ槡粂Ă淽ⲏ苡᪾溢㰏</td><td>3</td></tr><tr><td>霎䝨熐煤骯⁽뭱à鈷單</td><td>42</td></tr><tr><td>䲆ꅸ选ླධᥟ㗻偓爓彋</td><td>6</td></tr><tr><td>Ხ쨀꣱뉳鲷웉䧛庯诛氣</td><td>26</td></tr><tr><td>쐔嶻Ↄᢰ椟捈ꢾ깆ງ篌</td><td>13</td></tr>\n      </tbody>\n    </table></div>\n            </div><div class=\"tab-pane\" id=\"tab1639834602-1\">\n            <div>\n      <svg id=\"pie62297112\" width=\"600px\" height=\"400px\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\"><script data-this=\"{&quot;data&quot;:[{&quot;a&quot;:&quot;寳敦ꎑᵦ恔㛓豰㭃쾹苬&quot;,&quot;b&quot;:33},{&quot;a&quot;:&quot;皹쵊ᜈ䂘⣤綎찬そݝ囮&quot;,&quot;b&quot;:89},{&quot;a&quot;:&quot;໤뾋ꀶ뗛뚷뫡蘥㲄⬼킃&quot;,&quot;b&quot;:63},{&quot;a&quot;:&quot;䬰섅쵊죺ꉩ梏䩙劑䙭୪&quot;,&quot;b&quot;:80},{&quot;a&quot;:&quot;Ð齻彂뻐瑷䗰⛏䦩㿓땀&quot;,&quot;b&quot;:87},{&quot;a&quot;:&quot;Җ槡粂Ă淽ⲏ苡᪾溢㰏&quot;,&quot;b&quot;:3},{&quot;a&quot;:&quot;霎䝨熐煤骯⁽뭱à鈷單&quot;,&quot;b&quot;:42},{&quot;a&quot;:&quot;䲆ꅸ选ླධᥟ㗻偓爓彋&quot;,&quot;b&quot;:6},{&quot;a&quot;:&quot;Ხ쨀꣱뉳鲷웉䧛庯诛氣&quot;,&quot;b&quot;:26},{&quot;a&quot;:&quot;쐔嶻Ↄᢰ椟捈ꢾ깆ງ篌&quot;,&quot;b&quot;:13}]}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n['d3', 'dimple'],\nfunction (d3, dimple) {\n  var svg = d3.select(\"#pie62297112\");\n  var myChart = new dimple.chart(svg, data);\n  myChart.setBounds(100, 30, 380, 360);\n  myChart.addMeasureAxis(\"p\", \"b\");\n  myChart.addSeries(\"a\", dimple.plot.pie);\n  myChart.addLegend(20, 30, 60, 350, \"left\");\n  myChart.draw();\n});\n          /*]]>*/</script></svg>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab1639834602-2\">\n            <div>\n      <svg id=\"bar1820291503\" width=\"600px\" height=\"400px\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\"><script data-this=\"{&quot;data&quot;:[{&quot;a&quot;:&quot;寳敦ꎑᵦ恔㛓豰㭃쾹苬&quot;,&quot;b&quot;:33},{&quot;a&quot;:&quot;皹쵊ᜈ䂘⣤綎찬そݝ囮&quot;,&quot;b&quot;:89},{&quot;a&quot;:&quot;໤뾋ꀶ뗛뚷뫡蘥㲄⬼킃&quot;,&quot;b&quot;:63},{&quot;a&quot;:&quot;䬰섅쵊죺ꉩ梏䩙劑䙭୪&quot;,&quot;b&quot;:80},{&quot;a&quot;:&quot;Ð齻彂뻐瑷䗰⛏䦩㿓땀&quot;,&quot;b&quot;:87},{&quot;a&quot;:&quot;Җ槡粂Ă淽ⲏ苡᪾溢㰏&quot;,&quot;b&quot;:3},{&quot;a&quot;:&quot;霎䝨熐煤骯⁽뭱à鈷單&quot;,&quot;b&quot;:42},{&quot;a&quot;:&quot;䲆ꅸ选ླධᥟ㗻偓爓彋&quot;,&quot;b&quot;:6},{&quot;a&quot;:&quot;Ხ쨀꣱뉳鲷웉䧛庯诛氣&quot;,&quot;b&quot;:26},{&quot;a&quot;:&quot;쐔嶻Ↄᢰ椟捈ꢾ깆ງ篌&quot;,&quot;b&quot;:13}]}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/ req(\n['d3', 'dimple'],\nfunction (d3, dimple) {\n  var svg = d3.select(\"#bar1820291503\");\n  var chart = new dimple.chart(svg, data);\n  chart.setBounds(50, 20, 540, 350);\n  chart.addCategoryAxis(\"x\", \"a\");\n  chart.addMeasureAxis(\"y\", \"b\");\n  chart.addSeries(null, dimple.plot.bar);\n  chart.draw();\n});\n          /*]]>*/</script></svg>\n    </div>\n            </div></div>\n      </div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 35
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Tabular data"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "case class TabularRepr(a:String, b:Double, c:Boolean)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "defined class TabularRepr\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 36
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "List.fill(10)(TabularRepr(nextString(10), nextInt(100), nextBoolean))",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res25: List[TabularRepr] = List(TabularRepr(䬙譁ꖇ測濄軂ꈏ䥊䕭⪇,84.0,true), TabularRepr(梩㺆鯍턙匕⎴ᅶጛ㬑훗,70.0,false), TabularRepr(஧餅ࡻ鶋覻謂쁓才稩䶮,2.0,true), TabularRepr(䃉茨ุꍺ⃆ꕌ⩜㶮눔끍,81.0,false), TabularRepr(ꐊ習믜魅㙁ⓠ聘㋹쳷ཞ,52.0,true), TabularRepr(䂨얛㉀罙鱩셐莖䂝븅槎,50.0,true), TabularRepr(巹馶ᛝ楦⧊멍癃磕⺫㦖,20.0,true), TabularRepr(调㻉䂣ጦ笍꾑땾옣⮺⒜,9.0,false), TabularRepr(⎝됖꟫䍶훖퉨묫길콶ࡰ,71.0,false), TabularRepr(햿咼৤㥕ત쒤᡹乎汸⽎,23.0,false))\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div class=\"table-container table-responsive\">\n    <table class=\"table\">\n      <thead><tr><th>a </th><th>b </th><th>c </th></tr>\n      </thead>\n      <tbody><tr><td>䬙譁ꖇ測濄軂ꈏ䥊䕭⪇</td><td>84.0</td><td>true</td></tr><tr><td>梩㺆鯍턙匕⎴ᅶጛ㬑훗</td><td>70.0</td><td>false</td></tr><tr><td>஧餅ࡻ鶋覻謂쁓才稩䶮</td><td>2.0</td><td>true</td></tr><tr><td>䃉茨ุꍺ⃆ꕌ⩜㶮눔끍</td><td>81.0</td><td>false</td></tr><tr><td>ꐊ習믜魅㙁ⓠ聘㋹쳷ཞ</td><td>52.0</td><td>true</td></tr><tr><td>䂨얛㉀罙鱩셐莖䂝븅槎</td><td>50.0</td><td>true</td></tr><tr><td>巹馶ᛝ楦⧊멍癃磕⺫㦖</td><td>20.0</td><td>true</td></tr><tr><td>调㻉䂣ጦ笍꾑땾옣⮺⒜</td><td>9.0</td><td>false</td></tr><tr><td>⎝됖꟫䍶훖퉨묫길콶ࡰ</td><td>71.0</td><td>false</td></tr><tr><td>햿咼৤㥕ત쒤᡹乎汸⽎</td><td>23.0</td><td>false</td></tr>\n      </tbody>\n    </table></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 37
+    } ]
+  } ],
+  "nbformat" : 4
+}

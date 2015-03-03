@@ -43,17 +43,18 @@ package object widgets {
 
     html(<p data-bind="text: value, style: style">{
       scopedScript(
-        """ req(
-              ['observable', 'knockout'],
-              function (O, ko) {
-                ko.applyBindings({
-                    value: O.makeObservable(valueId),
-                    style: O.makeObservable(styleId)
-                  },
-                  this
-                );
-              }
-        """,
+        """
+          |req(
+          |['observable', 'knockout'],
+          |function (O, ko) {
+          |  ko.applyBindings({
+          |      value: O.makeObservable(valueId),
+          |      style: O.makeObservable(styleId)
+          |    },
+          |    this
+          |  );
+          |});
+        """.stripMargin,
         Json.obj("valueId" -> _currentValue.id, "styleId" -> _currentStyle.id)
       )}</p>)
   }
@@ -67,17 +68,16 @@ package object widgets {
       <li data-bind="text: $data"></li>{
         scopedScript(
           """
-              req(
-                ['observable', 'knockout'],
-                function (O, ko) {
-                  ko.applyBindings({
-                      value: O.makeObservable(valueId)
-                    },
-                    this
-                  );
-                }
-              );
-          """,
+              |req(
+              |['observable', 'knockout'],
+              |function (O, ko) {
+              |  ko.applyBindings({
+              |      value: O.makeObservable(valueId)
+              |    },
+              |    this
+              |  );
+              |});
+          """stripMargin,
           Json.obj("valueId" -> dataConnection.id)
         )
       }</ul>
@@ -106,17 +106,16 @@ package object widgets {
     lazy val toHtml = <p data-bind="text: value">{
       scopedScript(
         """
-            req(
-              ['observable', 'knockout'],
-              function (O, ko) {
-                ko.applyBindings({
-                    value: O.makeObservable(valueId)
-                  },
-                  this
-                );
-              }
-            );
-        """,
+            |req(
+            |['observable', 'knockout'],
+            |function (O, ko) {
+            |  ko.applyBindings({
+            |      value: O.makeObservable(valueId)
+            |    },
+            |    this
+            |  );
+            |});
+        """.stripMargin,
         Json.obj("valueId" -> dataConnection.id)
       )}</p>
   }
@@ -147,17 +146,16 @@ package object widgets {
         {
           scopedScript(
             """
-                req(
-                  ['observable', 'knockout'],
-                  function (O, ko) {
-                    ko.applyBindings({
-                        value: O.makeObservable(valueId)
-                      },
-                      this
-                    );
-                  }
-                );
-            """,
+                |req(
+                |['observable', 'knockout'],
+                |function (O, ko) {
+                |  ko.applyBindings({
+                |      value: O.makeObservable(valueId)
+                |    },
+                |    this
+                |  );
+                |});
+            """.stripMargin,
             Json.obj("valueId" -> dataConnection.id)
           )
         }
@@ -174,120 +172,107 @@ package object widgets {
   def barChart(width: Int, jsons: Seq[(String, Any)]) = {
     val id = Math.abs(Random.nextInt).toString
     <div>
-    	<svg id={ "bar"+id } width="600px" height="400px"
-       xmlns="http://www.w3.org/2000/svg" version="1.1">
-    	{
-      scopedScript(
-        s""" req(
-              ['d3', 'dimple'],
-              function (O, x) {
-                var svg = d3.select("#bar${id}");
-    		  	var chart = new dimple.chart(svg, data);
-        		chart.setBounds(50, 20, 540, 350);
-    		  	chart.addCategoryAxis("x", "${jsons(0)._1.trim}");
-    		  	chart.addMeasureAxis("y", "${jsons(1)._1.trim}");
-    		  	chart.addSeries(null, dimple.plot.bar);
-    		  	chart.draw();
-          
-              });
-        """,
-        Json.obj( "data" -> (jsons grouped width map { row =>  Json.obj(row.map( f => f._1.trim -> toJson(f._2) ):_*)  }).toSeq    )
-      )
-    } </svg></div>
+      <svg id={ "bar"+id } width="600px" height="400px" xmlns="http://www.w3.org/2000/svg" version="1.1">{
+        scopedScript(
+          s"""| req(
+              |['d3', 'dimple'],
+              |function (d3, dimple) {
+              |  var svg = d3.select("#bar${id}");
+              |  var chart = new dimple.chart(svg, data);
+              |  chart.setBounds(50, 20, 540, 350);
+              |  chart.addCategoryAxis("x", "${jsons(0)._1.trim}");
+              |  chart.addMeasureAxis("y", "${jsons(1)._1.trim}");
+              |  chart.addSeries(null, dimple.plot.bar);
+              |  chart.draw();
+              |});
+          """.stripMargin,
+          Json.obj( "data" -> (jsons grouped width map { row =>  Json.obj(row.map( f => f._1.trim -> toJson(f._2) ):_*)  }).toSeq    )
+        )
+      }</svg>
+    </div>
     
   }
   
   def lineChart(width: Int, jsons: Seq[(String, Any)]) = {
     val id = Math.abs(Random.nextInt).toString
     <div>
-    	<svg id={ "line"+id } width="600px" height="400px"
-       xmlns="http://www.w3.org/2000/svg" version="1.1">
-    	{
-      scopedScript(
-        s""" req(
-              ['d3', 'dimple'],
-              function (O, x) {
-                var svg = d3.select("#line${id}");
-    		  	var chart = new dimple.chart(svg, data);
-        		chart.setBounds(50, 20, 540, 350);
-    		  	var x = chart.addCategoryAxis("x", "${jsons(0)._1.trim}");
-    		  	chart.addMeasureAxis("y", "${jsons(1)._1.trim}");
-    		  	chart.addSeries(null, dimple.plot.line);
-    		  	chart.draw();
-          
-              });
-        """,
-        Json.obj( "data" -> (jsons grouped width map { row =>  Json.obj(row.map( f => f._1.trim -> toJson(f._2) ):_*)  }).toSeq    )
-      )
-    } </svg></div>
-    
+      <svg id={ "line"+id } width="600px" height="400px" xmlns="http://www.w3.org/2000/svg" version="1.1">{
+        scopedScript(
+          s""" |req(
+               |['d3', 'dimple'],
+               |function (d3, dimple) {
+               |  var svg = d3.select("#line${id}");
+               |  var chart = new dimple.chart(svg, data);
+               |  chart.setBounds(50, 20, 540, 350);
+               |  var x = chart.addCategoryAxis("x", "${jsons(0)._1.trim}");
+               |  chart.addMeasureAxis("y", "${jsons(1)._1.trim}");
+               |  chart.addSeries(null, dimple.plot.line);
+               |  chart.draw();
+               |});
+          """.stripMargin,
+          Json.obj( "data" -> (jsons grouped width map { row =>  Json.obj(row.map( f => f._1.trim -> toJson(f._2) ):_*)  }).toSeq    )
+        )
+      }</svg>
+    </div>
   }
   
   def pieChart(width: Int, jsons: Seq[(String, Any)]) = {
     val id = Math.abs(Random.nextInt).toString
     <div>
-	    <svg id={ "pie"+id } width="600px" height="400px"
-       xmlns="http://www.w3.org/2000/svg" version="1.1">
-	    {
-	      scopedScript(
-	        s""" req(
-	              ['d3', 'dimple'],
-	              function (O, x) {
-	                  var svg = d3.select("#pie${id}");
-				      var myChart = new dimple.chart(svg, data);
-				      myChart.setBounds(100, 30, 380, 360);
-	        		  myChart.addMeasureAxis("p", "${jsons(1)._1.trim}");
-				      myChart.addSeries("${jsons(0)._1.trim}", dimple.plot.pie);
-				      myChart.addLegend(20, 30, 60, 350, "left");
-				      myChart.draw();
-	              });
-	        """,
-	        Json.obj( "data" -> (jsons grouped width map { row =>  Json.obj(row.map( f => f._1.trim -> toJson(f._2) ):_*)  }).toSeq    )
-	      )
-	    } 
-    </svg>
-  </div>  
+      <svg id={ "pie"+id } width="600px" height="400px" xmlns="http://www.w3.org/2000/svg" version="1.1">{
+        scopedScript(
+          s"""|req(
+              |['d3', 'dimple'],
+              |function (d3, dimple) {
+              |  var svg = d3.select("#pie${id}");
+              |  var myChart = new dimple.chart(svg, data);
+              |  myChart.setBounds(100, 30, 380, 360);
+              |  myChart.addMeasureAxis("p", "${jsons(1)._1.trim}");
+              |  myChart.addSeries("${jsons(0)._1.trim}", dimple.plot.pie);
+              |  myChart.addLegend(20, 30, 60, 350, "left");
+              |  myChart.draw();
+              |});
+          """.stripMargin,
+          Json.obj( "data" -> (jsons grouped width map { row =>  Json.obj(row.map( f => f._1.trim -> toJson(f._2) ):_*)  }).toSeq    )
+        )
+      }</svg>
+    </div>  
   }
   
   def tabControl(pages: Seq[(String, scala.xml.Elem)]) = {
     val tabControlId = Math.abs(Random.nextInt).toString
     html(
-    <div >
-    	<script>{
-	        s""" 
-	        	//$$('#ul${tabControlId} li').first().addClass('active');
-	        	//$$('#tab${tabControlId} div').first().addClass('active');
-    			$$('#ul${tabControlId} a').click(function(){
-    				$$('#tab${tabControlId} div.active').removeClass('active');
-    				$$('#ul${tabControlId} li.active').removeClass('active');
-    				var id = $$(this).attr('href');
-    				$$(id).addClass('active');
-    				$$(this).parent().addClass('active');
-    			});
-	        """
-	      }
-    	</script>	
-    <ul class="nav nav-tabs" id={ "ul"+tabControlId }>{
-    	pages.zipWithIndex map { p: ((String, scala.xml.Elem), Int) => 
-		    <li>
-    			<a href={ "#tab"+tabControlId+"-"+p._2 }><i class={ "fa fa-"+p._1._1} /></a>
-    		</li>
-		  }
-    }
-    </ul>
+      <div >
+        <script>{
+          s""" 
+            |//$$('#ul${tabControlId} li').first().addClass('active');
+            |//$$('#tab${tabControlId} div').first().addClass('active');
+            |$$('#ul${tabControlId} a').click(function(){
+            |  $$('#tab${tabControlId} div.active').removeClass('active');
+            |  $$('#ul${tabControlId} li.active').removeClass('active');
+            |  var id = $$(this).attr('href');
+            |  $$(id).addClass('active');
+            |  $$(this).parent().addClass('active');
+            |});
+          """.stripMargin
+        }</script>  
+        <ul class="nav nav-tabs" id={ "ul"+tabControlId }>{
+          pages.zipWithIndex map { p: ((String, scala.xml.Elem), Int) => 
+            <li>
+              <a href={ "#tab"+tabControlId+"-"+p._2 }><i class={ "fa fa-"+p._1._1} /></a>
+            </li>
+          }
+        }</ul>
 
-    <div class="tab-content" id={ "tab"+tabControlId }>
-      	
-    	{
-		  pages.zipWithIndex map { p: ((String, scala.xml.Elem), Int) => 
-		    <div class="tab-pane" id={ "tab"+tabControlId+"-"+p._2 }>
-	    	{ p._1._2 }
-	    	</div>
-		  }
-    	}
-    </div>
-</div>
-	  )
+        <div class="tab-content" id={ "tab"+tabControlId }>{
+          pages.zipWithIndex map { p: ((String, scala.xml.Elem), Int) => 
+            <div class="tab-pane" id={ "tab"+tabControlId+"-"+p._2 }>
+            { p._1._2 }
+            </div>
+          }
+        }</div>
+      </div>
+    )
   }
  
   
@@ -306,21 +291,21 @@ package object widgets {
     
   def table(width: Int, contents: Seq[Widget], headers: Seq[Widget] = Nil) = 
     <div class="table-container table-responsive">
-  	<table class="table">
-  		<thead>{
-	      (headers) grouped width map { row =>
-	        <tr>{
-	          row map { html => <th>{html}</th> }
-	        }</tr>
-	      }
-	  }
+    <table class="table">
+      <thead>{
+        (headers) grouped width map { row =>
+          <tr>{
+            row map { html => <th>{html}</th> }
+          }</tr>
+        }
+    }
       </thead>
       <tbody>{
-	      	(contents) grouped width map { row =>
-	        <tr>{
-	          row map { html => <td>{html}</td> }
-	        }</tr>
-	      }
+          (contents) grouped width map { row =>
+          <tr>{
+            row map { html => <td>{html}</td> }
+          }</tr>
+        }
       }
       </tbody>
     </table></div>
