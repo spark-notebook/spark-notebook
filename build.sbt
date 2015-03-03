@@ -32,7 +32,9 @@ resolvers in ThisBuild ++=  Seq(
                               Resolver.sonatypeRepo("releases"),
                               Resolver.typesafeIvyRepo("releases"),
                               Resolver.typesafeIvyRepo("snapshots"),
-                              "cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos"
+                              "cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos",
+                              // docker
+                              "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
                             )
 
 EclipseKeys.skipParents in ThisBuild := false
@@ -71,6 +73,8 @@ libraryDependencies ++= Seq(
   commonsExec,
   commonsCodec,
   ningAsyncHttpClient, // for aether to work...
+  dockerApi,
+  //scala stuffs
   "org.scala-lang" % "scala-library" % defaultScalaVersion,
   "org.scala-lang" % "scala-reflect" % defaultScalaVersion,
   "org.scala-lang" % "scala-compiler" % defaultScalaVersion

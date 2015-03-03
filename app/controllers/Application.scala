@@ -550,6 +550,49 @@ object Application extends Controller {
     }
   }
 
+  // docker
+  val docker:Option[tugboat.Docker] = {
+    import sys.process._
+    import scala.util.control.Exception.allCatch
+
+    allCatch.opt {
+      "docker info"!!
+    }.orElse {
+      Option(System.getenv("DOCKER_HOST"))
+    }.orElse {
+      allCatch.opt { 
+        (("ls /var/run/docker.sock" #| "wc -l").!!).trim.toInt
+      }.filter(_ > 0)
+    }.map { _ =>
+      tugboat.Docker()
+    }
+  }
+
+  def onDocker[A](b : tugboat.Docker => Future[Result[A]]):Future[Result[A]] = {
+    docker map { d => Action.async { b(d) } } b getOrElse Future(BadRequest("Docker is not available"))
+  }
+
+  def dockerAvailable = Action {
+    Ok(Json.obj("available" → true)).withHeaders(
+      "Access-Control-Allow-Origin" -> "*",
+      "Access-Control-Allow-Methods" -> "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers" -> "Accept, Origin, Content-type",
+      "Access-Control-Allow-Credentials" -> "true"
+    )
+  }
+
+  def dockerList = 
+    onDocker { docker =>
+      Ok(Json.toJson(
+        docker.images.list().map { list =>
+          list.map { i =>
+            i.repoTags
+          }
+        } 
+      ))
+    }
+
+
   // util
   object ImperativeWebsocket {
 
