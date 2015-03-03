@@ -5,3 +5,9 @@ a hack to deal with our current css styles and no new styling should be added in
 #ipython-main-app {
     position: relative;
 }
+
+.table-container {
+	margin-top: 20px;
+	margin-left: 30px;
+}
+
