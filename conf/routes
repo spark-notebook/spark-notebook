@@ -28,7 +28,6 @@ PATCH   /api/contents/*path                                           controller
 PUT     /api/contents/*path                                           controllers.Application.saveNotebook(path:String)
 DELETE  /api/contents/*path                                           controllers.Application.deleteNotebook(path:String)
 
-
 GET     /notebooks/*snb                                               controllers.Application.openNotebook(snb:String)
 GET     /edit/:snb                                                    controllers.Application.openNotebook(snb:String)
 
@@ -37,6 +36,10 @@ GET     /nbconvert/:format/*path                                      controller
 
 GET     /clusters                                                     controllers.Application.clusters()
 POST    /clusters                                                     controllers.Application.addCluster()
+
+
+OPTIONS  /dockers                                                     controllers.Application.dockerAvailable()
+GET     /dockers                                                      controllers.Application.dockerList()
 
 
 # Web Sockets

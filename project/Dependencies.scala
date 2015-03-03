@@ -13,10 +13,13 @@ object Dependencies {
 
   val scalaZ                  = "org.scalaz"                %%         "scalaz-core"          %      "7.0.6"
 
+  val dockerApi               = "me.lessis"                 %%          "tugboat"             %      "0.2.0"            excludeAll(ExclusionRule("io.netty"))
+
   val akkaVersion             = "2.3.4-spark"
   val akka                    = "org.spark-project.akka"    %%         "akka-actor"           %    akkaVersion
   val akkaRemote              = "org.spark-project.akka"    %%         "akka-remote"          %    akkaVersion
   val akkaSlf4j               = "org.spark-project.akka"    %%          "akka-slf4j"          %    akkaVersion
+
 
   val defaultScalaVersion     = sys.props.getOrElse("scala.version", "2.10.4")
   val breeze                  = "org.scalanlp"              %%         "breeze"               %       "0.10"        excludeAll(ExclusionRule("junit"), ExclusionRule("org.apache.commons", "commons-math3"))
