@@ -67,8 +67,8 @@ object NBSerializer {
                       trusted:Boolean=true,
                       customLocalRepo:Option[String]=None,
                       customRepos:Option[List[String]]=None,
-                      customDeps:Option[String]=None,
-                      customImports:Option[String]=None,
+                      customDeps:Option[List[String]]=None,
+                      customImports:Option[List[String]]=None,
                       customSparkConf:Option[JsObject]=None
                     )
   implicit val metadataFormat:Format[Metadata] = {
@@ -81,8 +81,8 @@ object NBSerializer {
       (JsPath \ "trusted").readNullable[Boolean].map(_.getOrElse(true)) and
       (JsPath \ "customLocalRepo").readNullable[String] and
       (JsPath \ "customRepos").readNullable[List[String]] and
-      (JsPath \ "customDeps").readNullable[String] and
-      (JsPath \ "customImports").readNullable[String] and
+      (JsPath \ "customDeps").readNullable[List[String]] and
+      (JsPath \ "customImports").readNullable[List[String]] and
       (JsPath \ "customSparkConf").readNullable[JsObject]
     )(Metadata.apply _)
 
