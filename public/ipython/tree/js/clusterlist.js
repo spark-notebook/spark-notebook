@@ -142,13 +142,13 @@ define([
 
   ClusterItem.prototype.create = function () {
     var that = this;
-    var profile_col = $('<div/>').addClass('profile_col col-xs-1').text(this.data.profile);
+    var profile_col = $('<div/>').addClass('profile_col col-xs-2').text(this.data.profile);
     var name_col = $('<div/>').addClass('name_col col-xs-2').text(this.data.name);
 
     var local_repo_col = $('<div/>').addClass('local_repo_col col-xs-2').text(this.data.template.customLocalRepo);
 
-    var showItemListAndPopup = function(name, title, list, format, style) {
-      var name_col = $('<div/>').addClass('name_col col-xs-2').text(""+_.size(list));
+    var showItemListAndPopup = function(name, title, list, format, style, size) {
+      var name_col = $('<div/>').addClass('name_col col-xs-'+(size||1)).text(""+_.size(list));
       if (_.size(list) > 0) {
         name_col.popover({
           html: true,
@@ -190,6 +190,9 @@ define([
 
     var imports_col = showItemListAndPopup ("imports", "Imports", that.data.template.customImports, function(item) { return item.trim().replace(new RegExp("import"), "").trim()});
 
+    var sparkConf = _.chain(that.data.template.customSparkConf).pairs().map(function(item) { return item[0] + " → " + item[1]; }).value();
+    var spark_conf_repo_col = showItemListAndPopup("spark_conf", "Spark Conf", sparkConf, _.identity, "disc", 2);
+
     var create_button = $('<button/>').addClass("btn btn-default btn-xs").text("Create");
     var action_col = $('<div/>').addClass('action_col col-xs-1').append(
       $("<span/>").addClass("item_buttons btn-group").append(
@@ -204,6 +207,7 @@ define([
       .append(repos_col)
       .append(deps_col)
       .append(imports_col)
+      .append(spark_conf_repo_col)
       .append(action_col);
     create_button.click(function (e) {
       dialog.conf_cluster({
