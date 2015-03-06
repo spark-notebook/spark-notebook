@@ -55,8 +55,8 @@ case class ObjectInfoResponse(found: Boolean, name: String, callDef: String, cal
 class ReplCalculator(
   customLocalRepo:Option[String],
   customRepos:Option[List[String]],
-  customDeps:Option[String],
-  customImports:Option[String],
+  customDeps:Option[List[String]],
+  customImports:Option[List[String]],
   customSparkConf:Option[Map[String, String]],
   initScripts: List[(String, String)],
   compilerArgs: List[String]
@@ -109,7 +109,8 @@ class ReplCalculator(
   def codeRepo = new File(repo, "code")
 
   val (depsJars, depsScript):(List[String],(String, ()=>String)) = customDeps.map { d =>
-    val deps = Deps.script(d, remotes, repo).toOption.getOrElse(List.empty[String])
+    val customDeps = d.mkString("\n")
+    val deps = Deps.script(customDeps, remotes, repo).toOption.getOrElse(List.empty[String])
     (deps, ("deps", () => s"""
                     |val CustomJars = ${ deps.mkString("Array(\"", "\",\"", "\")") }
                     |
@@ -119,8 +120,9 @@ class ReplCalculator(
 
 
   ("deps", () => customDeps.map { d =>
+    val customDeps = d.mkString("\n")
 
-    val deps = Deps.script(d, remotes, repo).toOption.getOrElse(List.empty[String])
+    val deps = Deps.script(customDeps, remotes, repo).toOption.getOrElse(List.empty[String])
 
     (deps, s"""
     |val CustomJars = ${ deps.mkString("Array(\"", "\",\"", "\")") }
@@ -128,7 +130,7 @@ class ReplCalculator(
     """.stripMargin)
   }.getOrElse((List.empty[String], "val CustomJars = Array.empty[String]\n")))
 
-  val ImportsScripts = ("imports", () => customImports.map(_ + "\n").getOrElse("\n"))
+  val ImportsScripts = ("imports", () => customImports.map(_.mkString("\n") + "\n").getOrElse("\n"))
 
   private var _repl:Option[Repl] = None
 

@@ -6,7 +6,8 @@ define([
   'jquery',
   'base/js/utils',
   'base/js/dialog',
-], function(IPython, $, utils, dialog) {
+  'underscore',
+], function(IPython, $, utils, dialog, _) {
   "use strict";
 
   var ClusterList = function (selector, options) {
@@ -54,8 +55,8 @@ define([
         template: {
           customLocalRepo: "path to local repo OR null",
           customRepos: [ "add remote repo" ],
-          customDeps: "add dependencies in a single string separated with \\n",
-          customImports: "add import in a single string separated with \\n",
+          customDeps: ["add dependencies" ],
+          customImports: ["add import"],
           customSparkConf: {
             "spark.master": "local[*]"
           }
@@ -141,19 +142,68 @@ define([
 
   ClusterItem.prototype.create = function () {
     var that = this;
-    var profile_col = $('<div/>').addClass('profile_col col-xs-4').text(this.data.profile);
-    var status_col = $('<div/>').addClass('status_col col-xs-3').text('stopped');
-    var name_col = $('<div/>').addClass('name_col col-xs-3').text(this.data.name);
+    var profile_col = $('<div/>').addClass('profile_col col-xs-1').text(this.data.profile);
+    var name_col = $('<div/>').addClass('name_col col-xs-2').text(this.data.name);
+
+    var local_repo_col = $('<div/>').addClass('local_repo_col col-xs-2').text(this.data.template.customLocalRepo);
+
+    var showItemListAndPopup = function(name, title, list, format, style) {
+      var name_col = $('<div/>').addClass('name_col col-xs-2').text(""+_.size(list));
+      if (_.size(list) > 0) {
+        name_col.popover({
+          html: true,
+          placement: "top",
+          trigger: "hover",
+          title: title,
+          //delay: { show: 500, hide: 100 },
+          content: function() {
+            var ul = $("<ul style='list-style-type: "+(style||"disc")+";'></ul>");
+            _.each(list, function(item) {
+              var li = $("<li></li>").append((format || _.identity)(item.trim()));
+              ul.append(li);
+            });
+            return ul;
+          }
+        });
+      }
+      return name_col;
+    };
+
+    var repos_col = showItemListAndPopup("repos", "Repositories", that.data.template.customRepos);
+
+    var deps_col = showItemListAndPopup("deps", "Dependencies", that.data.template.customDeps, function(item) {
+      var content = $("<span></span>");
+      var t = item;
+      if (_.size(item.match(/^-.*/)) > 0) {
+        content.append($('<i class="fa fa-minus"></i>'));
+        t = item.substring(1).trim();
+      } else {
+        content.append($('<i class="fa fa-plus"></i>'));
+        if (_.size(item.match(/^\+.*/)) > 0) {
+          t = item.substring(1).trim();
+        }
+      }
+      content.append($('<span></span>').text(" " + t));
+      return content;
+    },
+    "none");
+
+    var imports_col = showItemListAndPopup ("imports", "Imports", that.data.template.customImports, function(item) { return item.trim().replace(new RegExp("import"), "").trim()});
+
     var create_button = $('<button/>').addClass("btn btn-default btn-xs").text("Create");
-    var action_col = $('<div/>').addClass('action_col col-xs-2').append(
+    var action_col = $('<div/>').addClass('action_col col-xs-1').append(
       $("<span/>").addClass("item_buttons btn-group").append(
         create_button
       )
     );
+
     this.element.empty()
       .append(profile_col)
       .append(name_col)
-      .append(status_col)
+      .append(local_repo_col)
+      .append(repos_col)
+      .append(deps_col)
+      .append(imports_col)
       .append(action_col);
     create_button.click(function (e) {
       dialog.conf_cluster({
