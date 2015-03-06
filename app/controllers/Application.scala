@@ -552,24 +552,28 @@ object Application extends Controller {
 
   // docker
   val docker:Option[tugboat.Docker] = {
-    import sys.process._
+    import scala.sys.process._
     import scala.util.control.Exception.allCatch
+    
+    import scala.concurrent.ExecutionContext.Implicits.global
+    Some(tugboat.Docker())
 
-    allCatch.opt {
-      "docker info"!!
-    }.orElse {
-      Option(System.getenv("DOCKER_HOST"))
-    }.orElse {
-      allCatch.opt { 
-        (("ls /var/run/docker.sock" #| "wc -l").!!).trim.toInt
-      }.filter(_ > 0)
-    }.map { _ =>
-      tugboat.Docker()
-    }
+    //allCatch.opt {
+    //  "docker info"!!
+    //}.orElse {
+    //  Option(System.getenv("DOCKER_HOST"))
+    //}.orElse {
+    //  allCatch.opt { 
+    //    (("ls /var/run/docker.sock" #| "wc -l").!!).trim.toInt
+    //  }.filter(_ > 0)
+    //}.map { _ =>
+    //  tugboat.Docker()
+    //}
   }
 
-  def onDocker[A](b : tugboat.Docker => Future[Result[A]]):Future[Result[A]] = {
-    docker map { d => Action.async { b(d) } } b getOrElse Future(BadRequest("Docker is not available"))
+  def onDocker(b : tugboat.Docker => Future[Result]) = {
+    import scala.concurrent.ExecutionContext.Implicits.global
+    Action.async { docker map b getOrElse Future(BadRequest("Docker is not available")) }
   }
 
   def dockerAvailable = Action {
@@ -583,13 +587,19 @@ object Application extends Controller {
 
   def dockerList = 
     onDocker { docker =>
-      Ok(Json.toJson(
-        docker.images.list().map { list =>
-          list.map { i =>
-            i.repoTags
-          }
-        } 
-      ))
+      import scala.concurrent.ExecutionContext.Implicits.global
+      import scala.concurrent.duration._
+      Logger.info(docker.toString)
+      Logger.info(scala.concurrent.Await.result(docker.info(), 1 second).toString)
+      //val images = docker.images
+      //images.list().map { list =>
+      //  Ok(Json.toJson(
+      //    list.map { i =>
+      //      i.repoTags
+      //    }
+      //  ))
+      //} 
+      Future(Ok(""))
     }
 
 

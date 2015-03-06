@@ -14,7 +14,7 @@ object Dependencies {
   val scalaZ                  = "org.scalaz"                %%         "scalaz-core"          %      "7.0.6"
 
   val dockerApi               = "me.lessis"                 %%          "tugboat"             %      "0.2.0"            excludeAll(ExclusionRule("io.netty"))
-
+  
   val akkaVersion             = "2.3.4-spark"
   val akka                    = "org.spark-project.akka"    %%         "akka-actor"           %    akkaVersion
   val akkaRemote              = "org.spark-project.akka"    %%         "akka-remote"          %    akkaVersion
