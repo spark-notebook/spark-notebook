@@ -15,19 +15,6 @@
       }
     }
   },
-  "Example custom" : {
-    "name" : "Example custom",
-    "profile" : "local",
-    "template" : {
-      "customLocalRepo" : "/tmp/repo-test",
-      "customRepos" : null,
-      "customDeps" : [ "org.bdgenomics.adam % adam-apis % 0.16.0", "- org.apache.hadoop % hadoop-client %   _", "+ org.apache.spark  %  spark-mllib_2.10  % 1.2.0" ],
-      "customImports" : [ "import scala.util._", "import org.apache.spark.SparkContext._" ],
-      "customSparkConf" : {
-        "spark.master" : "local[4]"
-      }
-    }
-  },
   "Example mesos" : {
     "profile" : "mesos",
     "name" : "Example mesos",
@@ -60,6 +47,19 @@
         "spark.app.name" : "Notebook",
         "spark.master" : "local[8]",
         "spark.executor.memory" : "1G"
+      }
+    }
+  },
+  "Example custom" : {
+    "name" : "Example custom",
+    "profile" : "local",
+    "template" : {
+      "customLocalRepo" : "/tmp/repo-test",
+      "customRepos" : null,
+      "customDeps" : [ "org.bdgenomics.adam % adam-apis % 0.16.0", "- org.apache.hadoop % hadoop-client %   _", "+ org.apache.spark  %  spark-mllib_2.10  % 1.2.1" ],
+      "customImports" : [ "import scala.util._", "import org.apache.spark.SparkContext._" ],
+      "customSparkConf" : {
+        "spark.master" : "local[4]"
       }
     }
   }
