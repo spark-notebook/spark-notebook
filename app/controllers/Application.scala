@@ -289,10 +289,10 @@ object Application extends Controller {
   def createNotebook(p:String, custom:JsObject) = {
     val path = URLDecoder.decode(p)
     Logger.info(s"Creating notebook at $path")
-    val customLocalRepo = Try((custom \ "customLocalRepo").as[String]).toOption
-    val customRepos = Try((custom \ "customRepos").as[List[String]]).toOption
-    val customDeps = Try((custom \ "customDeps").as[List[String]]).toOption
-    val customImports = Try((custom \ "customImports").as[List[String]]).toOption
+    val customLocalRepo = Try((custom \ "customLocalRepo").as[String]).toOption.map(_.trim()).filterNot(_.isEmpty)
+    val customRepos = Try((custom \ "customRepos").as[List[String]]).toOption.filterNot(_.isEmpty)
+    val customDeps = Try((custom \ "customDeps").as[List[String]]).toOption.filterNot(_.isEmpty)
+    val customImports = Try((custom \ "customImports").as[List[String]]).toOption.filterNot(_.isEmpty)
 
     val customMetadata = (for {
       j <- Try(custom \ "customSparkConf") if j.isInstanceOf[JsObject]
