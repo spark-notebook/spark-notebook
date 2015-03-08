@@ -1,22 +1,6 @@
 {
-  "Example local" : {
-    "profile" : "Local",
-    "name" : "Example local",
-    "status" : "stopped",
-    "template" : {
-      "customLocalRepo" : null,
-      "customRepos" : null,
-      "customDeps" : null,
-      "customImports" : null,
-      "customSparkConf" : {
-        "spark.app.name" : "Notebook",
-        "spark.master" : "local[8]",
-        "spark.executor.memory" : "1G"
-      }
-    }
-  },
   "Example standalone" : {
-    "profile" : "Standalone",
+    "profile" : "standalone",
     "name" : "Example standalone",
     "status" : "stopped",
     "template" : {
@@ -31,8 +15,21 @@
       }
     }
   },
+  "Example custom" : {
+    "name" : "Example custom",
+    "profile" : "local",
+    "template" : {
+      "customLocalRepo" : "/tmp/repo-test",
+      "customRepos" : null,
+      "customDeps" : [ "org.bdgenomics.adam % adam-apis % 0.16.0", "- org.apache.hadoop % hadoop-client %   _", "+ org.apache.spark  %  spark-mllib_2.10  % 1.2.0" ],
+      "customImports" : [ "import scala.util._", "import org.apache.spark.SparkContext._" ],
+      "customSparkConf" : {
+        "spark.master" : "local[4]"
+      }
+    }
+  },
   "Example mesos" : {
-    "profile" : "Mesos",
+    "profile" : "mesos",
     "name" : "Example mesos",
     "status" : "stopped",
     "template" : {
@@ -50,16 +47,19 @@
       }
     }
   },
-  "CustomConf" : {
-    "name" : "CustomConf",
-    "profile" : "Test",
+  "Example local" : {
+    "profile" : "local",
+    "name" : "Example local",
+    "status" : "stopped",
     "template" : {
-      "customLocalRepo" : "/tmp/repo-test",
+      "customLocalRepo" : null,
       "customRepos" : null,
-      "customDeps" : [ "org.bdgenomics.adam % adam-apis % 0.16.0", "- org.apache.hadoop % hadoop-client %   _", "+ org.apache.spark  %  spark-mllib_2.10  % 1.2.0" ],
-      "customImports" : [ "import scala.util._", "import org.apache.spark.SparkContext._" ],
+      "customDeps" : null,
+      "customImports" : null,
       "customSparkConf" : {
-        "spark.master" : "local[4]"
+        "spark.app.name" : "Notebook",
+        "spark.master" : "local[8]",
+        "spark.executor.memory" : "1G"
       }
     }
   }

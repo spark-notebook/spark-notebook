@@ -6,6 +6,7 @@ import notebook.util._
 
 
 import org.apache.spark.{SparkContext, SparkConf}
+import org.apache.spark.SparkContext_
 
 
 @transient var execUri = Option(System.getenv("SPARK_EXECUTOR_URI"))

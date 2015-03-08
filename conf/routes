@@ -38,6 +38,8 @@ GET     /nbconvert/:format/*path                                      controller
 GET     /clusters                                                     controllers.Application.clusters()
 POST    /clusters                                                     controllers.Application.addCluster()
 
+GET     /profiles                                                     controllers.Application.profiles()
+
 
 # Web Sockets
 GET     /ws/observable/:contextId                                     controllers.Application.openObservable(contextId:String)
