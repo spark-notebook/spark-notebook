@@ -200,68 +200,6 @@ define(function(require) {
         modal_obj.on('shown.bs.modal', function(){ editor.refresh(); });
     };
 
-    // TODO: merge with edit_metadata  → almost identical
-    var conf_cluster = function (options) {
-        options.name = options.name || "Configuration";
-        var error_div = $('<div/>').css('color', 'red');
-        var message =
-            "Manually edit the JSON below to manipulate the configuration for this "+ options.profile + "configuration " + options.name + ".";
-
-        var textarea = $('<textarea/>')
-            .attr('rows', '13')
-            .attr('cols', '80')
-            .attr('name', 'conf')
-            .text(JSON.stringify(options.template || {}, null, 2));
-
-        var dialogform = div().attr('title', 'Configuration ' + options.name)
-            .append(
-                $('<form/>').append(
-                    $('<fieldset/>').append(
-                        $('<label/>')
-                        .attr('for','conf')
-                        .text(message)
-                        )
-                        .append(error_div)
-                        .append($('<br/>'))
-                        .append(textarea)
-                    )
-            );
-        var editor = CodeMirror.fromTextArea(textarea[0], {
-            lineNumbers: true,
-            matchBrackets: true,
-            indentUnit: 2,
-            autoIndent: true,
-            mode: 'application/json',
-        });
-
-        // preformat for
-        var modal_obj = modal({
-            title: "Edit " + options.name + " Configuration",
-            body: dialogform,
-            buttons: {
-                OK: { class : "btn-primary",
-                    click: function() {
-                        /**
-                         * validate json and set it
-                         */
-                        var new_conf;
-                        try {
-                            new_conf = JSON.parse(editor.getValue());
-                        } catch(e) {
-                            console.log(e);
-                            error_div.text('WARNING: Could not save invalid JSON.');
-                            return false;
-                        }
-                        options.callback(new_conf);
-                    }
-                },
-                Cancel: {}
-            }
-        });
-
-        modal_obj.on('shown.bs.modal', function(){ editor.refresh(); });
-    };
-
     var elt = function(elt) {
         return function(options) {
             options = options || {};
@@ -282,7 +220,7 @@ define(function(require) {
     var br = function() { return $("<br/>"); };
 
 
-    var new_cluster = function (options) {
+    var configure = function (options) {
         options.name = options.name || "Cluster";
         var error_div = $('<div/>').css('color', 'red');
         var message = "Create a configuration.";
@@ -301,9 +239,9 @@ define(function(require) {
         var pager = ul({clazz: "pager wizard"}).appendTo(tabs);
         pager.data("conf", {});
         pager.append(li({clazz: "previous first"}).append(a().attr("href", "javascript:;").text("First")))
-             .append(li({clazz: "previous"}).append(a().attr("href", "javascript:;").text("Previous")))
-             .append(li({clazz: "next last"}).append(a().attr("href", "javascript:;").text("Last")))
-             .append(li({clazz: "next"}).append(a().attr("href", "javascript:;").text("Next")));
+             .append(li({clazz: "previous"})      .append(a().attr("href", "javascript:;").text("Previous")))
+             .append(li({clazz: "next last"})     .append(a().attr("href", "javascript:;").text("Last")))
+             .append(li({clazz: "next"})          .append(a().attr("href", "javascript:;").text("Next")));
 
         var addPane = function(id, label, addContent) {
             li().append(a().attr("href", "#"+id).attr("data-toggle", "tab").text(label)).appendTo(navbar);
@@ -323,7 +261,7 @@ define(function(require) {
                         .attr("size", "100")
             );
             var NameModel = function() {
-                this.name = ko.observable("");
+                this.name = ko.observable(options.name || "");
                 pager.data("conf").name =  this.name;
             };
             ko.applyBindings(new NameModel(), page.get(0));
@@ -336,23 +274,22 @@ define(function(require) {
             var addProfile = function(profile) {
                 var value = profile.id;
                 var labelText = profile.name;
+                var checkbox = input()  .attr("type", "radio")
+                                        .attr("name", "profile")
+                                        //.attr("id", "newClusterProfiles1")
+                                        .attr("data-bind", "checked: profile")
+                                        .attr("value", value)
+                                        .data("profile", profile)
                 profilesForm.append(
                     label({clazz: "radio"})
                         .css("margin-left", "20px")
-                        .append(
-                            input() .attr("type", "radio")
-                                    .attr("name", "profile")
-                                    //.attr("id", "newClusterProfiles1")
-                                    .attr("data-bind", "checked: profile")
-                                    .attr("value", value)
-                                    .data("profile", profile)
-                        )
+                        .append(checkbox)
                         .append(labelText)
                 );
             };
 
             var ProfileModel = function() {
-                this.profile = ko.observable("");
+                this.profile = ko.observable(options.profile || "");
                 pager.data("conf").profile =  this.profile;
             };
 
@@ -371,7 +308,7 @@ define(function(require) {
                         .attr("size", "100")
             );
             var LocalRepoModel = function() {
-                this.localRepo = ko.observable("");
+                this.localRepo = ko.observable(options.template.customLocalRepo || "");
                 pager.data("conf").local =  this.localRepo;
             };
             ko.applyBindings(new LocalRepoModel(), page.get(0));
@@ -411,7 +348,7 @@ define(function(require) {
 
             var ConfigurationRemotesModel = function () {
                 this.remoteToAdd = ko.observable("");
-                this.allRemotes = ko.observableArray([]); // Initial remotes
+                this.allRemotes = ko.observableArray(options.template.customRepos || []); // Initial remotes
                 this.selectedRemotes = ko.observableArray([]); // Initial selection
 
                 this.addRemote = function () {
@@ -465,7 +402,7 @@ define(function(require) {
 
             var ConfigurationDepsModel = function () {
                 this.depToAdd = ko.observable("");
-                this.allDeps = ko.observableArray([]); // Initial deps
+                this.allDeps = ko.observableArray(options.template.customDeps || []); // Initial deps
                 this.selectedDeps = ko.observableArray([]); // Initial selection
 
                 this.addDep = function () {
@@ -520,7 +457,8 @@ define(function(require) {
 
             var ConfigurationImportsModel = function () {
                 this.importToAdd = ko.observable("");
-                this.allImports = ko.observableArray([]); // Initial imports
+                var currentImportsStripped = _.chain(options.template.customImports || []).map(function(v) { return v.replace(/import /, "").trim();}).value();
+                this.allImports = ko.observableArray(currentImportsStripped); // Initial imports
                 this.fullImports = ko.pureComputed(function() {
                     return _.map(this.allImports(), function(i) {return 'import ' + i;});
                 }, this);
@@ -550,11 +488,20 @@ define(function(require) {
             var idToProfile = function(id) {
                 var x = _.find(options.profiles, function(v) {return v.id == id;});
                 x = (x && x.template && x.template.customSparkConf)  || {};
-                return JSON.stringify(x, null, 2);
+                return x;
+            };
+            var confToString = function(conf) {
+                return JSON.stringify(conf, null, 2);
+            };
+            var idToProfileString = function(id) {
+                var conf = idToProfile(id);
+                return confToString(conf);
             };
 
             //get the profile out of pager
-            var profileTemplate = idToProfile(pager.data("conf").profile());
+            var currentSparkConf = options.template.customSparkConf || idToProfile(pager.data("conf").profile());
+            var profileTemplate = confToString(currentSparkConf);
+            pager.data("conf").sparkConf = currentSparkConf;
 
             var ta = textarea()
                 .attr('rows', '13')
@@ -580,7 +527,7 @@ define(function(require) {
             });
 
             pager.data("conf").profile.subscribe(function(v) {
-                profileTemplate = idToProfile(v);
+                profileTemplate = idToProfileString(v);
                 editor.setValue(profileTemplate);
             });
 
@@ -613,19 +560,6 @@ define(function(require) {
             buttons: {
                 OK: { class : "btn-primary",
                     click: function() {
-                        /**
-                         * validate json and set it
-                         */
-                        /*var new_md;
-                        try {
-                            new_md = JSON.parse(editor.getValue());
-                        } catch(e) {
-                            console.log(e);
-                            error_div.text('WARNING: Could not save invalid JSON.');
-                            return false;
-                        }
-                        options.callback(new_md);
-                        */
                         var o = {
                             "profile": pager.data("conf").profile(),
                             "name": pager.data("conf").name(),
@@ -658,8 +592,7 @@ define(function(require) {
         modal : modal,
         kernel_modal : kernel_modal,
         edit_metadata : edit_metadata,
-        new_cluster : new_cluster,
-        conf_cluster : conf_cluster
+        configure : configure
     };
 
     // Backwards compatability.
