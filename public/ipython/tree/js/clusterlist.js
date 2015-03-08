@@ -7,7 +7,8 @@ define([
   'base/js/utils',
   'base/js/dialog',
   'underscore',
-], function(IPython, $, utils, dialog, _) {
+  'wizard'
+], function(IPython, $, utils, dialog, _, wizard) {
   "use strict";
 
   var ClusterList = function (selector, options) {
@@ -23,6 +24,8 @@ define([
     this.new_notebook = options.new_notebook;
     this.base_url = options.base_url || utils.get_body_data("baseUrl");
     this.notebook_path = options.notebook_path || utils.get_body_data("notebookPath");
+
+    this.load_profiles();
   };
 
   ClusterList.prototype.style = function () {
@@ -44,11 +47,30 @@ define([
   };
 
 
+  ClusterList.prototype.load_profiles = function () {
+    var settings = {
+      processData : false,
+      cache : false,
+      type : "GET",
+      dataType : "json",
+      success : $.proxy(this.load_profiles_success, this),
+      error : utils.log_ajax_error,
+    };
+    var url = utils.url_join_encode(this.base_url, 'profiles');
+    $.ajax(url, settings);
+  };
+
+  ClusterList.prototype.load_profiles_success = function (data, status, xhr) {
+    this.profiles = data;
+  };
+
+
   ClusterList.prototype.add_cluster = function () {
     var that = this;
-    dialog.conf_cluster({
+
+    dialog.new_cluster({
       name: "New Name",
-      profile: "Profile ID",
+      profiles: that.profiles,
       template: {
         name: "New Name",
         profile: "Profile ID",

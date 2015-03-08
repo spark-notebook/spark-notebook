@@ -1,1 +1,1 @@
-http://knockoutjs.com/downloads/knockout-2.2.1.debug.js
+http://knockoutjs.com/downloads/knockout-3.3.0.debug.js
