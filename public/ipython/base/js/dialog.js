@@ -258,7 +258,7 @@ define(function(require) {
                 input() .attr("type", "text")
                         .attr("placeholder", "Enter the name of this configuration")
                         .attr("data-bind", "value: name")
-                        .attr("size", "100")
+                        .css("width", "100%")
             );
             var NameModel = function() {
                 this.name = ko.observable(options.name || "");
@@ -305,7 +305,7 @@ define(function(require) {
                 input() .attr("type", "text")
                         .attr("placeholder", "Enter path to preferred repo")
                         .attr("data-bind", "value: localRepo")
-                        .attr("size", "100")
+                        .css("width", "100%")
             );
             var LocalRepoModel = function() {
                 this.localRepo = ko.observable(options.template.customLocalRepo || "");
@@ -322,7 +322,7 @@ define(function(require) {
                         .append("Add remote")
                         .append(
                             input() .attr("type", "text")
-                                    .css("width", "500px")
+                                    .css("width", "65%")
                                     .attr("data-bind", 'value: remoteToAdd, valueUpdate: "afterkeydown"')
                         )
                         .append(
@@ -335,7 +335,7 @@ define(function(require) {
             remotes.append(
                 select().attr("multiple", "multiple")
                         .attr("height", "5")
-                        .css("width", "500px")
+                        .css("width", "75%")
                         .attr("data-bind", "options:allRemotes, selectedOptions:selectedRemotes")
             );
 
@@ -376,7 +376,7 @@ define(function(require) {
                         .append("Add dep")
                         .append(
                             input() .attr("type", "text")
-                                    .css("width", "500px")
+                                    .css("width", "65%")
                                     .attr("data-bind", 'value: depToAdd, valueUpdate: "afterkeydown"')
                         )
                         .append(
@@ -389,7 +389,7 @@ define(function(require) {
             deps.append(
                 select().attr("multiple", "multiple")
                         .attr("height", "5")
-                        .css("width", "500px")
+                        .css("width", "75%")
                         .attr("data-bind", "options:allDeps, selectedOptions:selectedDeps")
             );
 
@@ -430,7 +430,7 @@ define(function(require) {
                         .append("Add import")
                         .append(
                             input() .attr("type", "text")
-                                    .css("width", "500px")
+                                    .css("width", "65%")
                                     .attr("placeholder", "you don't need to prefix with 'import'!")
                                     .attr("data-bind", 'value: importToAdd, valueUpdate: "afterkeydown"')
                         )
@@ -444,7 +444,7 @@ define(function(require) {
             imports.append(
                 select().attr("multiple", "multiple")
                         .attr("height", "5")
-                        .css("width", "500px")
+                        .css("width", "75%")
                         .attr("data-bind", "options:allImports, selectedOptions:selectedImports")
             );
 

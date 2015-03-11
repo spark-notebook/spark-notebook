@@ -6,8 +6,8 @@ import com.typesafe.sbt.SbtNativePackager._, Keys._
 object Dependencies {
 
   val playDeps                = Seq(
-                                    "com.typesafe.play"         %%            "play"              %      "2.3.7"        excludeAll(ExclusionRule("com.typesafe.akka"), ExclusionRule("com.google.guava")),
-                                    "com.typesafe.play"         %%            "play-test"         %      "2.3.7"        excludeAll(ExclusionRule("com.typesafe.akka"), ExclusionRule("com.google.guava"))
+                                    "com.typesafe.play"         %%            "play"              %      "2.3.7"                     excludeAll(ExclusionRule("com.typesafe.akka"), ExclusionRule("com.google.guava")),
+                                    "com.typesafe.play"         %%            "play-test"         %      "2.3.7"        % "test"     excludeAll(ExclusionRule("com.typesafe.akka"), ExclusionRule("com.google.guava"))
                                 )
   val rxScala                 = "io.reactivex"              %%           "rxscala"            %      "0.22.0"
 
