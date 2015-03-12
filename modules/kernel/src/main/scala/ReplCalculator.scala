@@ -235,12 +235,12 @@ class ReplCalculator(
                 preStartLogic()
                 replay()
                 s"""
-                  SparkNotebookBgLog.append("Classpath changed")
+                  //SparkNotebookBgLog.append("Classpath changed")
                   "Classpath CHANGED!"
                 """
 
               case shRegex(sh) =>
-                val ps = "\""+sh.replaceAll("\\s*\\|\\s*", "\" #\\| \"").replaceAll("\\s*&&\\s*", "\" #&& \"")+"\""
+                val ps = "s\"\"\""+sh.replaceAll("\\s*\\|\\s*", "\" #\\| \"").replaceAll("\\s*&&\\s*", "\" #&& \"")+"\"\"\""
 
                 s"""
                 | import sys.process._
