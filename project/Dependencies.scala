@@ -6,8 +6,8 @@ import com.typesafe.sbt.SbtNativePackager._, Keys._
 object Dependencies {
 
   val playDeps                = Seq(
-                                    "com.typesafe.play"         %%            "play"              %      "2.3.7"        excludeAll(ExclusionRule("com.typesafe.akka"), ExclusionRule("com.google.guava")),
-                                    "com.typesafe.play"         %%            "play-test"         %      "2.3.7"        excludeAll(ExclusionRule("com.typesafe.akka"), ExclusionRule("com.google.guava"))
+                                    "com.typesafe.play"         %%            "play"              %      "2.3.7"                     excludeAll(ExclusionRule("com.typesafe.akka"), ExclusionRule("com.google.guava")),
+                                    "com.typesafe.play"         %%            "play-test"         %      "2.3.7"        % "test"     excludeAll(ExclusionRule("com.typesafe.akka"), ExclusionRule("com.google.guava"))
                                 )
   val rxScala                 = "io.reactivex"              %%           "rxscala"            %      "0.22.0"
 
@@ -25,6 +25,7 @@ object Dependencies {
   val breeze                  = "org.scalanlp"              %%         "breeze"               %       "0.10"        excludeAll(ExclusionRule("junit"), ExclusionRule("org.apache.commons", "commons-math3"))
   val defaultSparkVersion     = sys.props.getOrElse("spark.version", "1.2.1")
   def sparkCore(v:String)     = "org.apache.spark"          %%         "spark-core"           %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
+  def sparkYarn(v:String)     = "org.apache.spark"          %%         "spark-yarn"           %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
   def sparkRepl(v:String)     = "org.apache.spark"          %%         "spark-repl"           %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
   def sparkSQL (v:String)     = "org.apache.spark"          %%         "spark-sql"            %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
   val defaultHadoopVersion    = sys.props.getOrElse("hadoop.version", "1.0.4")

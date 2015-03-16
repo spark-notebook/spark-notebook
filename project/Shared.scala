@@ -43,6 +43,7 @@ object Shared {
       val libs = Seq(
         breeze,
         sparkCore(sv),
+        sparkYarn(sv),
         sparkSQL(sv),
         hadoopClient(hv),
         jets3t(jv),
