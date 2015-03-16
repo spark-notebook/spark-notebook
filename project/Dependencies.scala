@@ -22,6 +22,7 @@ object Dependencies {
   val breeze                  = "org.scalanlp"              %%         "breeze"               %       "0.10"        excludeAll(ExclusionRule("junit"), ExclusionRule("org.apache.commons", "commons-math3"))
   val defaultSparkVersion     = sys.props.getOrElse("spark.version", "1.2.1")
   def sparkCore(v:String)     = "org.apache.spark"          %%         "spark-core"           %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
+  def sparkYarn(v:String)     = "org.apache.spark"          %%         "spark-yarn"           %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
   def sparkRepl(v:String)     = "org.apache.spark"          %%         "spark-repl"           %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
   def sparkSQL (v:String)     = "org.apache.spark"          %%         "spark-sql"            %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
   val defaultHadoopVersion    = sys.props.getOrElse("hadoop.version", "1.0.4")
