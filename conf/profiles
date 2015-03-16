@@ -46,5 +46,21 @@
         "spark.local.dir" : "<path>"
       }
     }
-  }
+  },
+  "yarn" : {
+      "id" : "yarn-client",
+      "name" : "YARN-Client",
+      "template" : {
+        "customLocalRepo" : null,
+        "customRepos" : null,
+        "customDeps" : null,
+        "customImports" : null,
+        "customSparkConf" : {
+          "spark.app.name" : "Notebook",
+          "spark.master" : "yarn-client",
+          "spark.executor.memory" : "1G",
+          "spark.yarn.jar" : "hdfs:///user/spark/spark-assembly.jar"
+        }
+      }
+   }
 }
