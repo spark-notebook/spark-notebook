@@ -124,9 +124,9 @@ object Application extends Controller {
 
     val customRepos:Option[List[String]] = md.flatMap(_.customRepos)
 
-    val customDeps:Option[String] = md.flatMap(_.customDeps)
+    val customDeps:Option[List[String]] = md.flatMap(_.customDeps)
 
-    val customImports:Option[String] = md.flatMap(_.customImports)
+    val customImports:Option[List[String]] = md.flatMap(_.customImports)
 
     val customSparkConf:Option[Map[String, String]] = for {
       m <- md
@@ -178,6 +178,13 @@ object Application extends Controller {
   }
 
 
+  def profiles() = Action.async {
+    implicit val ec = kernelSystem.dispatcher
+    (clustersActor ? NotebookClusters.Profiles).map { case all:List[JsObject] =>
+      Ok(JsArray(all))
+    }
+  }
+
   def clusters() = Action.async {
     implicit val ec = kernelSystem.dispatcher
     (clustersActor ? NotebookClusters.All).map { case all:List[JsObject] =>
@@ -192,17 +199,33 @@ object Application extends Controller {
    *    "template": {
    *      "customLocalRepo": "/tmp/spark-notebook/repo",
    *      "customRepos": [],
-   *      "customDeps": "org.bdgenomics.adam % adam-apis % 0.15.0\n - org.apache.hadoop % hadoop-client %   _\n - org.apache.spark  % spark-core    %   _\n - org.scala-lang    %     _         %   _\n - org.scoverage     %     _         %   _\n + org.apache.spark  %  spark-mllib_2.10  % 1.2.0",
-   *      "customImports": "import org.apache.hadoop.fs.{FileSystem, Path}\n import org.bdgenomics.adam.converters.{ VCFLine, VCFLineConverter, VCFLineParser }\n import org.bdgenomics.formats.avro.{Genotype, FlatGenotype}\n import org.bdgenomics.adam.models.VariantContext\n import org.bdgenomics.adam.rdd.ADAMContext._\n import org.bdgenomics.adam.rdd.variation.VariationContext._\n import org.bdgenomics.adam.rdd.ADAMContext\n import org.apache.spark.rdd.RDD",
+   *      "customDeps": [
+   *        "org.bdgenomics.adam % adam-apis % 0.15.0",
+   *        "- org.apache.hadoop % hadoop-client %   _",
+   *        "- org.apache.spark  % spark-core    %   _",
+   *        "- org.scala-lang    %     _         %   _",
+   *        "- org.scoverage     %     _         %   _",
+   *        "+ org.apache.spark  %  spark-mllib_2.10  % 1.2.0"
+   *      ],
+   *      "customImports": [
+   *        "import org.apache.hadoop.fs.{FileSystem, Path}",
+   *        "import org.bdgenomics.adam.converters.{ VCFLine, VCFLineConverter, VCFLineParser }",
+   *        "import org.bdgenomics.formats.avro.{Genotype, FlatGenotype}",
+   *        "import org.bdgenomics.adam.models.VariantContext",
+   *        "import org.bdgenomics.adam.rdd.ADAMContext._",
+   *        "import org.bdgenomics.adam.rdd.variation.VariationContext._",
+   *        "import org.bdgenomics.adam.rdd.ADAMContext",
+   *        "import org.apache.spark.rdd.RDD"
+   *      ],
    *      "customSparkConf": {
-   *        spark.app.name": "Local Adam Analysis",
-   *        spark.master": "local[8]",
-   *        spark.executor.memory": "1G",
-   *        spark.serializer": "org.apache.spark.serializer.KryoSerializer",
-   *        spark.kryo.registrator": "org.bdgenomics.adam.serialization.ADAMKryoRegistrator",
-   *        spark.kryoserializer.buffer.mb": "4",
-   *        spark.kryo.referenceTracking": "true",
-   *        spark.executor.memory": "2g"
+   *        "spark.app.name": "Local Adam Analysis",
+   *        "spark.master": "local[8]",
+   *        "spark.executor.memory": "1G",
+   *        "spark.serializer": "org.apache.spark.serializer.KryoSerializer",
+   *        "spark.kryo.registrator": "org.bdgenomics.adam.serialization.ADAMKryoRegistrator",
+   *        "spark.kryoserializer.buffer.mb": "4",
+   *        "spark.kryo.referenceTracking": "true",
+   *        "spark.executor.memory": "2g"
    *      }
    *    }
    *  }
@@ -266,10 +289,10 @@ object Application extends Controller {
   def createNotebook(p:String, custom:JsObject) = {
     val path = URLDecoder.decode(p)
     Logger.info(s"Creating notebook at $path")
-    val customLocalRepo = Try((custom \ "customLocalRepo").as[String]).toOption
-    val customRepos = Try((custom \ "customRepos").as[List[String]]).toOption
-    val customDeps = Try((custom \ "customDeps").as[String]).toOption
-    val customImports = Try((custom \ "customImports").as[String]).toOption
+    val customLocalRepo = Try((custom \ "customLocalRepo").as[String]).toOption.map(_.trim()).filterNot(_.isEmpty)
+    val customRepos = Try((custom \ "customRepos").as[List[String]]).toOption.filterNot(_.isEmpty)
+    val customDeps = Try((custom \ "customDeps").as[List[String]]).toOption.filterNot(_.isEmpty)
+    val customImports = Try((custom \ "customImports").as[List[String]]).toOption.filterNot(_.isEmpty)
 
     val customMetadata = (for {
       j <- Try(custom \ "customSparkConf") if j.isInstanceOf[JsObject]

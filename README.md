@@ -36,6 +36,7 @@ Spark Notebook
     - [Default import statements](#default-import-statements)
     - [Spark Conf](#spark-conf)
     - [Example](#example)
+      - [YARN](#yarn)
     - [Create a preconfigured notebook](#create-a-preconfigured-notebook)
       - [Update preconfigurations in metadata](#update-preconfigurations-in-metadata)
   - [Use the `form`](#use-the-form)
@@ -185,7 +186,7 @@ There is another dependency which is tricky to update, the **jets3t** one.
 
 To update that, you can pass those version as properties, here is an example with the current default ones:
 ```
-sbt -Dspark.version="spark.version", "1.2.0" -D"hadoop.version"="1.0.4" -D"jets3t.version"="0.7.1"
+sbt -D"spark.version"="1.2.0" -D"hadoop.version"="1.0.4" -D"jets3t.version"="0.7.1"
 ```
 
 ##### Create your distribution
@@ -306,6 +307,67 @@ For this configuration to be shareable, and you don't want to use the `reset` fu
 ```
 
 ![Clusters](https://raw.github.com/andypetrella/spark-notebook/master/images/conf_cluster.png)
+
+##### YARN
+
+- Example YARN Cluster
+```json
+  "Example YARN" : {
+    "name" : "Example YARN-Client",
+    "profile" : "yarn-client",
+    "status" : "stopped",
+    "template" : {
+      "customLocalRepo" : "",
+      "customRepos" : [ ],
+      "customDeps" : [ ],
+      "customImports" : [ ],
+      "customSparkConf" : {
+        "spark.app.name" : "Notebook",
+        "spark.master" : "yarn-client",
+        "spark.executor.memory" : "1G",
+        "spark.yarn.jar" : "hdfs:///user/spark/spark-assembly.jar"
+      }
+    }
+  }
+```
+
+- Example YARN Profile
+```json
+  "yarn" : {
+      "id" : "yarn-client",
+      "name" : "YARN-Client",
+      "template" : {
+        "customLocalRepo" : null,
+        "customRepos" : null,
+        "customDeps" : null,
+        "customImports" : null,
+        "customSparkConf" : {
+          "spark.app.name" : "Notebook",
+          "spark.master" : "yarn-client",
+          "spark.executor.memory" : "1G",
+          "spark.yarn.jar" : "hdfs:///user/spark/spark-assembly.jar"
+        }
+      }
+   }
+```
+
+To using YARN cluster,
+
+1. Put the spark-assembly-*.jar to the HDFS
+```
+# sudo -u hdfs hdfs dfs -mkdir -p /user/spark
+# sudo -u hdfs hdfs dfs -put /usr/lib/spark/lib/spark-assembly.jar /user/spark/spark-assembly.jar
+```
+1. Point the location of spark-assembly.jar with `spark.yarn.jar` property.
+1. Add Hadoop Conf dir such as `/etc/hadoop/conf` to the classpath in the executable script `bin/spark-notebook`:
+```
+declare -r script_conf_file="/etc/default/spark-notebook"
+
+declare -r app_classpath="/etc/hadoop/conf:$lib_dir/...
+
+addJava "-Duser.dir=$(cd "${app_home}/.."; pwd -P)"
+```
+1. Start spark-notebook, then create notebook from example yarn cluster. After a while, spark should be initialized and `sparkContext` will be ready to use.
 
 #### Create a preconfigured notebook
 Now you can use the configuration, by clicking `create`

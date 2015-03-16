@@ -6,7 +6,9 @@ define([
   'jquery',
   'base/js/utils',
   'base/js/dialog',
-], function(IPython, $, utils, dialog) {
+  'underscore',
+  'wizard'
+], function(IPython, $, utils, dialog, _, wizard) {
   "use strict";
 
   var ClusterList = function (selector, options) {
@@ -22,6 +24,8 @@ define([
     this.new_notebook = options.new_notebook;
     this.base_url = options.base_url || utils.get_body_data("baseUrl");
     this.notebook_path = options.notebook_path || utils.get_body_data("notebookPath");
+
+    this.load_profiles();
   };
 
   ClusterList.prototype.style = function () {
@@ -43,22 +47,39 @@ define([
   };
 
 
+  ClusterList.prototype.load_profiles = function () {
+    var settings = {
+      processData : false,
+      cache : false,
+      type : "GET",
+      dataType : "json",
+      success : $.proxy(this.load_profiles_success, this),
+      error : utils.log_ajax_error,
+    };
+    var url = utils.url_join_encode(this.base_url, 'profiles');
+    $.ajax(url, settings);
+  };
+
+  ClusterList.prototype.load_profiles_success = function (data, status, xhr) {
+    this.profiles = data;
+  };
+
+
   ClusterList.prototype.add_cluster = function () {
     var that = this;
-    dialog.conf_cluster({
+
+    dialog.configure({
       name: "New Name",
-      profile: "Profile ID",
+      profiles: that.profiles,
       template: {
         name: "New Name",
         profile: "Profile ID",
         template: {
-          customLocalRepo: "path to local repo OR null",
-          customRepos: [ "add remote repo" ],
-          customDeps: "add dependencies in a single string separated with \\n",
-          customImports: "add import in a single string separated with \\n",
-          customSparkConf: {
-            "spark.master": "local[*]"
-          }
+          customLocalRepo: null,
+          customRepos: null,
+          customDeps: null,
+          customImports: null,
+          customSparkConf: null
         }
       },
       //template: ,
@@ -111,7 +132,7 @@ define([
     var len = data.length;
     for (var i=0; i<len; i++) {
       var element = $('<div/>');
-      var item = new ClusterItem(element, this.options);
+      var item = new ClusterItem(element, this.options, this);
       item.update_state(data[i]);
       element.data('item', item);
       this.element.append(element);
@@ -119,7 +140,7 @@ define([
   };
 
 
-  var ClusterItem = function (element, options) {
+  var ClusterItem = function (element, options, clusters) {
     this.element = $(element);
     this.base_url = options.base_url || utils.get_body_data("baseUrl");
     this.notebook_path = options.notebook_path || utils.get_body_data("notebookPath");
@@ -127,6 +148,7 @@ define([
 
     this.data = null;
     this.style();
+    this.clusters = clusters;
   };
 
   ClusterItem.prototype.style = function () {
@@ -141,28 +163,85 @@ define([
 
   ClusterItem.prototype.create = function () {
     var that = this;
-    var profile_col = $('<div/>').addClass('profile_col col-xs-4').text(this.data.profile);
-    var status_col = $('<div/>').addClass('status_col col-xs-3').text('stopped');
-    var name_col = $('<div/>').addClass('name_col col-xs-3').text(this.data.name);
+    var profile_col = $('<div/>').addClass('profile_col col-xs-2').text(this.data.profile);
+    var name_col = $('<div/>').addClass('name_col col-xs-2').text(this.data.name);
+
+    var local_repo_col = $('<div/>').addClass('local_repo_col col-xs-2').text(this.data.template.customLocalRepo);
+
+    var showItemListAndPopup = function(name, title, list, format, style, size) {
+      var name_col = $('<div/>').addClass('name_col col-xs-'+(size||1)).text(""+_.size(list));
+      if (_.size(list) > 0) {
+        name_col.popover({
+          html: true,
+          placement: "bottom",
+          trigger: "hover",
+          title: title,
+          //delay: { show: 500, hide: 100 },
+          content: function() {
+            var ul = $("<ul style='list-style-type: "+(style||"disc")+";'></ul>");
+            _.each(list, function(item) {
+              var li = $("<li></li>").append((format || _.identity)(item.trim()));
+              ul.append(li);
+            });
+            return ul;
+          }
+        });
+      }
+      return name_col;
+    };
+
+    var repos_col = showItemListAndPopup("repos", "Repositories", that.data.template.customRepos);
+
+    var deps_col = showItemListAndPopup("deps", "Dependencies", that.data.template.customDeps, function(item) {
+      var content = $("<span></span>");
+      var t = item;
+      if (_.size(item.match(/^-.*/)) > 0) {
+        content.append($('<i class="fa fa-minus"></i>'));
+        t = item.substring(1).trim();
+      } else {
+        content.append($('<i class="fa fa-plus"></i>'));
+        if (_.size(item.match(/^\+.*/)) > 0) {
+          t = item.substring(1).trim();
+        }
+      }
+      content.append($('<span></span>').text(" " + t));
+      return content;
+    },
+    "none");
+
+    var imports_col = showItemListAndPopup ("imports", "Imports", that.data.template.customImports, function(item) { return item.trim().replace(new RegExp("import"), "").trim()});
+
+    var sparkConf = _.chain(that.data.template.customSparkConf).pairs().map(function(item) { return item[0] + " → " + item[1]; }).value();
+    var spark_conf_repo_col = showItemListAndPopup("spark_conf", "Spark Conf", sparkConf, _.identity, "disc", 2);
+
     var create_button = $('<button/>').addClass("btn btn-default btn-xs").text("Create");
-    var action_col = $('<div/>').addClass('action_col col-xs-2').append(
+    var action_col = $('<div/>').addClass('action_col col-xs-1').append(
       $("<span/>").addClass("item_buttons btn-group").append(
         create_button
       )
     );
+
     this.element.empty()
       .append(profile_col)
       .append(name_col)
-      .append(status_col)
+      .append(local_repo_col)
+      .append(repos_col)
+      .append(deps_col)
+      .append(imports_col)
+      .append(spark_conf_repo_col)
       .append(action_col);
     create_button.click(function (e) {
-      dialog.conf_cluster({
-          profile: that.profile,
+      dialog.configure({
+          //name: that.data.name,
+          profiles: that.clusters.profiles,
           template: that.data.template,
           callback: function (clusterConf) {
-            that.new_notebook.new_notebook("spark", clusterConf);
+            var conf = _.extend(clusterConf, clusterConf.template);
+            delete conf.template;
+            that.new_notebook.new_notebook("spark", conf);
           },
-          name: that.name,
+          name: that.data.name,
+          profile: that.data.profile,
           keyboard_manager: that.keyboard_manager
         });
     });
