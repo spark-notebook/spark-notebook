@@ -577,7 +577,7 @@ object Application extends Controller {
   val docker:Option[tugboat.Docker] = {
     import scala.sys.process._
     import scala.util.control.Exception.allCatch
-    
+
     import scala.concurrent.ExecutionContext.Implicits.global
     Some(tugboat.Docker())
 
@@ -586,7 +586,7 @@ object Application extends Controller {
     //}.orElse {
     //  Option(System.getenv("DOCKER_HOST"))
     //}.orElse {
-    //  allCatch.opt { 
+    //  allCatch.opt {
     //    (("ls /var/run/docker.sock" #| "wc -l").!!).trim.toInt
     //  }.filter(_ > 0)
     //}.map { _ =>
@@ -608,21 +608,21 @@ object Application extends Controller {
     )
   }
 
-  def dockerList = 
+  def dockerList =
     onDocker { docker =>
       import scala.concurrent.ExecutionContext.Implicits.global
       import scala.concurrent.duration._
       Logger.info(docker.toString)
-      Logger.info(scala.concurrent.Await.result(docker.info(), 1 second).toString)
-      //val images = docker.images
-      //images.list().map { list =>
-      //  Ok(Json.toJson(
-      //    list.map { i =>
-      //      i.repoTags
-      //    }
-      //  ))
-      //} 
-      Future(Ok(""))
+      Logger.info(scala.concurrent.Await.result(docker.info(), 10 second).toString)
+      val images = docker.images
+      images.list().map { list =>
+        Ok(Json.toJson(
+          list.map { i =>
+            i.repoTags
+          }
+        ))
+      }
+      //Future(Ok(""))
     }
 
 

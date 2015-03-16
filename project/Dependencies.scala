@@ -13,8 +13,8 @@ object Dependencies {
 
   val scalaZ                  = "org.scalaz"                %%         "scalaz-core"          %      "7.0.6"
 
-  val dockerApi               = "me.lessis"                 %%          "tugboat"             %      "0.2.0"            excludeAll(ExclusionRule("io.netty"))
-  
+  val dockerApi               = "me.lessis"                 %%          "tugboat"             %      "0.2.1"            excludeAll(ExclusionRule("io.netty"))
+
   val akkaVersion             = "2.3.4-spark"
   val akka                    = "org.spark-project.akka"    %%         "akka-actor"           %    akkaVersion
   val akkaRemote              = "org.spark-project.akka"    %%         "akka-remote"          %    akkaVersion
@@ -44,10 +44,11 @@ object Dependencies {
   val log4j                   = "log4j"                     %             "log4j"             %      "1.2.17"
 
   // to download deps at runtime
-  val aetherApi               = "org.sonatype.aether"       %          "aether-api"           %     "1.13"
-  val jcabiAether             = "com.jcabi"                 %         "jcabi-aether"          %     "0.10.1"
-  val mavenCore               = "org.apache.maven"          %          "maven-core"           %     "3.0.5"
-  val ningAsyncHttpClient     = "com.ning"                  %       "async-http-client"       %     "[1.6.5, 1.6.5]" force()
+  //val aetherApi               = "org.sonatype.aether"       %          "aether-api"           %     "1.13"
+  //val jcabiAether             = "com.jcabi"                 %         "jcabi-aether"          %     "0.10.1"
+  //val mavenCore               = "org.apache.maven"          %          "maven-core"           %     "3.0.5"
+  //val ningAsyncHttpClient     = "com.ning"                  %       "async-http-client"       % "[1.6.5, 1.6.5]"   force()//"1.8.10"//"[1.6.5, 1.6.5]" force()
+  val sbtForDeps                = "org.scala-sbt"             %             "sbt"               %     "0.13.6"
 
   // Viz
   val bokeh                   = "io.continuum.bokeh"        %%            "bokeh"             %       "0.2"
