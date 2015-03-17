@@ -698,7 +698,7 @@ Then they'll be added to the Spark's jars property, before restarting the contex
 
 For example, if you want to use [ADAM](https://github.com/bigdatagenomics/adam), all you need to do is:
 ```
-:dp org.bdgenomics.adam % adam-apis % 0.15.0
+:dp org.bdgenomics.adam % adam-apis % 0.16.0
 - org.apache.hadoop % hadoop-client %   _
 - org.apache.spark  %     _         %   _
 - org.scala-lang    %     _         %   _
@@ -708,6 +708,21 @@ For example, if you want to use [ADAM](https://github.com/bigdatagenomics/adam),
 In live, you can check the notebook named `Update classpath and Spark's jars`, which looks like this:
 
 ![Spark Jars](https://raw.github.com/andypetrella/spark-notebook/master/images/spark-jars.png)
+
+## TIPS AND TROUBLESHOOTING
+
+There are some common problems that users experience from time to time.
+So we collected some useful tips to make your life easier:
+
+* spark-notebook uses old hadoop 1.04 by default. As notebook is a spark-driver itself, adding hadoop-client to your dependencies will not work,
+you should start spark-notebook with -Dhadoop.version parameter, like:
+```
+sbt -Dhadoop.version=2.4.0 run
+```
+* many errors are not yet reported directly to notebook console. So, if something is wrong do not forget to look at logs/sn-session.log and at spark worker's logs.
+* your current spark configuration is shown in Edit -> Edit Notebook Metadata . You can make changes there instead of adding a special cell for reseting default spark configuration. You can also create a template for spark configuration in a "Clusters" tab.
+* some features (like switching output modes of the cell) are activated by keyboard shortcuts that are described at Help -> Keyboard Shortcuts.
+
 
 ## IMPORTANT
 Some vizualizations (wisp) are currently using Highcharts which is **not** available for commercial or private usage!
