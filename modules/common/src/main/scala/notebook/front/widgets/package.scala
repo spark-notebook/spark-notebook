@@ -168,128 +168,10 @@ package object widgets {
 
 
   def html(html: NodeSeq): Widget = new SimpleWidget(html)
-  
-  def barChart(width: Int, jsons: Seq[(String, Any)]) = {
-    val id = Math.abs(Random.nextInt).toString
-    <div>
-      <svg id={ "bar"+id } width="600px" height="400px" xmlns="http://www.w3.org/2000/svg" version="1.1">{
-        scopedScript(
-          s"""| req(
-              |['d3', 'dimple'],
-              |function (d3, dimple) {
-              |  var svg = d3.select("#bar${id}");
-              |  var chart = new dimple.chart(svg, data);
-              |  chart.setBounds(50, 20, 540, 350);
-              |  chart.addCategoryAxis("x", "${jsons(0)._1.trim}");
-              |  chart.addMeasureAxis("y", "${jsons(1)._1.trim}");
-              |  chart.addSeries(null, dimple.plot.bar);
-              |  chart.draw();
-              |});
-          """.stripMargin,
-          Json.obj( "data" -> (jsons grouped width map { row =>  Json.obj(row.map( f => f._1.trim -> toJson(f._2) ):_*)  }).toSeq    )
-        )
-      }</svg>
-    </div>
-    
-  }
-  
-  def lineChart(width: Int, jsons: Seq[(String, Any)]) = {
-    val id = Math.abs(Random.nextInt).toString
-    <div>
-      <svg id={ "line"+id } width="600px" height="400px" xmlns="http://www.w3.org/2000/svg" version="1.1">{
-        scopedScript(
-          s""" |req(
-               |['d3', 'dimple'],
-               |function (d3, dimple) {
-               |  var svg = d3.select("#line${id}");
-               |  var chart = new dimple.chart(svg, data);
-               |  chart.setBounds(50, 20, 540, 350);
-               |  var x = chart.addCategoryAxis("x", "${jsons(0)._1.trim}");
-               |  chart.addMeasureAxis("y", "${jsons(1)._1.trim}");
-               |  chart.addSeries(null, dimple.plot.line);
-               |  chart.draw();
-               |});
-          """.stripMargin,
-          Json.obj( "data" -> (jsons grouped width map { row =>  Json.obj(row.map( f => f._1.trim -> toJson(f._2) ):_*)  }).toSeq    )
-        )
-      }</svg>
-    </div>
-  }
-  
-  def pieChart(width: Int, jsons: Seq[(String, Any)]) = {
-    val id = Math.abs(Random.nextInt).toString
-    <div>
-      <svg id={ "pie"+id } width="600px" height="400px" xmlns="http://www.w3.org/2000/svg" version="1.1">{
-        scopedScript(
-          s"""|req(
-              |['d3', 'dimple'],
-              |function (d3, dimple) {
-              |  var svg = d3.select("#pie${id}");
-              |  var myChart = new dimple.chart(svg, data);
-              |  myChart.setBounds(100, 30, 380, 360);
-              |  myChart.addMeasureAxis("p", "${jsons(1)._1.trim}");
-              |  myChart.addSeries("${jsons(0)._1.trim}", dimple.plot.pie);
-              |  myChart.addLegend(20, 30, 60, 350, "left");
-              |  myChart.draw();
-              |});
-          """.stripMargin,
-          Json.obj( "data" -> (jsons grouped width map { row =>  Json.obj(row.map( f => f._1.trim -> toJson(f._2) ):_*)  }).toSeq    )
-        )
-      }</svg>
-    </div>  
-  }
-  
-  def tabControl(pages: Seq[(String, scala.xml.Elem)]) = {
-    val tabControlId = Math.abs(Random.nextInt).toString
-    html(
-      <div >
-        <script>{
-          s""" 
-            |//$$('#ul${tabControlId} li').first().addClass('active');
-            |//$$('#tab${tabControlId} div').first().addClass('active');
-            |$$('#ul${tabControlId} a').click(function(){
-            |  $$('#tab${tabControlId} div.active').removeClass('active');
-            |  $$('#ul${tabControlId} li.active').removeClass('active');
-            |  var id = $$(this).attr('href');
-            |  $$(id).addClass('active');
-            |  $$(this).parent().addClass('active');
-            |});
-          """.stripMargin
-        }</script>  
-        <ul class="nav nav-tabs" id={ "ul"+tabControlId }>{
-          pages.zipWithIndex map { p: ((String, scala.xml.Elem), Int) => 
-            <li>
-              <a href={ "#tab"+tabControlId+"-"+p._2 }><i class={ "fa fa-"+p._1._1} /></a>
-            </li>
-          }
-        }</ul>
 
-        <div class="tab-content" id={ "tab"+tabControlId }>{
-          pages.zipWithIndex map { p: ((String, scala.xml.Elem), Int) => 
-            <div class="tab-pane" id={ "tab"+tabControlId+"-"+p._2 }>
-            { p._1._2 }
-            </div>
-          }
-        }</div>
-      </div>
-    )
-  }
- 
-  
-  def toJson(obj: Any): JsValueWrapper = { 
-    obj match {
-          case v: Int => JsNumber(v)
-          case v: Float => JsNumber(v)
-          case v: Double => JsNumber(v)
-          case v: String => JsString(v)
-          case v: Boolean => JsBoolean(v)
-          case v: Any => JsString(v.toString)
-        }
-  }
-  
   def layout(width: Int, contents: Seq[Widget], headers: Seq[Widget] = Nil): Widget = html(table(width, contents, headers ))
-    
-  def table(width: Int, contents: Seq[Widget], headers: Seq[Widget] = Nil) = 
+
+  def table(width: Int, contents: Seq[Widget], headers: Seq[Widget] = Nil):Widget =
     <div class="table-container table-responsive">
     <table class="table">
       <thead>{
@@ -310,8 +192,268 @@ package object widgets {
       </tbody>
     </table></div>
 
-  def row(contents: Widget*) = layout(contents.length, contents)
+  def row(contents: Widget*)    = layout(contents.length, contents)
   def column(contents: Widget*) = layout(1, contents)
 
   def multi(widgets: Widget*) = html(NodeSeq.fromSeq(widgets.map(_.toHtml).flatten))
+
+  def containerFluid(conf:List[List[(Widget,Int)]]):Widget = html(
+    <div class="container-fluid">{
+      conf.map { rows =>
+        <div>{
+          rows.map { case (w, i) =>
+            val cl = "col-md-"+i
+            <div class={cl}>{w}</div>
+          }
+        }</div>
+      }
+    }</div>
+  )
+
+  import notebook.util.Reflector
+  import java.util.Date
+
+  implicit val jsStringAnyCodec:Codec[JsValue, Seq[(String, Any)]] = new Codec[JsValue, Seq[(String, Any)]] {
+    def decode(a: Seq[(String, Any)]):JsValue = Json.obj(a.map( f => f._1.trim -> toJson(f._2) ):_*)
+    def encode(v: JsValue):Seq[(String, Any)] = ??? //todo
+  }
+
+  def toJson(obj: Any): JsValueWrapper = {
+    obj match {
+      case v: Int => JsNumber(v)
+      case v: Float => JsNumber(v)
+      case v: Double => JsNumber(v)
+      case v: String => JsString(v)
+      case v: Boolean => JsBoolean(v)
+      case v: Any => JsString(v.toString)
+    }
+  }
+
+  sealed trait MagicRenderPoint {
+    def headers:Seq[String]
+    def numOfFields = headers.size
+    def values:Seq[Any]
+    def data:Map[String, Any] = headers zip values toMap
+  }
+  case class ChartPoint(x: Any, y: Any) extends MagicRenderPoint {
+    val X = "X"
+    val Y = "Y"
+    val headers = Seq(X, Y)
+    def values  = Seq(x, y)
+  }
+  case class MapPoint(key: Any, value: Any) extends MagicRenderPoint {
+    val Key = "Key"
+    val Value = "Value"
+    val headers = Seq(Key, Value)
+    val values =  Seq(key, value)
+  }
+  case class AnyPoint(any:Any) extends MagicRenderPoint {
+    val headers = Reflector.toFieldNameArray(any)
+    val values  = Reflector.toFieldValueArray(any)
+  }
+
+  implicit def fromMapToPoint(m:Map[_ , _]):Seq[MagicRenderPoint] = m.toSeq.map(e => MapPoint(e._1, e._2))
+  implicit def fromSeqToPoint(x:Seq[_]):Seq[MagicRenderPoint] = if (!x.isEmpty) {
+    val points = x.map(i => AnyPoint(i))
+
+
+
+    val firstPoint = AnyPoint(x.head)
+
+    points.zipWithIndex.map { case (point, index) => point.values match {
+      case List(o)    if isNumber(o)  =>  ChartPoint(index, o)
+      case List(a, b)                 =>  ChartPoint(a, b)
+      case _                          =>  point
+    }}
+  } else Nil
+
+
+  case class Tabs[T](ts:Seq[T], pages:Seq[(String, Chart[T])]=Nil) extends JsWorld[Seq[(String, Any)], Seq[(String, Any)]] {
+    val points:Seq[MagicRenderPoint] = ts
+
+    implicit val singleToO = identity[Seq[(String, Any)]] _
+
+    implicit val singleCodec = jsStringAnyCodec
+
+    override val data:Seq[Seq[(String, Any)]] = points.map(_.data.toSeq)
+
+    override val scripts = List(
+      Script("magic/tabs", Json.obj())
+    )
+
+    override def apply(newData: Seq[Seq[(String,Any)]]) {
+      super.apply(newData)
+      pages.foreach { case (s, w) =>
+        w(newData)
+      }
+    }
+
+    override val content = Some {
+      <div >
+        <ul class="nav nav-tabs" id={ "ul"+id }>{
+          pages.zipWithIndex map { p: ((String, Widget), Int) =>
+            <li>
+              <a href={ "#tab"+id+"-"+p._2 }><i class={ "fa fa-"+p._1._1} /></a>
+            </li>
+          }
+        }</ul>
+
+        <div class="tab-content" id={ "tab"+id }>{
+          pages.zipWithIndex map { p: ((String, Widget), Int) =>
+            <div class="tab-pane" id={ "tab"+id+"-"+p._2 }>
+            { p._1._2 }
+            </div>
+          }
+        }</div>
+      </div>
+    }
+  }
+
+  trait Chart[T] extends JsWorld[Seq[(String, Any)], Seq[(String, Any)]] {
+    def ts:Seq[T]
+    lazy val points:Seq[MagicRenderPoint] = ts
+    def mToSeq(t:MagicRenderPoint):Seq[(String, Any)]
+    lazy val data:Seq[Seq[(String, Any)]] = points.map(mToSeq)
+    def sizes:(Int, Int)=(600, 400)
+
+    override val singleCodec = jsStringAnyCodec
+    override val singleToO = identity[Seq[(String, Any)]] _
+
+    lazy val firstElem = points.head
+    lazy val headers = firstElem.headers
+    lazy val members = firstElem.values
+    lazy val dataMap = firstElem.data
+    lazy val numOfFields = firstElem.numOfFields
+  }
+
+  case class ScatterChart[T](ts:Seq[T], fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400)) extends Chart[T] {
+    val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
+
+    def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
+      val stripedData = t.data.toSeq.filter{case (k, v) => !fields.isDefined || f1 == k || f2 == k }
+      stripedData
+    }
+
+    override val scripts = List(Script("magic/scatterChart", Json.obj("x" → f1.toString, "y" → f2.toString, "width" → sizes._1, "height" → sizes._2)))
+  }
+
+  case class LineChart[T](ts:Seq[T], fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400)) extends Chart[T] {
+    val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
+
+    def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
+      val stripedData = t.data.toSeq.filter{case (k, v) => !fields.isDefined || f1 == k || f2 == k }
+      stripedData
+    }
+
+    override val scripts = List(Script("magic/lineChart", Json.obj("x" → f1.toString, "y" → f2.toString, "width" → sizes._1, "height" → sizes._2)))
+  }
+
+  case class BarChart[T](ts:Seq[T], fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400)) extends Chart[T] {
+    val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
+
+    def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
+      val stripedData = t.data.toSeq.filter{case (k, v) => !fields.isDefined || f1 == k || f2 == k }
+      stripedData
+    }
+
+    override val scripts = List(Script("magic/barChart", Json.obj("x" → f1.toString, "y" → f2.toString, "width" → sizes._1, "height" → sizes._2)))
+  }
+
+
+  case class PieChart[T](ts:Seq[T], fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400)) extends Chart[T] {
+    val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
+
+    def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
+      val stripedData = t.data.toSeq.filter{case (k, v) => !fields.isDefined || f1 == k || f2 == k }
+      stripedData
+    }
+
+    override val scripts = List(Script("magic/pieChart", Json.obj("series" → f1.toString, "p" → f2.toString, "width" → sizes._1, "height" → sizes._2)))
+  }
+
+  case class TableChart[T](vs:Seq[T], showUpTo:Int=25, filterCol:Option[Seq[String]]=None, override val sizes:(Int, Int)=(600, 400)) extends Chart[T] {
+    override val ts = vs.take(showUpTo)
+    def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
+      t.data.toSeq.filter{case (k, v) => filterCol.getOrElse(headers).contains(k)}
+    }
+    val h:Seq[String] = filterCol.getOrElse(headers)
+    override val scripts = List(Script("magic/tableChart", Json.obj("headers" → h, "nrow" → vs.size, "shown" → showUpTo, "width" → sizes._1, "height" → sizes._2)))
+  }
+
+  def tabs[T](ts:Seq[T], pages:Seq[(String, Chart[T])]) = Tabs(ts, pages)
+
+  def pairs[T](ts:Seq[T]) = {
+    val data:Seq[MagicRenderPoint] = ts
+    val firstElem = data.head
+    val headers = firstElem.headers
+    lazy val dataMap = firstElem.data
+
+    val ds = for {
+      r <- headers
+      c <- headers
+    } yield {
+      val (f1, f2)  = (dataMap(r), dataMap(c))
+      if (isNumber(f1) && isNumber(f2)) {
+        ScatterChart(ts, Some((r, c)), (600/headers.size, 400/headers.size))
+      } else if (isNumber(f2)) {
+        BarChart(ts, Some((r, c)), (600/headers.size, 400/headers.size))
+      } else {
+        TableChart(ts, 5, Some(List(r, c)), (600/headers.size, 400/headers.size))
+      }
+    }
+
+    val m = ds grouped headers.size
+
+    <table class="table" style="width: 600px">
+    <thead>{
+      <tr>{headers.map{ h =>
+        <th>{h}</th>
+      }}</tr>
+    }</thead>
+    <tbody>{
+      m.map { row =>
+        <tr>{
+          row.map { cell =>
+            <td>{cell}</td>
+          }
+        }</tr>
+      }
+    }</tbody></table>
+  }
+
+  def display[T](ts: Seq[T], fields:Option[(String, String)]=None):Widget = {
+    val data:Seq[MagicRenderPoint] = ts
+    val firstElem = data.head
+    val headers = firstElem.headers
+    val members = firstElem.values
+    val dataMap = firstElem.data
+
+    val numOfFields = firstElem.numOfFields
+    val exploded = 25 * numOfFields
+
+    val tbl = Some("table" → TableChart(ts))
+
+    if(numOfFields == 2 || fields.isDefined){
+      val (f1, f2)  = fields.map{ case (f1, f2) => (dataMap(f1), dataMap(f2)) }
+                            .getOrElse((members(0), members(1)))
+
+      val scatter:Option[(String, Chart[T])] = if (isNumber(f1) && isNumber(f2)) { Some("dot-circle-o" → ScatterChart(ts, fields)) } else None
+      val line:Option[(String, Chart[T])]    = if (isNumber(f1) && isNumber(f2)) { Some("line-chart" → LineChart(ts, fields)) } else None
+      val bar :Option[(String, Chart[T])]    = if (isNumber(f2)) { Some("bar-chart" → BarChart(ts, fields)) } else None
+      val pie :Option[(String, Chart[T])]    = if ((!isNumber(f1)) || firstElem.isInstanceOf[MapPoint]) { Some("pie-chart" → PieChart(ts, fields)) } else None
+      val allTabs:Seq[Option[(String, Chart[T])]] = tbl :: scatter :: line :: bar :: pie :: Nil
+      tabs(ts, allTabs.collect{ case Some(t) => t})
+    } else {
+      val main =
+        widgets.containerFluid(List(
+          List(
+            tbl.get._2 → 12
+          )
+        ))
+      main
+    }
+  }
+
+  def isNumber(obj: Any) = obj.isInstanceOf[Int] || obj.isInstanceOf[Float] || obj.isInstanceOf[Double] || obj.isInstanceOf[Long]
+  def isDate(obj: Any) = obj.isInstanceOf[Date]
 }

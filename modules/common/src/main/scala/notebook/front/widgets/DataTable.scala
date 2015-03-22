@@ -12,7 +12,7 @@ import io.continuum.bokeh.widgets.{HandsonTable, TableColumn}
 
 class DataTable[T](data:Seq[T])(implicit val codec:Codec[JsValue, T]) {
 
-  lazy val array:JsArray = JsonCodec.tSeq.decode(data).asInstanceOf[JsArray]
+  lazy val array:JsArray = JsonCodec.tSeq(codec).decode(data).asInstanceOf[JsArray]
 
   lazy val table =  {
     val source = new ColumnDataSource()
