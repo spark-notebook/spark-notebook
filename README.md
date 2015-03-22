@@ -216,7 +216,6 @@ Features
 --------
 
 ## Configure Spark
-Another way to configure Spark is to 
 Since this project aims directly the usage of Spark, a [SparkContext](https://github.com/apache/spark/blob/master/core%2Fsrc%2Fmain%2Fscala%2Forg%2Fapache%2Fspark%2FSparkContext.scala) is added to the environment and can directly be used without additional effort.
 
 ![Example using Spark](https://raw.github.com/andypetrella/spark-notebook/master/images/simplest-spark.png)
