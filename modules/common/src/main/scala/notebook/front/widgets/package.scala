@@ -359,7 +359,6 @@ package object widgets {
     override val scripts = List(Script("magic/barChart", Json.obj("x" → f1.toString, "y" → f2.toString, "width" → sizes._1, "height" → sizes._2)))
   }
 
-
   case class PieChart[T](ts:Seq[T], fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400)) extends Chart[T] {
     val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
 
@@ -369,6 +368,12 @@ package object widgets {
     }
 
     override val scripts = List(Script("magic/pieChart", Json.obj("series" → f1.toString, "p" → f2.toString, "width" → sizes._1, "height" → sizes._2)))
+  }
+
+  case class DiyChart[T](ts:Seq[T], js:String = "function(data, headers, chart) { console.log({'data': data, 'headers': headers, 'chart': chart}); }", override val sizes:(Int, Int)=(600, 400)) extends Chart[T] {
+    def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
+
+    override val scripts = List(Script("magic/diyChart", Json.obj("js" → s"var js = $js;", "headers" → headers, "width" → sizes._1, "height" → sizes._2)))
   }
 
   case class TableChart[T](vs:Seq[T], showUpTo:Int=25, filterCol:Option[Seq[String]]=None, override val sizes:(Int, Int)=(600, 400)) extends Chart[T] {
