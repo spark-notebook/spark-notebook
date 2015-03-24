@@ -35,7 +35,15 @@ object Shared {
                                     else
                                       Seq.empty)
 
-    lib ++ unmanaged
+    val repos = resolvers <++= (sparkVersion) { (sv) =>
+      if (sv == "1.2.0") {
+        Seq("Resolver for spark-yarn 1.2.0" at "https://github.com/adatao/mvnrepos/raw/master/releases") // spark-yarn 1.2.0 is not released
+      } else {
+        Nil
+      }
+    }
+
+    lib ++ unmanaged ++ repos
   }
 
   lazy val sparkSettings:Seq[Def.Setting[_]] = Seq(
