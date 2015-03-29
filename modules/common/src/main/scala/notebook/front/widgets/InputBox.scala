@@ -49,19 +49,21 @@ class InputBox[T](initial: T, label:String="")(implicit t:InputType[T], val code
   val id = "input-"+dataConnection.id
   lazy val toHtml = {
     val ll = <label for={id}>{label}</label>
-    val in = <input id={id} type={t.tpe} name={id} data-bind="value: value">{
+    val in = <input id={id} type={t.tpe} name={id} data-bind="textInput: value, fireChange: true">{
               scopedScript(
                 """req( ['observable', 'knockout'],
                             function (Observable, ko) {
                               //console.log("-----------")
                               //console.dir(this);
                               //console.dir(valueId);
+                              var obs = Observable.makeObservable(valueId);
                               ko.applyBindings({
-                                value: Observable.makeObservable(valueId)
+                                value: obs
                               }, this);
+                              obs(valueInit);
                             }
                           )""",
-                Json.obj("valueId" -> dataConnection.id),
+                Json.obj("valueId" -> dataConnection.id, "valueInit" → codec.decode(initial)),
                 Some("#"+id)
               )
             }</input>

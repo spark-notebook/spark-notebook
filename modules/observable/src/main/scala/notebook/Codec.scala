@@ -25,7 +25,7 @@ object JsonCodec {
     }
   }
 
-  implicit val ints:Codec[JsValue, Int] = formatToCodec(Format.of[Int])
+  //implicit val ints:Codec[JsValue, Int] = formatToCodec(Format.of[Int])
   implicit val longs:Codec[JsValue, Long] = formatToCodec(Format.of[Long])
   implicit val doubles:Codec[JsValue, Double] = formatToCodec(Format.of[Double])
   implicit val floats:Codec[JsValue, Float] = formatToCodec(Format.of[Float])
@@ -41,11 +41,14 @@ object JsonCodec {
       case x           => new java.util.Date(v.as[Long])
     }
   }
-/*  implicit val ints = new Codec[JsDouble, Int] {
-    def decode(t: Int) = JsDouble(t.toDouble)
-    def encode(v: JsDouble):Int = v.extract[Double].toInt
+  implicit val ints = new Codec[JsValue, Int] {
+    def decode(t: Int) = JsNumber(t)
+    def encode(v: JsValue):Int = v match {
+      case JsString(s) => s.toInt
+      case JsNumber(i) => i.toInt
+    }
   }
-  implicit val bools = new Codec[JsValue, Boolean] {
+  /*implicit val bools = new Codec[JsValue, Boolean] {
     def decode(t: Boolean):JsValue = JBool(t)
     def encode(v: JsValue):Boolean = v match {
       case JString(s)  => s.toBoolean

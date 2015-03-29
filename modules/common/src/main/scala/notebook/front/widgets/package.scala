@@ -316,6 +316,12 @@ package object widgets {
     lazy val data:Seq[Seq[(String, Any)]] = points.map(mToSeq)
     def sizes:(Int, Int)=(600, 400)
 
+    def applyOn(newData:Seq[T]) = apply {
+      val pts:Seq[MagicRenderPoint] = newData
+      val d = pts map mToSeq
+      d
+    }
+
     override val singleCodec = jsStringAnyCodec
     override val singleToO = identity[Seq[(String, Any)]] _
 
