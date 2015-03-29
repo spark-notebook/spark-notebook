@@ -16,7 +16,7 @@ define([
     chart.draw()
 
     dataO.subscribe( (newData) =>
-      console.log("barChart: todo update")
-      console.log("barChart new data", newData)
+      chart.data = newData
+      chart.draw(1000)
     )
 )
