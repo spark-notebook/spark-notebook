@@ -10,8 +10,6 @@ import scala.xml.{NodeSeq, Text}
 import scala.util.control.NonFatal
 import scala.util.Try
 
-import org.apache.spark.repl.{HackSparkILoop, SparkILoop, SparkJLineCompletion}
-
 import tools.nsc.Settings
 import tools.nsc.interpreter._
 import tools.nsc.interpreter.Completion.{Candidates, ScalaCompleter}
@@ -19,8 +17,11 @@ import tools.nsc.interpreter.Results.{Incomplete => ReplIncomplete, Success => R
 
 import tools.jline.console.completer.{ArgumentCompleter, Completer}
 
+import org.apache.spark.repl._
+
 import notebook.front.Widget
 import notebook.util.Match
+import notebook.kernel._
 
 class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
 
@@ -112,9 +113,12 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     }
 
     loop.process(settings)
-    val i = loop.intp
+    val i = {
+      val l:HackSparkILoop = loop.asInstanceOf[HackSparkILoop]
+      l.interpreter
+    }
     //i.initializeSynchronous()
-    classServerUri = Some(i.classServer.uri)
+    classServerUri = Some(i.classServerUri)
     i.asInstanceOf[org.apache.spark.repl.SparkIMain]
   }
 
@@ -176,8 +180,10 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
 
     val result = res match {
       case ReplSuccess =>
-        val request = interp.prevRequestList.last
-        val lastHandler: interp.memberHandlers.MemberHandler = request.handlers.last
+        val request:interp.Request = interp.getClass.getMethods.find(_.getName == "prevRequestList").map(_.invoke(interp)).get.asInstanceOf[List[interp.Request]].last
+        //val request:Request = interp.prevRequestList.last
+
+        val lastHandler/*: interp.memberHandlers.MemberHandler*/ = request.handlers.last
 
         try {
           val evalValue = if (lastHandler.definesValue) { // This is true for def's with no parameters, not sure that executing/outputting this is desirable
@@ -198,8 +204,10 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
                 )
             if (line.compile(renderObjectCode)) {
               try {
+                val classLoader = interp.getClass.getMethods.find(_.getName == "classLoader").map(_.invoke(interp)).get.asInstanceOf[java.lang.ClassLoader]
+
                 val renderedClass2 = Class.forName(
-                  line.pathTo("$rendered")+"$", true, interp.classLoader
+                  line.pathTo("$rendered")+"$", true, classLoader
                 )
 
                 val o = renderedClass2.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get()
@@ -220,9 +228,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
                 }
                 iws(o)
               } catch {
-                case e =>
-                  e.printStackTrace
-                  <span style="color:red;">Ooops, exception in the cell: {e.getMessage}</span>
+                case e => <span style="color:red;">Ooops, exception in the cell: {e.getMessage}</span>
               }
             } else {
               // a line like println(...) is technically a val, but returns null for some reason
@@ -250,7 +256,9 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
   }
 
   def addCp(newJars:List[String]) = {
-    val prevCode = interp.prevRequestList.map(_.originalLine)
+    val requests = interp.getClass.getMethods.find(_.getName == "prevRequestList").map(_.invoke(interp)).get.asInstanceOf[List[interp.Request]]
+
+    val prevCode = requests.map(_.originalLine)
     val r = new Repl(compilerOpts, newJars:::jars)
     (r, () => prevCode.drop(7/*init scripts... → UNSAFE*/) foreach (c => r.evaluate(c, _ => ())))
   }
