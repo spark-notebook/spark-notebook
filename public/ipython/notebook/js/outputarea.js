@@ -960,14 +960,13 @@ define([
             this.append_output(outputs[i]);
         }
         if (metadata.collapsed !== undefined) {
-            this.collapsed = metadata.collapsed;
+            //this.collapsed = metadata.collapsed;
             if (metadata.collapsed) {
                 this.collapse();
             }
         }
         if (metadata.input_collapsed !== undefined) {
-            this.input_collapsed = metadata.input_collapsed;
-            alert(metadata.input_collapsed)
+            //this.input_collapsed = metadata.input_collapsed;
             if (metadata.input_collapsed) {
                 this.input_collapse();
             }
