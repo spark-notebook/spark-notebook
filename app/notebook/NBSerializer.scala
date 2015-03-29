@@ -41,7 +41,7 @@ object NBSerializer {
   }
   implicit val outputFormat:Format[Output] = Format(outputReads, outputWrites)
 
-  case class CellMetadata(trusted:Option[Boolean], collapsed:Option[Boolean])
+  case class CellMetadata(trusted:Option[Boolean], input_collapsed:Option[Boolean], collapsed:Option[Boolean])
   implicit val codeCellMetadataFormat = Json.format[CellMetadata]
   trait Cell {
     def metadata:CellMetadata
