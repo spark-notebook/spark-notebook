@@ -260,6 +260,14 @@ define([
             that.notebook.to_raw();
         });
 
+        this.element.find('#toggle_current_input').click(function () {
+            that.notebook.toggle_input();
+        });
+
+        this.element.find('#toggle_all_input').click(function () {
+            that.notebook.toggle_all_input();
+        });
+
         this.element.find('#toggle_current_output').click(function () {
             that.notebook.toggle_output();
         });
