@@ -10,14 +10,12 @@ import scala.xml.{NodeSeq, Text}
 import scala.util.control.NonFatal
 import scala.util.Try
 
-import org.apache.spark.repl.{HackSparkILoop, SparkILoop, SparkJLineCompletion}
-
 import tools.nsc.Settings
 import tools.nsc.interpreter._
 import tools.nsc.interpreter.Completion.{Candidates, ScalaCompleter}
 import tools.nsc.interpreter.Results.{Incomplete => ReplIncomplete, Success => ReplSuccess, Error}
 
-import tools.jline.console.completer.{ArgumentCompleter, Completer}
+import jline.console.completer.{ArgumentCompleter, Completer}
 
 import notebook.front.Widget
 import notebook.util.Match
@@ -57,7 +55,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
 
   var classServerUri:Option[String] = None
 
-  val interp:org.apache.spark.repl.SparkIMain = {
+  val interp:scala.tools.nsc.interpreter.SparkIMain = {
     val settings = new Settings
 
     settings.embeddedDefaults[Repl]
@@ -113,9 +111,10 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
 
     loop.process(settings)
     val i = loop.intp
-    //i.initializeSynchronous()
-    classServerUri = Some(i.classServer.uri)
-    i.asInstanceOf[org.apache.spark.repl.SparkIMain]
+    ////i.initializeSynchronous()
+    //classServerUri = Some(i.classServer.uri)
+    classServerUri = Some(loop.classServer.uri)
+    i.asInstanceOf[scala.tools.nsc.interpreter.SparkIMain]
   }
 
   private lazy val completion = {
@@ -193,7 +192,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
                 |  %s
                 |}""".stripMargin.format(
                   request.importsPreamble,
-                  request.fullPath(lastHandler.definesTerm.get),
+                  request.fullPath(lastHandler.definesTerm.get.toString),
                   request.importsTrailer
                 )
             if (line.compile(renderObjectCode)) {
@@ -220,9 +219,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
                 }
                 iws(o)
               } catch {
-                case e =>
-                  e.printStackTrace
-                  <span style="color:red;">Ooops, exception in the cell: {e.getMessage}</span>
+                case e => <span style="color:red;">Ooops, exception in the cell: {e.getMessage}</span>
               }
             } else {
               // a line like println(...) is technically a val, but returns null for some reason

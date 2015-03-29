@@ -15,7 +15,7 @@ define([
     if options.fixed
       series = new Rickshaw.Series.FixedDuration(
         ({color: i.color, name: i.name, data: []} for i in @dataInit), # see below
-        undefined, 
+        undefined,
         {
           timeInterval: options.fixed.interval,
           maxDataPoints: options.fixed.max,
@@ -30,7 +30,7 @@ define([
           for o in @dataInit
             toadd[o.name] = o.data[d].y
           x = @dataInit[0].data[d].x
-          series.addData(toadd, x)  
+          series.addData(toadd, x)
 
     else
       series = new Rickshaw.Series(@dataInit, undefined)
@@ -55,7 +55,7 @@ define([
     if options.update
       eval("update = "+options.update)
     else
-      update = (graph, data) -> 
+      update = (graph, data) ->
         m = (data[0] && data[0].data && data[0].data.length) || 0
         if m > 0
           for d in [ 0...m ]
@@ -63,7 +63,7 @@ define([
             for o in data
               toadd[o.name] = o.data[d].y
             x = data[0].data[d].x
-            graph.series.addData(toadd, x)  
+            graph.series.addData(toadd, x)
 
     slider = new Rickshaw.Graph.RangeSlider({
       graph: graph,
