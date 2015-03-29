@@ -99,7 +99,14 @@ class NotebookManager(val name: String, val notebookDir: File) {
     val newname = getName(newpath)
     val oldfile = notebookFile(path)
     load(path).map { notebook =>
-      val nb = if (notebook.name != newname) notebook.copy(metadata = Some(new Metadata(newname))) else notebook
+      val nb =  if (notebook.name != newname) {
+                  val newMd =  notebook.metadata.map(_.copy(name=newname))
+                                                .orElse(Some(new Metadata(newname)))
+                  notebook.copy(metadata = newMd)
+                } else {
+                  notebook
+                }
+      //val nb = if (notebook.name != newname) notebook.copy(metadata = Some(new Metadata(newname))) else notebook
       val newfile = notebookFile(newpath)
       oldfile.renameTo(newfile)
       FileUtils.writeStringToFile(newfile, NBSerializer.write(nb))
