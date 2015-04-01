@@ -38,3 +38,10 @@ trait MappingObserver[A,B] extends Observer[B] {
   override def onNext(args: B) {innerObserver.onNext(observerMapper(args))}
 }
 
+object Observer {
+
+  def apply[A](f:A => Unit) = new ConcreteObserver[A] {
+    override def onNext(args:A) = f(args)
+  }
+
+}

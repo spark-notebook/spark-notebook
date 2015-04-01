@@ -3,7 +3,7 @@
 
 define(function(require){
     "use strict";
-    
+
     var ActionHandler = function (env) {
         this.env = env || {};
         Object.seal(this);
@@ -216,9 +216,16 @@ define(function(require){
                 env.notebook.toggle_output();
             }
         },
+        'toggle-input-visibility-selected-cell' : {
+            help    : 'toggle input',
+            help_index : 'gc',
+            handler : function (env) {
+                env.notebook.toggle_input();
+            }
+        },
         'toggle-output-scrolling-selected-cell' : {
             help    : 'toggle output scrolling',
-            help_index : 'gc',
+            help_index : 'gd',
             handler : function (env) {
                 env.notebook.toggle_output_scroll();
             }
@@ -440,9 +447,9 @@ define(function(require){
 
     ActionHandler.prototype.register = function(action, name, prefix){
         /**
-         * Register an `action` with an optional name and prefix. 
+         * Register an `action` with an optional name and prefix.
          *
-         * if name and prefix are not given they will be determined automatically. 
+         * if name and prefix are not given they will be determined automatically.
          * if action if just a `function` it will be wrapped in an anonymous action.
          *
          * @return the full name to access this action .

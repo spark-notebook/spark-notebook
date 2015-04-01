@@ -20,11 +20,13 @@ define([
 
     var OutputArea = function (options) {
         this.selector = options.selector;
+        this.input = options.input;
         this.events = options.events;
         this.keyboard_manager = options.keyboard_manager;
         this.wrapper = $(options.selector);
         this.outputs = [];
         this.collapsed = false;
+        this.input_collapsed = false;
         this.scrolled = false;
         this.scroll_state = 'auto';
         this.trusted = true;
@@ -57,17 +59,17 @@ define([
     OutputArea.prototype.style = function () {
         this.collapse_button.hide();
         this.prompt_overlay.hide();
-        
+
         this.wrapper.addClass('output_wrapper');
         this.element.addClass('output');
-        
+
         this.collapse_button.addClass("btn btn-default output_collapsed");
         this.collapse_button.attr('title', 'click to expand output');
         this.collapse_button.text('. . .');
-        
+
         this.prompt_overlay.addClass('out_prompt_overlay prompt');
         this.prompt_overlay.attr('title', 'click to expand output; double click to hide output');
-        
+
         this.collapse();
     };
 
@@ -120,6 +122,20 @@ define([
     };
 
 
+    OutputArea.prototype.input_collapse = function () {
+        if (!this.input_collapsed) {
+            this.input.hide();
+            //this.prompt_overlay.hide();
+            //if (this.input.html()){
+                //this.input_collapse_button.show();
+            //}
+            this.input_collapsed = true;
+            // collapsing output clears scroll state
+            this.scroll_state = 'auto';
+        }
+    };
+
+
     OutputArea.prototype.collapse = function () {
         if (!this.collapsed) {
             this.element.hide();
@@ -145,11 +161,42 @@ define([
     };
 
 
+    OutputArea.prototype.input_expand = function () {
+        if (this.input_collapsed) {
+            //this.input_collapse_button.hide();
+            this.input.show();
+            //this.prompt_overlay.show();
+            this.input_collapsed = false;
+            //this.scroll_if_long();
+        }
+    };
+
+
+    OutputArea.prototype.expand = function () {
+        if (this.collapsed) {
+            this.collapse_button.hide();
+            this.element.show();
+            this.prompt_overlay.show();
+            this.collapsed = false;
+            this.scroll_if_long();
+        }
+    };
+
+
     OutputArea.prototype.toggle_output = function () {
         if (this.collapsed) {
             this.expand();
         } else {
             this.collapse();
+        }
+    };
+
+
+    OutputArea.prototype.toggle_input = function () {
+        if (this.input_collapsed) {
+            this.input_expand();
+        } else {
+            this.input_collapse();
         }
     };
 
@@ -231,8 +278,8 @@ define([
         }
         this.append_output(json);
     };
-    
-    
+
+
     OutputArea.output_types = [
         'application/javascript',
         'text/html',
@@ -267,10 +314,10 @@ define([
         });
         return bundle;
     };
-    
+
     OutputArea.prototype.append_output = function (json) {
         this.expand();
-        
+
         // Clear the output if clear is queued.
         var needs_height_reset = false;
         if (this.clear_queued) {
@@ -301,7 +348,7 @@ define([
         }
 
         // We must release the animation fixed height in a callback since Gecko
-        // (FireFox) doesn't render the image immediately as the data is 
+        // (FireFox) doesn't render the image immediately as the data is
         // available.
         var that = this;
         var handle_appended = function ($el) {
@@ -319,7 +366,7 @@ define([
         } else {
             handle_appended();
         }
-        
+
         if (record_output) {
             this.outputs.push(json);
         }
@@ -400,7 +447,7 @@ define([
             .append($('<div/>').text(err.toString()).addClass('js-error'))
             .append($('<div/>').text('See your browser Javascript console for more details.').addClass('js-error'));
     };
-    
+
     OutputArea.prototype._safe_append = function (toinsert) {
         /**
          * safely append an item to the document
@@ -546,7 +593,7 @@ define([
         'image/png' : true,
         'image/jpeg' : true
     };
-    
+
     OutputArea.prototype.append_mime_type = function (json, element, handle_inserted) {
         for (var i=0; i < OutputArea.display_order.length; i++) {
             var type = OutputArea.display_order[i];
@@ -566,7 +613,7 @@ define([
                 var md = json.metadata || {};
                 var toinsert = append.apply(this, [value, md, element, handle_inserted]);
                 // Since only the png and jpeg mime types call the inserted
-                // callback, if the mime type is something other we must call the 
+                // callback, if the mime type is something other we must call the
                 // inserted callback only when the element is actually inserted
                 // into the DOM.  Use a timeout of 0 to do this.
                 if (['image/png', 'image/jpeg'].indexOf(type) < 0 && handle_inserted !== undefined) {
@@ -666,7 +713,7 @@ define([
         // The jQuery resize handlers don't seem to work on the svg element.
         // When the svg renders completely, measure it's size and set the parent
         // div to that size.  Then set the svg to 100% the size of the parent
-        // div and make the parent div resizable.  
+        // div and make the parent div resizable.
         this._dblclick_to_reset_size(svg_area, true, false);
 
         svg_area.append(svg);
@@ -715,7 +762,7 @@ define([
             img.on("load", callback);
         }
     };
-    
+
     var set_width_height = function (img, md, mime) {
         /**
          * set width and height of an img element from metadata
@@ -725,7 +772,7 @@ define([
         var width = _get_metadata_key(md, 'width', mime);
         if (width !== undefined) img.attr('width', width);
     };
-    
+
     var append_png = function (png, md, element, handle_inserted) {
         var type = 'image/png';
         var toinsert = this.create_output_subarea(md, "output_png", type);
@@ -791,12 +838,12 @@ define([
         this.expand();
         var content = msg.content;
         var area = this.create_output_area();
-        
+
         // disable any other raw_inputs, if they are left around
         $("div.output_subarea.raw_input_container").remove();
-        
+
         var input_type = content.password ? 'password' : 'text';
-        
+
         area.append(
             $("<div/>")
             .addClass("box-flex1 output_subarea raw_input_container")
@@ -820,7 +867,7 @@ define([
                 })
             )
         );
-        
+
         this.element.append(area);
         var raw_input = area.find('input.raw_input');
         // Register events that enable/disable the keyboard manager while raw
@@ -885,7 +932,7 @@ define([
                 this.element.height(height);
                 this.clear_queued = false;
             }
-            
+
             // Clear all
             // Remove load event handlers from img tags because we don't want
             // them to fire if the image is never added to the page.
@@ -894,7 +941,7 @@ define([
 
             // Notify others of changes.
             this.element.trigger('changed');
-            
+
             this.outputs = [];
             this.trusted = true;
             this.unscroll_area();
@@ -913,9 +960,15 @@ define([
             this.append_output(outputs[i]);
         }
         if (metadata.collapsed !== undefined) {
-            this.collapsed = metadata.collapsed;
+            //this.collapsed = metadata.collapsed;
             if (metadata.collapsed) {
                 this.collapse();
+            }
+        }
+        if (metadata.input_collapsed !== undefined) {
+            //this.input_collapsed = metadata.input_collapsed;
+            if (metadata.input_collapsed) {
+                this.input_collapse();
             }
         }
         if (metadata.scrolled !== undefined) {

@@ -18,7 +18,7 @@ define([
     chart.draw()
 
     dataO.subscribe( (newData) =>
-      console.log("pieChart: todo update")
-      console.log("pieChart new data", newData)
+      chart.data = newData
+      chart.draw(1000)
     )
 )

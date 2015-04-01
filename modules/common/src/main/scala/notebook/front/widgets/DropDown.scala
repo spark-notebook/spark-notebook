@@ -18,16 +18,29 @@ class DropDown[A](options: Seq[A], toString: A=>String = (a:A)=>a.toString) exte
 
   private lazy val _selected = JSBus.createConnection
   lazy val selected = _selected.biMap[A](
-    (a:A) => JsNumber(options.indexOf(a)).asInstanceOf[JsValue],
-    (v:JsValue) => options(v.as[Int])
+    { (a:A) =>
+      JsNumber(options.indexOf(a)).asInstanceOf[JsValue]
+    },
+    { (v:JsValue) =>
+      options(v.as[Int])
+    }
   )
 
   optionsConnection <-- Connection.just(options)
 
   lazy val toHtml =
-    <select data-bind="options: options, optionsText: 'text', optionsValue: 'index', value: selectedIndex">{
+    <select data-bind="options: options, optionsText: 'text', optionsValue: 'index', value: selectedIndex, fireChange: true">{
       scopedScript(
-        "req(['observable', 'knockout'], function (O, ko) { ko.applyBindings({ options: O.makeObservableArray(optionsId), selectedIndex: O.makeObservable(selectedIndexId) }, this); });",
+        """
+        |req( ['observable', 'knockout'],
+        |  function (O, ko) {
+        |    ko.applyBindings({
+        |      options: O.makeObservableArray(optionsId),
+        |      selectedIndex: O.makeObservable(selectedIndexId)
+        |    },
+        |    this);
+        |  }
+        |);""".stripMargin,
         Json.obj("optionsId" -> _optionsConnection.id, "selectedIndexId" -> _selected.id)
       )
     }</select>
