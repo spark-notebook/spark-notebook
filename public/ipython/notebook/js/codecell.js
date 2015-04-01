@@ -87,6 +87,7 @@ define([
         this.kernel = kernel || null;
         this.notebook = options.notebook;
         this.collapsed = false;
+        this.input_collapsed = false;
         this.events = options.events;
         this.tooltip = options.tooltip;
         this.config = options.config;
@@ -214,6 +215,7 @@ define([
         this.element = cell;
         this.output_area = new outputarea.OutputArea({
             selector: output,
+            input: input,
             prompt_area: true,
             events: this.events,
             keyboard_manager: this.keyboard_manager});
@@ -529,6 +531,10 @@ define([
         this.output_area.toggle_output();
     };
 
+    CodeCell.prototype.toggle_input = function () {
+        this.output_area.toggle_input();
+    };
+
     CodeCell.prototype.toggle_output_scroll = function () {
         this.output_area.toggle_scroll();
     };
@@ -620,6 +626,7 @@ define([
         data.outputs = outputs;
         data.metadata.trusted = this.output_area.trusted;
         data.metadata.collapsed = this.output_area.collapsed;
+        data.metadata.input_collapsed = this.output_area.input_collapsed;
         if (this.output_area.scroll_state === 'auto') {
             delete data.metadata.scrolled;
         } else {

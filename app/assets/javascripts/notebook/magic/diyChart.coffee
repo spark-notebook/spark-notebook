@@ -22,7 +22,7 @@ define([
     chart.draw()
 
     dataO.subscribe( (newData) =>
-      console.log("dyiChart: todo update")
-      console.log("dyiChart new data", newData)
+      chart.data = newData
+      chart.draw(1000)
     )
 )

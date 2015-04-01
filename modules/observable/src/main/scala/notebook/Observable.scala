@@ -30,5 +30,6 @@ trait MappingObservable[A,B] extends Observable[B] {
 
 
 object Observable {
+  def noop[T]: Observable[T] = new WrappedObservable[T](RxObservable.never)
   def just[T](x: T): Observable[T] = new WrappedObservable[T](RxObservable.just(x))
 }

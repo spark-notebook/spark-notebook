@@ -53,6 +53,15 @@ scalacOptions ++= Seq("-Xmax-classfile-name", "100")
 
 commands ++= Seq( distZips, distDebs, distAll, dockerPublishLocalAll, dockerPublishAll )
 
+val ClasspathPattern = "declare -r app_classpath=\"(.*)\"\n".r
+
+bashScriptDefines :=  bashScriptDefines.value.map {
+                              case ClasspathPattern(classpath) => "declare -r app_classpath=\"${HADOOP_CONF_DIR}:" + classpath + "\"\n"
+                              case _@entry => entry
+                          }
+
+//scriptClasspath += "${HADOOP_CONF_DIR}"
+
 dependencyOverrides += "log4j" % "log4j" % "1.2.16"
 
 dependencyOverrides += guava
