@@ -1,4 +1,4 @@
-  package notebook.front
+package notebook.front
 
 import xml.{NodeSeq, UnprefixedAttribute, Null}
 import play.api.libs.json._

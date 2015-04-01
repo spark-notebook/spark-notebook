@@ -56,9 +56,15 @@ object NotebookClusters {
   case object Profiles
 
   def apply(config: Configuration):NotebookClusters = {
-    val profilesFile = config.getString("profiles").map(new File(_)).getOrElse(new File("./conf/profiles"))
+    val profilesFile = config.getString("profiles").map(new File(_)).filter(_.exists)
+                        .orElse(Option(new File("./conf/profiles"))).filter(_.exists)    // ./bin/spark-notebook
+                        .getOrElse(new File("../conf/profiles"))                         // ./spark-notebook
+    Logger.debug("Profiles file is : " + profilesFile)
 
-    val clustersFile = config.getString("file").map(new File(_)).getOrElse(new File("./conf/clusters"))
+    val clustersFile = config.getString("file").map(new File(_)).filter(_.exists)
+                        .orElse(Option(new File("./conf/clusters"))).filter(_.exists)    // ./bin/spark-notebook
+                        .getOrElse(new File("../conf/clusters"))                         // ./spark-notebook
+    Logger.debug("Clusters file is : " + clustersFile)
 
     def readFileAsJsonConf(file:File) = {
       val source = scala.io.Source.fromFile(file)
