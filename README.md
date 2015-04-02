@@ -117,6 +117,8 @@ You'll be presented a form to get the distribution you want.
 If not available, it'll gracefully build it for you and notify you want it'll be ready
 </p>
 
+**IMPORTANT**: then you can check the related section for instructions on how to use it (although it's very easy).
+
 #### Hard ways
 ##### ZIP/TGZ
 The zip/tgz distributions are publicly available in the bucket: <a href="http://s3.eu-central-1.amazonaws.com/spark-notebook">s3://spark-notebook</a>.
