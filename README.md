@@ -16,7 +16,7 @@ Spark Notebook
 - [Launch](#launch)
   - [Using a release](#using-a-release)
     - [Requirements](#requirements)
-    - [Simplest way](#simplest-way)
+    - [Preferred/Simplest way](#preferredsimplest-way)
     - [Hard ways](#hard-ways)
       - [ZIP/TGZ](#ziptgz)
       - [Docker](#docker)
@@ -99,7 +99,7 @@ Launch
 ### Using a release
 
 Long story short, there are several ways to start the spark notebook quickly (even from scratch):
- * Built/Get from [http://spark-notebook.io](http://spark-notebook.io)
+ * [**Preferred**] Built/Get from **[http://spark-notebook.io](http://spark-notebook.io)**
  * ZIP/TGZ file
  * Docker image
  * DEB package
@@ -109,7 +109,7 @@ However, there are several flavors for these distributions that depends on the S
 #### Requirements
 * Make sure you're running at least Java 7 (`sudo apt-get install openjdk-7-jdk`).
 
-#### Simplest way
+#### Preferred/Simplest way
 Head to [http://spark-notebook.io](http://spark-notebook.io).
 
 <p class="lead" markdown='1'>
