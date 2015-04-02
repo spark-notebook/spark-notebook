@@ -112,7 +112,7 @@ However, there are several flavors for these distributions that depends on the S
 #### Simplest way
 Head to [http://spark-notebook.io](http://spark-notebook.io).
 
-<p class="lead">
+<p class="lead" markdown='1'>
 You'll be presented a form to get the distribution you want.
 If not available, it'll gracefully build it for you and notify you want it'll be ready
 </p>
