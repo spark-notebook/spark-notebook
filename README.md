@@ -6,7 +6,7 @@ Spark Notebook
 
 *Fork of the amazing [scala-notebook](https://github.com/Bridgewater/scala-notebook), yet focusing on Massive Dataset Analysis using [Apache Spark](http://spark.apache.org).*
 
-<!-- MarkdownTOC depth=5 autolink=true bracket=round -->
+<!-- MarkdownTOC depth=6 autolink=true bracket=round -->
 
 - [Description](#description)
   - [Discussions](#discussions)
@@ -16,10 +16,12 @@ Spark Notebook
 - [Launch](#launch)
   - [Using a release](#using-a-release)
     - [Requirements](#requirements)
-    - [ZIP](#zip)
-    - [Docker](#docker)
-    - [boot2docker (Mac OS X)](#boot2docker-mac-os-x)
-    - [DEB](#deb)
+    - [Simplest way](#simplest-way)
+    - [Hard ways](#hard-ways)
+      - [ZIP/TGZ](#ziptgz)
+      - [Docker](#docker)
+        - [boot2docker (Mac OS X)](#boot2docker-mac-os-x)
+      - [DEB](#deb)
   - [From the sources](#from-the-sources)
     - [Procedure](#procedure)
       - [Download the code](#download-the-code)
@@ -58,11 +60,13 @@ Spark Notebook
   - [Add `remote-repo`](#add-remote-repo)
     - [`remote-repo` with authentication](#remote-repo-with-authentication)
   - [Download and add dependencies](#download-and-add-dependencies)
+- [TIPS AND TROUBLESHOOTING](#tips-and-troubleshooting)
 - [IMPORTANT](#important)
 - [KNOWN ISSUES](#known-issues)
   - [`User limit of inotify watches reached`](#user-limit-of-inotify-watches-reached)
 
 <!-- /MarkdownTOC -->
+
 
 Description
 -----------
@@ -95,7 +99,8 @@ Launch
 ### Using a release
 
 Long story short, there are several ways to start the spark notebook quickly (even from scratch):
- * ZIP file
+ * Built/Get from [http://spark-notebook.io](http://spark-notebook.io)
+ * ZIP/TGZ file
  * Docker image
  * DEB package
 
@@ -104,30 +109,37 @@ However, there are several flavors for these distributions that depends on the S
 #### Requirements
 * Make sure you're running at least Java 7 (`sudo apt-get install openjdk-7-jdk`).
 
-#### ZIP
-The zip distributions are publicly available in the bucket: <a href="http://s3.eu-central-1.amazonaws.com/spark-notebook/index.html">s3://spark-notebook</a>.
+#### Simplest way
+Head to [http://spark-notebook.io](http://spark-notebook.io).
 
-**Checkout** the needed version <a href="http://s3.eu-central-1.amazonaws.com/spark-notebook/index.html">here</a>.
+<p class="lead">
+You'll be presented a form to get the distribution you want.
+If not available, it'll gracefully build it for you and notify you want it'll be ready
+</p>
+
+#### Hard ways
+##### ZIP/TGZ
+The zip/tgz distributions are publicly available in the bucket: <a href="http://s3.eu-central-1.amazonaws.com/spark-notebook">s3://spark-notebook</a>.
 
 Here is an example how to use it:
 ```
-wget https://s3.eu-central-1.amazonaws.com/spark-notebook/zip/spark-notebook-0.2.0-spark-1.2.0-hadoop-1.0.4.zip
+wget https://s3.eu-central-1.amazonaws.com/spark-notebook/zip/spark-notebook-0.4.0-scala-2.10.4-spark-1.3.0-hadoop-1.0.4.zip
 unzip spark-notebook-0.2.0-spark-1.2.0-hadoop-1.0.4.zip
 cd spark-notebook-0.2.0-spark-1.2.0-hadoop-1.0.4
 ./bin/spark-notebook
 ```
 
-#### Docker
+##### Docker
 If you're a Docker user, the following procedure will be even simpler!
 
 **Checkout** the needed version <a href="https://registry.hub.docker.com/u/andypetrella/spark-notebook/tags/manage/">here</a>.
 
 ```
-docker pull andypetrella/spark-notebook:0.2.0-spark-1.2.0-hadoop-1.0.4
-docker run -p 9000:9000 andypetrella/spark-notebook:0.2.0-spark-1.2.0-hadoop-1.0.4
+docker pull andypetrella/spark-notebook:0.4.0-scala-2.10.4-spark-1.2.1-hadoop-2.4.0
+docker run -p 9000:9000 andypetrella/spark-notebook:0.4.0-scala-2.10.4-spark-1.2.1-hadoop-2.4.0
 ```
 
-#### boot2docker (Mac OS X)
+###### boot2docker (Mac OS X)
 On Mac OS X, you need something like _boot2docker_ to use docker. However, port forwarding needs an extra command necessary for it to work (cf [this](http://stackoverflow.com/questions/28381903/spark-notebook-not-loading-with-docker) and [this](http://stackoverflow.com/questions/21653164/map-ports-so-you-can-access-docker-running-apps-from-osx-host) SO questions).
 
 ```
@@ -135,13 +147,13 @@ VBoxManage modifyvm "boot2docker-vm" --natpf1 "tcp-port9000,tcp,,9000,,9000"
 ```
 
 
-#### DEB
-Using debian packages is one of the standard, hence the spark notebook is also available in this form (from v0.2.0):
+##### DEB
+Using debian packages is one of the standard, hence the spark notebook is also available in this form (from v0.4.0):
 
 
 ```
-wget https://s3.eu-central-1.amazonaws.com/spark-notebook/deb/spark-notebook-0.2.0-spark-1.2.0-hadoop-1.0.4_all.deb
-sudo dpkg -i spark-notebook-0.2.0-spark-1.2.0-hadoop-1.0.4.zip
+wget https://s3.eu-central-1.amazonaws.com/spark-notebook/deb/spark-notebook_0.4.0-scala-2.10.4-spark-1.3.0-hadoop-1.0.4_all.deb
+sudo dpkg -i spark-notebook_0.4.0-scala-2.10.4-spark-1.3.0-hadoop-1.0.4_all.deb
 sudo spark-notebook
 ```
 
@@ -186,7 +198,7 @@ There is another dependency which is tricky to update, the **jets3t** one.
 
 To update that, you can pass those version as properties, here is an example with the current default ones:
 ```
-sbt -D"spark.version"="1.2.0" -D"hadoop.version"="1.0.4" -D"jets3t.version"="0.7.1"
+sbt -D"spark.version"="1.2.1" -D"hadoop.version"="1.0.4" -D"jets3t.version"="0.7.1"
 ```
 
 ##### Create your distribution
@@ -229,7 +241,7 @@ The basic idea is to configure a **template** that will act as a factory for not
 ![Clusters](https://raw.github.com/andypetrella/spark-notebook/master/images/clusters.png)
 
 Then you'll have to fill some informations as Json, where you'll have to give a `name` and specify a `profile`. But specially:
- 
+
 #### Set local repository
 When adding dependencies, it can be interesting to preconfigure a repository where some dependencies have been already fetched.
 
@@ -737,7 +749,7 @@ When running Spark-Notebook on some Linux distribs (specifically ArchLinux), you
 
 ```
 [spark-notebook] $ run
- 
+
 java.io.IOException: User limit of inotify watches reached
 at sun.nio.fs.LinuxWatchService$Poller.implRegister(LinuxWatchService.java:261)
 at sun.nio.fs.AbstractPoller.processRequests(AbstractPoller.java:260)
@@ -745,7 +757,7 @@ at sun.nio.fs.LinuxWatchService$Poller.run(LinuxWatchService.java:326)
 at java.lang.Thread.run(Thread.java:745)
 [trace] Stack trace suppressed: run last sparkNotebook/compile:run for the full output.
 [error] (sparkNotebook/compile:run) java.lang.reflect.InvocationTargetException
-[error] Total time: 1 s, completed Jan 31, 2015 7:21:58 PM 
+[error] Total time: 1 s, completed Jan 31, 2015 7:21:58 PM
 ```
 
 This certainly means your `sysctl` configuration limits too much `inotify` watches.
