@@ -123,7 +123,7 @@ If not available, it'll gracefully build it for you and notify you want it'll be
 ##### ZIP/TGZ
 The zip/tgz distributions are publicly available in the bucket: <a href="http://s3.eu-central-1.amazonaws.com/spark-notebook">s3://spark-notebook</a>.
 
-Here is an example how to use it:
+Here is an example for **zip** (replace all zip by **tgz** for the tarbal version):
 ```
 wget https://s3.eu-central-1.amazonaws.com/spark-notebook/zip/spark-notebook-0.4.0-scala-2.10.4-spark-1.3.0-hadoop-1.0.4.zip
 unzip spark-notebook-0.2.0-spark-1.2.0-hadoop-1.0.4.zip
