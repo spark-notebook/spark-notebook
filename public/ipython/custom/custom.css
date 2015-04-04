@@ -5,3 +5,12 @@ mainly to be overridden in profile/static/custom/custom.css
 
 This will always be an empty file in IPython
 */
+iframe.lightning {
+    outline: none;
+    border-style:none;
+}
+
+iframe[seamless] {
+    display: block;
+    border-style:none;
+}
