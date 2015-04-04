@@ -56,8 +56,10 @@ commands ++= Seq( distZips, distDebs, distAll, dockerPublishLocalAll, dockerPubl
 val ClasspathPattern = "declare -r app_classpath=\"(.*)\"\n".r
 
 bashScriptDefines :=  bashScriptDefines.value.map {
-                              case ClasspathPattern(classpath) => "declare -r app_classpath=\"${HADOOP_CONF_DIR}:" + classpath + "\"\n"
-                              case _@entry => entry
+                              case ClasspathPattern(classpath) =>
+                                "declare -r app_classpath=\"${HADOOP_CONF_DIR}:" + classpath + "\"\n"
+                              case _@entry =>
+                                entry
                           }
 
 //scriptClasspath += "${HADOOP_CONF_DIR}"
@@ -90,14 +92,14 @@ libraryDependencies ++= Seq(
 )
 
 lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).enablePlugins(SbtWeb)
-    .aggregate(subprocess, observable, common, spark, kernel)
-    .dependsOn(subprocess, observable, common, spark, kernel)
+    .aggregate(tachyon, subprocess, observable, common, spark, kernel)
+    .dependsOn(tachyon, subprocess, observable, common, spark, kernel)
     .settings(
       sharedSettings:_*
-    ).settings(
+    )
+    .settings(
       includeFilter in (Assets, LessKeys.less) := "*.less"
     )
-
 
 lazy val subprocess =  project.in(file("modules/subprocess"))
                               .settings(
@@ -188,6 +190,14 @@ lazy val spark = Project(id = "spark", base = file("modules/spark"))
                               )
                               .settings(
                                 sparkSettings:_*
+                              )
+
+lazy val tachyon = Project(id = "tachyon", base = file("modules/tachyon"))
+                              .settings(
+                                sharedSettings:_*
+                              )
+                              .settings(
+                                tachyonSettings:_*
                               )
 
 lazy val kernel = Project(id = "kernel", base = file("modules/kernel"))
