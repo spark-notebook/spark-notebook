@@ -17,8 +17,8 @@ case class NotebookConfig(config: Configuration) { me =>
   import play.api.Play.current
 
   val notebooksDir = config.getString("notebooks.dir").map(new File(_)).filter(_.exists)
-                        .orElse(Option(new File("./conf/notebooks"))).filter(_.exists)    // ./bin/spark-notebook
-                        .getOrElse(new File("../conf/notebooks"))                         // ./spark-notebook
+                        .orElse(Option(new File("./notebooks"))).filter(_.exists)    // ./bin/spark-notebook
+                        .getOrElse(new File("../notebooks"))                         // ./spark-notebook
   Logger.debug("Notebooks dir is: " + notebooksDir)
 
   val projectName = config.getString("name").getOrElse(notebooksDir.getPath())

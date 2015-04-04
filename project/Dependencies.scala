@@ -69,7 +69,7 @@ object Dependencies {
 
   object SparkVersion extends Enumeration {
     type SparkVersion = Value
-    val `1.2.0`, `1.2.1` = Value
+    val `1.2.0`, `1.2.1`, `1.3.0` = Value
   }
 
   object HadoopVersion extends Enumeration {
@@ -79,7 +79,8 @@ object Dependencies {
 
   val crossConf = Map(
     SparkVersion.`1.2.0` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0-cdh5.3.2`) },
-    SparkVersion.`1.2.1` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0-cdh5.3.2`) }
+    SparkVersion.`1.2.1` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0-cdh5.3.2`) },
+    SparkVersion.`1.3.0` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0-cdh5.3.2`) }
   )
 
   val extraConf:Map[(SparkVersion.Value, HadoopVersion.Value), List[sbt.Def.Setting[_]]] = Map(
@@ -89,7 +90,8 @@ object Dependencies {
         Shared.jets3tVersion in "common" := "0.9.0",
         Shared.jets3tVersion in "kernel" := "0.9.0",
         Shared.jets3tVersion in "subprocess" := "0.9.0",
-        Shared.jets3tVersion in "spark" := "0.9.0"
+        Shared.jets3tVersion in "spark" := "0.9.0",
+        Shared.jets3tVersion in "tachyon" := "0.9.0"
       )
     },
     (SparkVersion.`1.2.1`, List(HadoopVersion.`2.3.0`)) → {
@@ -98,7 +100,18 @@ object Dependencies {
         Shared.jets3tVersion in "common" := "0.9.0",
         Shared.jets3tVersion in "kernel" := "0.9.0",
         Shared.jets3tVersion in "subprocess" := "0.9.0",
-        Shared.jets3tVersion in "spark" := "0.9.0"
+        Shared.jets3tVersion in "spark" := "0.9.0",
+        Shared.jets3tVersion in "tachyon" := "0.9.0"
+      )
+    },
+    (SparkVersion.`1.3.0`, List(HadoopVersion.`2.3.0`)) → {
+      List(
+        Shared.jets3tVersion := "0.9.0",
+        Shared.jets3tVersion in "common" := "0.9.0",
+        Shared.jets3tVersion in "kernel" := "0.9.0",
+        Shared.jets3tVersion in "subprocess" := "0.9.0",
+        Shared.jets3tVersion in "spark" := "0.9.0",
+        Shared.jets3tVersion in "tachyon" := "0.9.0"
       )
     }
   ).flatMap { case ((s,hs), sg) =>
@@ -135,12 +148,14 @@ object Dependencies {
             Shared.sparkVersion in "kernel" := svS,
             Shared.sparkVersion in "subprocess" := svS,
             Shared.sparkVersion in "spark" := svS,
+            Shared.sparkVersion in "tachyon" := svS,
 
             Shared.hadoopVersion := hvS,
             Shared.hadoopVersion in "common" := hvS,
             Shared.hadoopVersion in "kernel" := hvS,
             Shared.hadoopVersion in "subprocess" := hvS,
-            Shared.hadoopVersion in "spark" := hvS
+            Shared.hadoopVersion in "spark" := hvS,
+            Shared.hadoopVersion in "tachyon" := hvS
           )
 
           val extraSettings = extraConf.get((sv, hv)).getOrElse(Nil)
