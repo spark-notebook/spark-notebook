@@ -53,6 +53,7 @@ def reset(appName:String="Notebook", lastChanges:(SparkConf=>Unit)=(_:SparkConf)
   }
   SparkNotebookBgLog.append("Starting Spark Context")
   sparkContext = new SparkContext(conf)
+  sparkContext.hadoopConfiguration.set("fs.tachyon.impl", "tachyon.hadoop.TFS")
   SparkNotebookBgLog.append("Stopping Spark Context")
 }
 
