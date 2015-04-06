@@ -573,6 +573,59 @@ object Application extends Controller {
     }
   }
 
+  // docker
+  val docker:Option[tugboat.Docker] = {
+    import scala.sys.process._
+    import scala.util.control.Exception.allCatch
+
+    import scala.concurrent.ExecutionContext.Implicits.global
+    Some(tugboat.Docker())
+
+    //allCatch.opt {
+    //  "docker info"!!
+    //}.orElse {
+    //  Option(System.getenv("DOCKER_HOST"))
+    //}.orElse {
+    //  allCatch.opt {
+    //    (("ls /var/run/docker.sock" #| "wc -l").!!).trim.toInt
+    //  }.filter(_ > 0)
+    //}.map { _ =>
+    //  tugboat.Docker()
+    //}
+  }
+
+  def onDocker(b : tugboat.Docker => Future[Result]) = {
+    import scala.concurrent.ExecutionContext.Implicits.global
+    Action.async { docker map b getOrElse Future(BadRequest("Docker is not available")) }
+  }
+
+  def dockerAvailable = Action {
+    Ok(Json.obj("available" → true)).withHeaders(
+      "Access-Control-Allow-Origin" -> "*",
+      "Access-Control-Allow-Methods" -> "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers" -> "Accept, Origin, Content-type",
+      "Access-Control-Allow-Credentials" -> "true"
+    )
+  }
+
+  def dockerList =
+    onDocker { docker =>
+      import scala.concurrent.ExecutionContext.Implicits.global
+      import scala.concurrent.duration._
+      Logger.info(docker.toString)
+      Logger.info(scala.concurrent.Await.result(docker.info(), 10 second).toString)
+      val images = docker.images
+      images.list().map { list =>
+        Ok(Json.toJson(
+          list.map { i =>
+            i.repoTags
+          }
+        ))
+      }
+      //Future(Ok(""))
+    }
+
+
   // util
   object ImperativeWebsocket {
 

@@ -2,7 +2,7 @@ import Dependencies._
 
 import Shared._
 
-//play.Project.playScalaSettings
+import sbtbuildinfo.Plugin._
 
 organization := "noootsab"
 
@@ -36,7 +36,9 @@ resolvers in ThisBuild ++=  Seq(
                               Resolver.sonatypeRepo("releases"),
                               Resolver.typesafeIvyRepo("releases"),
                               Resolver.typesafeIvyRepo("snapshots"),
-                              "cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos"
+                              "cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos",
+                              // docker
+                              "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
                             )
 
 EclipseKeys.skipParents in ThisBuild := false
@@ -83,7 +85,8 @@ libraryDependencies ++= Seq(
   //   encountered when using hadoop "2.0.0-cdh4.2.0"
   commonsExec,
   commonsCodec,
-  ningAsyncHttpClient, // for aether to work...
+  dockerApi,
+  //scala stuffs
   "org.scala-lang" % "scala-library" % defaultScalaVersion,
   "org.scala-lang" % "scala-reflect" % defaultScalaVersion,
   "org.scala-lang" % "scala-compiler" % defaultScalaVersion
@@ -94,7 +97,8 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).ena
     .dependsOn(subprocess, observable, common, spark, kernel)
     .settings(
       sharedSettings:_*
-    ).settings(
+    )
+    .settings(
       includeFilter in (Assets, LessKeys.less) := "*.less"
     )
 
@@ -146,9 +150,7 @@ lazy val common = Project(id = "common", base = file("modules/common"))
                                   scalaZ
                                 ),
                                 libraryDependencies ++= Seq(
-                                  aetherApi,
-                                  jcabiAether,
-                                  mavenCore
+                                  sbtForDeps(sbtVersion.value)
                                 ),
                                 // plotting functionality
                                 libraryDependencies ++= Seq(
@@ -162,6 +164,15 @@ lazy val common = Project(id = "common", base = file("modules/common"))
                               .settings(
                                 sparkSettings:_*
                               )
+                              .settings(
+                                buildInfoSettings:_*
+                              )
+                              .settings(
+                                sourceGenerators in Compile <+= buildInfo,
+                                buildInfoKeys := Seq[BuildInfoKey](version, scalaVersion, sparkVersion , hadoopVersion , jets3tVersion , jlineDef, sbtVersion),
+                                buildInfoPackage := "notebook"
+                              )
+
 
 lazy val spark = Project(id = "spark", base = file("modules/spark"))
                               .dependsOn(common, subprocess, observable)
