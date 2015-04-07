@@ -9,7 +9,7 @@ import scala.reflect.api.{Mirror, TypeCreator, Universe => ApiUniverse}
 
 import scala.tools.nsc.interpreter._
 
-class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) {
+class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) { loop:SparkILoop =>
   def getMaster(): String = {
     val master = this.master match {
       case Some(m) => m
@@ -23,7 +23,27 @@ class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) {
   //override var intp: SparkIMain = _
 
   // classpath entries added via :cp
-  var addedClasspath: String = ""
+  // CP DOESN'T WORK WITH THIS → var addedClasspath: String = ""
+
+  val addedClasspathGS:(() => String, String=>Unit) = {
+    val getter = classOf[SparkILoop].getDeclaredMethods.find(_.getName == "org$apache$spark$repl$SparkILoop$$addedClasspath").get
+    val get = () => getter.invoke(loop).asInstanceOf[String]
+
+    val setter = classOf[SparkILoop].getDeclaredMethods.find(_.getName == "org$apache$spark$repl$SparkILoop$$addedClasspath_$eq").get
+    val set = (s:String) => { setter.invoke(loop, s); ()}
+
+    (get, set)
+  }
+
+  def addCps(jars:List[String]) = {
+    import scala.tools.nsc.util.ClassPath
+    var s:String = addedClasspathGS._1()
+    jars foreach { jar =>
+      val f = scala.tools.nsc.io.File(jar).normalize
+      s = ClassPath.join(s, f.path)
+    }
+    addedClasspathGS._2(s)
+  }
 
   /** A reverse list of commands to replay if the user requests a :replay */
   var replayCommandStack: List[String] = Nil

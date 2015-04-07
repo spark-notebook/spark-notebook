@@ -40,8 +40,9 @@ object Deps extends java.io.Serializable {
   }
 
   def resolve (includes:Seq[ModuleID], exclusions:Seq[ExclusionRule]=Nil)
-              (implicit resolvers:Seq[Resolver], repo:java.io.File) = {
+              (implicit _resolvers:Seq[Resolver], repo:java.io.File) = {
     val logger: ConsoleLogger = ConsoleLogger(scala.Console.out)
+    val resolvers = Resolver.file("local-repo",  repo / "local")(Resolver.ivyStylePatterns) +: _resolvers
     val configuration: InlineIvyConfiguration = new InlineIvyConfiguration(
                                                       new IvyPaths( repo.getParentFile, Some(repo)),
                                                       resolvers, Nil, Nil, false, None, Nil, None,
@@ -84,6 +85,7 @@ object Deps extends java.io.Serializable {
         println(report)
         report.allFiles
     }
+
     val newJars = files.map(_.getPath).toSet.toList
     newJars
   }
@@ -100,8 +102,6 @@ object Deps extends java.io.Serializable {
     val tryDeps = Try {
       Deps.resolve(includes, excludes)(resolvers, repo)
     }
-
-    //println(tryDeps)
     tryDeps
   }
 

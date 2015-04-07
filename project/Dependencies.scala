@@ -13,8 +13,6 @@ object Dependencies {
 
   val scalaZ                  = "org.scalaz"                %%         "scalaz-core"          %      "7.0.6"
 
-  val dockerApi               = "me.lessis"                 %%          "tugboat"             %      "0.2.0-custom"            excludeAll(ExclusionRule("io.netty"))
-
   val akkaVersion             = "2.3.4-spark"
   val akka                    = "org.spark-project.akka"    %%         "akka-actor"           %    akkaVersion
   val akkaRemote              = "org.spark-project.akka"    %%         "akka-remote"          %    akkaVersion
@@ -49,7 +47,21 @@ object Dependencies {
   val log4j                   = "log4j"                     %             "log4j"             %      "1.2.17"
 
   // to download deps at runtime
-  def sbtForDeps(v:String)    = "org.scala-sbt"             %             "sbt"               %     v
+  def sbtForDeps(v:String)    =  v match {
+    case x if x.startsWith("2.10") => Seq(
+                                        "org.scala-sbt"             %             "sbt"               %     v
+                                      )
+    case _ =>   Seq(
+                  "org.scala-sbt"             %             "sbt"               %     v,
+                  /*
+                    →→ trying to solve the
+                    java.lang.NoSuchMethodError: scala.Predef$.$scope()Lscala/xml/TopScope$;
+                      at sbt.IvySbt$.sbt$IvySbt$$wrapped(Ivy.scala:468)
+
+                  */
+                  "org.scala-lang.modules"    %       "scala-xml_2.11"          %    "1.0.2"
+                )
+  }
 
   // Viz
   val bokeh                   = "io.continuum.bokeh"        %%            "bokeh"             %       "0.2"

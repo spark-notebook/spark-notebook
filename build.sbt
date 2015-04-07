@@ -85,7 +85,6 @@ libraryDependencies ++= Seq(
   //   encountered when using hadoop "2.0.0-cdh4.2.0"
   commonsExec,
   commonsCodec,
-  dockerApi,
   //scala stuffs
   "org.scala-lang" % "scala-library" % defaultScalaVersion,
   "org.scala-lang" % "scala-reflect" % defaultScalaVersion,
@@ -149,9 +148,7 @@ lazy val common = Project(id = "common", base = file("modules/common"))
                                   log4j,
                                   scalaZ
                                 ),
-                                libraryDependencies ++= Seq(
-                                  sbtForDeps(sbtVersion.value)
-                                ),
+                                libraryDependencies ++= sbtForDeps(sbtVersion.value),
                                 // plotting functionality
                                 libraryDependencies ++= Seq(
                                   bokeh,
