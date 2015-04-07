@@ -23,9 +23,6 @@ package object widgets {
     val withSelector = selector.map { s =>
       withData % new UnprefixedAttribute("data-selector", s, Null)
     }.getOrElse(withData)
-
-
-
     withSelector
   }
 
@@ -247,6 +244,10 @@ package object widgets {
     val headers = Seq(Key, Value)
     val values =  Seq(key, value)
   }
+  case class StringPoint(string:String) extends MagicRenderPoint {
+    val headers = Seq("string value")
+    val values  = Seq(string)
+  }
   case class AnyPoint(any:Any) extends MagicRenderPoint {
     val headers = Reflector.toFieldNameArray(any)
     val values  = Reflector.toFieldValueArray(any)
@@ -254,11 +255,12 @@ package object widgets {
 
   implicit def fromMapToPoint(m:Map[_ , _]):Seq[MagicRenderPoint] = m.toSeq.map(e => MapPoint(e._1, e._2))
   implicit def fromSeqToPoint(x:Seq[_]):Seq[MagicRenderPoint] = if (!x.isEmpty) {
-    val points = x.map(i => AnyPoint(i))
+    val points = x.head match {
+      case _:String => x.map(i => StringPoint(i.asInstanceOf[String]))
+      case _        => x.map(i => AnyPoint(i))
+    }
 
-
-
-    val firstPoint = AnyPoint(x.head)
+    val firstPoint = points.head
 
     points.zipWithIndex.map { case (point, index) => point.values match {
       case List(o)    if isNumber(o)  =>  ChartPoint(index, o)

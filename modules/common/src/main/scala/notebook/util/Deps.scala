@@ -76,15 +76,15 @@ object Deps extends java.io.Serializable {
                                                                 UpdateLogging.Full
                                                               )
 
-    val updateEither: Either[UnresolvedWarning, UpdateReport] = IvyActions.updateEither(module, config, UnresolvedWarningConfiguration(), logger)
-    val files = updateEither match {
-      case Left(x) =>
-        scala.Console.err.println(x)
-        Nil
-      case Right(report) =>
+    val files = try {
+        val report: UpdateReport = IvyActions.update(module, config, logger)
         println(report)
         report.allFiles
-    }
+      } catch {
+        case x =>
+        scala.Console.err.println(x)
+        Nil
+      }
 
     val newJars = files.map(_.getPath).toSet.toList
     newJars
@@ -107,29 +107,61 @@ object Deps extends java.io.Serializable {
 
 }
 
-
 object CustomResolvers extends java.io.Serializable {
+  // enable S3 handlers
+  fm.sbt.S3ResolverPlugin
+
+
   // TODO :proxy: val config = ConfigFactory.load().getConfig("remote-repos")
   // TODO :proxy: val proxy = Try(config.getConfig("proxy")).toOption
+  private val authRegex = """(?s)^\s*\(([^\)]+)\)\s*$""".r
+  private val credRegex = """"([^"]+)"\s*,\s*"([^"]+)"""".r //"
 
   def fromString(r:String):(String, Resolver) = {
-    val id::tpe::url::flavor::rest = r.split("%").toList
+    val id::tpe::url::flavor::rest = r.split("%").toList.map(_.trim)
 
-    //TODO : val (username, password):(Option[String],Option[String]) = rest.headOption.map { auth =>
-    //TODO :   auth match {
-    //TODO :     case authRegex(usernamePassword)   =>
-    //TODO :       val (username, password) = usernamePassword match { case credRegex(username, password) => (username, password) }
-    //TODO :       val u = if (username.startsWith("$")) sys.env.get(username.tail).get else username
-    //TODO :       val p = if (password.startsWith("$")) sys.env.get(password.tail).get else password
-    //TODO :       (Some(u), Some(p))
-    //TODO :     case _                             => (None, None)
-    //TODO :   }
-    //TODO : }.getOrElse((None, None))
+    println(">>>>>>>>>><")
+    println(id)
+    println(tpe)
+    println(url)
+    println(flavor)
+    println(rest.headOption)
+    println(rest)
+
+    val (username, password):(Option[String],Option[String]) = rest.headOption.map { auth =>
+      auth match {
+        case authRegex(usernamePassword)   =>
+          val (username, password) = usernamePassword match { case credRegex(username, password) => (username, password) }
+          val u = if (username.startsWith("$")) sys.env.get(username.tail).get else username
+          val p = if (password.startsWith("$")) sys.env.get(password.tail).get else password
+          (Some(u), Some(p))
+        case _                             => (None, None)
+      }
+    }.getOrElse((None, None))
 
     val rem = flavor match {
-      case "maven" => new MavenRepository(id.trim, url.trim)//Repos(id.trim,tpe.trim,url.trim,username,password)
-      case "ivy"   => Resolver.url(id.trim, new URL(url.trim))(Resolver.ivyStylePatterns)
+      case r if url.startsWith("s3") => new fm.sbt.S3RawRepository(id).atS3(url)
+      case "maven"                   => new MavenRepository(id, url)
+      case "ivy"                     => Resolver.url(id, new URL(url))(Resolver.ivyStylePatterns)
     }
+
+    for {
+      user <- username
+      pwd <- password
+    } {
+      rem match {
+        case s:RawRepository if s.resolver.isInstanceOf[fm.sbt.S3URLResolver] =>
+          import com.amazonaws.SDKGlobalConfiguration.{ACCESS_KEY_SYSTEM_PROPERTY, SECRET_KEY_SYSTEM_PROPERTY}
+          val bucket = url.dropWhile(_ != '/').drop("//".size).takeWhile(_ != '/')
+          // @ see https://github.com/frugalmechanic/fm-sbt-s3-resolver/blob/3b400e9f9f51fb065608502715139823063274ce/src/main/scala/fm/sbt/S3URLHandler.scala#L59
+          System.setProperty(s"$bucket.$ACCESS_KEY_SYSTEM_PROPERTY", user)
+          System.setProperty(s"$bucket.$SECRET_KEY_SYSTEM_PROPERTY", pwd)
+        case r  =>
+          val u = new java.net.URL(url)
+          sbt.Credentials.add(id, u.getHost, user, pwd)
+      }
+    }
+
     val logR = r.replaceAll("\"", "\\\\\"")
     (logR, rem)
   }
