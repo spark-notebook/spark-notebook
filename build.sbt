@@ -148,7 +148,8 @@ lazy val common = Project(id = "common", base = file("modules/common"))
                                   log4j,
                                   scalaZ
                                 ),
-                                libraryDependencies ++= sbtForDeps(sbtVersion.value),
+                                libraryDependencies ++= sbtForDeps(scalaBinaryVersion.value, sbtVersion.value),
+                                //addSbtPlugin("com.frugalmechanic" % "fm-sbt-s3-resolver" % "0.5.0"), // WARN ONLY 2.10 0.13 available !!!!
                                 // plotting functionality
                                 libraryDependencies ++= Seq(
                                   bokeh,
