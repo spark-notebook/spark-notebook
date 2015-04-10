@@ -106,11 +106,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     //val i = new HackIMain(settings, stdout)
     loop = new HackSparkILoop(stdout)
 
-    jars.foreach { jar =>
-      import scala.tools.nsc.util.ClassPath
-      val f = scala.tools.nsc.io.File(jar).normalize
-      loop.addedClasspath = ClassPath.join(loop.addedClasspath, f.path)
-    }
+    loop.addCps(jars)
 
     loop.process(settings)
     val i = {
@@ -259,8 +255,10 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     val requests = interp.getClass.getMethods.find(_.getName == "prevRequestList").map(_.invoke(interp)).get.asInstanceOf[List[interp.Request]]
 
     val prevCode = requests.map(_.originalLine)
-    val r = new Repl(compilerOpts, newJars:::jars)
-    (r, () => prevCode.drop(7/*init scripts... → UNSAFE*/) foreach (c => r.evaluate(c, _ => ())))
+    val jarList = newJars:::jars
+    val r = new Repl(compilerOpts, jarList)
+    (r, () => prevCode.dropWhile(_.trim != "\"END INIT\"") foreach (c => r.evaluate(c, _ => ())))
+
   }
 
   def complete(line: String, cursorPosition: Int): (String, Seq[Match]) = {

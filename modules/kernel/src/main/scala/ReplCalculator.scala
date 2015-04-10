@@ -58,9 +58,10 @@ class ReplCalculator(
   customDeps:Option[List[String]],
   customImports:Option[List[String]],
   customSparkConf:Option[Map[String, String]],
-  initScripts: List[(String, String)],
+  _initScripts: List[(String, String)],
   compilerArgs: List[String]
 ) extends Actor with akka.actor.ActorLogging {
+  val initScripts = _initScripts ::: List(("end", "\"END INIT\""))
 
   private val repoRegex = "(?s)^:local-repo\\s*(.+)\\s*$".r
   private val remoteRegex = "(?s)^:remote-repo\\s*(.+)\\s*$".r
