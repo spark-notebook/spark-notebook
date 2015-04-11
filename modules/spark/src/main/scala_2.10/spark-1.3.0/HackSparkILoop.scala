@@ -24,7 +24,7 @@ class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) { loo
 
   // classpath entries added via :cp
   // CP DOESN'T WORK WITH THIS → var addedClasspath: String = ""
-
+  //var addedClasspath: String = ""
   val addedClasspathGS:(() => String, String=>Unit) = {
     val getter = classOf[SparkILoop].getDeclaredMethods.find(_.getName == "org$apache$spark$repl$SparkILoop$$addedClasspath").get
     val get = () => getter.invoke(loop).asInstanceOf[String]
