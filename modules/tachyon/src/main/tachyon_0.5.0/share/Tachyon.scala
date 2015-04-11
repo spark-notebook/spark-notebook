@@ -46,9 +46,29 @@ object Tachyon {
   lazy val fs:TachyonFS = sLocalTachyonCluster.getClient()
 
   lazy val start = {
+    println("""
+      |*******************************************
+      |********** STARTING TACHYON  **************
+      |*******************************************
+      |""".stripMargin.trim)
     sLocalTachyonCluster.start();
     println(s"Tachyon running on http://$host:$port")
-    println(">>> "+System.getProperty("tachyon.master.web.port"))
+    println("<<< Some properties >>>")
+    println(" →) tachyon.home                                   " + System.getProperty("tachyon.home"))
+    println(" →) tachyon.master.hostname                        " + System.getProperty("tachyon.master.hostname"))
+    println(" →) tachyon.master.journal.folder                  " + System.getProperty("tachyon.master.journal.folder"))
+    println(" →) tachyon.master.port                            " + System.getProperty("tachyon.master.port"))
+    println(" →) tachyon.master.web.port                        " + System.getProperty("tachyon.master.web.port"))
+    println(" →) tachyon.worker.port                            " + System.getProperty("tachyon.worker.port"))
+    println(" →) tachyon.worker.data.port                       " + System.getProperty("tachyon.worker.data.port"))
+    println(" →) tachyon.worker.data.folder                     " + System.getProperty("tachyon.worker.data.folder"))
+    println(" →) tachyon.worker.memory.size                     " + System.getProperty("tachyon.worker.memory.size"))
+    println(" →) tachyon.worker.to.master.heartbeat.interval.ms " + System.getProperty("tachyon.worker.to.master.heartbeat.interval.ms"))
+    println(" →) tachyon.underfs.address                        " + System.getProperty("tachyon.underfs.address"))
+    println(" →) tachyon.user.remote.read.buffer.size.byte      " + System.getProperty("tachyon.user.remote.read.buffer.size.byte"))
+    println(" →) tachyon.user.quota.unit.bytes                  " + System.getProperty("tachyon.user.quota.unit.bytes"))
+    println(" →) tachyon.max.columns                            " + System.getProperty("tachyon.max.columns"))
+
     sLocalTachyonCluster
   }
 
