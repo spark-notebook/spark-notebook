@@ -63,8 +63,6 @@ class ReplCalculator(
 ) extends Actor with akka.actor.ActorLogging {
   val initScripts = _initScripts ::: List(("end", "\"END INIT\""))
 
-  val initScripts = _initScripts ::: List(("end", "\"END INIT\""))
-
   private val repoRegex = "(?s)^:local-repo\\s*(.+)\\s*$".r
   private val resolverRegex = "(?s)^:resolver\\s*(.+)\\s*$".r
   private val authRegex = """(?s)^\s*\(([^\)]+)\)\s*$""".r
