@@ -18,15 +18,16 @@ object Dependencies {
   val akkaRemote              = "org.spark-project.akka"    %%         "akka-remote"          %    akkaVersion
   val akkaSlf4j               = "org.spark-project.akka"    %%          "akka-slf4j"          %    akkaVersion
 
+
   val defaultScalaVersion     = sys.props.getOrElse("scala.version", "2.10.4")
   val breeze                  = "org.scalanlp"              %%         "breeze"               %       "0.10"        excludeAll(ExclusionRule("junit"), ExclusionRule("org.apache.commons", "commons-math3"))
   val defaultSparkVersion     = sys.props.getOrElse("spark.version", "1.3.0")
-  def sparkCore(v:String)     = "org.apache.spark"          %%         "spark-core"           %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
+  def sparkCore(v:String)     = "org.apache.spark"          %%         "spark-core"           %         v           excludeAll(ExclusionRule("org.apache.hadoop"), ExclusionRule("org.apache.ivy", "ivy"))
   def sparkYarn(v:String)     =
     if (v == "1.2.0") {
-      "org.apache.spark"          %%         "spark-yarn"           %         (v + "-adatao") excludeAll(ExclusionRule("org.apache.hadoop"))
+      "org.apache.spark"          %%         "spark-yarn"           %         (v + "-adatao") excludeAll(ExclusionRule("org.apache.hadoop"), ExclusionRule("org.apache.ivy", "ivy"))
     } else {
-      "org.apache.spark"          %%         "spark-yarn"           %         v              excludeAll(ExclusionRule("org.apache.hadoop"))
+      "org.apache.spark"          %%         "spark-yarn"           %         v              excludeAll(ExclusionRule("org.apache.hadoop"), ExclusionRule("org.apache.ivy", "ivy"))
     }
   def sparkRepl(v:String)     = "org.apache.spark"          %%         "spark-repl"           %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
   def sparkSQL (v:String)     = "org.apache.spark"          %%         "spark-sql"            %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
@@ -46,10 +47,25 @@ object Dependencies {
   val log4j                   = "log4j"                     %             "log4j"             %      "1.2.17"
 
   // to download deps at runtime
-  val aetherApi               = "org.sonatype.aether"       %          "aether-api"           %     "1.13"
-  val jcabiAether             = "com.jcabi"                 %         "jcabi-aether"          %     "0.10.1"
-  val mavenCore               = "org.apache.maven"          %          "maven-core"           %     "3.0.5"
-  val ningAsyncHttpClient     = "com.ning"                  %       "async-http-client"       %     "[1.6.5, 1.6.5]" force()
+  def sbtForDeps(scalaBinaryVersion:String, sbtVersion:String)    =  (scalaBinaryVersion match {
+    case "2.10" => Nil
+    case _ =>   List(
+                  /*
+                    →→ trying to solve the
+                    java.lang.NoSuchMethodError: scala.Predef$.$scope()Lscala/xml/TopScope$;
+                      at sbt.IvySbt$.sbt$IvySbt$$wrapped(Ivy.scala:468)
+
+                  */
+                  "org.scala-lang.modules"    %       "scala-xml_2.11"          %    "1.0.2"
+                )
+  }) ::: List(
+    "org.scala-sbt"             %             "sbt"                         %     sbtVersion    excludeAll((ExclusionRule("org.apache.ivy", "ivy"))),
+     ("com.frugalmechanic" % "fm-sbt-s3-resolver" % "0.5.0") // WARN ONLY 2.10 0.13 available !!!!
+      .extra( CustomPomParser.SbtVersionKey -> sbtVersion.reverse.dropWhile(_ != '.').drop(".".size).reverse,
+              CustomPomParser.ScalaVersionKey -> scalaBinaryVersion)
+      .copy(crossVersion = CrossVersion.Disabled)
+      .excludeAll(ExclusionRule("org.apache.ivy", "ivy"))
+  )
 
   // Viz
   val bokeh                   = "io.continuum.bokeh"        %%            "bokeh"             %       "0.2"

@@ -7,82 +7,16 @@ import scala.util.Try
 
 import com.typesafe.config.{ConfigFactory, Config}
 
-import org.apache.maven.project.MavenProject
-import org.sonatype.aether.repository.{RemoteRepository, Proxy => AetherProxy}
-import org.sonatype.aether.repository.Authentication
-import org.sonatype.aether.artifact.Artifact
-import org.sonatype.aether.util.artifact.DefaultArtifact
-import org.sonatype.aether.graph._
-import org.sonatype.aether.util.filter.ExclusionsDependencyFilter
-import com.jcabi.aether.Aether
-
-
-object Repos extends java.io.Serializable {
-  @transient val central = new RemoteRepository(
-    "maven-central",
-    "default",
-    "http://repo1.maven.org/maven2/"
-  )
-
-  @transient val oss = new RemoteRepository(
-    "oss-sonatype",
-    "default",
-    "https://oss.sonatype.org/content/repositories/releases/"
-  )
-
-  val config = ConfigFactory.load().getConfig("remote-repos")
-  val proxy = Try(config.getConfig("proxy")).toOption
-
-  // helper
-  def apply(id:String, name:String, url:String, username:Option[String] = None, password:Option[String] = None) = {
-    val r = new RemoteRepository(id, name, url)
-    for {
-      u <- username
-      p <- password
-    } {
-      r.setAuthentication(new Authentication(u, p))
-    }
-    for {
-      p        <- proxy
-      protocol <- Try(p.getString("protocol")).toOption
-      host     <- Try(p.getString("host")).toOption
-      port     <- Try(p.getInt("port")).toOption
-    } {
-      val auth = (for {
-        username <- Try(p.getString("username")).toOption
-        password <- Try(p.getString("password")).toOption
-      } yield new Authentication(username, password)).getOrElse(null)
-      val px = new AetherProxy(protocol, host, port, auth)
-      r.setProxy(px)
-    }
-    r
-  }
-
-  //alias for clarity
-  def s3(id:String, name:String, url:String, key:String, secret:String) = Repos.apply(id, name, url, Some(key), Some(secret))
-}
-
-case class ArtifactMD(group:String, artifact:String, version:String, extension:Option[String]=None, classifier:Option[String]=None)
-case class ArtifactSelector(group:Option[String]=None, artifact:Option[String]=None, version:Option[String]=None)
-object ArtifactSelector {
-  def apply(group:String, artifact:String, version:String):ArtifactSelector =
-    ArtifactSelector(Some(group), Some(artifact), Some(version))
-  def group(group:String) =
-    ArtifactSelector(group=Some(group))
-  def artifact(group:String, artifact:String) =
-    ArtifactSelector(group=Some(group), artifact=Some(artifact))
-}
+import sbt._
 
 object Deps extends java.io.Serializable {
-  type ArtifactPredicate = PartialFunction[(ArtifactMD, Set[ArtifactMD]), Boolean]
-
-  def parseInclude(s:String):Option[ArtifactMD] = {
+  def parseInclude(s:String):Option[ModuleID] = {
     s.headOption.filter(_ != '-').map(_ => s.dropWhile(_=='+').trim).flatMap { line =>
       line.replaceAll("\"", "").split("%").toList match {
         case List(g, a, v) =>
-          Some(ArtifactMD(g.trim, a.trim, v.trim))
+          Some(g.trim % a.trim % v.trim % "compile")
         case List(g, a, v, p) =>
-          Some(ArtifactMD(g.trim, a.trim, v.trim, Some(p.trim)))
+          Some(g.trim % a.trim % v.trim % p.trim)
         case _             =>
           None
       }
@@ -90,76 +24,174 @@ object Deps extends java.io.Serializable {
   }
 
   def parsePartialExclude = (s:String) => s.trim match {
-    case "_" => None
-    case ""  => None
-    case x   => Some(x)
+    case "_" => "*"
+    case ""  => "*"
+    case x   => x
   }
-  def parseExclude(s:String):Option[ArtifactSelector] = {
+  def parseExclude(s:String):Option[ExclusionRule] = {
     s.headOption.filter(_ == '-').map(_ => s.dropWhile(_=='-').trim).flatMap { line =>
       line.replaceAll("\"", "").split("%").toList match {
         case List(g, a, v) =>
-          Some(ArtifactSelector(parsePartialExclude(g), parsePartialExclude(a), parsePartialExclude(v)))
+          Some(ExclusionRule(organization = parsePartialExclude(g), name = parsePartialExclude(a)))
         case _             =>
           None
       }
     }
   }
 
-  def matchAMD(selector:ArtifactSelector, a:ArtifactMD) =
-      selector.group.getOrElse(a.group) == a.group &&
-      selector.artifact.getOrElse(a.artifact) == a.artifact &&
-      selector.version.getOrElse(a.version) == a.version
+  def resolve (includes:Seq[ModuleID], exclusions:Seq[ExclusionRule]=Nil)
+              (implicit _resolvers:Seq[Resolver], repo:java.io.File) = {
+    val logger: ConsoleLogger = ConsoleLogger(scala.Console.out)
+    val resolvers = Resolver.file("local-repo",  repo / "local")(Resolver.ivyStylePatterns) +: _resolvers
+    val configuration: InlineIvyConfiguration = new InlineIvyConfiguration(
+                                                      new IvyPaths( repo.getParentFile, Some(repo)),
+                                                      resolvers, Nil, Nil, false, None, Nil, None,
+                                                      UpdateOptions(), logger
+                                                    )
+    val ivy = new IvySbt(configuration)
 
-  def transitiveExclude(selector:ArtifactSelector):ArtifactPredicate = {
-    case (a, _) if matchAMD(selector, a) => true
-    case (_, xs) => {
-      val p:PartialFunction[ArtifactMD,Boolean] = { case a if matchAMD(selector, a) => true }
-      xs exists (x => p.isDefinedAt(x) && p(x))
-    }
-  }
+    val deps:Seq[ModuleID] = includes map { include => include.excludeAll(exclusions:_*)}
 
+    val conf = InlineConfiguration(
+      "org.scala-lang" % "scala" % (notebook.BuildInfo.scalaVersion/*notebook.BuildInfo.scalaVersion*/) % "compile",
+      ModuleInfo("dl deps"),
+      deps,
+      Set.empty,
+      scala.xml.NodeSeq.Empty,
+      Seq(Compile, Test, Runtime),
+      None,
+      Some(new IvyScala(
+        scalaFullVersion = notebook.BuildInfo.scalaVersion/*notebook.BuildInfo.scalaVersion*/,
+        scalaBinaryVersion = cross.CrossVersionUtil.binaryScalaVersion(notebook.BuildInfo.scalaVersion/*notebook.BuildInfo.scalaVersion*/),
+        configurations = Nil,
+        checkExplicit = true,
+        filterImplicit = false,
+        overrideScalaVersion = false
+      ))
+    )
+    val module: IvySbt#Module = new ivy.Module(conf)
 
-  def resolve (include:ArtifactMD, exclusions:Set[ArtifactPredicate]=Set.empty)
-              (implicit remotes:List[RemoteRepository], repo:java.io.File) = {
-    val exc = new DependencyFilter {
-      def accept(node:DependencyNode, parents:java.util.List[DependencyNode] ):Boolean = {
-        val ex = exclusions exists { case f =>
-                  val na = node.getDependency.getArtifact
-                  val a = ArtifactMD(na.getGroupId, na.getArtifactId, na.getVersion, Option(na.getExtension))
-                  val sa = parents.map(n => n.getDependency.getArtifact)
-                                  .map(na => ArtifactMD(na.getGroupId, na.getArtifactId, na.getVersion, Option(na.getExtension)))
-                                  .toSet
-                  f.isDefinedAt((a, sa)) && f(a, sa)
-                }
-        !ex
+    val config: UpdateConfiguration = new UpdateConfiguration(  None,//Some(new RetrieveConfiguration(baseDir, Resolver.defaultRetrievePattern)),
+                                                                false,
+                                                                UpdateLogging.Full
+                                                              )
+
+    val files = try {
+        val report: UpdateReport = IvyActions.update(module, config, logger)
+        println(report)
+        report.allFiles
+      } catch {
+        case x =>
+        scala.Console.err.println(x)
+        Nil
       }
-    }
 
-    val artifact = new DefaultArtifact(include.group, include.artifact, "", include.extension.getOrElse("jar"), include.version)
-    val deps:Set[Artifact] =  new Aether(remotes, repo).resolve(
-                                artifact,
-                                "runtime",
-                                exc
-                              ).toSet
-
-    val newJars = deps.map(_.getFile.getPath).toSet.toList
+    val newJars = files.map(_.getPath).toSet.toList
     newJars
   }
 
-  def script(cp:String, remotes:List[RemoteRepository], repo:java.io.File):Try[List[String]] = {
+
+  def script(cp:String, resolvers:List[Resolver], repo:java.io.File):Try[List[String]] = {
     //println(" -------------- DP --------------- ")
-    val lines = cp.trim().split("\n").toList.map(_.trim()).filter(_.size > 0).toSet
+    val lines = cp.trim().split("\n").toList.map(_.trim()).filter(_.size > 0).toSet.toSeq
     val includes = lines map (Deps.parseInclude _) collect { case Some(x) => x }
     //println(includes)
     val excludes = lines map (Deps.parseExclude _) collect { case Some(x) => x }
     //println(excludes)
-    val excludesFns = excludes map (Deps.transitiveExclude _)
 
-    val tryDeps:Try[List[String]] = includes.foldLeft(Try(List.empty[String])) { case (t, a) =>
-      t flatMap { l => Try(l ::: Deps.resolve(a, excludesFns)(remotes, repo)) }
+    val tryDeps = Try {
+      Deps.resolve(includes, excludes)(resolvers, repo)
     }
-    //println(tryDeps)
     tryDeps
   }
 
+}
+
+object CustomResolvers extends java.io.Serializable {
+  // enable S3 handlers
+  fm.sbt.S3ResolverPlugin
+
+
+  // TODO :proxy: val config = ConfigFactory.load().getConfig("remote-repos")
+  // TODO :proxy: val proxy = Try(config.getConfig("proxy")).toOption
+  private val authRegex = """(?s)^\s*\(([^\)]+)\)\s*$""".r
+  private val credRegex = """"([^"]+)"\s*,\s*"([^"]+)"""".r //"
+
+  def fromString(r:String):(String, Resolver) = {
+    val id::tpe::url::flavor::rest = r.split("%").toList.map(_.trim)
+
+    println(">>>>>>>>>><")
+    println(id)
+    println(tpe)
+    println(url)
+    println(flavor)
+    println(rest.headOption)
+    println(rest)
+
+    val (username, password):(Option[String],Option[String]) = rest.headOption.map { auth =>
+      auth match {
+        case authRegex(usernamePassword)   =>
+          val (username, password) = usernamePassword match { case credRegex(username, password) => (username, password) }
+          val u = if (username.startsWith("$")) sys.env.get(username.tail).get else username
+          val p = if (password.startsWith("$")) sys.env.get(password.tail).get else password
+          (Some(u), Some(p))
+        case _                             => (None, None)
+      }
+    }.getOrElse((None, None))
+
+    val rem = flavor match {
+      case r if url.startsWith("s3") => new fm.sbt.S3RawRepository(id).atS3(url)
+      case "maven"                   => new MavenRepository(id, url)
+      case "ivy"                     => Resolver.url(id, new URL(url))(Resolver.ivyStylePatterns)
+    }
+
+    for {
+      user <- username
+      pwd <- password
+    } {
+      rem match {
+        case s:RawRepository if s.resolver.isInstanceOf[fm.sbt.S3URLResolver] =>
+          import com.amazonaws.SDKGlobalConfiguration.{ACCESS_KEY_SYSTEM_PROPERTY, SECRET_KEY_SYSTEM_PROPERTY}
+          val bucket = url.dropWhile(_ != '/').drop("//".size).takeWhile(_ != '/')
+          // @ see https://github.com/frugalmechanic/fm-sbt-s3-resolver/blob/3b400e9f9f51fb065608502715139823063274ce/src/main/scala/fm/sbt/S3URLHandler.scala#L59
+          System.setProperty(s"$bucket.$ACCESS_KEY_SYSTEM_PROPERTY", user)
+          System.setProperty(s"$bucket.$SECRET_KEY_SYSTEM_PROPERTY", pwd)
+        case r  =>
+          val u = new java.net.URL(url)
+          sbt.Credentials.add(id, u.getHost, user, pwd)
+      }
+    }
+
+    val logR = r.replaceAll("\"", "\\\\\"")
+    (logR, rem)
+  }
+
+
+  def apply(id:String, name:String, url:String, username:Option[String] = None, password:Option[String] = None):Option[Resolver] = {
+    //val r = new RemoteRepository(id, name, url)
+    //for {
+    //  u <- username
+    //  p <- password
+    //} {
+    //  r.setAuthentication(new Authentication(u, p))
+    //}
+    //for {
+    //  p        <- proxy
+    //  protocol <- Try(p.getString("protocol")).toOption
+    //  host     <- Try(p.getString("host")).toOption
+    //  port     <- Try(p.getInt("port")).toOption
+    //} {
+    //  val auth = (for {
+    //    username <- Try(p.getString("username")).toOption
+    //    password <- Try(p.getString("password")).toOption
+    //  } yield new Authentication(username, password)).getOrElse(null)
+    //  val px = new AetherProxy(protocol, host, port, auth)
+    //  r.setProxy(px)
+    //}
+    //r
+    ???
+  }
+
+  //alias for clarity
+  def s3(id:String, name:String, url:String, key:String, secret:String) = ???//Repos.apply(id, name, url, Some(key), Some(secret))
 }
