@@ -2,7 +2,7 @@ import Dependencies._
 
 import Shared._
 
-//play.Project.playScalaSettings
+import sbtbuildinfo.Plugin._
 
 organization := "noootsab"
 
@@ -10,7 +10,7 @@ name := "spark-notebook"
 
 scalaVersion := defaultScalaVersion
 
-version in ThisBuild <<= (scalaVersion, sparkVersion, hadoopVersion) { (sc, sv, hv) => s"0.4.0-scala-$sc-spark-$sv-hadoop-$hv" }
+version in ThisBuild <<= (scalaVersion, sparkVersion, hadoopVersion) { (sc, sv, hv) => s"0.4.1-scala-$sc-spark-$sv-hadoop-$hv" }
 
 maintainer := "Andy Petrella" //Docker
 
@@ -36,7 +36,9 @@ resolvers in ThisBuild ++=  Seq(
                               Resolver.sonatypeRepo("releases"),
                               Resolver.typesafeIvyRepo("releases"),
                               Resolver.typesafeIvyRepo("snapshots"),
-                              "cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos"
+                              "cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos",
+                              // docker
+                              "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
                             )
 
 EclipseKeys.skipParents in ThisBuild := false
@@ -85,7 +87,7 @@ libraryDependencies ++= Seq(
   //   encountered when using hadoop "2.0.0-cdh4.2.0"
   commonsExec,
   commonsCodec,
-  ningAsyncHttpClient, // for aether to work...
+  //scala stuffs
   "org.scala-lang" % "scala-library" % defaultScalaVersion,
   "org.scala-lang" % "scala-reflect" % defaultScalaVersion,
   "org.scala-lang" % "scala-compiler" % defaultScalaVersion
@@ -147,11 +149,8 @@ lazy val common = Project(id = "common", base = file("modules/common"))
                                   log4j,
                                   scalaZ
                                 ),
-                                libraryDependencies ++= Seq(
-                                  aetherApi,
-                                  jcabiAether,
-                                  mavenCore
-                                ),
+                                libraryDependencies ++= sbtForDeps(scalaBinaryVersion.value, sbtVersion.value),
+                                //addSbtPlugin("com.frugalmechanic" % "fm-sbt-s3-resolver" % "0.5.0"), // WARN ONLY 2.10 0.13 available !!!!
                                 // plotting functionality
                                 libraryDependencies ++= Seq(
                                   bokeh,
@@ -164,6 +163,15 @@ lazy val common = Project(id = "common", base = file("modules/common"))
                               .settings(
                                 sparkSettings:_*
                               )
+                              .settings(
+                                buildInfoSettings:_*
+                              )
+                              .settings(
+                                sourceGenerators in Compile <+= buildInfo,
+                                buildInfoKeys := Seq[BuildInfoKey](version, scalaVersion, sparkVersion , hadoopVersion , jets3tVersion , jlineDef, sbtVersion),
+                                buildInfoPackage := "notebook"
+                              )
+
 
 lazy val spark = Project(id = "spark", base = file("modules/spark"))
                               .dependsOn(common, subprocess, observable)

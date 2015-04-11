@@ -573,6 +573,21 @@ object Application extends Controller {
     }
   }
 
+  // docker
+  val docker /*:Option[tugboat.Docker]*/ = None // SEE dockerlist branch! → still some issues due to tugboat
+
+  def dockerAvailable = Action {
+    Ok(Json.obj("available" → docker.isDefined)).withHeaders(
+      "Access-Control-Allow-Origin" -> "*",
+      "Access-Control-Allow-Methods" -> "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers" -> "Accept, Origin, Content-type",
+      "Access-Control-Allow-Credentials" -> "true"
+    )
+  }
+
+  def dockerList = TODO // SEE dockerlist branch! → still some isues due to tugboat
+
+
   // util
   object ImperativeWebsocket {
 
