@@ -517,7 +517,7 @@ The JavaScript function will be called with these parameters:
  * the dom element: so that it can update it with custom behavior
  * an extra object: any additional data, configuration or whatever that comes from the Scala side
 
-Here is how this can be used, with a predefined `consoleDir` JS function ([see here](https://github.com/andypetrella/spark-notebook/blob/master/observable/src/main/assets/observable/js/consoleDir.coffee)):
+Here is how this can be used, with a predefined `consoleDir` JS function ([see here](https://github.com/andypetrella/spark-notebook/blob/master/app/assets/javascripts/notebook/consoleDir.coffee)):
 
 ![Simple Playground](https://raw.github.com/andypetrella/spark-notebook/master/images/simple-pg.png)
 

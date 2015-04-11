@@ -61,6 +61,7 @@ class ReplCalculator(
   _initScripts: List[(String, String)],
   compilerArgs: List[String]
 ) extends Actor with akka.actor.ActorLogging {
+  val initScripts = _initScripts ::: List(("end", "\"END INIT\""))
 
   val initScripts = _initScripts ::: List(("end", "\"END INIT\""))
 
