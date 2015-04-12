@@ -274,9 +274,11 @@ define([
 
 
     NotebookList.prototype.add_link = function (model, item) {
-        var path = model.path,
+        var id = model.id,
+            path = model.path,
             name = model.name;
         item.data('name', name);
+        item.data('id', id);
         item.data('path', path);
         item.find(".item_name").text(name);
         var icon = NotebookList.icons[model.type];
