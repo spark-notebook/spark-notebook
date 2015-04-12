@@ -13,6 +13,7 @@ GET     /api/config/common                                            controller
 GET     /api/config/notebook                                          controllers.Application.configNotebook()
 GET     /api/kernelspecs                                              controllers.Application.kernelSpecs()
 
+DELETE  /api/sessions/:kernelId                                       controllers.Application.terminateKernel(kernelId:String)
 POST    /api/sessions                                                 controllers.Application.createSession()
 GET     /api/sessions                                                 controllers.Application.sessions()
 
@@ -48,7 +49,7 @@ GET     /dockers                                                      controller
 
 # Web Sockets
 GET     /ws/observable/:contextId                                     controllers.Application.openObservable(contextId:String)
-GET     /ws/api/kernels/:kernelId/channels                            controllers.Application.openKernel(kernelId:String)
+GET     /ws/api/kernels/:kernelId/channels                            controllers.Application.openKernel(kernelId:String,session_id:String)
 
 
 # Map static resources from the /public folder to the /assets URL path
