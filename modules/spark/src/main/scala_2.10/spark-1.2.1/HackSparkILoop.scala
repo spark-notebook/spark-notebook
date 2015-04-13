@@ -99,7 +99,4 @@ class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) {
 
     true
   }
-
-
-
 }

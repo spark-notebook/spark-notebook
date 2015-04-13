@@ -23,9 +23,6 @@ package object widgets {
     val withSelector = selector.map { s =>
       withData % new UnprefixedAttribute("data-selector", s, Null)
     }.getOrElse(withData)
-
-
-
     withSelector
   }
 

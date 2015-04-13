@@ -25,7 +25,6 @@ class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) { loo
   // classpath entries added via :cp
   // CP DOESN'T WORK WITH THIS → var addedClasspath: String = ""
   //var addedClasspath: String = ""
-
   val addedClasspathGS:(() => String, String=>Unit) = {
     val getter = classOf[SparkILoop].getDeclaredMethods.find(_.getName == "org$apache$spark$repl$SparkILoop$$addedClasspath").get
     val get = () => getter.invoke(loop).asInstanceOf[String]
@@ -45,7 +44,6 @@ class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) { loo
     }
     addedClasspathGS._2(s)
   }
-
 
   /** A reverse list of commands to replay if the user requests a :replay */
   var replayCommandStack: List[String] = Nil
