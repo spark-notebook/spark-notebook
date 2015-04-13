@@ -3,6 +3,7 @@ package client
 
 import java.io.{File, FileWriter}
 
+import scala.concurrent.duration._
 import scala.util.{Try, Success=>TSuccess, Failure=>TFailure}
 
 import akka.actor.{ActorLogging, Props, Actor}
@@ -129,6 +130,40 @@ class ReplCalculator(
     r
   }
 
+  // +/- copied of https://github.com/scala/scala/blob/v2.11.4/src%2Flibrary%2Fscala%2Fconcurrent%2Fduration%2FDuration.scala
+  final def toCoarsest(d:FiniteDuration): String = {
+
+    def loop(length: Long, unit: TimeUnit, acc:String): String = {
+
+      def coarserOrThis(coarser: TimeUnit, divider: Int) = {
+        if (length == divider)
+          loop(1, coarser, acc)
+        else if (length < divider)
+          FiniteDuration(length, unit).toString + " " + acc
+        else {
+          val _acc = if (length % divider == 0) {
+            acc
+          } else {
+            FiniteDuration(length % divider, unit).toString + " " + acc
+          }
+          loop(length / divider, coarser, _acc)
+        }
+      }
+
+      unit match {
+        case DAYS         => d.toString + " " + acc
+        case HOURS        => coarserOrThis(DAYS, 24)
+        case MINUTES      => coarserOrThis(HOURS, 60)
+        case SECONDS      => coarserOrThis(MINUTES, 60)
+        case MILLISECONDS => coarserOrThis(SECONDS, 1000)
+        case MICROSECONDS => coarserOrThis(MILLISECONDS, 1000)
+        case NANOSECONDS  => coarserOrThis(MICROSECONDS, 1000)
+      }
+    }
+
+    if (d.unit == DAYS || d.length == 0) d.toString
+    else loop(d.length, d.unit, "").trim
+  }
 
   // Make a child actor so we don't block the execution on the main thread, so that interruption can work
   private val executor = context.actorOf(Props(new Actor {
@@ -153,7 +188,7 @@ class ReplCalculator(
 
     def receive = {
       case ExecuteRequest(_, code) =>
-        val (result, _) = {
+        val (timeToEval, (result, _)) = {
           val newCode =
             code match {
               case resolverRegex(r) =>
@@ -249,12 +284,14 @@ class ReplCalculator(
                   c
               case _ => code
             }
+          val start = System.currentTimeMillis
           val result = repl.evaluate(newCode, msg => sender ! StreamResponse(msg, "stdout"))
-          result
+          val d = toCoarsest(Duration(System.currentTimeMillis - start, MILLISECONDS))
+          (d, result)
         }
 
         result match {
-          case Success(result)     => sender ! ExecuteResponse(result.toString)
+          case Success(result)     => sender ! ExecuteResponse(result.toString + s"\n <div class='pull-right text-info'><small>$timeToEval</small></div>")
           case Failure(stackTrace) => sender ! ErrorResponse(stackTrace, false)
           case kernel.Incomplete   => sender ! ErrorResponse("", true)
         }
