@@ -258,7 +258,6 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     val jarList = newJars:::jars
     val r = new Repl(compilerOpts, jarList)
     (r, () => prevCode.dropWhile(_.trim != "\"END INIT\"") foreach (c => r.evaluate(c, _ => ())))
-
   }
 
   def complete(line: String, cursorPosition: Int): (String, Seq[Match]) = {

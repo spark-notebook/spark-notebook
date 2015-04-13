@@ -88,6 +88,7 @@ define([
         this.notebook = options.notebook;
         this.collapsed = false;
         this.input_collapsed = false;
+        this.output_stream_collapsed = false;
         this.events = options.events;
         this.tooltip = options.tooltip;
         this.config = options.config;
@@ -531,6 +532,10 @@ define([
         this.output_area.toggle_output();
     };
 
+    CodeCell.prototype.toggle_output_stream = function () {
+        this.output_area.toggle_output_stream();
+    };
+
     CodeCell.prototype.toggle_input = function () {
         this.output_area.toggle_input();
     };
@@ -627,6 +632,7 @@ define([
         data.metadata.trusted = this.output_area.trusted;
         data.metadata.collapsed = this.output_area.collapsed;
         data.metadata.input_collapsed = this.output_area.input_collapsed;
+        data.metadata.output_stream_collapsed = this.output_area.output_stream_collapsed;
         if (this.output_area.scroll_state === 'auto') {
             delete data.metadata.scrolled;
         } else {

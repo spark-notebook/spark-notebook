@@ -12,6 +12,7 @@ require([
     'contents',
     'tree/js/notebooklist',
     'tree/js/clusterlist',
+    'tree/js/dockerlist',
     'tree/js/sessionlist',
     'tree/js/kernellist',
     'tree/js/terminallist',
@@ -32,6 +33,7 @@ require([
     contents_service,
     notebooklist,
     clusterlist,
+    dockerlist,
     sesssionlist,
     kernellist,
     terminallist,
@@ -81,6 +83,12 @@ require([
     var cluster_list = new clusterlist.ClusterList('#cluster_list', $.extend({
         contents: contents,
         new_notebook: new_buttons},
+        common_options));
+
+    var docker_list = new dockerlist.DockerList('#docker_list', $.extend({
+            contents: contents,
+            new_docker: null//new_buttons
+        },
         common_options));
 
     var interval_id=0;
