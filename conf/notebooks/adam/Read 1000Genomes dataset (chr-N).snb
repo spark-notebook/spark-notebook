@@ -4,11 +4,16 @@
     "user_save_timestamp" : "2015-01-03T00:43:35.749Z",
     "auto_save_timestamp" : "2015-01-03T00:38:53.694Z",
     "language_info" : {
-      "name" : "Scala",
+      "name" : "scala",
       "file_extension" : "scala",
       "codemirror_mode" : "text/x-scala"
     },
-    "trusted" : true
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customSparkConf" : null
   },
   "cells" : [ {
     "metadata" : { },
@@ -57,7 +62,8 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : ":local-repo /tmp/spark-notebook/repo",
@@ -65,10 +71,11 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : true
     },
     "cell_type" : "code",
-    "source" : ":dp org.bdgenomics.adam % adam-apis % 0.15.0\n- org.apache.hadoop % hadoop-client %   _\n- org.apache.spark  %     _         %   _\n- org.scala-lang    %     _         %   _\n- org.scoverage     %     _         %   _",
+    "source" : ":dp org.bdgenomics.adam % adam-core % 0.15.0\n- org.apache.hadoop % hadoop-client %   _\n- org.apache.spark  %     _         %   _\n- org.scala-lang    %     _         %   _\n- org.scoverage     %     _         %   _",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -81,6 +88,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : true
     },
     "cell_type" : "code",
@@ -93,7 +101,8 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "val fs_s3_awsAccessKeyId      = sys.env.get(\"AWS_ACCESS_KEY_ID\").getOrElse(\"<hard-code-one>\")\nval fs_s3_awsSecretAccessKey  = sys.env.get(\"AWS_SECRET_ACCESS_KEY\").getOrElse(\"<hard-code-one>\")",
@@ -105,7 +114,8 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "val adamFileOnS3 = \"s3n://med-at-scale/1000genomes/ALL.chr1.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf.adam\"",
@@ -117,7 +127,8 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "reset(lastChanges = _.set(\"spark.serializer\", \"org.apache.spark.serializer.KryoSerializer\")\n                     .set(\"spark.kryo.registrator\", \"org.bdgenomics.adam.serialization.ADAMKryoRegistrator\")\n                     .set(\"spark.kryoserializer.buffer.mb\", \"4\")\n                     .set(\"spark.kryo.referenceTracking\", \"true\")\n                     .setMaster(s\"spark://$master:7077\")\n                     .setAppName(\"ADAM 1000genomes\")\n                     .set(\"spark.executor.memory\", \"13g\")\n                     .set(\"fs.s3.awsAccessKeyId\", fs_s3_awsAccessKeyId)\n                     .set(\"fs.s3.awsSecretAccessKey\", fs_s3_awsSecretAccessKey)\n)",
@@ -129,7 +140,8 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "import org.apache.hadoop.fs.{FileSystem, Path}\n\nimport org.bdgenomics.adam.converters.{ VCFLine, VCFLineConverter, VCFLineParser }\nimport org.bdgenomics.formats.avro.{Genotype, FlatGenotype}\nimport org.bdgenomics.adam.models.VariantContext\nimport org.bdgenomics.adam.rdd.ADAMContext._\nimport org.bdgenomics.adam.rdd.variation.VariationContext._\nimport org.bdgenomics.adam.rdd.ADAMContext\n  \nimport org.apache.spark.rdd.RDD",
@@ -145,7 +157,8 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "val gts:RDD[Genotype] = sparkContext.adamLoad(adamFileOnS3)",
@@ -157,7 +170,8 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "val sampleCount = gts.map(_.getSampleId.toString.hashCode).distinct.count\ns\"#Samples: $sampleCount\"",
