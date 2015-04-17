@@ -120,14 +120,6 @@ object CustomResolvers extends java.io.Serializable {
   def fromString(r:String):(String, Resolver) = {
     val id::tpe::url::flavor::rest = r.split("%").toList.map(_.trim)
 
-    println(">>>>>>>>>><")
-    println(id)
-    println(tpe)
-    println(url)
-    println(flavor)
-    println(rest.headOption)
-    println(rest)
-
     val (username, password):(Option[String],Option[String]) = rest.headOption.map { auth =>
       auth match {
         case authRegex(usernamePassword)   =>
