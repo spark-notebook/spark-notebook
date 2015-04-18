@@ -75,10 +75,11 @@ class ReplCalculator(
   private val shRegex = "(?s)^:sh\\s*(.+)\\s*$".r
 
   var resolvers:List[Resolver] = {
+    val mavenReleases    = sbt.DefaultMavenRepository
     val typesafeReleases = Resolver.typesafeIvyRepo("releases")
-    val jCenterReleases = Resolver.jcenterRepo
+    val jCenterReleases  = Resolver.jcenterRepo
     val sonatypeReleases = Resolver.sonatypeRepo("releases")
-    typesafeReleases :: jCenterReleases :: sonatypeReleases ::  customRepos.getOrElse(List.empty[String]).map(CustomResolvers.fromString _).map(_._2)
+    mavenReleases :: typesafeReleases :: jCenterReleases :: sonatypeReleases ::  customRepos.getOrElse(List.empty[String]).map(CustomResolvers.fromString _).map(_._2)
   }
 
   var repo:File = customLocalRepo.map(x => new File(x)).getOrElse{
