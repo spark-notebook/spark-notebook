@@ -17,7 +17,7 @@ object LightningViz {
 
 class LightningViz(data: Visualization) extends Widget {
 
-  lazy val toHtml = <div id={"pymIframe" + data.vid}>{
+  lazy val toHtml = <div id={"pymIframe" + data.id}>{
     scopedScript(
     """
       |req( ['pym'],
@@ -25,7 +25,7 @@ class LightningViz(data: Visualization) extends Widget {
       |   var pymIframe = new pym.Parent('pymIframe'+vid, pymLink, {})
       |  }
       |);""".stripMargin,
-      Json.obj("pymLink" -> data.getPymLink, "vid" -> data.vid)
+      Json.obj("pymLink" -> data.getPymLink, "vid" -> data.id)
     )
   }</div>
 
