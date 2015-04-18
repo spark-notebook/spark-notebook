@@ -117,7 +117,7 @@ object CustomResolvers extends java.io.Serializable {
   private val authRegex = """(?s)^\s*\(([^\)]+)\)\s*$""".r
   private val credRegex = """"([^"]+)"\s*,\s*"([^"]+)"""".r //"
 
-  def fromString(r:String):(String, Resolver) = {
+  def fromString(r:String):(String, Resolver) = try {
     val id::tpe::url::flavor::rest = r.split("%").toList.map(_.trim)
 
     val (username, password):(Option[String],Option[String]) = rest.headOption.map { auth =>
@@ -156,6 +156,11 @@ object CustomResolvers extends java.io.Serializable {
 
     val logR = r.replaceAll("\"", "\\\\\"")
     (logR, rem)
+  } catch {
+    case e:Throwable =>
+      e.printStackTrace
+      println(s"CustomResolvers#fromString → Cannot parse $r")
+      throw e
   }
 
 
