@@ -107,19 +107,6 @@ class ReplCalculator(
                     """.stripMargin))
   }.getOrElse((List.empty[String], ("deps", () => "val CustomJars = Array.empty[String]\n")))
 
-
-
-  ("deps", () => customDeps.map { d =>
-    val customDeps = d.mkString("\n")
-
-    val deps = Deps.script(customDeps, resolvers, repo).toOption.getOrElse(List.empty[String])
-
-    (deps, s"""
-    |val CustomJars = ${ deps.mkString("Array(\"", "\",\"", "\")") }
-    |
-    """.stripMargin)
-  }.getOrElse((List.empty[String], "val CustomJars = Array.empty[String]\n")))
-
   val ImportsScripts = ("imports", () => customImports.map(_.mkString("\n") + "\n").getOrElse("\n"))
 
   private var _repl:Option[Repl] = None
