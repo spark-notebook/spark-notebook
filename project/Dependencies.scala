@@ -30,7 +30,7 @@ object Dependencies {
       "org.apache.spark"          %%         "spark-yarn"           %         v              excludeAll(ExclusionRule("org.apache.hadoop"), ExclusionRule("org.apache.ivy", "ivy"))
     }
   def sparkRepl(v:String)     = "org.apache.spark"          %%         "spark-repl"           %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
-  def sparkSQL (v:String)     = "org.apache.spark"          %%         "spark-sql"            %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
+  def sparkSQL (v:String)     = "org.apache.spark"          %%         "spark-sql"            %         v           excludeAll(ExclusionRule("org.apache.hadoop"), ExclusionRule("com.twitter", "parquet-column"), ExclusionRule("com.twitter", "parquet-hadoop"))
   val defaultHadoopVersion    = sys.props.getOrElse("hadoop.version", "1.0.4")
   def hadoopClient(v:String)  = "org.apache.hadoop"         %         "hadoop-client"         %         v           excludeAll(ExclusionRule("org.apache.commons", "commons-exec"), ExclusionRule("commons-codec", "commons-codec"))
   val defaultJets3tVersion    = sys.props.getOrElse("jets3t.version", "0.7.1")
