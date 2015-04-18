@@ -50,8 +50,12 @@ object Deps extends java.io.Serializable {
                                                     )
     val ivy = new IvySbt(configuration)
 
-    val deps:Seq[ModuleID] = includes map { include => include.excludeAll(exclusions:_*)}
-
+    val deps:Seq[ModuleID] =  includes map { include =>
+                                val thisExclusions = exclusions.filter { exclusion =>
+                                  exclusion.organization != include.organization || exclusion.name != include.name
+                                }
+                                include.excludeAll(thisExclusions:_*)
+                              }
     val conf = InlineConfiguration(
       "org.scala-lang" % "scala" % (notebook.BuildInfo.scalaVersion/*notebook.BuildInfo.scalaVersion*/) % "compile",
       ModuleInfo("dl deps"),
