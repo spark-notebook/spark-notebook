@@ -88,17 +88,17 @@ object Dependencies {
 
   object HadoopVersion extends Enumeration {
     type HadoopVersion = Value
-    val `1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0-cdh5.3.2` = Value
+    val `1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0`, `2.6.0`, `2.5.0-cdh5.3.1`, `2.5.0-cdh5.3.2` = Value
   }
 
   val crossConf = Map(
-    SparkVersion.`1.2.0` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0-cdh5.3.2`) },
-    SparkVersion.`1.2.1` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0-cdh5.3.2`) },
-    SparkVersion.`1.3.0` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0-cdh5.3.2`) }
+    SparkVersion.`1.2.0` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0`, `2.6.0`, `2.5.0-cdh5.3.1`, `2.5.0-cdh5.3.2`) },
+    SparkVersion.`1.2.1` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0`, `2.6.0`, `2.5.0-cdh5.3.1`, `2.5.0-cdh5.3.2`) },
+    SparkVersion.`1.3.0` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0`, `2.6.0`, `2.5.0-cdh5.3.1`, `2.5.0-cdh5.3.2`) }
   )
 
   val extraConf:Map[(SparkVersion.Value, HadoopVersion.Value), List[sbt.Def.Setting[_]]] = Map(
-    (SparkVersion.`1.2.0`, List(HadoopVersion.`2.3.0`)) → {
+    (SparkVersion.`1.2.0`, List(HadoopVersion.`2.3.0`, HadoopVersion.`2.4.0`, HadoopVersion.`2.5.0`, HadoopVersion.`2.6.0`, HadoopVersion.`2.5.0-cdh5.3.1`, HadoopVersion.`2.5.0-cdh5.3.2`)) → {
       List(
         Shared.jets3tVersion := "0.9.0",
         Shared.jets3tVersion in "common" := "0.9.0",
@@ -107,7 +107,7 @@ object Dependencies {
         Shared.jets3tVersion in "spark" := "0.9.0"
       )
     },
-    (SparkVersion.`1.2.1`, List(HadoopVersion.`2.3.0`)) → {
+    (SparkVersion.`1.2.1`, List(HadoopVersion.`2.3.0`, HadoopVersion.`2.4.0`, HadoopVersion.`2.5.0`, HadoopVersion.`2.6.0`, HadoopVersion.`2.5.0-cdh5.3.1`, HadoopVersion.`2.5.0-cdh5.3.2`)) → {
       List(
         Shared.jets3tVersion := "0.9.0",
         Shared.jets3tVersion in "common" := "0.9.0",
@@ -116,7 +116,7 @@ object Dependencies {
         Shared.jets3tVersion in "spark" := "0.9.0"
       )
     },
-    (SparkVersion.`1.3.0`, List(HadoopVersion.`2.3.0`)) → {
+    (SparkVersion.`1.3.0`, List(HadoopVersion.`2.3.0`, HadoopVersion.`2.4.0`, HadoopVersion.`2.5.0`, HadoopVersion.`2.6.0`, HadoopVersion.`2.5.0-cdh5.3.1`, HadoopVersion.`2.5.0-cdh5.3.2`)) → {
       List(
         Shared.jets3tVersion := "0.9.0",
         Shared.jets3tVersion in "common" := "0.9.0",
