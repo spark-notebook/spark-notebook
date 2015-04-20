@@ -25,6 +25,7 @@ case class NotebookConfig(config: Configuration) { me =>
 
   val serverResources = config.getStringList("resources").map(_.asScala).getOrElse(Nil).map(new File(_))
 
+  val tachyonInfo = TachyonInfo(config.getString("tachyon.url"), config.getString("tachyon.baseDir").getOrElse("/share"))
 
   object kernel {
     val config = me.config.getConfig("kernel").getOrElse(Configuration.empty)
@@ -48,6 +49,8 @@ case class NotebookConfig(config: Configuration) { me =>
 
 }
 
+
+case class TachyonInfo(url:Option[String] = None, baseDir:String = "/share")
 
 trait Script {
   def name:String

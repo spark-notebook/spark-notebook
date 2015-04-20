@@ -59,7 +59,18 @@
     },
     "cell_type" : "code",
     "source" : "sparkContext.getConf.toDebugString",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res3: String = \nspark.app.id=local-1429516716076\nspark.app.name=Notebook\nspark.driver.host=192.168.0.3\nspark.driver.port=43913\nspark.executor.id=<driver>\nspark.fileserver.uri=http://192.168.0.3:35743\nspark.jars=\nspark.master=local[*]\nspark.repl.class.uri=http://192.168.0.3:40735\nspark.tachyonStore.baseDir=/sharing\nspark.tachyonStore.folderName=spark-778e604a-d7c3-4f9e-9a3e-2aeed7eb78ab\nspark.tachyonStore.url=tachyon://example.com:18998\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "spark.app.id=local-1429516716076\nspark.app.name=Notebook\nspark.driver.host=192.168.0.3\nspark.driver.port=43913\nspark.executor.id=&lt;driver&gt;\nspark.fileserver.uri=http://192.168.0.3:35743\nspark.jars=\nspark.master=local[*]\nspark.repl.class.uri=http://192.168.0.3:40735\nspark.tachyonStore.baseDir=/sharing\nspark.tachyonStore.folderName=spark-778e604a-d7c3-4f9e-9a3e-2aeed7eb78ab\nspark.tachyonStore.url=tachyon://example.com:18998\n <div class='pull-right text-info'><small>331 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 2
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -76,7 +87,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "val dataUrl = \"https://s3-eu-west-1.amazonaws.com/spark-notebook-data/closes.csv\"\nval dataLocalDowloadPath = \"/tmp/closes.csv\"",
@@ -89,7 +100,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : ":sh wget $dataUrl -O $dataLocalDowloadPath",
@@ -98,7 +109,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "val dataFile = dataLocalDowloadPath",
@@ -111,7 +122,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : ":sh wc -l $dataFile",
@@ -128,7 +139,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "val rdd = sparkContext.textFile(dataFile).cache",
@@ -141,7 +152,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "rdd.flatMap(_.filter(_ == '0')).map(_.toString.toInt).sum",
@@ -162,7 +173,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "import org.apache.spark.storage.StorageLevel._\nval rdd2 = sparkContext.textFile(dataFile).persist(OFF_HEAP)",
@@ -175,7 +186,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "rdd2.flatMap(_.filter(_ == '0')).map(_.toString.toInt).sum",
@@ -192,7 +203,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "import tachyon.client.TachyonFS\nval tachyonUrl = sparkContext.getConf.get(\"spark.tachyonStore.url\")\nval shareDir = sparkContext.getConf.get(\"spark.tachyonStore.baseDir\")\nval tachyonClient = TachyonFS.get(tachyonUrl)",
@@ -205,7 +216,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "import scala.collection.JavaConverters._\nval shared = tachyonClient.ls(shareDir, false).asScala",
@@ -214,7 +225,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "val currentCache = shared(1)",
@@ -227,7 +238,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "val currentFiles = tachyonClient.ls(currentCache + \"/<driver>\", false).asScala",
@@ -240,7 +251,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "val thisRdd = currentFiles(1)\nval whatsInCurrentThisRdd = tachyonClient.ls(thisRdd, true).asScala.map(_.drop(thisRdd.length))",
@@ -265,7 +276,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "val tachyonThisFileRdd = sparkContext.textFile(tachyonUrl + thisRdd + \"/*\")",

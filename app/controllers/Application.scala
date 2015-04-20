@@ -145,7 +145,8 @@ object Application extends Controller {
                                             customSparkConf,
                                             initScripts,
                                             compilerArgs,
-                                            kernel.remoteDeployFuture
+                                            kernel.remoteDeployFuture,
+                                            config.tachyonInfo
                                           )
     kernelIdToCalcService += kId -> service
 
