@@ -30,7 +30,7 @@ object Dependencies {
       "org.apache.spark"          %%         "spark-yarn"           %         v              excludeAll(ExclusionRule("org.apache.hadoop"), ExclusionRule("org.apache.ivy", "ivy"))
     }
   def sparkRepl(v:String)     = "org.apache.spark"          %%         "spark-repl"           %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
-  def sparkSQL (v:String)     = "org.apache.spark"          %%         "spark-sql"            %         v           excludeAll(ExclusionRule("org.apache.hadoop"))
+  def sparkSQL (v:String)     = "org.apache.spark"          %%         "spark-sql"            %         v           excludeAll(ExclusionRule("org.apache.hadoop"), ExclusionRule("com.twitter", "parquet-column"), ExclusionRule("com.twitter", "parquet-hadoop"))
   val defaultHadoopVersion    = sys.props.getOrElse("hadoop.version", "1.0.4")
   def hadoopClient(v:String)  = "org.apache.hadoop"         %         "hadoop-client"         %         v           excludeAll(ExclusionRule("org.apache.commons", "commons-exec"), ExclusionRule("commons-codec", "commons-codec"))
   val defaultJets3tVersion    = sys.props.getOrElse("jets3t.version", "0.7.1")
@@ -47,25 +47,23 @@ object Dependencies {
   val log4j                   = "log4j"                     %             "log4j"             %      "1.2.17"
 
   // to download deps at runtime
-  def sbtForDeps(scalaBinaryVersion:String, sbtVersion:String)    =  (scalaBinaryVersion match {
-    case "2.10" => Nil
-    case _ =>   List(
-                  /*
-                    →→ trying to solve the
-                    java.lang.NoSuchMethodError: scala.Predef$.$scope()Lscala/xml/TopScope$;
-                      at sbt.IvySbt$.sbt$IvySbt$$wrapped(Ivy.scala:468)
-
-                  */
-                  "org.scala-lang.modules"    %       "scala-xml_2.11"          %    "1.0.2"
-                )
-  }) ::: List(
-    "org.scala-sbt"             %             "sbt"                         %     sbtVersion    excludeAll((ExclusionRule("org.apache.ivy", "ivy"))),
-     ("com.frugalmechanic" % "fm-sbt-s3-resolver" % "0.5.0") // WARN ONLY 2.10 0.13 available !!!!
-      .extra( CustomPomParser.SbtVersionKey -> sbtVersion.reverse.dropWhile(_ != '.').drop(".".size).reverse,
-              CustomPomParser.ScalaVersionKey -> scalaBinaryVersion)
-      .copy(crossVersion = CrossVersion.Disabled)
-      .excludeAll(ExclusionRule("org.apache.ivy", "ivy"))
-  )
+  def depsToDownloadDeps(scalaBinaryVersion:String, sbtVersion:String)    =  scalaBinaryVersion match {
+    case "2.10" =>  List(
+                      "org.scala-sbt"             %             "sbt"                         %     sbtVersion    excludeAll((ExclusionRule("org.apache.ivy", "ivy"))),
+                       ("com.frugalmechanic" % "fm-sbt-s3-resolver" % "0.5.0") // WARN ONLY 2.10 0.13 available !!!!
+                        .extra( CustomPomParser.SbtVersionKey -> sbtVersion.reverse.dropWhile(_ != '.').drop(".".size).reverse,
+                                CustomPomParser.ScalaVersionKey -> scalaBinaryVersion)
+                        .copy(crossVersion = CrossVersion.Disabled)
+                        .excludeAll(ExclusionRule("org.apache.ivy", "ivy"))
+                    )
+    case _ =>
+       val aetherApi               = "org.sonatype.aether"       %          "aether-api"           %     "1.13"
+       val jcabiAether             = "com.jcabi"                 %         "jcabi-aether"          %     "0.10.1"
+       val mavenCore               = "org.apache.maven"          %          "maven-core"           %     "3.0.5"
+       List(aetherApi, jcabiAether, mavenCore)
+  }
+  // for aether only
+  val ningAsyncHttpClient     = "com.ning"                  %       "async-http-client"       % "[1.6.5, 1.6.5]"   force()//"1.8.10"//"[1.6.5, 1.6.5]" force()
 
   // Viz
   val bokeh                   = "io.continuum.bokeh"        %%            "bokeh"             %       "0.2"
@@ -90,17 +88,26 @@ object Dependencies {
 
   object HadoopVersion extends Enumeration {
     type HadoopVersion = Value
-    val `1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0-cdh5.3.2` = Value
+    val `1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0`, `2.6.0`, `2.5.0-cdh5.3.1`, `2.5.0-cdh5.3.2` = Value
   }
 
   val crossConf = Map(
-    SparkVersion.`1.2.0` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0-cdh5.3.2`) },
-    SparkVersion.`1.2.1` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0-cdh5.3.2`) },
-    SparkVersion.`1.3.0` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0-cdh5.3.2`) }
+    SparkVersion.`1.2.0` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0`, `2.6.0`, `2.5.0-cdh5.3.1`, `2.5.0-cdh5.3.2`) },
+    SparkVersion.`1.2.1` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0`, `2.6.0`, `2.5.0-cdh5.3.1`, `2.5.0-cdh5.3.2`) },
+    SparkVersion.`1.3.0` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0`, `2.6.0`, `2.5.0-cdh5.3.1`, `2.5.0-cdh5.3.2`) }
   )
 
   val extraConf:Map[(SparkVersion.Value, HadoopVersion.Value), List[sbt.Def.Setting[_]]] = Map(
-    (SparkVersion.`1.2.0`, List(HadoopVersion.`2.3.0`)) → {
+    (SparkVersion.`1.2.0`, List(HadoopVersion.`2.3.0`, HadoopVersion.`2.4.0`, HadoopVersion.`2.5.0`, HadoopVersion.`2.6.0`, HadoopVersion.`2.5.0-cdh5.3.1`, HadoopVersion.`2.5.0-cdh5.3.2`)) → {
+      List(
+        Shared.jets3tVersion := "0.9.0",
+        Shared.jets3tVersion in "common" := "0.9.0",
+        Shared.jets3tVersion in "kernel" := "0.9.0",
+        Shared.jets3tVersion in "subprocess" := "0.9.0",
+        Shared.jets3tVersion in "spark" := "0.9.0"
+      )
+    },
+    (SparkVersion.`1.2.1`, List(HadoopVersion.`2.3.0`, HadoopVersion.`2.4.0`, HadoopVersion.`2.5.0`, HadoopVersion.`2.6.0`, HadoopVersion.`2.5.0-cdh5.3.1`, HadoopVersion.`2.5.0-cdh5.3.2`)) → {
       List(
         Shared.jets3tVersion := "0.9.0",
         Shared.jets3tVersion in "common" := "0.9.0",
@@ -110,7 +117,7 @@ object Dependencies {
         Shared.jets3tVersion in "tachyon" := "0.9.0"
       )
     },
-    (SparkVersion.`1.2.1`, List(HadoopVersion.`2.3.0`)) → {
+    (SparkVersion.`1.3.0`, List(HadoopVersion.`2.3.0`, HadoopVersion.`2.4.0`, HadoopVersion.`2.5.0`, HadoopVersion.`2.6.0`, HadoopVersion.`2.5.0-cdh5.3.1`, HadoopVersion.`2.5.0-cdh5.3.2`)) → {
       List(
         Shared.jets3tVersion := "0.9.0",
         Shared.jets3tVersion in "common" := "0.9.0",

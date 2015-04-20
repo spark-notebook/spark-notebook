@@ -136,6 +136,16 @@ define([
     };
 
 
+    OutputArea.prototype.output_stream_collapse = function () {
+        if (!this.output_stream_collapsed) {
+            this.element.find(".output_area:first-child").hide()
+            this.output_stream_collapsed = true;
+            // collapsing output clears scroll state
+            this.scroll_state = 'auto';
+        }
+    };
+
+
     OutputArea.prototype.collapse = function () {
         if (!this.collapsed) {
             this.element.hide();
@@ -172,6 +182,14 @@ define([
     };
 
 
+    OutputArea.prototype.output_stream_expand = function () {
+        if (this.output_stream_collapsed) {
+            this.element.find(".output_area:first-child").show()
+            this.output_stream_collapsed = false;
+        }
+    };
+
+
     OutputArea.prototype.expand = function () {
         if (this.collapsed) {
             this.collapse_button.hide();
@@ -188,6 +206,15 @@ define([
             this.expand();
         } else {
             this.collapse();
+        }
+    };
+
+
+    OutputArea.prototype.toggle_output_stream = function () {
+        if (this.output_stream_collapsed) {
+            this.output_stream_expand();
+        } else {
+            this.output_stream_collapse();
         }
     };
 
@@ -969,6 +996,11 @@ define([
             //this.input_collapsed = metadata.input_collapsed;
             if (metadata.input_collapsed) {
                 this.input_collapse();
+            }
+        }
+        if (metadata.output_stream_collapsed !== undefined) {
+            if (metadata.output_stream_collapsed) {
+                this.output_stream_collapse();
             }
         }
         if (metadata.scrolled !== undefined) {

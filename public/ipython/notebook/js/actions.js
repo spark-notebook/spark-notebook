@@ -209,23 +209,30 @@ define(function(require){
                 env.notebook.to_heading(undefined, 6);
             }
         },
-        'toggle-output-visibility-selected-cell' : {
-            help    : 'toggle output',
-            help_index : 'gb',
-            handler : function (env) {
-                env.notebook.toggle_output();
-            }
-        },
         'toggle-input-visibility-selected-cell' : {
             help    : 'toggle input',
-            help_index : 'gc',
+            help_index : 'gb',
             handler : function (env) {
                 env.notebook.toggle_input();
             }
         },
+        'toggle-output-stream-visibility-selected-cell' : {
+            help    : 'toggle output',
+            help_index : 'gc',
+            handler : function (env) {
+                env.notebook.toggle_output_stream();
+            }
+        },
+        'toggle-output-visibility-selected-cell' : {
+            help    : 'toggle output',
+            help_index : 'gd',
+            handler : function (env) {
+                env.notebook.toggle_output();
+            }
+        },
         'toggle-output-scrolling-selected-cell' : {
             help    : 'toggle output scrolling',
-            help_index : 'gd',
+            help_index : 'ge',
             handler : function (env) {
                 env.notebook.toggle_output_scroll();
             }
@@ -252,7 +259,7 @@ define(function(require){
             }
         },
         'show-keyboard-shortcut-help-dialog' : {
-            help_index : 'ge',
+            help_index : 'gf',
             handler : function (env) {
                 env.quick_help.show_keyboard_shortcuts();
             }
