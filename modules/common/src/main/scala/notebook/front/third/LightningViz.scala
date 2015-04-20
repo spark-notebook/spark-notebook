@@ -5,8 +5,6 @@ import notebook.front.widgets._
 import org.viz.lightning.Visualization
 import play.api.libs.json.Json
 
-import scala.xml.NodeSeq
-
 object LightningViz {
 
   def show(data: Visualization): LightningViz = {
