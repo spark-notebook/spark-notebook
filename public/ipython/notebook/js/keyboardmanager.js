@@ -116,6 +116,7 @@ define([
             '5' : 'ipython.change-selected-cell-to-heading-5',
             '6' : 'ipython.change-selected-cell-to-heading-6',
             'o' : 'ipython.toggle-output-visibility-selected-cell',
+            't' : 'ipython.toggle-output-stream-visibility-selected-cell',
             'i' : 'ipython.toggle-input-visibility-selected-cell',
             's' : 'ipython.save-notebook',
             'l' : 'ipython.toggle-line-number-selected-cell',

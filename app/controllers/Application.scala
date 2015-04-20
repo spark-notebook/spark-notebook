@@ -450,7 +450,7 @@ object Application extends Controller {
       val (newname, newpath) = nbm.rename(path, notebook)
 
       Ok(Json.obj(
-        "type" → "file",
+        "type" → "notebook",
         "name" → newname,
         "path" → newpath
       ))

@@ -268,6 +268,9 @@ define([
             that.notebook.toggle_all_input();
         });
 
+        this.element.find('#toggle_current_output_stream').click(function () {
+            that.notebook.toggle_output_stream();
+        });
         this.element.find('#toggle_current_output').click(function () {
             that.notebook.toggle_output();
         });
@@ -280,6 +283,9 @@ define([
 
         this.element.find('#toggle_all_output').click(function () {
             that.notebook.toggle_all_output();
+        });
+        this.element.find('#toggle_all_output_stream').click(function () {
+            that.notebook.toggle_all_output_stream();
         });
         this.element.find('#toggle_all_output_scroll').click(function () {
             that.notebook.toggle_all_output_scroll();

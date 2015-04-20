@@ -102,7 +102,7 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config:Config, executi
       log.info("Spawning %s".format(cmd.toString))
 
       // use environment because classpaths can be longer here than as a command line arg
-      val environment = System.getenv + ("CLASSPATH" -> classPathString)
+      val environment = System.getenv + ("CLASSPATH" -> (sys.env.get("HADOOP_CONF_DIR").map(_ + ":").getOrElse("")+classPathString))
       val exec = new KillableExecutor
 
       val completion = Promise[Int]

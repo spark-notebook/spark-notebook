@@ -50,8 +50,12 @@ object Deps extends java.io.Serializable {
                                                     )
     val ivy = new IvySbt(configuration)
 
-    val deps:Seq[ModuleID] = includes map { include => include.excludeAll(exclusions:_*)}
-
+    val deps:Seq[ModuleID] =  includes map { include =>
+                                val thisExclusions = exclusions.filter { exclusion =>
+                                  exclusion.organization != include.organization || exclusion.name != include.name
+                                }
+                                include.excludeAll(thisExclusions:_*)
+                              }
     val conf = InlineConfiguration(
       "org.scala-lang" % "scala" % (notebook.BuildInfo.scalaVersion/*notebook.BuildInfo.scalaVersion*/) % "compile",
       ModuleInfo("dl deps"),
@@ -117,16 +121,8 @@ object CustomResolvers extends java.io.Serializable {
   private val authRegex = """(?s)^\s*\(([^\)]+)\)\s*$""".r
   private val credRegex = """"([^"]+)"\s*,\s*"([^"]+)"""".r //"
 
-  def fromString(r:String):(String, Resolver) = {
+  def fromString(r:String):(String, Resolver) = try {
     val id::tpe::url::flavor::rest = r.split("%").toList.map(_.trim)
-
-    println(">>>>>>>>>><")
-    println(id)
-    println(tpe)
-    println(url)
-    println(flavor)
-    println(rest.headOption)
-    println(rest)
 
     val (username, password):(Option[String],Option[String]) = rest.headOption.map { auth =>
       auth match {
@@ -164,6 +160,11 @@ object CustomResolvers extends java.io.Serializable {
 
     val logR = r.replaceAll("\"", "\\\\\"")
     (logR, rem)
+  } catch {
+    case e:Throwable =>
+      e.printStackTrace
+      println(s"CustomResolvers#fromString → Cannot parse $r")
+      throw e
   }
 
 

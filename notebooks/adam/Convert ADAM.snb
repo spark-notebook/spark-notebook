@@ -4,16 +4,22 @@
     "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
     "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
     "language_info" : {
-      "name" : "Scala",
+      "name" : "scala",
       "file_extension" : "scala",
       "codemirror_mode" : "text/x-scala"
     },
-    "trusted" : true
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customSparkConf" : null
   },
   "cells" : [ {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : true
+      "input_collapsed" : false,
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : ":local-repo /tmp/spark-notebook/repo",
@@ -25,10 +31,11 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : true
+      "input_collapsed" : false,
+      "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : ":dp org.bdgenomics.adam % adam-apis % 0.15.0\n- org.apache.hadoop % hadoop-client %   _\n- org.apache.spark  %     _         %   _\n- org.scala-lang    %     _         %   _\n- org.scoverage     %     _         %   _",
+    "source" : ":dp org.bdgenomics.adam % adam-core % 0.15.0\n- org.apache.hadoop % hadoop-client %   _\n- org.apache.spark  %     _         %   _\n- org.scala-lang    %     _         %   _\n- org.scoverage     %     _         %   _",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -37,6 +44,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : true
     },
     "cell_type" : "code",
@@ -49,6 +57,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : true
     },
     "cell_type" : "code",
@@ -61,6 +70,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : true
     },
     "cell_type" : "code",
@@ -73,7 +83,8 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : true
+      "input_collapsed" : false,
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "import org.apache.hadoop.fs.{FileSystem, Path}\n\nimport org.bdgenomics.adam.converters.{ VCFLine, VCFLineConverter, VCFLineParser }\nimport org.bdgenomics.formats.avro.{Genotype, FlatGenotype}\nimport org.bdgenomics.adam.models.VariantContext\nimport org.bdgenomics.adam.rdd.ADAMContext._\nimport org.bdgenomics.adam.rdd.variation.VariationContext._\nimport org.bdgenomics.adam.rdd.ADAMContext\n  \nimport org.apache.spark.rdd.RDD",
@@ -85,6 +96,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : true
     },
     "cell_type" : "code",
@@ -97,6 +109,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : true
     },
     "cell_type" : "code",
@@ -109,6 +122,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : true
     },
     "cell_type" : "code",
@@ -121,6 +135,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : true
     },
     "cell_type" : "code",
@@ -133,6 +148,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : true
     },
     "cell_type" : "code",
