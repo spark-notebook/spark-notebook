@@ -220,6 +220,8 @@ package object widgets {
       case v: Int => JsNumber(v)
       case v: Float => JsNumber(v)
       case v: Double => JsNumber(v)
+      case v: Long => JsNumber(v)
+      case v: BigDecimal => JsNumber(v)
       case v: String => JsString(v)
       case v: Boolean => JsBoolean(v)
       case v: Any => JsString(v.toString)
@@ -262,11 +264,12 @@ package object widgets {
 
     val firstPoint = points.head
 
-    points.zipWithIndex.map { case (point, index) => point.values match {
+    val encoded = points.zipWithIndex.map { case (point, index) => point.values match {
       case List(o)    if isNumber(o)  =>  ChartPoint(index, o)
       case List(a, b)                 =>  ChartPoint(a, b)
       case _                          =>  point
     }}
+    encoded
   } else Nil
 
 
