@@ -18,7 +18,7 @@ import notebook.front.widgets._
 sealed trait CalcRequest
 case class ExecuteRequest(counter: Int, code: String) extends CalcRequest
 case class CompletionRequest(line: String, cursorPosition: Int) extends CalcRequest
-case class ObjectInfoRequest(objName: String) extends CalcRequest
+case class ObjectInfoRequest(objName: String, position:Int) extends CalcRequest
 case object InterruptRequest extends CalcRequest
 
 sealed trait CalcResponse
@@ -357,13 +357,13 @@ class ReplCalculator(
           val (matched, candidates) = repl.complete(line, cursorPosition)
           sender ! CompletionResponse(cursorPosition, candidates, matched)
 
-        case ObjectInfoRequest(objName) =>
-          val completions = repl.objectInfo(objName)
+        case ObjectInfoRequest(code, position) =>
+          val completions = repl.objectInfo(code, position)
 
           val resp = if (completions.length == 0) {
-            ObjectInfoResponse(false, objName, "", "")
+            ObjectInfoResponse(false, code, "", "")
           } else {
-            ObjectInfoResponse(true, objName, completions.mkString("\n"), "")
+            ObjectInfoResponse(true, code, completions.mkString("\n"), "")
           }
 
           sender ! resp
