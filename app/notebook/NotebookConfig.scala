@@ -16,10 +16,13 @@ import play.api.Logger
 case class NotebookConfig(config: Configuration) { me =>
   import play.api.Play.current
 
+  config.getString("notebooks.dir").foreach { confDir =>
+    Logger.debug(s"Notebooks directory in the config is referring $confDir. Does it exist? ${new File(confDir).exists}")
+  }
   val notebooksDir = config.getString("notebooks.dir").map(new File(_)).filter(_.exists)
                         .orElse(Option(new File("./conf/notebooks"))).filter(_.exists)    // ./bin/spark-notebook
                         .getOrElse(new File("../conf/notebooks"))                         // ./spark-notebook
-  Logger.debug("Notebooks dir is: " + notebooksDir)
+  Logger.info(s"Notebooks dir is $notebooksDir [at ${notebooksDir.getAbsolutePath}] ")
 
   val projectName = config.getString("name").getOrElse(notebooksDir.getPath())
 
