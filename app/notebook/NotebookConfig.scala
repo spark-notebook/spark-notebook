@@ -28,6 +28,7 @@ case class NotebookConfig(config: Configuration) { me =>
 
   val serverResources = config.getStringList("resources").map(_.asScala).getOrElse(Nil).map(new File(_))
 
+  val maxBytesInFlight = config.underlying.getBytes("maxBytesInFlight").toInt
 
   object kernel {
     val config = me.config.getConfig("kernel").getOrElse(Configuration.empty)
