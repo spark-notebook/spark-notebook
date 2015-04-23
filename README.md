@@ -261,7 +261,7 @@ While the context `:remote-repo` is available from the notebook, we can also add
 
 ```json
     "customRepos"     : [
-      "s3-repo % default % s3://<bucket-name>/<path-to-repo> % (\"$AWS_ACCESS_KEY_ID\", \"$AWS_SECRET_ACCESS_KEY\")",
+      "s3-repo % default % s3://<bucket-name>/<path-to-repo> % maven % (\"$AWS_ACCESS_KEY_ID\", \"$AWS_SECRET_ACCESS_KEY\")",
       "local % default % file://<home>/.m2/repository"
     ],
 ```
@@ -670,17 +670,17 @@ This way, you can reuse local dependencies or reuse pre-downloaded ones.
 
 To instruct the system where to look for dependencies, you'll have to use the `:remote-repo` context:
 ```
-:remote-repo oss-sonatype % default % https://oss.sonatype.org/content/repositories/releases/
+:remote-repo oss-sonatype % default % https://oss.sonatype.org/content/repositories/releases/ % maven
 ```
 
-Above we defined a repo named `oss-sonatype` with `default` structure at localtion `https://oss.sonatype.org/content/repositories/releases/`.
+Above we defined a repo named `oss-sonatype` with `default` structure at localtion `https://oss.sonatype.org/content/repositories/releases/` respecting the `maven` layout.
 
 #### `remote-repo` with authentication
 
 Some repos (on S3 for instance) require authentication, for this you can add them **literally** or using **env variables**:
 
 ```
-:remote-repo :remote-repo s3-repo % default % s3://<bucket-name>/<path-to-repo> % ("$AWS_ACCESS_KEY_ID", "$AWS_SECRET_ACCESS_KEY")
+:remote-repo s3-repo % default % s3://<bucket-name>/<path-to-repo> % maven % ("$AWS_ACCESS_KEY_ID", "$AWS_SECRET_ACCESS_KEY")
 ```
 
 
