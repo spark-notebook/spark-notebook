@@ -290,12 +290,12 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     }
   }
 
-  def objectInfo(line: String): Seq[String] = {
+  def objectInfo(line: String, position:Int): Seq[String] = {
     // CY: The REPL is stateful -- it isn't until you ask to complete
     // the thing twice does it give you the method signature (i.e. you
     // hit tab twice).  So we simulate that here... (nutty, I know)
-    getCompletions(line, line.length)
-    val candidates = getCompletions(line, line.length)
+    getCompletions(line, position)
+    val candidates = getCompletions(line, position)
 
     if (candidates.size >= 2 && candidates.head.isEmpty) {
       candidates.tail
