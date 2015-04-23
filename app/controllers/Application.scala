@@ -459,7 +459,7 @@ object Application extends Controller {
     }
   }
 
-  def saveNotebook(p:String) = Action(parse.tolerantJson(maxLength = 1024 * 1024 /*1Mb*/)) { request =>
+  def saveNotebook(p:String) = Action(parse.tolerantJson(maxLength = AppUtils.config.maxBytesInFlight)) { request =>
     val path = URLDecoder.decode(p)
     Logger.info("SAVE → " + path)
     val notebook = NBSerializer.fromJson(request.body \ "content")
