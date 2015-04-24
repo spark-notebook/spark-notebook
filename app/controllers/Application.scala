@@ -78,9 +78,8 @@ object Application extends Controller {
     Ok(Json.obj())
   }
 
-  def kernelSpecs() = Action {
-    Ok(Json.parse(
-        """
+  val kernelDef = Json.parse(
+        s"""
         |{
         |  "kernelspecs": {
         |    "spark": {
@@ -88,7 +87,7 @@ object Application extends Controller {
         |      "resources": {},
         |      "spec" : {
         |        "language": "scala",
-        |        "display_name": "Apache Spark",
+        |        "display_name": "Scala [${notebook.BuildInfo.scalaVersion}] Spark [${notebook.BuildInfo.xSparkVersion}] Hadoop [${notebook.BuildInfo.xHadoopVersion}]",
         |
         |        "language_info": {
         |          "name" : "scala",
@@ -101,8 +100,8 @@ object Application extends Controller {
         |}
         |""".stripMargin.trim
       )
-    )
-  }
+
+  def kernelSpecs() = Action { Ok(kernelDef) }
 
   private [this] def newSession(kernelId:Option[String]=None, notebookPath:Option[String]=None) = {
     val kId = kernelId.getOrElse(UUID.randomUUID.toString)
