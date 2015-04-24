@@ -106,7 +106,7 @@ require([
           $("#notebook-bg-logs-panel").append(view.$el);
           function connect() {
             view.output_area.clear_output(false /*wait*/);
-            kernel.execute('SparkNotebookBgLog', {
+            kernel.execute('@transient val __avoid_non_ser_excep = SparkNotebookBgLog', {
               iopub : {
                 output : function() {
                   var msg = arguments[0];
