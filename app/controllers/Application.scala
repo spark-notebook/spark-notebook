@@ -64,9 +64,8 @@ object Application extends Controller {
     Ok(Json.obj())
   }
 
-  def kernelSpecs() = Action {
-    Ok(Json.parse(
-        """
+  val kernelDef = Json.parse(
+        s"""
         |{
         |  "kernelspecs": {
         |    "spark": {
@@ -74,7 +73,7 @@ object Application extends Controller {
         |      "resources": {},
         |      "spec" : {
         |        "language": "scala",
-        |        "display_name": "Apache Spark",
+        |        "display_name": "Scala [${notebook.BuildInfo.scalaVersion}] Spark [${notebook.BuildInfo.xSparkVersion}] Hadoop [${notebook.BuildInfo.xHadoopVersion}] ${if (notebook.BuildInfo.xWithHive) " {Hive ✓}" else ""}",
         |
         |        "language_info": {
         |          "name" : "scala",
@@ -87,8 +86,8 @@ object Application extends Controller {
         |}
         |""".stripMargin.trim
       )
-    )
-  }
+
+  def kernelSpecs() = Action { Ok(kernelDef) }
 
   private [this] def newSession(kernelId:Option[String]=None, notebookPath:Option[String]=None) = {
     val kId = kernelId.getOrElse(UUID.randomUUID.toString)
@@ -117,7 +116,7 @@ object Application extends Controller {
     val customSparkConf:Option[Map[String, String]] = for {
       m <- md
       c <- m.customSparkConf
-      _ = Logger.info("customSparkConf >> " + c)
+      _ = Logger.debug("customSparkConf >> " + c)
       map <- r.reads(c).asOpt
     } yield map
 
@@ -265,7 +264,7 @@ object Application extends Controller {
         "content" → content
       ))
     } else if (`type` == "notebook") {
-      Logger.info("content: " + path)
+      Logger.debug("content: " + path)
       val name = if (path.endsWith(".snb")) {path.dropRight(".snb".size)} else {path}
       getNotebook(name, path, "json")
     } else {
@@ -446,7 +445,7 @@ object Application extends Controller {
     }
   }
 
-  def saveNotebook(p:String) = Action(parse.tolerantJson(maxLength = 1024 * 1024 /*1Mb*/)) { request =>
+  def saveNotebook(p:String) = Action(parse.tolerantJson(maxLength = AppUtils.config.maxBytesInFlight)) { request =>
     val path = URLDecoder.decode(p)
     Logger.info("SAVE → " + path)
     val notebook = NBSerializer.fromJson(request.body \ "content")
@@ -486,7 +485,7 @@ object Application extends Controller {
 
   def dash(title:String, p:String=base_kernel_url) = Action {
     val path = URLDecoder.decode(p)
-    Logger.info("DASH → " + path)
+    Logger.debug("DASH → " + path)
     Ok(views.html.projectdashboard(
       title,
       Map(
@@ -498,7 +497,12 @@ object Application extends Controller {
         "notebook-path" → path,
         "terminals-available" → terminals_available
       ),
-      Breadcrumbs("/", path.split("/").toList.map(x => Crumb("todo", x)))
+      Breadcrumbs(
+        "/",
+        path.split("/").toList.scanLeft(("", "")){ case ((accPath, accName), p) => (accPath + "/" + p, p) }.tail.map { case (p, x) =>
+          Crumb(controllers.routes.Application.dash(p.tail).url, x)
+        }
+      )
     ))
   }
 
@@ -513,7 +517,7 @@ object Application extends Controller {
 
   def getNotebook(name: String, path: String, format: String) = {
     try {
-      Logger.info(s"getNotebook: name is '$name', path is '$path' and format is '$format'")
+      Logger.debug(s"getNotebook: name is '$name', path is '$path' and format is '$format'")
       val response = nbm.getNotebook(path).map { case (lastMod, name, data, path) =>
         format match {
           case "json" =>

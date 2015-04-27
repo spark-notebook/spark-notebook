@@ -10,7 +10,7 @@ name := "spark-notebook"
 
 scalaVersion := defaultScalaVersion
 
-version in ThisBuild <<= (scalaVersion, sparkVersion, hadoopVersion) { (sc, sv, hv) => s"0.4.2-scala-$sc-spark-$sv-hadoop-$hv" }
+version in ThisBuild <<= (scalaVersion, sparkVersion, hadoopVersion, withHive) { (sc, sv, hv, h) => s"0.4.2-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "") }
 
 maintainer := "Andy Petrella" //Docker
 
@@ -174,7 +174,7 @@ lazy val common = Project(id = "common", base = file("modules/common"))
                               )
                               .settings(
                                 sourceGenerators in Compile <+= buildInfo,
-                                buildInfoKeys := Seq[BuildInfoKey](version, scalaVersion, sparkVersion , hadoopVersion , jets3tVersion , jlineDef, sbtVersion),
+                                buildInfoKeys := Seq[BuildInfoKey](version, scalaVersion, sparkVersion, hadoopVersion, withHive, jets3tVersion, jlineDef, sbtVersion),
                                 buildInfoPackage := "notebook"
                               )
 

@@ -79,7 +79,7 @@ package object widgets {
         )
       }</ul>
 
-    override def apply(d:Seq[String]) = {
+    override def apply(d:Seq[String]) {
       data = if (d.size > capacity) {
          d.drop(d.size - capacity)
       } else {
@@ -88,11 +88,11 @@ package object widgets {
       super.apply(data)
     }
 
-    def append(s:String) = {
+    def append(s:String) {
       apply(data :+ s)
     }
 
-    def appendAll(s:Seq[String]) = {
+    def appendAll(s:Seq[String]) {
       apply(data ++ s)
     }
   }
