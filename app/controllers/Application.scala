@@ -493,7 +493,7 @@ object Application extends Controller {
   def dlNotebookAs(p:String, format:String) = Action {
     val path = URLDecoder.decode(p)
     Logger.info("DL → " + path + " as " + format)
-    getNotebook(path.dropRight(".snb".size), path, format)
+    getNotebook(path.dropRight(".snb".size), path, format, true)
   }
 
   def dash(title:String, p:String=base_kernel_url) = Action {
@@ -528,19 +528,23 @@ object Application extends Controller {
     }
   )
 
-  def getNotebook(name: String, path: String, format: String) = {
+  def getNotebook(name: String, path: String, format: String, dl:Boolean=false) = {
     try {
       Logger.debug(s"getNotebook: name is '$name', path is '$path' and format is '$format'")
       val response = nbm.getNotebook(path).map { case (lastMod, name, data, path) =>
         format match {
           case "json" =>
             val j = Json.parse(data)
-            val json = Json.obj(
-              "content" → j,
-              "name" → name,
-              "path" → path, //FIXME
-              "writable" -> true //TODO
-            )
+            val json = if (!dl) {
+              Json.obj(
+                "content" → j,
+                "name" → name,
+                "path" → path, //FIXME
+                "writable" -> true //TODO
+              )
+            } else {
+              j
+            }
             Ok(json).withHeaders(
               "Content-Disposition" → s"""attachment; filename="$path" """,
               "Last-Modified" → lastMod
