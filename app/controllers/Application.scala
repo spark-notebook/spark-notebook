@@ -28,20 +28,6 @@ import notebook.server._
 import notebook.kernel.remote._
 import notebook.NBSerializer.Metadata
 
-object AppUtils {
-  import play.api.Play.current
-
-  lazy val config               = NotebookConfig(current.configuration.getConfig("manager").get)
-  lazy val nbm                  = new NotebookManager(config.projectName, config.notebooksDir)
-  lazy val notebookServerConfig = current.configuration.getConfig("notebook-server").get.underlying
-  lazy val clustersConf         = config.config.getConfig("clusters").get
-
-  lazy val kernelSystem =  ActorSystem( "NotebookServer",
-                                        notebookServerConfig,
-                                        play.api.Play.classloader // this resolves the Play classloader problems w/ remoting
-                                      )
-}
-
 case class Crumb(url:String="", name:String="")
 case class Breadcrumbs(home:String="/", crumbs:List[Crumb] = Nil)
 
