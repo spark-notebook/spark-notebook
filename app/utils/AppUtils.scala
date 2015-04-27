@@ -5,7 +5,12 @@ import play.api.mvc._
 
 import com.typesafe.config._
 
+import akka.actor._
+import akka.pattern.ask
+import akka.util.Timeout
+
 import notebook._
+import notebook.server._
 
 object AppUtils {
   import play.api.Play.current

@@ -12,6 +12,8 @@ object Shared {
 
   lazy val jlineDef      = SettingKey[(String, String)]("x-jline-def")
 
+  lazy val withHive      = SettingKey[Boolean]("x-with-hive")
+
   lazy val sharedSettings:Seq[Def.Setting[_]] = Seq(
     scalaVersion        :=  defaultScalaVersion,
     sparkVersion        :=  defaultSparkVersion,
@@ -22,6 +24,7 @@ object Shared {
                             } else {
                               ("jline", "2.12")
                             }),
+    withHive            :=  defaultWithHive,
     libraryDependencies += guava
   )
 
@@ -46,6 +49,13 @@ object Shared {
     lib ++ unmanaged ++ repos
   }
 
+  val hive:Seq[Def.Setting[_]] =  Seq(
+    libraryDependencies <++= (withHive, sparkVersion) {  (wh, sv) =>
+      if (wh) List(sparkHive(sv))
+      else Nil
+    }
+  )
+
   lazy val sparkSettings:Seq[Def.Setting[_]] = Seq(
     libraryDependencies <++= (sparkVersion, hadoopVersion, jets3tVersion) { (sv, hv, jv) =>
       val libs = Seq(
@@ -59,7 +69,7 @@ object Shared {
       )
       libs
     }
-  ) ++  repl
+  ) ++  repl ++ hive
 
   lazy val tachyonSettings:Seq[Def.Setting[_]] = {
     def tachyonVersion(sv:String) = (sv.split("\\.").toList.map(_.toInt)) match {
