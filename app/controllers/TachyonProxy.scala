@@ -39,7 +39,8 @@ object TachyonProxy extends Controller {
   import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 
-  def ls(path:String = shareDir) = Action.async { Future {
+  def ls(p:String = shareDir) = Action.async { Future {
+    val path = URLDecoder.decode(p)
     val list = tachyonClient.ls(path, false).asScala
     Ok(Json.toJson(list))
   } }
