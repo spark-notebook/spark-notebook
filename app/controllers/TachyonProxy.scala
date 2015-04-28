@@ -44,4 +44,12 @@ object TachyonProxy extends Controller {
     Ok(Json.toJson(list))
   } }
 
+
+  def tachyonJavascriptRoutes = Action { implicit request =>
+    Ok(
+      Routes.javascriptRouter("tachyonJsRoutes")(
+        routes.javascript.TachyonProxy.ls
+      )
+    ).as("text/javascript")
+  }
 }
