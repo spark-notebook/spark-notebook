@@ -84,8 +84,9 @@
 require([
   'base/js/namespace',
   'base/js/events',
-  "jquery"
-], function(IPython, events, $) {
+  "jquery",
+  "tachyon"
+], function(IPython, events, $, tachyon) {
   events.on('kernel_ready.Kernel', function(event, content){
     console.log("Creating OutputView for notebook-bg-logs-panel");
     var kernel = content.kernel;

@@ -316,7 +316,17 @@
               <!-- width:150px; height: 100px; border: 1px solid black;  -->
             </div>
           </div>
+
           <div id="notebook"></div>
+
+          <div id="notebook-tachyon-container" class="pull-right" style="width: 200px; top: 0px; position: absolute; right: 0px;">
+            <h5>Tachyon</h5>
+            <div id="notebook-tachyon">
+              <ul data-bind="foreach: tachyonPaths">
+                <li><span data-bind="text: path"></span></li>
+              </ul>
+            </div>
+          </div>
       </div>
   </div>
 
@@ -337,5 +347,9 @@
   <script src="@routes.Assets.at("javascripts/ipython/js/bokeh.js")" type="text/javascript" charset="utf-8"></script>
   <script src="@routes.Assets.at("ipython/components/text-encoding/lib/encoding.js")" charset="utf-8"></script>
 
+  <!-- tachyon routes -->
+  <script type="text/javascript" src="@controllers.routes.TachyonProxy.tachyonJavascriptRoutes"></script>
+
+  <!-- main app -->
   <script src="@routes.Assets.at("ipython/notebook/js/main.js")" charset="utf-8"></script>
 }
