@@ -28,10 +28,10 @@ import org.apache.spark.SparkContext._
 
 @transient var sparkContext:SparkContext = _
 
-@transient val SparkNotebookBgLog = ul(20)
+//@transient val SparkNotebookBgLog = ul(20)
 
 def reset(appName:String="Notebook", lastChanges:(SparkConf=>Unit)=(_:SparkConf)=>()):Unit = {
-  SparkNotebookBgLog.append("Calling reset")
+  //SparkNotebookBgLog.append("Calling reset")
   conf = new SparkConf()
   conf.setMaster(sparkMaster.getOrElse("local[*]"))
       .setAppName(appName)
@@ -47,13 +47,13 @@ def reset(appName:String="Notebook", lastChanges:(SparkConf=>Unit)=(_:SparkConf)
   lastChanges(conf)
 
   if (sparkContext != null) {
-    SparkNotebookBgLog.append("Stopping Spark Context")
+    //SparkNotebookBgLog.append("Stopping Spark Context")
     sparkContext.stop()
-    SparkNotebookBgLog.append("Spark Context stopped")
+    //SparkNotebookBgLog.append("Spark Context stopped")
   }
-  SparkNotebookBgLog.append("Starting Spark Context")
+  //SparkNotebookBgLog.append("Starting Spark Context")
   sparkContext = new SparkContext(conf)
-  SparkNotebookBgLog.append("Stopping Spark Context")
+  //SparkNotebookBgLog.append("Stopping Spark Context")
 }
 
 reset()
@@ -68,6 +68,6 @@ def stopSpark() = sparkContext.stop()
   sparkContext = sc
 }
 
-SparkNotebookBgLog.append("Initialized!")
+//SparkNotebookBgLog.append("Initialized!")
 
 "init.sc done!"
