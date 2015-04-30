@@ -19,11 +19,12 @@ define([
      *
      * @class Kernel
      * @param {string} kernel_service_url - the URL to access the kernel REST api
+     * @param {string} base_url - the base URL to compute kernel WS URL without the context (application.context)
      * @param {string} ws_url - the websockets URL
      * @param {Notebook} notebook - notebook object
      * @param {string} name - the kernel type (e.g. python3)
      */
-    var Kernel = function (kernel_service_url, ws_url, notebook, name) {
+    var Kernel = function (kernel_service_url, base_url, ws_url, notebook, name) {
         this.events = notebook.events;
 
         this.id = null;
@@ -31,6 +32,7 @@ define([
         this.ws = null;
 
         this.kernel_service_url = kernel_service_url;
+        this.base_url = base_url;
         this.kernel_url = null;
         this.ws_url = ws_url || IPython.utils.get_body_data("wsUrl");
         if (!this.ws_url) {
@@ -431,13 +433,14 @@ define([
          */
         var that = this;
         this.stop_channels();
-        var ws_host_url = this.ws_url + this.kernel_url;
+        var kernel_base_ws = (this.base_url === "/")? this.kernel_url : this.kernel_url.substring(this.base_url.length)
+        var ws_host_url = this.ws_url + kernel_base_ws;
 
         console.log("Starting WebSockets:", ws_host_url);
 
         this.ws = new this.WebSocket([
                 that.ws_url,
-                utils.url_join_encode(that.kernel_url, 'channels'),
+                utils.url_join_encode(kernel_base_ws, 'channels'),
                 "?session_id=" + that.session_id
             ].join('')
         );
