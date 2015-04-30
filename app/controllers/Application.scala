@@ -16,6 +16,7 @@ import play.api.libs.functional.syntax._
 import play.api.libs.iteratee._
 import play.api.libs.iteratee.Concurrent.Channel
 import play.api.libs.json._
+import play.api.Play.current
 
 import com.typesafe.config._
 
@@ -29,8 +30,6 @@ import notebook.kernel.remote._
 import notebook.NBSerializer.Metadata
 
 object AppUtils {
-  import play.api.Play.current
-
   lazy val config               = NotebookConfig(current.configuration.getConfig("manager").get)
   lazy val nbm                  = new NotebookManager(config.projectName, config.notebooksDir)
   lazy val notebookServerConfig = current.configuration.getConfig("notebook-server").get.underlying
@@ -60,7 +59,7 @@ object Application extends Controller {
   implicit val GetClustersTimeout = Timeout(60 seconds)
 
   val project = "Spark Notebook" //TODO from application.conf
-  val base_project_url = "/"
+  val base_project_url = current.configuration.getString("application.context").getOrElse("/")
   val base_kernel_url = "/"
   val base_observable_url = "observable" // TODO: Ugh...
   val read_only = false.toString
@@ -374,7 +373,12 @@ object Application extends Controller {
   def openNotebook(p:String) = Action { request =>
     val path = URLDecoder.decode(p)
     Logger.info(s"View notebook '$path'")
-    val ws_url = s"ws:/${request.host}/ws"
+    val wsPath = base_project_url match {
+      case "/" => "/ws"
+      case x if x.endsWith("/") => x + "ws"
+      case x => x + "/ws"
+    }
+    val ws_url = s"ws:/${request.host}$wsPath"
 
     Ok(views.html.notebook(
       nbm.name,
