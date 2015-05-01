@@ -56,11 +56,18 @@ object NotebookClusters {
   case object Profiles
 
   def apply(config: Configuration):NotebookClusters = {
+
+    config.getString("profiles").foreach { p =>
+      Logger.debug(s"Profiles file in the config is referring $p. Does it exist? ${new File(p).exists}")
+    }
     val profilesFile = config.getString("profiles").map(new File(_)).filter(_.exists)
                         .orElse(Option(new File("./conf/profiles"))).filter(_.exists)    // ./bin/spark-notebook
                         .getOrElse(new File("../conf/profiles"))                         // ./spark-notebook
     Logger.debug("Profiles file is : " + profilesFile)
 
+    config.getString("file").foreach { p =>
+      Logger.debug(s"Clusters file in the config is referring $p. Does it exist? ${new File(p).exists}")
+    }
     val clustersFile = config.getString("file").map(new File(_)).filter(_.exists)
                         .orElse(Option(new File("./conf/clusters"))).filter(_.exists)    // ./bin/spark-notebook
                         .getOrElse(new File("../conf/clusters"))                         // ./spark-notebook

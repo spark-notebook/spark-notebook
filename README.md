@@ -261,7 +261,7 @@ While the context `:remote-repo` is available from the notebook, we can also add
 
 ```json
     "customRepos"     : [
-      "s3-repo % default % s3://<bucket-name>/<path-to-repo> % (\"$AWS_ACCESS_KEY_ID\", \"$AWS_SECRET_ACCESS_KEY\")",
+      "s3-repo % default % s3://<bucket-name>/<path-to-repo> % maven % (\"$AWS_ACCESS_KEY_ID\", \"$AWS_SECRET_ACCESS_KEY\")",
       "local % default % file://<home>/.m2/repository"
     ],
 ```
@@ -670,17 +670,17 @@ This way, you can reuse local dependencies or reuse pre-downloaded ones.
 
 To instruct the system where to look for dependencies, you'll have to use the `:remote-repo` context:
 ```
-:remote-repo oss-sonatype % default % https://oss.sonatype.org/content/repositories/releases/
+:remote-repo oss-sonatype % default % https://oss.sonatype.org/content/repositories/releases/ % maven
 ```
 
-Above we defined a repo named `oss-sonatype` with `default` structure at localtion `https://oss.sonatype.org/content/repositories/releases/`.
+Above we defined a repo named `oss-sonatype` with `default` structure at localtion `https://oss.sonatype.org/content/repositories/releases/` respecting the `maven` layout.
 
 #### `remote-repo` with authentication
 
 Some repos (on S3 for instance) require authentication, for this you can add them **literally** or using **env variables**:
 
 ```
-:remote-repo :remote-repo s3-repo % default % s3://<bucket-name>/<path-to-repo> % ("$AWS_ACCESS_KEY_ID", "$AWS_SECRET_ACCESS_KEY")
+:remote-repo s3-repo % default % s3://<bucket-name>/<path-to-repo> % maven % ("$AWS_ACCESS_KEY_ID", "$AWS_SECRET_ACCESS_KEY")
 ```
 
 
@@ -728,13 +728,13 @@ There are some common problems that users experience from time to time.
 So we collected some useful tips to make your life easier:
 
 * spark-notebook uses old hadoop 1.0.4 by default. As notebook is a spark-driver itself, hence it defines the dependencies to be used within the cluster. This means that the `hadoop-client` has to match the cluster one, that's why we need to start the correct hadoop version in (or download the right distro),
-you should start spark-notebook with -Dhadoop.version parameter, like:
-```
-sbt -Dhadoop.version=2.4.0 run
-```
+you should start spark-notebook with `-Dhadoop.version parameter`, like: `sbt -Dhadoop.version=2.4.0 run`
 * many errors are not yet reported directly to notebook console. So, if something is wrong do not forget to look at **logs/sn-session.log** and at spark worker's logs.
 * your current spark configuration is shown in **Edit > Edit Notebook Metadata**. You can make changes there instead of adding a special cell for `reset`ing default spark configuration. You can also create a template for spark configuration in a "Clusters" tab.
 * some features (like switching output modes of the cell) are activated by keyboard shortcuts that are described at **Help > Keyboard Shortcuts**.
+* running the dist/sbt on a different port: `./bin/spark-notebook -Dhttp.port=8888`
+* running the dist/sbt on a different address: `./bin/spark-notebook -Dhttp.address=example.com`
+* running the dist/sbt on a different context path: `./bin/spark-notebook -Dapplication.context=/spark-notebook`. Then you can browse [http://localhost:9000/spark-notebook](http://localhost:9000/spark-notebook). **NB**: the context path **has** to start wiht `/`.
 
 
 ## IMPORTANT
