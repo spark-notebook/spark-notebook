@@ -19,8 +19,7 @@ import kernel.remote.{RemoteActorSystem, RemoteActorProcess}
  * accomplished by blocking on actor startup
  * to the remote (this is accomplished by blocking on startup waiting for
  */
-
-class Kernel(config:Config, system: ActorSystem) {
+class Kernel(config:Config, system: ActorSystem, val notebookPath:Option[String]=None) {
   implicit val executor = system.dispatcher
 
   val router = system.actorOf(Props(new ExecutionManager))
@@ -65,12 +64,17 @@ object KernelManager {
 
   def get(id: String) = kernels.get(id)
   def apply(id: String) = kernels(id)
-
+  def atPath(path:String) = kernels.find{ case (id, k ) => k.notebookPath.exists(_ == path) }
   def add(id:String, kernel: Kernel) {
     kernels += id -> kernel
   }
 
   def remove(id:String) {
     kernels -= id
+  }
+
+  def stopAll = {
+    kernels.values.foreach(_.shutdown())
+    kernels -- kernels.keys
   }
 }
