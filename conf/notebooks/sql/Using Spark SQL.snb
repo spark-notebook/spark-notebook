@@ -26,14 +26,16 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "case class Quote(stock:String, date:String, price:Double) extends java.io.Serializable",
+    "source" : "case class Quote(stock:String, dateString:String, price:Double) extends java.io.Serializable",
     "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
@@ -50,6 +52,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
@@ -62,15 +65,17 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "//define sql context\nval sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)\n\n// createSchemaRDD is used to implicitly convert an RDD to a SchemaRDD.\nimport sqlContext.createSchemaRDD",
+    "source" : "//define sql context\nval sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)\n\n// createSchemaRDD is used to implicitly convert an RDD to a SchemaRDD.\nimport sqlContext.implicits._",
     "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "//quotes.count",
@@ -82,10 +87,11 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : true
+      "input_collapsed" : false,
+      "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "quotes.registerTempTable(\"quotes\")",
+    "source" : "quotes.toDF().registerTempTable(\"quotes\")",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -94,10 +100,11 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : ":sql[byDate] SELECT date, count(*) as c FROM quotes WHERE date >= '{String: date}' and price >= {Int: price} GROUP BY date",
+    "source" : ":sql[byDate] SELECT dateString, count(*) FROM quotes WHERE dateString >= '{String: date}' and price >= {Int: price} GROUP BY dateString",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -106,6 +113,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",

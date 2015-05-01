@@ -1484,6 +1484,33 @@ define([
     };
 
     /**
+     * Toggle a cell's output stram
+     *
+     * @param {integer} index - cell index
+     */
+    Notebook.prototype.toggle_output_stream = function (index) {
+        var i = this.index_or_selected(index);
+        var cell = this.get_cell(i);
+        if (cell !== null && (cell instanceof codecell.CodeCell)) {
+            cell.toggle_output_stream();
+            this.set_dirty(true);
+        }
+    };
+
+    /**
+     * Toggle the output of all cells.
+     */
+    Notebook.prototype.toggle_all_output_stream = function () {
+        this.get_cells().map(function (cell, i) {
+            if (cell instanceof codecell.CodeCell) {
+                cell.toggle_output_stream();
+            }
+        });
+        // this should not be set if the `collapse` key is removed from nbformat
+        this.set_dirty(true);
+    };
+
+    /**
      * Toggle the output of all cells.
      */
     Notebook.prototype.toggle_all_output = function () {

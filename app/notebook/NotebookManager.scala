@@ -22,14 +22,14 @@ class NotebookManager(val name: String, val notebookDir: File) {
   def getName(path:String) = path.split("/").filter(!_.isEmpty).last.dropRight(extension.size)
 
   def notebookFile(path: String) = {
-    Logger.info(s"Load notebook. initial path: ${path}")
+    //Logger.info(s"Load notebook. initial path: ${path}")
     val basePath = notebookDir.getCanonicalPath
-    Logger.info(s"Load notebook. base canonical file path: ${basePath}")
+    //Logger.info(s"Load notebook. base canonical file path: ${basePath}")
     val decodedPath = URLDecoder.decode(path)
-    Logger.info(s"Load notebook. decodedPath: ${decodedPath}")
+    //Logger.info(s"Load notebook. decodedPath: ${decodedPath}")
     val nbFile = new File(basePath, decodedPath)
-    Logger.info(s"Load notebook. canonical file path: ${nbFile.getCanonicalPath}")
-    Logger.info(s"Load notebook. absolute file path: ${nbFile.getAbsolutePath}")
+    //Logger.info(s"Load notebook. canonical file path: ${nbFile.getCanonicalPath}")
+    //Logger.info(s"Load notebook. absolute file path: ${nbFile.getAbsolutePath}")
     /* This check is probably not strictly necessary due to URL encoding of name (should escape any path traversal components), but let's be safe */
     require(nbFile.getCanonicalPath.startsWith(basePath), "Unable to access notebook outside of notebooks path.")
     nbFile

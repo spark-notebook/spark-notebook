@@ -192,6 +192,18 @@
                             </ul>
                         </li>
                         <li class="divider"></li>
+                        <li id="current_output_streams" class="dropdown-submenu"><a href="#">Output Streams</a>
+                            <ul class="dropdown-menu">
+                                <li id="toggle_current_output_stream"
+                                    title="Hide/Show the output stream of the current cell">
+                                    <a href="#">Toggle</a>
+                                </li>
+                                <li id="toggle_all_output_stream"
+                                    title="Hide/Show the output stream of all cells">
+                                    <a href="#">Toggle All</a>
+                                </li>
+                            </ul>
+                        </li>
                         <li id="current_outputs" class="dropdown-submenu"><a href="#">Current Output</a>
                             <ul class="dropdown-menu">
                                 <li id="toggle_current_output"
@@ -293,7 +305,7 @@
 } {
   <div id="ipython-main-app">
       <div id="notebook_panel">
-          <div id="notebook-bg-logs" style="box-sizing: border-box; top: 10px; position: fixed; background-color: lightyellow">
+          <!-- <div id="notebook-bg-logs" style="box-sizing: border-box; top: 10px; position: fixed; background-color: lightyellow">
             <div id="notebook-bg-logs-button">
               <button type="button" class="btn btn-default">
                 <i class="fa fa-repeat"></i>
@@ -301,9 +313,8 @@
               <span>Background activities</span>
             </div>
             <div id="notebook-bg-logs-panel">
-              <!-- width:150px; height: 100px; border: 1px solid black;  -->
             </div>
-          </div>
+          </div> -->
           <div id="notebook"></div>
       </div>
   </div>

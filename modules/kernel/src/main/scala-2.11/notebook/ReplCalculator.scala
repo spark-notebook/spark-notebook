@@ -8,16 +8,16 @@ import scala.util.{Try, Success=>TSuccess, Failure=>TFailure}
 import akka.actor.{ActorLogging, Props, Actor}
 import kernel._
 
-import sbt._
+import org.sonatype.aether.repository.RemoteRepository
 
-import notebook.util.{CustomResolvers, Deps, Match}
+import notebook.util.{Deps, Match, Repos}
 import notebook.front._
 import notebook.front.widgets._
 
 sealed trait CalcRequest
 case class ExecuteRequest(counter: Int, code: String) extends CalcRequest
 case class CompletionRequest(line: String, cursorPosition: Int) extends CalcRequest
-case class ObjectInfoRequest(objName: String) extends CalcRequest
+case class ObjectInfoRequest(objName: String, position:Int) extends CalcRequest
 case object InterruptRequest extends CalcRequest
 
 sealed trait CalcResponse
@@ -54,17 +54,16 @@ case class ObjectInfoResponse(found: Boolean, name: String, callDef: String, cal
  */
 class ReplCalculator(
   customLocalRepo:Option[String],
-  customRepos:Option[List[String]], // List("mvn", "my-mvn % repo")
+  customRepos:Option[List[String]],
   customDeps:Option[List[String]],
   customImports:Option[List[String]],
   customSparkConf:Option[Map[String, String]],
-  _initScripts: List[(String, String)],
+  initScripts: List[(String, String)],
   compilerArgs: List[String]
 ) extends Actor with akka.actor.ActorLogging {
-  val initScripts = _initScripts ::: List(("end", "\"END INIT\""))
 
   private val repoRegex = "(?s)^:local-repo\\s*(.+)\\s*$".r
-  private val resolverRegex = "(?s)^:resolver\\s*(.+)\\s*$".r
+  private val remoteRegex = "(?s)^:remote-repo\\s*(.+)\\s*$".r
   private val authRegex = """(?s)^\s*\(([^\)]+)\)\s*$""".r
   private val credRegex = """"([^"]+)"\s*,\s*"([^"]+)"""".r //"
 
@@ -73,12 +72,24 @@ class ReplCalculator(
   private val sqlRegex = "(?s)^:sql(?:\\[([a-zA-Z0-9][a-zA-Z0-9]*)\\])?\\s*(.+)\\s*$".r
   private val shRegex = "(?s)^:sh\\s*(.+)\\s*$".r
 
-  var resolvers:List[Resolver] = {
-    val typesafeReleases = Resolver.typesafeIvyRepo("releases")
-    val jCenterReleases = Resolver.jcenterRepo
-    val sonatypeReleases = Resolver.sonatypeRepo("releases")
-    typesafeReleases :: jCenterReleases :: sonatypeReleases ::  customRepos.getOrElse(List.empty[String]).map(CustomResolvers.fromString _).map(_._2)
+  private def remoreRepo(r:String):(String, RemoteRepository) = {
+    val id::tpe::url::rest = r.split("%").toList
+    val (username, password):(Option[String],Option[String]) = rest.headOption.map { auth =>
+      auth match {
+        case authRegex(usernamePassword)   =>
+          val (username, password) = usernamePassword match { case credRegex(username, password) => (username, password) }
+          val u = if (username.startsWith("$")) sys.env.get(username.tail).get else username
+          val p = if (password.startsWith("$")) sys.env.get(password.tail).get else password
+          (Some(u), Some(p))
+        case _                             => (None, None)
+      }
+    }.getOrElse((None, None))
+    val rem = Repos(id.trim,tpe.trim,url.trim,username,password)
+    val logR = r.replaceAll("\"", "\\\\\"")
+    (logR, rem)
   }
+
+  var remotes:List[RemoteRepository] = List(Repos.central, Repos.oss) ::: customRepos.getOrElse(List.empty[String]).map(remoreRepo _).map(_._2)
 
   var repo:File = customLocalRepo.map(x => new File(x)).getOrElse{
     val tmp = new File(System.getProperty("java.io.tmpdir"))
@@ -86,10 +97,10 @@ class ReplCalculator(
     val snb = new File(tmp, "spark-notebook")
     if (!snb.exists) snb.mkdirs
 
-    val repo = new File(snb, "repo")
-    if (!repo.exists) repo.mkdirs
+    val aether = new File(snb, "aether")
+    if (!aether.exists) aether.mkdirs
 
-    val r = new File(repo, java.util.UUID.randomUUID.toString)
+    val r = new File(aether, java.util.UUID.randomUUID.toString)
     if (!r.exists) r.mkdirs
 
     r
@@ -99,7 +110,7 @@ class ReplCalculator(
 
   val (depsJars, depsScript):(List[String],(String, ()=>String)) = customDeps.map { d =>
     val customDeps = d.mkString("\n")
-    val deps = Deps.script(customDeps, resolvers, repo).toOption.getOrElse(List.empty[String])
+    val deps = Deps.script(customDeps, remotes, repo).toOption.getOrElse(List.empty[String])
     (deps, ("deps", () => s"""
                     |val CustomJars = ${ deps.mkString("Array(\"", "\",\"", "\")") }
                     |
@@ -111,7 +122,7 @@ class ReplCalculator(
   ("deps", () => customDeps.map { d =>
     val customDeps = d.mkString("\n")
 
-    val deps = Deps.script(customDeps, resolvers, repo).toOption.getOrElse(List.empty[String])
+    val deps = Deps.script(customDeps, remotes, repo).toOption.getOrElse(List.empty[String])
 
     (deps, s"""
     |val CustomJars = ${ deps.mkString("Array(\"", "\",\"", "\")") }
@@ -137,14 +148,14 @@ class ReplCalculator(
         case Failure(str) =>
           if (notify) {
             eval(s"""
-              SparkNotebookBgLog.append("${failure(str)}")
+              //SparkNotebookBgLog.append("${failure(str)}")
             """,false)()
           }
           log.error(failure(str))
         case _ =>
           if (notify) {
             eval(s"""
-              SparkNotebookBgLog.append("${success}")
+              //SparkNotebookBgLog.append("${success}")
             """,false)()
           }
           log.info(success)
@@ -156,11 +167,11 @@ class ReplCalculator(
         val (result, _) = {
           val newCode =
             code match {
-              case resolverRegex(r) =>
-                log.debug("Adding resolver: " + r)
-                val (logR, resolver) = CustomResolvers.fromString(r)
-                resolvers = resolver :: resolvers
-                s""" "Resolver added: $logR!" """
+              case remoteRegex(r) =>
+                log.debug("Adding remote repo: " + r)
+                val (logR, remote) = remoreRepo(r)
+                remotes = remote :: remotes
+                s""" "Remote repo added: $logR!" """
 
               case repoRegex(r) =>
                 log.debug("Updating local repo: " + r)
@@ -169,21 +180,21 @@ class ReplCalculator(
                 s""" "Repo changed to ${repo.getAbsolutePath}!" """
 
               case dpRegex(cp) =>
-                log.debug("Fetching deps using repos: " + resolvers.mkString(" -- "))
+                log.debug("Fetching deps using repos: " + remotes.mkString(" -- "))
                 eval("""
-                  SparkNotebookBgLog.append("Resolving deps")
+                  //SparkNotebookBgLog.append("Resolving deps")
                 """, false)()
-                val tryDeps = Deps.script(cp, resolvers, repo)
+                val tryDeps = Deps.script(cp, remotes, repo)
                 eval("""
-                  SparkNotebookBgLog.append("Deps resolved")
+                  //SparkNotebookBgLog.append("Deps resolved")
                 """, false)()
 
                 tryDeps match {
                   case TSuccess(deps) =>
                     eval("""
-                      SparkNotebookBgLog.append("Stopping Spark Context")
+                      //SparkNotebookBgLog.append("Stopping Spark Context")
                       sparkContext.stop()
-                      SparkNotebookBgLog.append("Spark Context stopped")
+                      //SparkNotebookBgLog.append("Spark Context stopped")
                     """)(
                       "CP reload processed successfully",
                       (str:String) => "Error in :dp: \n%s".format(str)
@@ -197,9 +208,9 @@ class ReplCalculator(
                       |//updating deps
                       |jars = (${ deps.mkString("List(\"", "\",\"", "\")") } ::: jars.toList).distinct.toArray
                       |//restarting spark
-                      |SparkNotebookBgLog.append("Resetting Spark Context with new jars")
+                      |//SparkNotebookBgLog.append("Resetting Spark Context with new jars")
                       |reset()
-                      |SparkNotebookBgLog.append("Spark Context restarted")
+                      |//SparkNotebookBgLog.append("Spark Context restarted")
                       |jars.toList
                     """.stripMargin
                   case TFailure(ex) =>
@@ -210,9 +221,9 @@ class ReplCalculator(
               case cpRegex(cp) =>
                 val jars = cp.trim().split("\n").toList.map(_.trim()).filter(_.size > 0)
                 repl.evaluate("""
-                  SparkNotebookBgLog.append("Stopping Spark Context")
+                  //SparkNotebookBgLog.append("Stopping Spark Context")
                   sparkContext.stop()
-                  SparkNotebookBgLog.append("Spark Context stopped")
+                  //SparkNotebookBgLog.append("Spark Context stopped")
                 """)._1 match {
                   case Failure(str) =>
                     log.error("Error in :cp: \n%s".format(str))
@@ -224,7 +235,7 @@ class ReplCalculator(
                 preStartLogic()
                 replay()
                 s"""
-                  //SparkNotebookBgLog.append("Classpath changed")
+                  ////SparkNotebookBgLog.append("Classpath changed")
                   "Classpath CHANGED!"
                 """
 
@@ -256,7 +267,7 @@ class ReplCalculator(
         result match {
           case Success(result)     => sender ! ExecuteResponse(result.toString)
           case Failure(stackTrace) => sender ! ErrorResponse(stackTrace, false)
-          case kernel.Incomplete   => sender ! ErrorResponse("", true)
+          case Incomplete          => sender ! ErrorResponse("", true)
         }
     }
   }))
@@ -332,13 +343,13 @@ class ReplCalculator(
           val (matched, candidates) = repl.complete(line, cursorPosition)
           sender ! CompletionResponse(cursorPosition, candidates, matched)
 
-        case ObjectInfoRequest(objName) =>
-          val completions = repl.objectInfo(objName)
+        case ObjectInfoRequest(code, position) =>
+          val completions = repl.objectInfo(code, position)
 
           val resp = if (completions.length == 0) {
-            ObjectInfoResponse(false, objName, "", "")
+            ObjectInfoResponse(false, code, "", "")
           } else {
-            ObjectInfoResponse(true, objName, completions.mkString("\n"), "")
+            ObjectInfoResponse(true, code, completions.mkString("\n"), "")
           }
 
           sender ! resp

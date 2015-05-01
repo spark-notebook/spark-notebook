@@ -59,9 +59,11 @@ class WebSocketKernelActor(channel: Concurrent.Channel[JsValue], val calcService
           calcService.calcActor ! SessionRequest(header, session, CompletionRequest(line, cursorPos.toInt))
         }
 
-        case JsString("object_info_request") => {
-          val JsString(oname) = content \ "oname"
-          calcService.calcActor ! SessionRequest(header, session, ObjectInfoRequest(oname))
+        case JsString("inspect_request") => {
+          val JsString(code) = content \ "code"
+          val JsNumber(position) = content \ "cursor_pos"
+          val JsNumber(detailLevel) = content \ "detail_level" //0,1,2,3
+          calcService.calcActor ! SessionRequest(header, session, ObjectInfoRequest(code, position.toInt))
         }
 
         case x => //logWarn("Unrecognized websocket message: " + msg) //throw new IllegalArgumentException("Unrecognized message type " + x)

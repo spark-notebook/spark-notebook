@@ -10,7 +10,7 @@ name := "spark-notebook"
 
 scalaVersion := defaultScalaVersion
 
-version in ThisBuild <<= (scalaVersion, sparkVersion, hadoopVersion) { (sc, sv, hv) => s"0.4.1-scala-$sc-spark-$sv-hadoop-$hv" }
+version in ThisBuild <<= (scalaVersion, sparkVersion, hadoopVersion, withHive) { (sc, sv, hv, h) => s"0.4.2-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "") }
 
 maintainer := "Andy Petrella" //Docker
 
@@ -74,7 +74,7 @@ sharedSettings
 
 libraryDependencies ++= playDeps
 
-libraryDependencies ++= Seq(
+libraryDependencies ++= List(
   akka,
   akkaRemote,
   akkaSlf4j,
@@ -90,6 +90,12 @@ libraryDependencies ++= Seq(
   "org.scala-lang" % "scala-reflect" % defaultScalaVersion,
   "org.scala-lang" % "scala-compiler" % defaultScalaVersion
 )
+
+//for aether
+libraryDependencies <++= (scalaBinaryVersion) {
+  case "2.10" => Nil
+  case "2.11" => List(ningAsyncHttpClient)
+}
 
 lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).enablePlugins(SbtWeb)
     .aggregate(subprocess, observable, common, spark, kernel)
@@ -148,13 +154,13 @@ lazy val common = Project(id = "common", base = file("modules/common"))
                                   log4j,
                                   scalaZ
                                 ),
-                                libraryDependencies ++= sbtForDeps(scalaBinaryVersion.value, sbtVersion.value),
-                                //addSbtPlugin("com.frugalmechanic" % "fm-sbt-s3-resolver" % "0.5.0"), // WARN ONLY 2.10 0.13 available !!!!
+                                libraryDependencies ++= depsToDownloadDeps(scalaBinaryVersion.value, sbtVersion.value),
                                 // plotting functionality
                                 libraryDependencies ++= Seq(
                                   bokeh,
                                   wisp
-                                )// ++ customJacksonScala
+                                ),// ++ customJacksonScala
+                                unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-"+scalaBinaryVersion.value)
                               )
                               .settings(
                                 sharedSettings:_*
@@ -167,7 +173,7 @@ lazy val common = Project(id = "common", base = file("modules/common"))
                               )
                               .settings(
                                 sourceGenerators in Compile <+= buildInfo,
-                                buildInfoKeys := Seq[BuildInfoKey](version, scalaVersion, sparkVersion , hadoopVersion , jets3tVersion , jlineDef, sbtVersion),
+                                buildInfoKeys := Seq[BuildInfoKey](version, scalaVersion, sparkVersion, hadoopVersion, withHive, jets3tVersion, jlineDef, sbtVersion),
                                 buildInfoPackage := "notebook"
                               )
 
@@ -207,7 +213,8 @@ lazy val kernel = Project(id = "kernel", base = file("modules/kernel"))
                                   akkaSlf4j,
                                   slf4jLog4j,
                                   commonsIO
-                                )
+                                ),
+                                unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-"+scalaBinaryVersion.value)
                               )
                               .settings(
                                 sharedSettings:_*
