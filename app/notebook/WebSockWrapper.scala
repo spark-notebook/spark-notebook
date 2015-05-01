@@ -13,19 +13,28 @@ import notebook.util.Logging
  */
 
 trait WebSockWrapper {
-  def send(header: JsValue, session: JsValue, msgType: String, channel:String, content: JsValue)
+  def session:String
+  def send(header: JsValue, session: String, msgType: String, channel:String, content: JsValue)
 }
 
-class WebSockWrapperImpl(sock: Concurrent.Channel[JsValue]) extends WebSockWrapper with Logging {
+class WebSockWrapperImpl(sock: Concurrent.Channel[JsValue], val session:String) extends WebSockWrapper with Logging {
   private def send(msg: JsValue) {
     logTrace("Sending " + msg)
     sock.push(msg)
   }
 
-  def send(header: JsValue, session: JsValue, msgType: String, channel:String, content: JsValue) {
+  val sessionTransformer = (__ \ 'session).json.update(
+    Reads.of[JsString].map{ case JsString(s) => JsString(session) }
+  )
+  def injectCurrentSession(header:JsValue):JsValue = {
+    val newHeader = header.transform(sessionTransformer)
+    newHeader.get
+  }
+
+  def send(header: JsValue, __session: String /*ignored in favor of session_id!!!*/, msgType: String, channel:String, content: JsValue) {
     val respJson = Json.obj(
       "channel" -> channel,
-      "parent_header" -> header,
+      "parent_header" -> injectCurrentSession(header),
       "msg_type" -> msgType,
       "msg_id" -> UUID.randomUUID().toString,
       "content" -> content,

@@ -103,49 +103,57 @@ object Application extends Controller {
   def kernelSpecs() = Action { Ok(kernelDef) }
 
   private [this] def newSession(kernelId:Option[String]=None, notebookPath:Option[String]=None) = {
-    val kId = kernelId.getOrElse(UUID.randomUUID.toString)
-    val compilerArgs = config.kernel.compilerArgs.toList
-    val initScripts = config.kernel.initScripts.toList
-    val kernel = new Kernel(config.kernel.config.underlying, kernelSystem)
-    KernelManager.add(kId, kernel)
+    val existing = for {
+      path         <- notebookPath
+      (id, kernel) <- KernelManager.atPath(path)
+    } yield (id, kernel, kernelIdToCalcService(id))
 
-    val r = Reads.map[String]
+    val (kId, kernel, service) = existing.getOrElse {
+      val kId = kernelId.getOrElse(UUID.randomUUID.toString)
+      val compilerArgs = config.kernel.compilerArgs.toList
+      val initScripts = config.kernel.initScripts.toList
+      val kernel = new Kernel(config.kernel.config.underlying, kernelSystem, notebookPath)
+      KernelManager.add(kId, kernel)
 
-    // Load the notebook → get the metadata
-    val md:Option[Metadata] = for {
-      p <- notebookPath
-      n <- nbm.load(p)
-      m <- n.metadata
-    } yield m
+      val r = Reads.map[String]
 
-    val customLocalRepo:Option[String] = md.flatMap(_.customLocalRepo)
+      // Load the notebook → get the metadata
+      val md:Option[Metadata] = for {
+        p <- notebookPath
+        n <- nbm.load(p)
+        m <- n.metadata
+      } yield m
 
-    val customRepos:Option[List[String]] = md.flatMap(_.customRepos)
+      val customLocalRepo:Option[String] = md.flatMap(_.customLocalRepo)
 
-    val customDeps:Option[List[String]] = md.flatMap(_.customDeps)
+      val customRepos:Option[List[String]] = md.flatMap(_.customRepos)
 
-    val customImports:Option[List[String]] = md.flatMap(_.customImports)
+      val customDeps:Option[List[String]] = md.flatMap(_.customDeps)
 
-    val customSparkConf:Option[Map[String, String]] = for {
-      m <- md
-      c <- m.customSparkConf
-      _ = Logger.debug("customSparkConf >> " + c)
-      map <- r.reads(c).asOpt
-    } yield map
+      val customImports:Option[List[String]] = md.flatMap(_.customImports)
+
+      val customSparkConf:Option[Map[String, String]] = for {
+        m <- md
+        c <- m.customSparkConf
+        _ = Logger.info("customSparkConf >> " + c)
+        map <- r.reads(c).asOpt
+      } yield map
 
 
 
-    val service = new CalcWebSocketService( kernelSystem,
-                                            customLocalRepo,
-                                            customRepos,
-                                            customDeps,
-                                            customImports,
-                                            customSparkConf,
-                                            initScripts,
-                                            compilerArgs,
-                                            kernel.remoteDeployFuture
-                                          )
-    kernelIdToCalcService += kId -> service
+      val service = new CalcWebSocketService( kernelSystem,
+                                              customLocalRepo,
+                                              customRepos,
+                                              customDeps,
+                                              customImports,
+                                              customSparkConf,
+                                              initScripts,
+                                              compilerArgs,
+                                              kernel.remoteDeployFuture
+                                            )
+      kernelIdToCalcService += kId -> service
+      (kId, kernel, service)
+    }
 
     // todo add MD?
     Json.parse(
@@ -172,7 +180,21 @@ object Application extends Controller {
   }
 
   def sessions() = Action {
-    Ok(Json.obj()) // TODO using kernelIdToCalcService
+    Ok(JsArray(kernelIdToCalcService.keys
+      .map { k =>
+        KernelManager.get(k).map(l => (k, l))
+      }.collect {
+        case Some(x) => x
+      }.map { case (k, kernel) =>
+        val path = kernel.notebookPath.getOrElse(s"KERNEL '$k' SHOULD HAVE A PATH ACTUALLY!")
+        Json.obj(
+          "notebook" →  Json.obj(
+                          "path" → path
+                        ),
+          "id" →  k
+        )
+      }.toSeq)
+    )
   }
 
 
@@ -398,6 +420,8 @@ object Application extends Controller {
   }
 
   private [this] def closeKernel(kernelId:String) = {
+    kernelIdToCalcService -= kernelId
+
     KernelManager.get(kernelId).foreach{ k =>
       Logger.info(s"Closing kernel $kernelId")
       k.shutdown()
@@ -405,23 +429,27 @@ object Application extends Controller {
     }
   }
 
-  def openKernel(kernelId:String) =  ImperativeWebsocket.using[JsValue](
-    onOpen = channel => WebSocketKernelActor.props(channel, kernelIdToCalcService(kernelId)),
+  def openKernel(kernelId:String, session_id:String) =  ImperativeWebsocket.using[JsValue](
+    onOpen = channel => WebSocketKernelActor.props(channel, kernelIdToCalcService(kernelId), session_id),
     onMessage = (msg, ref) => ref ! msg,
     onClose = ref => {
+      // try to not close the kernel to allow long live sessions
+      // closeKernel(kernelId)
       Logger.info(s"Closing websockets for kernel $kernelId")
-      closeKernel(kernelId)
       ref ! akka.actor.PoisonPill
     }
   )
+
+  def terminateKernel(kernelId:String) = Action { request =>
+    closeKernel(kernelId)
+    Ok(s"Kernel $kernelId closed!")
+  }
 
   def restartKernel(kernelId:String) = Action { request =>
     //shouldn't do anything since onClose should be called in openKernel (stopChannels is call in the front)
     // /!\ this won't kill the underneath actor!!!
     closeKernel(kernelId)
-
-    // TODO → the notebookPath here!!!
-    Ok(newSession(notebookPath=None))
+    Ok(newSession(notebookPath=KernelManager.get(kernelId).flatMap(k => k.notebookPath)))
   }
 
   def listCheckpoints(snb:String) = Action { request =>
