@@ -620,21 +620,23 @@ For `Lightning`, the Lightning Server and `lighting-scala` should be prepared.
 
 #### Setup
 
-1. Follow `Lightning`'s instruction to setup the server.
+1. Follow [Lightning](http://lightning-viz.org/)'s instruction to setup the server.
 2. Prepare `lightning-scala`. Currently, `lightning-scala` is not on the public repository.
-  1. Clone the project from https://github.com/minyk/lightning-scala For now, `https://github.com/lightning-viz/lightning-scala` doesn't have proper function.
+  1. Clone the project from `https://github.com/lightning-viz/lightning-scala`.
   2. Build and publish to local Ivy2 repo with `sbt publishLocal`
-3. Change into `lightning-viz` branch and build
+3. Build `spark-notebook`
 4. Load notebook from an example `notebook/viz/LightningViz.snb`
 5. Change `Lightning` host and credential.
 6. Run!
 
+The results will be:
+
+![Lightning Visualization Result](https://raw.github.com/minyk/spark-notebook/lightning-viz/images/lightning-viz.png)
+
 #### Issues
 
-* `lightning-scala`'s basic auth may not work.
-* The `iframe`'s `height` for visualization is set to `600`. This will be change with `pym.js` functionality.
-* Custom CSS for `iframe` is in the `https://github.com/minyk/spark-notebook/lighting-viz/public/ipython/custom/custom.css`
-* Maybe `lightning-scala` needed in a maven repo. In this case, run `sbt publish` then, jars are located in the `{user.home}/.m2/repository`.
+* Custom CSS for `iframe` is in the `public/ipython/custom/custom.css`.
+* `lightning-scala` dose not support all functions in the `lightning`.
 
 ## Update _Notebook_ `ClassPath`
 Keeping your notebook runtime updated with the libraries you need in the classpath is usually cumbersome as it requires updating the server configuration in the SBT definition and restarting the system. Which is pretty sad because it requires a restart, rebuild and is not contextual to the notebook!
