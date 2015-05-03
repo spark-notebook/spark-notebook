@@ -68,6 +68,8 @@ def stopSpark() = sparkContext.stop()
   sparkContext = sc
 }
 
+def sc:SparkContext = sparkContext
+
 //SparkNotebookBgLog.append("Initialized!")
 
 "init.sc done!"
