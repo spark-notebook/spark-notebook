@@ -188,13 +188,18 @@ object BetterFork {
   private[pfork] def main(args: Array[String]) {
     val className = args(0)
     val parentPort = args(1).toInt
+    val kernelId = args(2)
+    val path = args(3)
+    val remainingArgs = args.drop(4).toIndexedSeq
 
-    PropertyConfigurator.configure(getClass().getResource("/log4j.subprocess.properties"))
+    val propLog = new java.util.Properties()
+    propLog.load(getClass().getResourceAsStream("/log4j.subprocess.properties"))
+    propLog.setProperty("log4j.appender.rolling.File", s"logs/sn-session-$kernelId-$path.log")
+    PropertyConfigurator.configure(propLog)
 
     log.info("Remote process starting")
     val socket = new Socket("127.0.0.1", parentPort)
 
-    val remainingArgs = args.drop(2).toIndexedSeq
 
     val hostedClass = Class.forName(className).newInstance().asInstanceOf[ForkableProcess]
 
