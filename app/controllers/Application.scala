@@ -106,7 +106,7 @@ object Application extends Controller {
     val kId = kernelId.getOrElse(UUID.randomUUID.toString)
     val compilerArgs = config.kernel.compilerArgs.toList
     val initScripts = config.kernel.initScripts.toList
-    val kernel = new Kernel(config.kernel.config.underlying, kernelSystem)
+    val kernel = new Kernel(config.kernel.config.underlying, kernelSystem, kId, notebookPath)
     KernelManager.add(kId, kernel)
 
     val r = Reads.map[String]
