@@ -52,6 +52,7 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config:Config, executi
   def reservedCodeCache: Long = if (config.hasPath("reservedCodeCache")) config.getBytes("reservedCodeCache") else -1
   def server: Boolean = true
   def debugPort: Option[Int] = if (config.hasPath("debug.port")) Some(config.getInt("debug.port")) else None
+  def logLevel: String = if (config.hasPath("log.level")) config.getString("log.level") else "info"
   def vmArgs:List[String] = if (config.hasPath("vmArgs")) config.getStringList("vmArgs").toList else Nil
   def classPath: IndexedSeq[String] = defaultClassPath
   def classPathString = classPath.mkString(File.pathSeparator)
@@ -96,6 +97,7 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config:Config, executi
       .addArgument(classOf[ChildProcessMain].getName)
       .addArgument(processClass.getName)
       .addArgument(ss.getLocalPort.toString)
+      .addArgument(logLevel)
       .addArguments(args.toArray)
 
     Future {
@@ -188,13 +190,17 @@ object BetterFork {
   private[pfork] def main(args: Array[String]) {
     val className = args(0)
     val parentPort = args(1).toInt
-    val kernelId = args(2)
-    val path = args(3)
-    val remainingArgs = args.drop(4).toIndexedSeq
+    val logLevel = args(2)
+    val kernelId = args(3)
+    val path = args(4)
+    val remainingArgs = args.drop(5).toIndexedSeq
 
     val propLog = new java.util.Properties()
     propLog.load(getClass().getResourceAsStream("/log4j.subprocess.properties"))
+
     propLog.setProperty("log4j.appender.rolling.File", s"logs/sn-session-$kernelId-$path.log")
+    propLog.setProperty("log4j.rootLogger", s"$logLevel, rolling")
+
     PropertyConfigurator.configure(propLog)
 
     log.info("Remote process starting")
