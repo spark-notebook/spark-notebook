@@ -80,19 +80,8 @@ class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) { loo
    *  unless settings or properties are such that it should start
    *  with SimpleReader.
    */
-  def chooseReader(settings: Settings): InteractiveReader = {
-    if (settings.Xnojline.value || Properties.isEmacsShell)
-      SimpleReader()
-    else try new SparkJLineReader(
-      if (settings.noCompletion.value) NoCompletion
-      else new SparkJLineCompletion(intp)
-    )
-    catch {
-      case ex @ (_: Exception | _: NoClassDefFoundError) =>
-        echo("Failed to created SparkJLineReader: " + ex + "\nFalling back to SimpleReader.")
-        SimpleReader()
-    }
-  }
+  // anyway → not used and the spark one hangs with nohup
+  def chooseReader(settings: Settings): InteractiveReader = SimpleReader()
 
   // runs :load `file` on any files passed via -i
   def loadFiles(settings: Settings) = settings match {
