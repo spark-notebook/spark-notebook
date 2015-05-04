@@ -286,6 +286,14 @@ define(function(require){
                 env.notebook.focus_cell();
             }
         },
+        'interrupt-jobs':{
+            icon: 'fa-fire',
+            help_index : 'hc',
+            handler : function (env) {
+                env.notebook.kernel.cancelJobs();
+                env.notebook.focus_cell();
+            }
+        },
         'undo-last-cell-deletion' : {
             help_index : 'ei',
             handler : function (env) {
