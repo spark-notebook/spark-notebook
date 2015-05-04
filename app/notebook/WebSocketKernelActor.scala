@@ -15,7 +15,9 @@ object WebSocketKernelActor {
     system.actorOf(Props(new WebSocketKernelActor(channel, calcService, session_id)))
 }
 
-class WebSocketKernelActor(channel: Concurrent.Channel[JsValue], val calcService:CalcWebSocketService, session_id:String)(implicit system:ActorSystem) extends Actor {
+class WebSocketKernelActor(channel: Concurrent.Channel[JsValue], val calcService:CalcWebSocketService, session_id:String)(implicit system:ActorSystem)
+  extends Actor with akka.actor.ActorLogging {
+
   val executionCounter = new AtomicInteger(0)
 
   val ws = new WebSockWrapperImpl(channel, session_id)
@@ -47,6 +49,10 @@ class WebSocketKernelActor(channel: Concurrent.Channel[JsValue], val calcService
                   )
         }
 
+        case JsString("interrupt_request") => {
+          calcService.calcActor ! InterruptCalculator
+        }
+
         case JsString("execute_request") => {
           val JsString(code) = content \ "code"
           val execCounter = executionCounter.incrementAndGet()
@@ -66,7 +72,7 @@ class WebSocketKernelActor(channel: Concurrent.Channel[JsValue], val calcService
           calcService.calcActor ! SessionRequest(header, session, ObjectInfoRequest(code, position.toInt))
         }
 
-        case x => //logWarn("Unrecognized websocket message: " + msg) //throw new IllegalArgumentException("Unrecognized message type " + x)
+        case x => log.warning("Unrecognized websocket message: " + json)
       }
   }
 

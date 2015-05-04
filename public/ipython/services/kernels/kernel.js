@@ -750,6 +750,22 @@ define([
     };
 
     /**
+     *
+     *
+     * @function interrupt
+     * @param callback {function}
+     */
+    Kernel.prototype.interrupt = function (callback) {
+        var callbacks;
+        if (callback) {
+            callbacks = { shell : { reply : callback } };
+        }
+        var content = {
+        };
+        return this.send_shell_message("interrupt_request", content, callbacks);
+    };
+
+    /**
      * @function send_input_reply
      */
     Kernel.prototype.send_input_reply = function (input) {
