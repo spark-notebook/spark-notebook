@@ -109,10 +109,12 @@ object Application extends Controller {
     } yield (id, kernel, kernelIdToCalcService(id))
 
     val (kId, kernel, service) = existing.getOrElse {
+      Logger.info(s"Starting kernel/session because nothing for $kernelId and $notebookPath")
+
       val kId = kernelId.getOrElse(UUID.randomUUID.toString)
       val compilerArgs = config.kernel.compilerArgs.toList
       val initScripts = config.kernel.initScripts.toList
-      val kernel = new Kernel(config.kernel.config.underlying, kernelSystem, notebookPath)
+      val kernel = new Kernel(config.kernel.config.underlying, kernelSystem, kId, notebookPath)
       KernelManager.add(kId, kernel)
 
       val r = Reads.map[String]
@@ -138,8 +140,6 @@ object Application extends Controller {
         _ = Logger.info("customSparkConf >> " + c)
         map <- r.reads(c).asOpt
       } yield map
-
-
 
       val service = new CalcWebSocketService( kernelSystem,
                                               customLocalRepo,
