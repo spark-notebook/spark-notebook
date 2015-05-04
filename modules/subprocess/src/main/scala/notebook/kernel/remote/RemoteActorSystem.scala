@@ -27,7 +27,7 @@ class RemoteActorProcess extends ForkableProcess {
     val cfg = ConfigFactory.load(configFile)
 
     // Cookie file is optional second argument
-    val actualCfg = args match {
+    val actualCfg = args.take(2) match {
       case Seq(_, cookieFile) if (cookieFile.size > 0) =>
         val cookie = FileUtils.readFileToString(new File(cookieFile))
         AkkaConfigUtils.requireCookie(cfg, cookie)
@@ -92,7 +92,7 @@ class RemoteActorSystem(localSystem: ActorSystem, info: ProcessInfo, remoteConte
  */
 object RemoteActorSystem {
   val nextId = new AtomicInteger(1)
-  def spawn(config:Config, system: ActorSystem, configFile:String): Future[RemoteActorSystem] = {
+  def spawn(config:Config, system: ActorSystem, configFile:String, kernelId:String, notebookPath:Option[String]): Future[RemoteActorSystem] = {
     //val cookiePath = AkkaConfigUtils.requiredCookie(system.settings.config) match {
     //  case Some(cookie) =>
     //    val cookieFile = new File(".", ".akka-cookie")
@@ -101,6 +101,6 @@ object RemoteActorSystem {
     //  case _ => ""
     //}cookiePath
      val cookiePath = ""
-    new BetterFork[RemoteActorProcess](config, system.dispatcher).execute(configFile, cookiePath) map { new RemoteActorSystem(system, _) }
+    new BetterFork[RemoteActorProcess](config, system.dispatcher).execute(kernelId, notebookPath.getOrElse("no-path"), configFile, cookiePath) map { new RemoteActorSystem(system, _) }
   }
 }
