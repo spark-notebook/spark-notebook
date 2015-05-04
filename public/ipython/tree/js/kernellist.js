@@ -32,11 +32,11 @@ define([
          * do nothing
          */
     };
-    
+
     KernelList.prototype.sessions_loaded = function (d) {
         this.sessions = d;
         this.clear_list();
-        var item, path;
+        var item, path, id;
         for (path in d) {
             if (!d.hasOwnProperty(path)) {
                 // nothing is safe in javascript
@@ -46,12 +46,13 @@ define([
             this.add_link({
                 name: path,
                 path: path,
-                type: 'notebook',
+                id  : d[path],
+                type: 'notebook'
             }, item);
         }
         $('#running_list_header').toggle($.isEmptyObject(d));
     };
-    
+
     // Backwards compatability.
     IPython.KernelList = KernelList;
 

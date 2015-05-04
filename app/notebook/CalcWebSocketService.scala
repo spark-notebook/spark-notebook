@@ -9,6 +9,7 @@ import scala.concurrent.duration._
 import akka.actor._
 import akka.actor.Terminated
 
+import play.api._
 import play.api.libs.json._
 
 import notebook.client._
@@ -29,13 +30,30 @@ class CalcWebSocketService(
 
   implicit val executor = system.dispatcher
 
-  val wsPromise = Promise[WebSockWrapper]
   val calcActor = system.actorOf(Props( new CalcActor ))
+
+  def register(ws:WebSockWrapper) = {
+    calcActor ! Register(ws)
+  }
+
+  def unregister(ws:WebSockWrapper) = {
+    calcActor ! Unregister(ws)
+  }
+
 
   class CalcActor extends Actor with ActorLogging {
     private var currentSessionOperation: Option[ActorRef] = None
     var calculator: ActorRef = null
-    var ws: WebSockWrapper = null
+    var wss: List[WebSockWrapper] = Nil
+
+    val ws = new {
+      def send(header: JsValue, session: JsValue /*ignored*/, msgType: String, channel:String, content: JsValue) = {
+        Logger.debug(s"Sending info to websockets $wss in $this")
+        wss.foreach { ws =>
+          ws.send(header, ws.session, msgType, channel, content)
+        }
+      }
+    }
 
     private def spawnCalculator() {
       // N.B.: without these local copies of the instance variables, we'll capture all sorts of things in our closure
@@ -60,12 +78,21 @@ class CalcWebSocketService(
       }
     }
 
-    override def preStart() {
-      ws = Await.result(wsPromise.future, 2 minutes)
-      spawnCalculator()
-    }
-
     def receive = {
+      case Register(ws:WebSockWrapper) if wss.isEmpty && calculator == null =>
+        Logger.info(s"Registering first web-socket ($ws) in service ${this}")
+        wss = List(ws)
+        Logger.info(s"Spawning calculator in service ${this}")
+        spawnCalculator()
+
+      case Register(ws:WebSockWrapper) =>
+        Logger.info(s"Registering web-socket ($ws) in service ${this} (current cout is ${wss.size})")
+        wss = ws :: wss
+
+      case Unregister(ws:WebSockWrapper) =>
+        Logger.info(s"UN-registering web-socket ($ws) in service ${this} (current cout is ${wss.size})")
+        wss = wss.filterNot(_ == ws)
+
       case InterruptCalculator =>
         for (op <- currentSessionOperation) {
           calculator.tell(InterruptRequest, op)
