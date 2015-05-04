@@ -752,10 +752,10 @@ define([
     /**
      *
      *
-     * @function interrupt
+     * @function cancelJobs
      * @param callback {function}
      */
-    Kernel.prototype.interrupt = function (callback) {
+    Kernel.prototype.cancelJobs = function (callback) {
         var callbacks;
         if (callback) {
             callbacks = { shell : { reply : callback } };
