@@ -79,7 +79,7 @@ class CalcWebSocketService(
     }
 
     def receive = {
-      case Register(ws:WebSockWrapper) if wss.isEmpty =>
+      case Register(ws:WebSockWrapper) if wss.isEmpty && calculator == null =>
         Logger.info(s"Registering first web-socket ($ws) in service ${this}")
         wss = List(ws)
         Logger.info(s"Spawning calculator in service ${this}")
