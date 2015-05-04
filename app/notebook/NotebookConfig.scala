@@ -20,8 +20,8 @@ case class NotebookConfig(config: Configuration) { me =>
     Logger.debug(s"Notebooks directory in the config is referring $confDir. Does it exist? ${new File(confDir).exists}")
   }
   val notebooksDir = config.getString("notebooks.dir").map(new File(_)).filter(_.exists)
-                        .orElse(Option(new File("./conf/notebooks"))).filter(_.exists)    // ./bin/spark-notebook
-                        .getOrElse(new File("../conf/notebooks"))                         // ./spark-notebook
+                        .orElse(Option(new File("./notebooks"))).filter(_.exists)    // ./bin/spark-notebook
+                        .getOrElse(new File("../notebooks"))                         // ./spark-notebook
   Logger.info(s"Notebooks dir is $notebooksDir [at ${notebooksDir.getAbsolutePath}] ")
 
   val projectName = config.getString("name").getOrElse(notebooksDir.getPath())
