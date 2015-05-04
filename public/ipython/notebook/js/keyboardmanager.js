@@ -96,6 +96,7 @@ define([
             'down' : 'ipython.select-next-cell',
             'i,i' : 'ipython.interrupt-kernel',
             '0,0' : 'ipython.restart-kernel',
+            'k,a' : 'ipython.interrupt-jobs',
             'd,d' : 'ipython.delete-cell',
             'esc': 'ipython.close-pager',
             'up' : 'ipython.select-previous-cell',
