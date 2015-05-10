@@ -22,14 +22,14 @@ class NotebookManager(val name: String, val notebookDir: File) {
   def getName(path:String) = path.split("/").filter(!_.isEmpty).last.dropRight(extension.size)
 
   def notebookFile(path: String) = {
-    Logger.info(s"Load notebook. initial path: ${path}")
+    Logger.debug(s"Load notebook. initial path: ${path}")
     val basePath = notebookDir.getCanonicalPath
-    Logger.info(s"Load notebook. base canonical file path: ${basePath}")
+    Logger.debug(s"Load notebook. base canonical file path: ${basePath}")
     val decodedPath = URLDecoder.decode(path)
-    Logger.info(s"Load notebook. decodedPath: ${decodedPath}")
+    Logger.debug(s"Load notebook. decodedPath: ${decodedPath}")
     val nbFile = new File(basePath, decodedPath)
-    Logger.info(s"Load notebook. canonical file path: ${nbFile.getCanonicalPath}")
-    Logger.info(s"Load notebook. absolute file path: ${nbFile.getAbsolutePath}")
+    Logger.debug(s"Load notebook. canonical file path: ${nbFile.getCanonicalPath}")
+    Logger.debug(s"Load notebook. absolute file path: ${nbFile.getAbsolutePath}")
     /* This check is probably not strictly necessary due to URL encoding of name (should escape any path traversal components), but let's be safe */
     require(nbFile.getCanonicalPath.startsWith(basePath), "Unable to access notebook outside of notebooks path.")
     nbFile
@@ -37,7 +37,17 @@ class NotebookManager(val name: String, val notebookDir: File) {
 
   def incrementFileName(base:String) = {
     Logger.info("Incremented Notebook at " + base)
-    val newPath:String = Stream.from(1).map { i => base + i + extension }.filterNot { fn => notebookFile(fn).exists() }.head
+    val newPath:String = Stream .from(1)
+                                .map { i =>
+                                  base + i + extension
+                                }
+                                .dropWhile { fn =>
+                                  val snb = notebookFile(fn)
+                                  val r = snb.exists()
+                                  Logger.info(s"SNB ${snb.getAbsolutePath} exists: $r")
+                                  r
+                                }
+                                .head
     Logger.info("Incremented Notebook is " + newPath)
     newPath
   }
@@ -88,6 +98,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
   }
 
   def deleteNotebook(path: String) = {
+    Logger.info(s"deleteNotebook at path $path")
     val file = notebookFile(path)
     if (file.exists()) {
       file.delete()
@@ -96,8 +107,10 @@ class NotebookManager(val name: String, val notebookDir: File) {
 
 
   def rename(path: String, newpath: String) = {
+    Logger.info(s"rename from path $path to $newpath")
     val newname = getName(newpath)
     val oldfile = notebookFile(path)
+    Logger.debug(s"rename from path $path to $newpath: old file is ${oldfile.getAbsolutePath}")
     load(path).map { notebook =>
       val nb =  if (notebook.name != newname) {
                   val newMd =  notebook.metadata.map(_.copy(name=newname))
@@ -107,6 +120,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
                   notebook
                 }
       val newfile = notebookFile(newpath)
+      Logger.debug(s"rename from path $path to $newpath: new file is ${newfile.getAbsolutePath}")
       oldfile.renameTo(newfile)
       FileUtils.writeStringToFile(newfile, NBSerializer.write(nb))
     }
@@ -114,6 +128,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
   }
 
   def save(path: String, notebook: Notebook, overwrite: Boolean) = {
+    Logger.info(s"save at path $path")
     val file = notebookFile(path)
     if (!overwrite && file.exists()) throw new NotebookExistsException("Notebook " + path + " already exists.")
     FileUtils.writeStringToFile(file, NBSerializer.write(notebook))
@@ -122,7 +137,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
   }
 
   def load(path: String): Option[Notebook] = {
-    Logger.info(s"Loading $path")
+    Logger.info(s"Loading notebook at path $path")
     val file = notebookFile(path)
     if (file.exists())
       Some(NBSerializer.read(FileUtils.readFileToString(file)))
