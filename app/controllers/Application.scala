@@ -392,7 +392,7 @@ object Application extends Controller {
     }.get
   }
 
-  def openNotebook(p:String) = Action { request =>
+  def openNotebook(p:String) = Action { implicit request =>
     val path = URLDecoder.decode(p)
     Logger.info(s"View notebook '$path'")
     val wsPath = base_project_url match {
@@ -400,7 +400,8 @@ object Application extends Controller {
       case x if x.endsWith("/") => x + "ws"
       case x => x + "/ws"
     }
-    val ws_url = s"ws:/${request.host}$wsPath"
+    val prefix = if (request.secure) "wss" else "ws"
+    val ws_url = s"$prefix:/${request.host}$wsPath"
 
     Ok(views.html.notebook(
       nbm.name,
