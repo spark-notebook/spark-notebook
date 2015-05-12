@@ -401,17 +401,22 @@ object Application extends Controller {
       case x => x + "/ws"
     }
     val prefix = if (request.secure) "wss" else "ws"
-    val ws_url = s"$prefix:/${request.host}$wsPath"
+    println(request.headers)
+    def ws_url(path:Option[String]=None) = s"""
+      |window.notebookWsUrl = function() {
+      |  return '$prefix:/'+window.location.host+'$wsPath${path.map(x => "/"+x).getOrElse("")}';
+      |};
+    """.stripMargin.replaceAll("\n", " ")
 
     Ok(views.html.notebook(
       nbm.name,
       Map(
         "base-url" -> base_project_url,
-        "ws-url" -> ws_url,
+        "ws-url" -> ws_url(),
 
         "base-project-url" -> base_project_url,
         "base-kernel-url" -> base_kernel_url,
-        "base-observable-url" -> s"$ws_url/$base_observable_url",
+        "base-observable-url" -> ws_url(Some(base_observable_url)),
         "read-only" -> read_only,
         "notebook-name" -> nbm.name,
         "notebook-path" -> path,
