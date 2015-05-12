@@ -5,7 +5,7 @@ return new function () {
   this.observables = {};
   this.internalObservables = {};
   this.channel = null;
-  this.base_url = $('body').data('baseObservableUrl');
+  this.base_url = eval($('body').data('baseObservableUrl'))();
 
   if (typeof(WebSocket) !== 'undefined') {
     this.WebSocket = WebSocket;
