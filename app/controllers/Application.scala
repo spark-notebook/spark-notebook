@@ -401,7 +401,6 @@ object Application extends Controller {
       case x => x + "/ws"
     }
     val prefix = if (request.secure) "wss" else "ws"
-    println(request.headers)
     def ws_url(path:Option[String]=None) = s"""
       |window.notebookWsUrl = function() {
       |  return '$prefix:/'+window.location.host+'$wsPath${path.map(x => "/"+x).getOrElse("")}';
