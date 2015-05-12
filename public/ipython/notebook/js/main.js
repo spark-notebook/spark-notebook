@@ -25,20 +25,20 @@ require([
     // only loaded, not used, please keep sure this is loaded last
     'custom/custom'
 ], function(
-    IPython, 
+    IPython,
     $,
-    notebook, 
+    notebook,
     contents,
     configmod,
-    utils, 
-    page, 
+    utils,
+    page,
     events,
-    loginwidget, 
-    maintoolbar, 
-    pager, 
-    quickhelp, 
-    menubar, 
-    notificationarea, 
+    loginwidget,
+    maintoolbar,
+    pager,
+    quickhelp,
+    menubar,
+    notificationarea,
     savewidget,
     actions,
     keyboardmanager,
@@ -54,7 +54,7 @@ require([
     window.CodeMirror = CodeMirror;
 
     var common_options = {
-        ws_url : utils.get_body_data("wsUrl"),
+        ws_url : eval(utils.get_body_data("wsUrl"))(),
         base_url : utils.get_body_data("baseUrl"),
         notebook_path : utils.get_body_data("notebookPath"),
         notebook_name : utils.get_body_data('notebookName')
@@ -69,11 +69,11 @@ require([
         events: events});
     var acts = new actions.init();
     var keyboard_manager = new keyboardmanager.KeyboardManager({
-        pager: pager, 
-        events: events, 
+        pager: pager,
+        events: events,
         actions: acts });
     var save_widget = new savewidget.SaveWidget('span#save_widget', {
-        events: events, 
+        events: events,
         keyboard_manager: keyboard_manager});
     var contents = new contents.Contents($.extend({
         events: events, config:config_section},
@@ -87,26 +87,26 @@ require([
         common_options));
     var login_widget = new loginwidget.LoginWidget('span#login_widget', common_options);
     var toolbar = new maintoolbar.MainToolBar('#maintoolbar-container', {
-        notebook: notebook, 
-        events: events, 
-        actions: acts}); 
+        notebook: notebook,
+        events: events,
+        actions: acts});
     var quick_help = new quickhelp.QuickHelp({
-        keyboard_manager: keyboard_manager, 
+        keyboard_manager: keyboard_manager,
         events: events,
         notebook: notebook});
     keyboard_manager.set_notebook(notebook);
     keyboard_manager.set_quickhelp(quick_help);
     var menubar = new menubar.MenuBar('#menubar', $.extend({
-        notebook: notebook, 
+        notebook: notebook,
         contents: contents,
-        events: events, 
-        save_widget: save_widget, 
-        quick_help: quick_help}, 
+        events: events,
+        save_widget: save_widget,
+        quick_help: quick_help},
         common_options));
     var notification_area = new notificationarea.NotebookNotificationArea(
         '#notification_area', {
-        events: events, 
-        save_widget: save_widget, 
+        events: events,
+        save_widget: save_widget,
         notebook: notebook,
         keyboard_manager: keyboard_manager});
     notification_area.init_notification_widgets();
@@ -137,7 +137,7 @@ require([
         events.off('notebook_loaded.Notebook', first_load);
     };
     events.on('notebook_loaded.Notebook', first_load);
-    
+
     IPython.page = page;
     IPython.notebook = notebook;
     IPython.contents = contents;
