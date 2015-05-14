@@ -277,7 +277,7 @@ class ReplCalculator(
         result foreach {
           case (timeToEval, Success(result))     => thisSender ! ExecuteResponse(result.toString + s"\n <div class='pull-right text-info'><small>$timeToEval</small></div>")
           case (timeToEval, Failure(stackTrace)) => thisSender ! ErrorResponse(stackTrace, false)
-          case (timeToEval, kernel.Incomplete)   => thisSender ! ErrorResponse("", true)
+          case (timeToEval, kernel.Incomplete)   => thisSender ! ErrorResponse("Incomplete (hint: check the parenthesis)", true)
         }
       case InterruptRequest =>
         val thisSender = sender
