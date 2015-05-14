@@ -3,6 +3,7 @@ package client
 
 import java.io.{File, FileWriter}
 
+import scala.concurrent.duration._
 import scala.util.{Try, Success=>TSuccess, Failure=>TFailure}
 
 import akka.actor.{ActorLogging, Props, Actor}
@@ -177,6 +178,8 @@ class ReplCalculator(
 
   // Make a child actor so we don't block the execution on the main thread, so that interruption can work
   private val executor = context.actorOf(Props(new Actor {
+    implicit val ec = context.dispatcher
+
     def eval(b: => String, notify:Boolean=true)(success: => String = "", failure: String=>String=(s:String)=>"Error evaluating " + b + ": "+ s) {
       repl.evaluate(b)._1 match {
         case Failure(str) =>
@@ -196,7 +199,7 @@ class ReplCalculator(
 
     def receive = {
       case ExecuteRequest(_, code) =>
-        val (timeToEval, result) = {
+        val result = {
           val newCode =
             code match {
               case remoteRegex(r) =>
@@ -286,16 +289,19 @@ class ReplCalculator(
 
           val start = System.currentTimeMillis
           val thisSender = sender
-          val result = scala.concurrent.Future { repl.evaluate(newCode, msg => thisSender ! StreamResponse(msg, "stdout")) }
-          val d = toCoarsest(Duration(System.currentTimeMillis - start, MILLISECONDS))
-          (d, result.map(_._1))
+          val result = scala.concurrent.Future {
+            val result = repl.evaluate(newCode, msg => thisSender ! StreamResponse(msg, "stdout"))
+            val d = toCoarsest(Duration(System.currentTimeMillis - start, MILLISECONDS))
+            (d, result._1)
+          }
+          result
         }
 
         val thisSender = sender
-        result map {
-          case Success(result)     => thisSender ! ExecuteResponse(result.toString + s"\n <div class='pull-right text-info'><small>$timeToEval</small></div>")
-          case Failure(stackTrace) => thisSender ! ErrorResponse(stackTrace, false)
-          case kernel.Incomplete   => thisSender ! ErrorResponse("", true)
+        result foreach {
+          case (timeToEval, Success(result))     => thisSender ! ExecuteResponse(result.toString + s"\n <div class='pull-right text-info'><small>$timeToEval</small></div>")
+          case (timeToEval, Failure(stackTrace)) => thisSender ! ErrorResponse(stackTrace, false)
+          case (timeToEval, kernel.Incomplete)   => thisSender ! ErrorResponse("", true)
         }
       case InterruptRequest =>
         val thisSender = sender
