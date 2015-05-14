@@ -265,7 +265,8 @@ class ReplCalculator(
               case _ => code
             }
           val start = System.currentTimeMillis
-          val result = scala.concurrent.Future { repl.evaluate(newCode, msg => sender ! StreamResponse(msg, "stdout")) }
+          val thisSender = sender
+          val result = scala.concurrent.Future { repl.evaluate(newCode, msg => thisSender ! StreamResponse(msg, "stdout")) }
           val d = toCoarsest(Duration(System.currentTimeMillis - start, MILLISECONDS))
           (d, result.map(_._1))
         }
@@ -277,7 +278,8 @@ class ReplCalculator(
           case kernel.Incomplete   => thisSender ! ErrorResponse("", true)
         }
       case InterruptRequest =>
-        repl.evaluate("sparkContext.cancelAllJobs()", msg => sender ! StreamResponse(msg, "stdout"))
+        val thisSender = sender
+        repl.evaluate("sparkContext.cancelAllJobs()", msg => thisSender ! StreamResponse(msg, "stdout"))
     }
   }))
 
