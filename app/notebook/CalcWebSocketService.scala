@@ -141,9 +141,10 @@ class CalcWebSocketService(
 
           case ErrorResponse(msg, incomplete) =>
             if (incomplete) {
-              ws.send(header, session, "pyincomplete", "iopub", Json.obj("execution_count" → counter, "status" → "error"))
+              ws.send(header, session, "error", "iopub", Json.obj("execution_count" → counter, "status" → "error", "ename" → "Error", "traceback" → Seq(msg)))
             } else {
-              ws.send(header, session, "pyerr", "iopub", Json.obj("execution_count" → counter, "status" → "error", "ename" → "Error", "traceback" → Seq(msg)))
+              //already printed by the repl!
+              //ws.send(header, session, "error", "iopub", Json.obj("execution_count" → counter, "status" → "error", "ename" → "Error", "traceback" → Seq(msg)))
             }
             ws.send(header, session, "status", "iopub", Json.obj("execution_state" → "idle"))
             ws.send(header, session, "execute_reply", "shell", Json.obj("execution_count" → counter))
