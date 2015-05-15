@@ -53,7 +53,8 @@ define([
             'move_up_down'],
           [ ['ipython.run-select-next',
              'ipython.interrupt-kernel',
-             'ipython.restart-kernel'
+             'ipython.restart-kernel',
+             'ipython.interrupt-jobs'
             ],
             'run_int'],
          ['<add_celltype_list>'],
@@ -61,7 +62,7 @@ define([
         ];
         this.construct(grps);
     };
-    
+
     // add a cell type drop down to the maintoolbar.
     // triggered when the pseudo action `<add_celltype_list>` is
     // encountered when building a toolbar.

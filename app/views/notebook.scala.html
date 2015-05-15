@@ -1,14 +1,12 @@
-@(project:String, params:Map[String, String], sys_info:Option[String]=None)
-
-
+@(project:String, params:Map[String, String], sys_info:Option[String]=None)(implicit request:RequestHeader)
 
 @default("Spark Notebook", params){
   <!-- stylesheet -->
 
   <script type="text/javascript">
-    window.mathjax_url = "http://cdn.mathjax.org/mathjax/latest/MathJax.js";
+    window.mathjax_url = "@{if (request.secure) "https" else "http"}://cdn.mathjax.org/mathjax/latest/MathJax.js";
   </script>
-  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML-full&delayStartupUntil=configured" charset="utf-8"></script>
+  <script type="text/javascript" src="@{if (request.secure) "https" else "http"}://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML-full&delayStartupUntil=configured" charset="utf-8"></script>
 
   <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/bootstrap/css/bootstrap.css")" type="text/css" />
   <link rel="stylesheet" href="@routes.Assets.at("ipython/components/bootstrap-tour/build/css/bootstrap-tour.min.css")" type="text/css" />
@@ -305,18 +303,6 @@
 } {
   <div id="ipython-main-app">
       <div id="notebook_panel">
-          <div id="notebook-bg-logs" style="box-sizing: border-box; top: 10px; position: fixed; background-color: lightyellow">
-            <div id="notebook-bg-logs-button">
-              <button type="button" class="btn btn-default">
-                <i class="fa fa-repeat"></i>
-              </button>
-              <span>Background activities</span>
-            </div>
-            <div id="notebook-bg-logs-panel">
-              <!-- width:150px; height: 100px; border: 1px solid black;  -->
-            </div>
-          </div>
-
           <div id="notebook"></div>
 
           <div id="notebook-tachyon-container" class="pull-right" data-bind="style: { width: tachyon.width() }" style="top: 0px; position: absolute; right: 0px; background-color: #EEFFFF;">

@@ -81,6 +81,13 @@
  * @static
  */
 
+
+/**
+
+COMMENT BECAUSE spark seems wanting to package the logger all the time
+which makes cluster work failing all the time
+
+
 require([
   'base/js/namespace',
   'base/js/events',
@@ -106,7 +113,7 @@ require([
         view.then(function(view) {
           $("#notebook-bg-logs-panel").append(view.$el);
           function connect() {
-            view.output_area.clear_output(false /*wait*/);
+            view.output_area.clear_output(false); // false → not wait
             kernel.execute('@transient val __avoid_non_ser_excep = SparkNotebookBgLog', {
               iopub : {
                 output : function() {
@@ -136,3 +143,5 @@ require([
     );
   });
 });
+
+*/

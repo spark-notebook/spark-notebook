@@ -3,6 +3,7 @@ package client
 
 import java.io.{File, FileWriter}
 
+import scala.concurrent.duration._
 import scala.util.{Try, Success=>TSuccess, Failure=>TFailure}
 
 import akka.actor.{ActorLogging, Props, Actor}
@@ -140,22 +141,56 @@ class ReplCalculator(
     r
   }
 
+  // +/- copied of https://github.com/scala/scala/blob/v2.11.4/src%2Flibrary%2Fscala%2Fconcurrent%2Fduration%2FDuration.scala
+  final def toCoarsest(d:FiniteDuration): String = {
+
+    def loop(length: Long, unit: TimeUnit, acc:String): String = {
+
+      def coarserOrThis(coarser: TimeUnit, divider: Int) = {
+        if (length == divider)
+          loop(1, coarser, acc)
+        else if (length < divider)
+          FiniteDuration(length, unit).toString + " " + acc
+        else {
+          val _acc = if (length % divider == 0) {
+            acc
+          } else {
+            FiniteDuration(length % divider, unit).toString + " " + acc
+          }
+          loop(length / divider, coarser, _acc)
+        }
+      }
+
+      unit match {
+        case DAYS         => d.toString + " " + acc
+        case HOURS        => coarserOrThis(DAYS, 24)
+        case MINUTES      => coarserOrThis(HOURS, 60)
+        case SECONDS      => coarserOrThis(MINUTES, 60)
+        case MILLISECONDS => coarserOrThis(SECONDS, 1000)
+        case MICROSECONDS => coarserOrThis(MILLISECONDS, 1000)
+        case NANOSECONDS  => coarserOrThis(MICROSECONDS, 1000)
+      }
+    }
+
+    if (d.unit == DAYS || d.length == 0) d.toString
+    else loop(d.length, d.unit, "").trim
+  }
 
   // Make a child actor so we don't block the execution on the main thread, so that interruption can work
   private val executor = context.actorOf(Props(new Actor {
+    implicit val ec = context.dispatcher
+
     def eval(b: => String, notify:Boolean=true)(success: => String = "", failure: String=>String=(s:String)=>"Error evaluating " + b + ": "+ s) {
       repl.evaluate(b)._1 match {
         case Failure(str) =>
           if (notify) {
             eval(s"""
-              SparkNotebookBgLog.append("${failure(str)}")
             """,false)()
           }
           log.error(failure(str))
         case _ =>
           if (notify) {
             eval(s"""
-              SparkNotebookBgLog.append("${success}")
             """,false)()
           }
           log.info(success)
@@ -164,7 +199,7 @@ class ReplCalculator(
 
     def receive = {
       case ExecuteRequest(_, code) =>
-        val (result, _) = {
+        val result = {
           val newCode =
             code match {
               case remoteRegex(r) =>
@@ -182,19 +217,15 @@ class ReplCalculator(
               case dpRegex(cp) =>
                 log.debug("Fetching deps using repos: " + remotes.mkString(" -- "))
                 eval("""
-                  SparkNotebookBgLog.append("Resolving deps")
                 """, false)()
                 val tryDeps = Deps.script(cp, remotes, repo)
                 eval("""
-                  SparkNotebookBgLog.append("Deps resolved")
                 """, false)()
 
                 tryDeps match {
                   case TSuccess(deps) =>
                     eval("""
-                      SparkNotebookBgLog.append("Stopping Spark Context")
                       sparkContext.stop()
-                      SparkNotebookBgLog.append("Spark Context stopped")
                     """)(
                       "CP reload processed successfully",
                       (str:String) => "Error in :dp: \n%s".format(str)
@@ -208,9 +239,7 @@ class ReplCalculator(
                       |//updating deps
                       |jars = (${ deps.mkString("List(\"", "\",\"", "\")") } ::: jars.toList).distinct.toArray
                       |//restarting spark
-                      |SparkNotebookBgLog.append("Resetting Spark Context with new jars")
                       |reset()
-                      |SparkNotebookBgLog.append("Spark Context restarted")
                       |jars.toList
                     """.stripMargin
                   case TFailure(ex) =>
@@ -221,9 +250,7 @@ class ReplCalculator(
               case cpRegex(cp) =>
                 val jars = cp.trim().split("\n").toList.map(_.trim()).filter(_.size > 0)
                 repl.evaluate("""
-                  SparkNotebookBgLog.append("Stopping Spark Context")
                   sparkContext.stop()
-                  SparkNotebookBgLog.append("Spark Context stopped")
                 """)._1 match {
                   case Failure(str) =>
                     log.error("Error in :cp: \n%s".format(str))
@@ -235,7 +262,6 @@ class ReplCalculator(
                 preStartLogic()
                 replay()
                 s"""
-                  //SparkNotebookBgLog.append("Classpath changed")
                   "Classpath CHANGED!"
                 """
 
@@ -260,15 +286,26 @@ class ReplCalculator(
                   c
               case _ => code
             }
-          val result = repl.evaluate(newCode, msg => sender ! StreamResponse(msg, "stdout"))
+
+          val start = System.currentTimeMillis
+          val thisSender = sender
+          val result = scala.concurrent.Future {
+            val result = repl.evaluate(newCode, msg => thisSender ! StreamResponse(msg, "stdout"))
+            val d = toCoarsest(Duration(System.currentTimeMillis - start, MILLISECONDS))
+            (d, result._1)
+          }
           result
         }
 
-        result match {
-          case Success(result)     => sender ! ExecuteResponse(result.toString)
-          case Failure(stackTrace) => sender ! ErrorResponse(stackTrace, false)
-          case Incomplete          => sender ! ErrorResponse("", true)
+        val thisSender = sender
+        result foreach {
+          case (timeToEval, Success(result))     => thisSender ! ExecuteResponse(result.toString + s"\n <div class='pull-right text-info'><small>$timeToEval</small></div>")
+          case (timeToEval, Failure(stackTrace)) => thisSender ! ErrorResponse(stackTrace, false)
+          case (timeToEval, kernel.Incomplete)   => thisSender ! ErrorResponse("Incomplete (hint: check the parenthesis)", true)
         }
+      case InterruptRequest =>
+        val thisSender = sender
+        repl.evaluate("sparkContext.cancelAllJobs()", msg => thisSender ! StreamResponse(msg, "stdout"))
     }
   }))
 
@@ -334,8 +371,7 @@ class ReplCalculator(
 
       msgThatShouldBeFromTheKernel match {
         case InterruptRequest =>
-          // facility gone
-          // repl.interrupt()
+          executor.forward(InterruptRequest)
 
         case req @ ExecuteRequest(_, code) => executor.forward(req)
 
