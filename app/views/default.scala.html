@@ -28,7 +28,7 @@
       @{version_hash.map { v =>
         s""" urlArgs: "v=$v", """
       }}
-        baseUrl: '/assets/ipython/',
+        baseUrl: '@routes.Assets.at("/ipython/")',
         paths: {
           nbextensions : '/nbextensions',
           kernelspecs : '/kernelspecs',

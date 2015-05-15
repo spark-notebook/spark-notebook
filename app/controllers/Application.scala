@@ -16,6 +16,7 @@ import play.api.libs.functional.syntax._
 import play.api.libs.iteratee._
 import play.api.libs.iteratee.Concurrent.Channel
 import play.api.libs.json._
+import play.api.Play.current
 
 import com.typesafe.config._
 
@@ -46,7 +47,7 @@ object Application extends Controller {
   implicit val GetClustersTimeout = Timeout(60 seconds)
 
   val project = "Spark Notebook" //TODO from application.conf
-  val base_project_url = "/"
+  val base_project_url = current.configuration.getString("application.context").getOrElse("/")
   val base_kernel_url = "/"
   val base_observable_url = "observable" // TODO: Ugh...
   val read_only = false.toString
@@ -90,50 +91,58 @@ object Application extends Controller {
   def kernelSpecs() = Action { Ok(kernelDef) }
 
   private [this] def newSession(kernelId:Option[String]=None, notebookPath:Option[String]=None) = {
-    val kId = kernelId.getOrElse(UUID.randomUUID.toString)
-    val compilerArgs = config.kernel.compilerArgs.toList
-    val initScripts = config.kernel.initScripts.toList
-    val kernel = new Kernel(config.kernel.config.underlying, kernelSystem)
-    KernelManager.add(kId, kernel)
+    val existing = for {
+      path         <- notebookPath
+      (id, kernel) <- KernelManager.atPath(path)
+    } yield (id, kernel, kernelIdToCalcService(id))
 
-    val r = Reads.map[String]
+    val (kId, kernel, service) = existing.getOrElse {
+      Logger.info(s"Starting kernel/session because nothing for $kernelId and $notebookPath")
 
-    // Load the notebook → get the metadata
-    val md:Option[Metadata] = for {
-      p <- notebookPath
-      n <- nbm.load(p)
-      m <- n.metadata
-    } yield m
+      val kId = kernelId.getOrElse(UUID.randomUUID.toString)
+      val compilerArgs = config.kernel.compilerArgs.toList
+      val initScripts = config.kernel.initScripts.toList
+      val kernel = new Kernel(config.kernel.config.underlying, kernelSystem, kId, notebookPath)
+      KernelManager.add(kId, kernel)
 
-    val customLocalRepo:Option[String] = md.flatMap(_.customLocalRepo)
+      val r = Reads.map[String]
 
-    val customRepos:Option[List[String]] = md.flatMap(_.customRepos)
+      // Load the notebook → get the metadata
+      val md:Option[Metadata] = for {
+        p <- notebookPath
+        n <- nbm.load(p)
+        m <- n.metadata
+      } yield m
 
-    val customDeps:Option[List[String]] = md.flatMap(_.customDeps)
+      val customLocalRepo:Option[String] = md.flatMap(_.customLocalRepo)
 
-    val customImports:Option[List[String]] = md.flatMap(_.customImports)
+      val customRepos:Option[List[String]] = md.flatMap(_.customRepos)
 
-    val customSparkConf:Option[Map[String, String]] = for {
-      m <- md
-      c <- m.customSparkConf
-      _ = Logger.debug("customSparkConf >> " + c)
-      map <- r.reads(c).asOpt
-    } yield map
+      val customDeps:Option[List[String]] = md.flatMap(_.customDeps)
 
+      val customImports:Option[List[String]] = md.flatMap(_.customImports)
 
+      val customSparkConf:Option[Map[String, String]] = for {
+        m <- md
+        c <- m.customSparkConf
+        _ = Logger.info("customSparkConf >> " + c)
+        map <- r.reads(c).asOpt
+      } yield map
 
-    val service = new CalcWebSocketService( kernelSystem,
-                                            customLocalRepo,
-                                            customRepos,
-                                            customDeps,
-                                            customImports,
-                                            customSparkConf,
-                                            initScripts,
-                                            compilerArgs,
-                                            kernel.remoteDeployFuture,
-                                            config.tachyonInfo
-                                          )
-    kernelIdToCalcService += kId -> service
+      val service = new CalcWebSocketService( kernelSystem,
+                                              customLocalRepo,
+                                              customRepos,
+                                              customDeps,
+                                              customImports,
+                                              customSparkConf,
+                                              initScripts,
+                                              compilerArgs,
+                                              kernel.remoteDeployFuture,
+                                              config.tachyonInfo
+                                            )
+      kernelIdToCalcService += kId -> service
+      (kId, kernel, service)
+    }
 
     // todo add MD?
     Json.parse(
@@ -160,7 +169,21 @@ object Application extends Controller {
   }
 
   def sessions() = Action {
-    Ok(Json.obj()) // TODO using kernelIdToCalcService
+    Ok(JsArray(kernelIdToCalcService.keys
+      .map { k =>
+        KernelManager.get(k).map(l => (k, l))
+      }.collect {
+        case Some(x) => x
+      }.map { case (k, kernel) =>
+        val path = kernel.notebookPath.getOrElse(s"KERNEL '$k' SHOULD HAVE A PATH ACTUALLY!")
+        Json.obj(
+          "notebook" →  Json.obj(
+                          "path" → path
+                        ),
+          "id" →  k
+        )
+      }.toSeq)
+    )
   }
 
 
@@ -358,10 +381,16 @@ object Application extends Controller {
     }.get
   }
 
-  def openNotebook(p:String) = Action { request =>
+  def openNotebook(p:String) = Action { implicit request =>
     val path = URLDecoder.decode(p)
     Logger.info(s"View notebook '$path'")
-    val ws_url = s"ws:/${request.host}/ws"
+    val wsPath = base_project_url match {
+      case "/" => "/ws"
+      case x if x.endsWith("/") => x + "ws"
+      case x => x + "/ws"
+    }
+    val prefix = if (request.secure) "wss" else "ws"
+    val ws_url = s"$prefix:/${request.host}$wsPath"
 
     Ok(views.html.notebook(
       nbm.name,
@@ -381,6 +410,8 @@ object Application extends Controller {
   }
 
   private [this] def closeKernel(kernelId:String) = {
+    kernelIdToCalcService -= kernelId
+
     KernelManager.get(kernelId).foreach{ k =>
       Logger.info(s"Closing kernel $kernelId")
       k.shutdown()
@@ -388,23 +419,27 @@ object Application extends Controller {
     }
   }
 
-  def openKernel(kernelId:String) =  ImperativeWebsocket.using[JsValue](
-    onOpen = channel => WebSocketKernelActor.props(channel, kernelIdToCalcService(kernelId)),
+  def openKernel(kernelId:String, session_id:String) =  ImperativeWebsocket.using[JsValue](
+    onOpen = channel => WebSocketKernelActor.props(channel, kernelIdToCalcService(kernelId), session_id),
     onMessage = (msg, ref) => ref ! msg,
     onClose = ref => {
+      // try to not close the kernel to allow long live sessions
+      // closeKernel(kernelId)
       Logger.info(s"Closing websockets for kernel $kernelId")
-      closeKernel(kernelId)
       ref ! akka.actor.PoisonPill
     }
   )
+
+  def terminateKernel(kernelId:String) = Action { request =>
+    closeKernel(kernelId)
+    Ok(s"Kernel $kernelId closed!")
+  }
 
   def restartKernel(kernelId:String) = Action { request =>
     //shouldn't do anything since onClose should be called in openKernel (stopChannels is call in the front)
     // /!\ this won't kill the underneath actor!!!
     closeKernel(kernelId)
-
-    // TODO → the notebookPath here!!!
-    Ok(newSession(notebookPath=None))
+    Ok(newSession(notebookPath=KernelManager.get(kernelId).flatMap(k => k.notebookPath)))
   }
 
   def listCheckpoints(snb:String) = Action { request =>
@@ -480,7 +515,7 @@ object Application extends Controller {
   def dlNotebookAs(p:String, format:String) = Action {
     val path = URLDecoder.decode(p)
     Logger.info("DL → " + path + " as " + format)
-    getNotebook(path.dropRight(".snb".size), path, format)
+    getNotebook(path.dropRight(".snb".size), path, format, true)
   }
 
   def dash(title:String, p:String=base_kernel_url) = Action {
@@ -515,19 +550,23 @@ object Application extends Controller {
     }
   )
 
-  def getNotebook(name: String, path: String, format: String) = {
+  def getNotebook(name: String, path: String, format: String, dl:Boolean=false) = {
     try {
       Logger.debug(s"getNotebook: name is '$name', path is '$path' and format is '$format'")
       val response = nbm.getNotebook(path).map { case (lastMod, name, data, path) =>
         format match {
           case "json" =>
             val j = Json.parse(data)
-            val json = Json.obj(
-              "content" → j,
-              "name" → name,
-              "path" → path, //FIXME
-              "writable" -> true //TODO
-            )
+            val json = if (!dl) {
+              Json.obj(
+                "content" → j,
+                "name" → name,
+                "path" → path, //FIXME
+                "writable" -> true //TODO
+              )
+            } else {
+              j
+            }
             Ok(json).withHeaders(
               "Content-Disposition" → s"""attachment; filename="$path" """,
               "Last-Modified" → lastMod

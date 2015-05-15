@@ -19,8 +19,7 @@ import kernel.remote.{RemoteActorSystem, RemoteActorProcess}
  * accomplished by blocking on actor startup
  * to the remote (this is accomplished by blocking on startup waiting for
  */
-
-class Kernel(config:Config, system: ActorSystem) {
+class Kernel(config:Config, system: ActorSystem, kernelId:String, val notebookPath:Option[String]=None) {
   implicit val executor = system.dispatcher
 
   val router = system.actorOf(Props(new ExecutionManager))
@@ -38,7 +37,7 @@ class Kernel(config:Config, system: ActorSystem) {
     var remoteInfo: RemoteActorSystem = null
 
     override def preStart() {
-      remoteInfo = Await.result(RemoteActorSystem.spawn(config, system, "kernel"), 1 minutes)
+      remoteInfo = Await.result(RemoteActorSystem.spawn(config, system, "kernel", kernelId, notebookPath), 1 minutes)
       remoteDeployPromise.success(remoteInfo.deploy)
     }
 
@@ -65,12 +64,17 @@ object KernelManager {
 
   def get(id: String) = kernels.get(id)
   def apply(id: String) = kernels(id)
-
+  def atPath(path:String) = kernels.find{ case (id, k ) => k.notebookPath.exists(_ == path) }
   def add(id:String, kernel: Kernel) {
     kernels += id -> kernel
   }
 
   def remove(id:String) {
     kernels -= id
+  }
+
+  def stopAll = {
+    kernels.values.foreach(_.shutdown())
+    kernels -- kernels.keys
   }
 }
