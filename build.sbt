@@ -158,7 +158,8 @@ lazy val common = Project(id = "common", base = file("modules/common"))
                                 libraryDependencies ++= Seq(
                                   akka,
                                   log4j,
-                                  scalaZ
+                                  scalaZ,
+                                  lightningScala
                                 ),
                                 libraryDependencies ++= depsToDownloadDeps(scalaBinaryVersion.value, sbtVersion.value),
                                 // plotting functionality

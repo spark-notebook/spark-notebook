@@ -1,0 +1,64 @@
+{
+  "metadata" : {
+    "name" : "Untitled1",
+    "user_save_timestamp" : "1970-01-01T09:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T09:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customSparkConf" : {
+      "spark.app.name" : "Notebook",
+      "spark.master" : "spark://sandbox.example.com:7077",
+      "spark.executor.memory" : "1G"
+    }
+  },
+  "cells" : [ {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import org.viz.lightning._\nimport notebook.front.third.LightningViz\n\nval lgn = Lightning(host=\"http://serene-falls-3254.herokuapp.com\")\nlgn.auth = Some(\"user\",\"pass\")\nlgn.createSession(\"test\")",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import org.viz.lightning._\nimport notebook.front.third.LightningViz\nlgn: org.viz.lightning.Lightning = org.viz.lightning.Lightning@361cb3dd\nlgn.auth: Option[(String, String)] = Some((user,pass))\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 3
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val data = lgn.line(Array(Array(1.0,1.0,2.0,3.0,9.0,20.0), Array(1,2,3,4,5,6,7,8,9)))\nLightningViz.show(data)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "data: org.viz.lightning.Visualization = org.viz.lightning.Visualization@2ac108c2\nres4: scala.xml.NodeSeq = <iframe src=\"http://serene-falls-3254.herokuapp.com/visualizations/57/iframe/?host=http://serene-falls-3254.herokuapp.com\" width=\"100%\" class=\"lightning\" height=\"600\"></iframe>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<iframe src=\"http://serene-falls-3254.herokuapp.com/visualizations/57/iframe/?host=http://serene-falls-3254.herokuapp.com\" width=\"100%\" class=\"lightning\" height=\"600\"></iframe>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 4
+    } ]
+  } ],
+  "nbformat" : 4
+}

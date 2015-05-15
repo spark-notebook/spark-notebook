@@ -54,6 +54,7 @@ Spark Notebook
   - [WISP](#wisp)
   - [Timeseries with  Rickshaw](#timeseries-with--rickshaw)
   - [Dynamic update of data and plot using Scala's `Future`](#dynamic-update-of-data-and-plot-using-scalas-future)
+  - [Plotting with Lightning](#plotting-with-lightning)
 - [Update _Notebook_ `ClassPath`](#update-_notebook_-classpath)
 - [Update __Spark__ dependencies (`spark.jars`)](#update-__spark__-dependencies-sparkjars)
   - [Set `local-repo`](#set-local-repo)
@@ -609,6 +610,33 @@ The results will be:
 
 ![Update Timeseries Result](https://raw.github.com/andypetrella/spark-notebook/master/images/dyn-ts.gif)
 
+### Plotting with [Lightning](http://lightning-viz.org/)
+
+> Lightning is a data-visualization server providing API-based access to reproducible, web-based, interactive visualizations.
+
+from http://lightning-viz.org
+
+For `Lightning`, the Lightning Server and `lighting-scala` should be prepared. 
+
+#### Setup
+
+1. Follow [Lightning](http://lightning-viz.org/)'s instruction to setup the server.
+2. Prepare `lightning-scala`. Currently, `lightning-scala` is not on the public repository.
+  1. Clone the project from `https://github.com/lightning-viz/lightning-scala`.
+  2. Build and publish to local Ivy2 repo with `sbt publishLocal`
+3. Build `spark-notebook`
+4. Load notebook from an example `notebook/viz/LightningViz.snb`
+5. Change `Lightning` host and credential.
+6. Run!
+
+The results will be:
+
+![Lightning Visualization Result](https://raw.github.com/minyk/spark-notebook/lightning-viz/images/lightning-viz.png)
+
+#### Issues
+
+* Custom CSS for `iframe` is in the `public/ipython/custom/custom.css`.
+* `lightning-scala` dose not support all functions in the `lightning`.
 
 ## Update _Notebook_ `ClassPath`
 Keeping your notebook runtime updated with the libraries you need in the classpath is usually cumbersome as it requires updating the server configuration in the SBT definition and restarting the system. Which is pretty sad because it requires a restart, rebuild and is not contextual to the notebook!

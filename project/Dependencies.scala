@@ -79,6 +79,8 @@ object Dependencies {
                                   "com.fasterxml.jackson.datatype" % "jackson-datatype-joda"      %    "2.3.3" force()  excludeAll(ExclusionRule("com.google.guava"))
                                 )
 
+  val lightningScala          = "org.lightning-viz"         %%  "lightning-scala" % "0.1.0"
+
   // FIXME
   val sparkEnabledModules = List("common", "kernel", "subprocess")
 
