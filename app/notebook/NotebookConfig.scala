@@ -12,6 +12,8 @@ import com.typesafe.config._
 
 import play.api._
 import play.api.Logger
+import play.api.libs.json._
+
 
 case class NotebookConfig(config: Configuration) { me =>
   import play.api.Play.current
@@ -19,6 +21,19 @@ case class NotebookConfig(config: Configuration) { me =>
   config.getString("notebooks.dir").foreach { confDir =>
     Logger.debug(s"Notebooks directory in the config is referring $confDir. Does it exist? ${new File(confDir).exists}")
   }
+
+  val custom    = config.getConfig("notebooks.custom")
+  val localRepo = custom.flatMap(_.getString("localRepo"))
+  val repos     = custom.flatMap(_.getStringList("repos")).map(_.asScala.toList)
+  val deps      = custom.flatMap(_.getStringList("deps")).map(_.asScala.toList)
+  val imports   = custom.flatMap(_.getStringList("imports")).map(_.asScala.toList)
+  val sparkConf = custom.flatMap(_.getConfig("sparkConf"))
+                        .map { c =>
+                          JsObject(c.entrySet.map { case (k, v) =>
+                            (k, JsString(v.unwrapped().toString))
+                          }.toSeq)
+                        }
+
   val notebooksDir = config.getString("notebooks.dir").map(new File(_)).filter(_.exists)
                         .orElse(Option(new File("./notebooks"))).filter(_.exists)    // ./bin/spark-notebook
                         .getOrElse(new File("../notebooks"))                         // ./spark-notebook
