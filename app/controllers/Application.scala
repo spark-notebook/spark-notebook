@@ -309,11 +309,11 @@ object Application extends Controller {
 
     val fpath = nbm.newNotebook(
                     path,
-                    customLocalRepo,
-                    customRepos,
-                    customDeps,
-                    customImports,
-                    customMetadata)
+                    customLocalRepo orElse config.localRepo,
+                    customRepos orElse config.repos,
+                    customDeps orElse config.deps,
+                    customImports orElse config.imports,
+                    customMetadata orElse config.sparkConf)
     Try(Redirect(routes.Application.contents("notebook", fpath)))
   }
 
