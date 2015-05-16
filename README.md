@@ -13,53 +13,57 @@ Spark Notebook
   - [Mailing list](#mailing-list)
     - [Spark Notebook Dev](#spark-notebook-dev)
     - [Spark Notebook User](#spark-notebook-user)
-- [Launch](#launch)
-  - [Using a release](#using-a-release)
-    - [Requirements](#requirements)
-    - [Preferred/Simplest way](#preferredsimplest-way)
-    - [Hard ways](#hard-ways)
-      - [ZIP/TGZ](#ziptgz)
-      - [Docker](#docker)
-        - [boot2docker (Mac OS X)](#boot2docker-mac-os-x)
-      - [DEB](#deb)
-  - [From the sources](#from-the-sources)
-    - [Procedure](#procedure)
-      - [Download the code](#download-the-code)
-      - [Launch the server](#launch-the-server)
-      - [Change relevant versions](#change-relevant-versions)
-      - [Create your distribution](#create-your-distribution)
-- [Use](#use)
+  - [Launch](#launch)
+    - [Using a release](#using-a-release)
+      - [Requirements](#requirements)
+      - [Preferred/Simplest way](#preferredsimplest-way)
+      - [Hard ways](#hard-ways)
+        - [ZIP/TGZ](#ziptgz)
+        - [Docker](#docker)
+          - [boot2docker (Mac OS X)](#boot2docker-mac-os-x)
+        - [DEB](#deb)
+    - [From the sources](#from-the-sources)
+      - [Procedure](#procedure)
+        - [Download the code](#download-the-code)
+        - [Launch the server](#launch-the-server)
+        - [Change relevant versions](#change-relevant-versions)
+        - [Create your distribution](#create-your-distribution)
+  - [Use](#use)
 - [Features](#features)
-- [Configure Spark](#configure-spark)
-  - [Preconfigure Spark](#preconfigure-spark)
-    - [Set local repository](#set-local-repository)
-    - [Add remote repositories](#add-remote-repositories)
-    - [Import (download) dependencies](#import-download-dependencies)
-    - [Default import statements](#default-import-statements)
-    - [Spark Conf](#spark-conf)
-    - [Example](#example)
-      - [YARN](#yarn)
-    - [Create a preconfigured notebook](#create-a-preconfigured-notebook)
-      - [Update preconfigurations in metadata](#update-preconfigurations-in-metadata)
-  - [Use the `form`](#use-the-form)
-  - [The `reset` function](#the-reset-function)
-  - [Keep an eye on your tasks](#keep-an-eye-on-your-tasks)
-- [Using (Spark)SQL](#using-sparksql)
-  - [Static SQL](#static-sql)
-  - [Dynamic SQL](#dynamic-sql)
-  - [Show case](#show-case)
-- [Shell scripts `:sh`](#shell-scripts-sh)
-- [Interacting with JavaScript](#interacting-with-javascript)
-  - [Plotting with D3](#plotting-with-d3)
-  - [WISP](#wisp)
-  - [Timeseries with  Rickshaw](#timeseries-with--rickshaw)
-  - [Dynamic update of data and plot using Scala's `Future`](#dynamic-update-of-data-and-plot-using-scalas-future)
-- [Update _Notebook_ `ClassPath`](#update-_notebook_-classpath)
-- [Update __Spark__ dependencies (`spark.jars`)](#update-__spark__-dependencies-sparkjars)
-  - [Set `local-repo`](#set-local-repo)
-  - [Add `remote-repo`](#add-remote-repo)
-    - [`remote-repo` with authentication](#remote-repo-with-authentication)
-  - [Download and add dependencies](#download-and-add-dependencies)
+  - [Configure the environment](#configure-the-environment)
+    - [Using the Metadata](#using-the-metadata)
+      - [Set local repository](#set-local-repository)
+      - [Add remote repositories](#add-remote-repositories)
+      - [Import (download) dependencies](#import-download-dependencies)
+      - [Default import statements](#default-import-statements)
+      - [Spark Conf](#spark-conf)
+      - [Example](#example)
+        - [YARN](#yarn)
+      - [Create a preconfigured notebook](#create-a-preconfigured-notebook)
+        - [Update preconfigurations in metadata](#update-preconfigurations-in-metadata)
+    - [Use the `form`](#use-the-form)
+    - [The `reset` function](#the-reset-function)
+    - [Keep an eye on your tasks](#keep-an-eye-on-your-tasks)
+  - [Using Tachyon](#using-tachyon)
+    - [Connect to an existing cluster...](#connect-to-an-existing-cluster)
+    - [... Embedded local (default)](#-embedded-local-default)
+    - [Check using the UI](#check-using-the-ui)
+  - [Using (Spark)SQL](#using-sparksql)
+    - [Static SQL](#static-sql)
+    - [Dynamic SQL](#dynamic-sql)
+    - [Show case](#show-case)
+  - [Shell scripts `:sh`](#shell-scripts-sh)
+  - [Interacting with JavaScript](#interacting-with-javascript)
+    - [Plotting with D3](#plotting-with-d3)
+    - [WISP](#wisp)
+    - [Timeseries with  Rickshaw](#timeseries-with--rickshaw)
+    - [Dynamic update of data and plot using Scala's `Future`](#dynamic-update-of-data-and-plot-using-scalas-future)
+  - [Update _Notebook_ `ClassPath`](#update-_notebook_-classpath)
+  - [Update __Spark__ dependencies (`spark.jars`)](#update-__spark__-dependencies-sparkjars)
+    - [Set `local-repo`](#set-local-repo)
+    - [Add `remote-repo`](#add-remote-repo)
+      - [`remote-repo` with authentication](#remote-repo-with-authentication)
+    - [Download and add dependencies](#download-and-add-dependencies)
 - [TIPS AND TROUBLESHOOTING](#tips-and-troubleshooting)
 - [IMPORTANT](#important)
 - [KNOWN ISSUES](#known-issues)
@@ -226,17 +230,16 @@ In both case, the `scala-notebook` will open a new tab with your notebook in it,
 > within the project folder (with the `snb` extension).
 > Hence, they can be shared and we can track their history in an SVM like `GIT`.
 
-Features
---------
+# Features
 
-## Configure Spark
+## Configure the environment
 Since this project aims directly the usage of Spark, a [SparkContext](https://github.com/apache/spark/blob/master/core%2Fsrc%2Fmain%2Fscala%2Forg%2Fapache%2Fspark%2FSparkContext.scala) is added to the environment and can directly be used without additional effort.
 
 ![Example using Spark](https://raw.github.com/andypetrella/spark-notebook/master/images/simplest-spark.png)
 
 By default, Spark will start with a regular/basic configuration. There are different ways to customize the embedded Spark to your needs.
 
-### Preconfigure Spark
+### Using the Metadata
 The cleanest way to configure Spark is actually to use the preconfiguration feature available in the **clusters** tab.
 
 The basic idea is to configure a **template** that will act as a factory for notebooks:
@@ -447,6 +450,40 @@ This can be tuned at will, for instance for an infinte checking, one can pass th
 Counting the words of a [wikipedia dump](http://en.wikipedia.org/wiki/Wikipedia:Database_download) will result in
 ![Showing progress](https://raw.github.com/andypetrella/spark-notebook/master/images/spark-tracker.png)
 
+## Using Tachyon
+Tachyon is a great and clean way to share results, data or process when working with Spark. Hence the spark-notebook enables some tighter interaction with it.
+
+### Connect to an existing cluster...
+If you have a Tachyon cluster already deployed it is best to set the  `manager.tachyon.url` conf key in the `application.conf` file with its url.
+
+Then all `SparkContext` will automatically have the tachyon configuration pointing to it and thus able to it to cache or share the results.
+
+### ... Embedded local (default)
+If no configuration is set under `manager.tachyon` conf key in the `application.conf` file (see above).
+
+An embed Tachyon local cluster will be started for you automatically. 
+
+Hence, if you wanna use this feature a bit, we'd recommend to increase the memory allocated to the spark-notebook server:
+```
+sbt -mem 5000 run
+```
+
+Or when using a distro.
+
+```
+./bin/spark-notebook -mem 13000
+```
+
+### Check using the UI
+In all notebooks, a small UI has been added in order to browse the connected Tachyon cluster, hence you don't have to quit the notebook to look at the available data or check that the data has been cached in it.
+
+It looks like the below picture and presents some buttons:
+* ![refresh](https://raw.github.com/andypetrella/spark-notebook/master/images/tachyon-refresh.png): just refresh the current view (reloading the content of the current folder)
+* ![expand](https://raw.github.com/andypetrella/spark-notebook/master/images/tachyon-expand.png): allows the UI to expand in width 5 times before returning to a small-ish size
+* ![list](https://raw.github.com/andypetrella/spark-notebook/master/images/tachyon-list.png): browse to the related folder
+
+Preview:
+![Preview Tachyon UI](https://raw.github.com/andypetrella/spark-notebook/master/images/tachyon-ui.png)
 
 ## Using (Spark)SQL
 Spark comes with this handy and cool feature that we can write some SQL queries rather than boilerplating with
@@ -722,7 +759,7 @@ In live, you can check the notebook named `Update classpath and Spark's jars`, w
 
 ![Spark Jars](https://raw.github.com/andypetrella/spark-notebook/master/images/spark-jars.png)
 
-## TIPS AND TROUBLESHOOTING
+# TIPS AND TROUBLESHOOTING
 
 There are some common problems that users experience from time to time.
 So we collected some useful tips to make your life easier:
@@ -737,15 +774,15 @@ you should start spark-notebook with `-Dhadoop.version parameter`, like: `sbt -D
 * running the dist/sbt on a different context path: `./bin/spark-notebook -Dapplication.context=/spark-notebook`. Then you can browse [http://localhost:9000/spark-notebook](http://localhost:9000/spark-notebook). **NB**: the context path **has** to start wiht `/`.
 
 
-## IMPORTANT
+# IMPORTANT
 Some vizualizations (wisp) are currently using Highcharts which is **not** available for commercial or private usage!
 
 If you're in this case, please to <a href="email:andy.petrella@gmail.com">contact</a> me first.
 
 
-## KNOWN ISSUES
+# KNOWN ISSUES
 
-### `User limit of inotify watches reached`
+## `User limit of inotify watches reached`
 
 When running Spark-Notebook on some Linux distribs (specifically ArchLinux), you may encounter this exception:
 

@@ -23,7 +23,8 @@ require([
     'codemirror/lib/codemirror',
     'notebook/js/about',
     // only loaded, not used, please keep sure this is loaded last
-    'custom/custom'
+    'custom/custom',
+    'tachyon'
 ], function(
     IPython,
     $,
@@ -46,7 +47,8 @@ require([
     CodeMirror,
     about,
     // please keep sure that even if not used, this is loaded last
-    custom
+    custom,
+    tachyon
     ) {
     "use strict";
 

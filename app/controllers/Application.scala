@@ -29,18 +29,6 @@ import notebook.server._
 import notebook.kernel.remote._
 import notebook.NBSerializer.Metadata
 
-object AppUtils {
-  lazy val config               = NotebookConfig(current.configuration.getConfig("manager").get)
-  lazy val nbm                  = new NotebookManager(config.projectName, config.notebooksDir)
-  lazy val notebookServerConfig = current.configuration.getConfig("notebook-server").get.underlying
-  lazy val clustersConf         = config.config.getConfig("clusters").get
-
-  lazy val kernelSystem =  ActorSystem( "NotebookServer",
-                                        notebookServerConfig,
-                                        play.api.Play.classloader // this resolves the Play classloader problems w/ remoting
-                                      )
-}
-
 case class Crumb(url:String="", name:String="")
 case class Breadcrumbs(home:String="/", crumbs:List[Crumb] = Nil)
 
@@ -149,7 +137,8 @@ object Application extends Controller {
                                               customSparkConf,
                                               initScripts,
                                               compilerArgs,
-                                              kernel.remoteDeployFuture
+                                              kernel.remoteDeployFuture,
+                                              config.tachyonInfo
                                             )
       kernelIdToCalcService += kId -> service
       (kId, kernel, service)
@@ -320,11 +309,11 @@ object Application extends Controller {
 
     val fpath = nbm.newNotebook(
                     path,
-                    customLocalRepo,
-                    customRepos,
-                    customDeps,
-                    customImports,
-                    customMetadata)
+                    customLocalRepo orElse config.localRepo,
+                    customRepos orElse config.repos,
+                    customDeps orElse config.deps,
+                    customImports orElse config.imports,
+                    customMetadata orElse config.sparkConf)
     Try(Redirect(routes.Application.contents("notebook", fpath)))
   }
 
