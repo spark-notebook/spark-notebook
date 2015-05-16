@@ -117,7 +117,8 @@ object Dependencies {
         Shared.jets3tVersion in "common" := "0.9.0",
         Shared.jets3tVersion in "kernel" := "0.9.0",
         Shared.jets3tVersion in "subprocess" := "0.9.0",
-        Shared.jets3tVersion in "spark" := "0.9.0"
+        Shared.jets3tVersion in "spark" := "0.9.0",
+        Shared.jets3tVersion in "tachyon" := "0.9.0"
       )
     },
     (SparkVersion.`1.2.2`, List(HadoopVersion.`2.3.0`, HadoopVersion.`2.4.0`, HadoopVersion.`2.5.0`, HadoopVersion.`2.6.0`, HadoopVersion.`2.5.0-cdh5.3.1`, HadoopVersion.`2.5.0-cdh5.3.2`)) → {
@@ -135,7 +136,18 @@ object Dependencies {
         Shared.jets3tVersion in "common" := "0.9.0",
         Shared.jets3tVersion in "kernel" := "0.9.0",
         Shared.jets3tVersion in "subprocess" := "0.9.0",
-        Shared.jets3tVersion in "spark" := "0.9.0"
+        Shared.jets3tVersion in "spark" := "0.9.0",
+        Shared.jets3tVersion in "tachyon" := "0.9.0"
+      )
+    },
+    (SparkVersion.`1.3.0`, List(HadoopVersion.`2.3.0`)) → {
+      List(
+        Shared.jets3tVersion := "0.9.0",
+        Shared.jets3tVersion in "common" := "0.9.0",
+        Shared.jets3tVersion in "kernel" := "0.9.0",
+        Shared.jets3tVersion in "subprocess" := "0.9.0",
+        Shared.jets3tVersion in "spark" := "0.9.0",
+        Shared.jets3tVersion in "tachyon" := "0.9.0"
       )
     },
     (SparkVersion.`1.3.1`, List(HadoopVersion.`2.3.0`, HadoopVersion.`2.4.0`, HadoopVersion.`2.5.0`, HadoopVersion.`2.6.0`, HadoopVersion.`2.5.0-cdh5.3.1`, HadoopVersion.`2.5.0-cdh5.3.2`)) → {
@@ -181,12 +193,14 @@ object Dependencies {
             Shared.sparkVersion in "kernel" := svS,
             Shared.sparkVersion in "subprocess" := svS,
             Shared.sparkVersion in "spark" := svS,
+            Shared.sparkVersion in "tachyon" := svS,
 
             Shared.hadoopVersion := hvS,
             Shared.hadoopVersion in "common" := hvS,
             Shared.hadoopVersion in "kernel" := hvS,
             Shared.hadoopVersion in "subprocess" := hvS,
-            Shared.hadoopVersion in "spark" := hvS
+            Shared.hadoopVersion in "spark" := hvS,
+            Shared.hadoopVersion in "tachyon" := hvS
           )
 
           val extraSettings = extraConf.get((sv, hv)).getOrElse(Nil)

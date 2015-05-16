@@ -28,10 +28,7 @@ import org.apache.spark.SparkContext._
 
 @transient var sparkContext:SparkContext = _
 
-//@transient val SparkNotebookBgLog = ul(20)
-
 def reset(appName:String="Notebook", lastChanges:(SparkConf=>Unit)=(_:SparkConf)=>()):Unit = {
-  //SparkNotebookBgLog.append("Calling reset")
   conf = new SparkConf()
   conf.setMaster(sparkMaster.getOrElse("local[*]"))
       .setAppName(appName)
@@ -47,13 +44,10 @@ def reset(appName:String="Notebook", lastChanges:(SparkConf=>Unit)=(_:SparkConf)
   lastChanges(conf)
 
   if (sparkContext != null) {
-    //SparkNotebookBgLog.append("Stopping Spark Context")
     sparkContext.stop()
-    //SparkNotebookBgLog.append("Spark Context stopped")
   }
-  //SparkNotebookBgLog.append("Starting Spark Context")
   sparkContext = new SparkContext(conf)
-  //SparkNotebookBgLog.append("Stopping Spark Context")
+  sparkContext.hadoopConfiguration.set("fs.tachyon.impl", "tachyon.hadoop.TFS")
 }
 
 reset()
@@ -70,6 +64,5 @@ def stopSpark() = sparkContext.stop()
 
 def sc:SparkContext = sparkContext
 
-//SparkNotebookBgLog.append("Initialized!")
 
 "init.sc done!"

@@ -52,5 +52,9 @@ GET     /ws/observable/:contextId                                     controller
 GET     /ws/api/kernels/:kernelId/channels                            controllers.Application.openKernel(kernelId:String,session_id:String)
 
 
+# Tachyon
+GET     /tachyon/ls*path                                              controllers.TachyonProxy.ls(path)
+GET     /tachyon/js                                                   controllers.TachyonProxy.tachyonJavascriptRoutes
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                                                 controllers.Assets.at(path="/public", file)

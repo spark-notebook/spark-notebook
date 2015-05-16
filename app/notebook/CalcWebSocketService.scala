@@ -26,7 +26,8 @@ class CalcWebSocketService(
   customSparkConf:Option[Map[String, String]],
   initScripts: List[(String, String)],
   compilerArgs: List[String],
-  remoteDeployFuture: Future[Deploy]) {
+  remoteDeployFuture: Future[Deploy],
+  tachyonInfo:notebook.server.TachyonInfo) {
 
   implicit val executor = system.dispatcher
 
@@ -63,9 +64,16 @@ class CalcWebSocketService(
       val kCustomRepos = customRepos
       val kCustomDeps = customDeps
       val kCustomImports = customImports
-      val kCustomSparkConf = customSparkConf
+
+      val tachyon = Map(
+        "spark.tachyonStore.url"     → tachyonInfo.url.getOrElse("tachyon://"+notebook.share.Tachyon.host+":"+notebook.share.Tachyon.port),
+        "spark.tachyonStore.baseDir" → tachyonInfo.baseDir
+      )
+      val kCustomSparkConf = customSparkConf.map(_ ++ tachyon).orElse(Some(tachyon))
+
       val kInitScripts = initScripts
       val remoteDeploy = Await.result(remoteDeployFuture, 2 minutes)
+
       calculator = context.actorOf {
         Props(new ReplCalculator( kCustomLocalRepo,
                                   kCustomRepos,
