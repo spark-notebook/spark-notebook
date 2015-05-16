@@ -305,16 +305,17 @@
       <div id="notebook_panel">
           <div id="notebook"></div>
 
-          <div id="notebook-tachyon-container" class="pull-right" data-bind="style: { width: tachyon.width() }" style="top: 0px; position: absolute; right: 0px; background-color: #EEFFFF;">
-            <div>
+          <div id="notebook-tachyon-container" class="pull-right" data-bind="style: { width: tachyon.width() }" style="top: 0px; position: absolute; right: 0px; background-color: #74AFAD; color: #ECECEA">
+            <div style="height:22px; ">
               <strong>Tachyon</strong>
-              <button type="button" class="btn btn-xs pull-right" data-bind="click: tachyon.reload">
+              <button type="button" class="btn btn-xs pull-right" style="background-color: #558C89" data-bind="click: tachyon.reload">
                 <i class="fa fa-refresh"></i>
               </button>
-              <button type="button" class="btn btn-xs pull-right" data-bind="click: tachyon.resize">
+              <button type="button" class="btn btn-xs pull-right" style="background-color: #558C89" data-bind="click: tachyon.resize">
                 <i class="fa fa-expand"></i>
               </button>
             </div>
+
             <div id="notebook-tachyon">
 
               <ul class="breadcrumb" data-bind="foreach: tachyon.fragments()">
@@ -324,7 +325,7 @@
               <ul data-bind="foreach: tachyon.paths">
                 <li style="font-size: 13pt;">
                   <span data-bind="text: path"></span>
-                  <button class="btn btn-xs pull-right" type="button" data-bind="click: $parent.tachyon.list">
+                  <button class="btn btn-xs pull-right" style="background-color: #558C89" type="button" data-bind="click: $parent.tachyon.list">
                     <i class="fa fa-list"></i>
                   </button>
                 </li>
