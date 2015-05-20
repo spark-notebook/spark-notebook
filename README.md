@@ -217,7 +217,7 @@ In order to develop on the Spark Notebook, you'll have to use the `run` command 
 
 Use
 ---
-Before the first launch, it may be necessary to add some settings to conf/application.conf. In particular vmArgs can be used to set environment variables for the driver (e.g. `-Dhdp.version=$HDP-Version` if you want to run spark-notebook on a Hortonworks cluster). These are the settings that you would commonly pass via ` spark.driver.extraJavaOptions`.
+Before the first launch, it may be necessary to add some settings to conf/application.conf. In particular `manager.kernel.vmArgs` can be used to set environment variables for the driver (e.g. `-Dhdp.version=$HDP-Version` if you want to run spark-notebook on a **Hortonworks** cluster). These are the settings that you would commonly pass via `spark.driver.extraJavaOptions`.
 
 When the server has been started, you can head to the page `http://localhost:9000` and you'll see something similar to:
 ![Notebook list](https://raw.github.com/andypetrella/spark-notebook/master/images/list.png)
@@ -381,7 +381,7 @@ To using YARN cluster,
 ```
 export HADOOP_CONF_DIR=/etc/hadoop/conf (or any other means of setting environment variables)
 ```
-1. Prepare the application master environment by adding the variables to the customSparkConf. This is how you would add variables that are commonly added via spark.yarn.am.extraJavaOptions. E.g. in order to run on Hortonworks HDP you need to add a definition for the variable `hdp.version`:)
+1. Prepare the application master environment by adding the variables to the customSparkConf. This is how you would add variables that are commonly added via `spark.yarn.am.extraJavaOptions`. E.g. in order to run on **Hortonworks HDP** you need to add a definition for the variable `hdp.version`:)
 ```
 "customSparkConf" : {
   "hdp.version": "2.2.x.x-yyyy"
