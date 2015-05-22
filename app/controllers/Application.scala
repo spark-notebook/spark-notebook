@@ -441,10 +441,9 @@ object Application extends Controller {
   }
 
   def restartKernel(kernelId:String) = Action { request =>
-    //shouldn't do anything since onClose should be called in openKernel (stopChannels is call in the front)
-    // /!\ this won't kill the underneath actor!!!
+    val k = KernelManager.get(kernelId)
     closeKernel(kernelId)
-    Ok(newSession(notebookPath=KernelManager.get(kernelId).flatMap(k => k.notebookPath)))
+    Ok(newSession(notebookPath=k.flatMap(k => k.notebookPath)))
   }
 
   def listCheckpoints(snb:String) = Action { request =>
