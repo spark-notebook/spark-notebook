@@ -90,7 +90,7 @@ class ReplCalculator(
     (logR, rem)
   }
 
-  var remotes:List[RemoteRepository] = List(Repos.central, Repos.oss) ::: customRepos.getOrElse(List.empty[String]).map(remoreRepo _).map(_._2)
+  var remotes:List[RemoteRepository] = customRepos.getOrElse(List.empty[String]).map(remoreRepo _).map(_._2) ::: List(Repos.central, Repos.oss)
 
   var repo:File = customLocalRepo.map(x => new File(x)).getOrElse{
     val tmp = new File(System.getProperty("java.io.tmpdir"))

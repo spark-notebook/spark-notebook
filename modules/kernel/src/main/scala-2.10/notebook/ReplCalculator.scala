@@ -79,7 +79,8 @@ class ReplCalculator(
     val typesafeReleases = Resolver.typesafeIvyRepo("releases")
     val jCenterReleases  = Resolver.jcenterRepo
     val sonatypeReleases = Resolver.sonatypeRepo("releases")
-    mavenReleases :: typesafeReleases :: jCenterReleases :: sonatypeReleases ::  customRepos.getOrElse(List.empty[String]).map(CustomResolvers.fromString _).map(_._2)
+    val defaults = mavenReleases :: typesafeReleases :: jCenterReleases :: sonatypeReleases ::  Nil
+    customRepos.getOrElse(List.empty[String]).map(CustomResolvers.fromString _).map(_._2) ::: defaults
   }
 
   var repo:File = customLocalRepo.map(x => new File(x)).getOrElse{
