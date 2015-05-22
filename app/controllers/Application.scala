@@ -255,7 +255,8 @@ object Application extends Controller {
 
   def contents(`type`:String, p:String="/") = Action {
     val path = URLDecoder.decode(p)
-    val lengthToRoot = config.notebooksDir.getAbsolutePath.size + 1
+    val lengthToRoot = config.notebooksDir.getAbsolutePath.size
+    def dropRoot(f:java.io.File) = f.getAbsolutePath.drop(lengthToRoot).dropWhile(_ == '/')
     val baseDir = new java.io.File(config.notebooksDir, path)
 
     if (`type` == "directory") {
@@ -267,19 +268,19 @@ object Application extends Controller {
                           Json.obj(
                             "type" → "notebook",
                             "name" → n.dropRight(".snb".size),
-                            "path" → f.getAbsolutePath.drop(lengthToRoot) //todo → build relative path
+                            "path" → dropRoot(f) //todo → build relative path
                           )
                         } else if (f.isFile) {
                           Json.obj(
                             "type" → "file",
                             "name" → n,
-                            "path" → f.getAbsolutePath.drop(lengthToRoot) //todo → build relative path
+                            "path" → dropRoot(f) //todo → build relative path
                           )
                         } else {
                           Json.obj(
                             "type" → "directory",
                             "name" → n,
-                            "path" → f.getAbsolutePath.drop(lengthToRoot) //todo → build relative path
+                            "path" → dropRoot(f) //todo → build relative path
                           )
                         }
                       }
@@ -288,7 +289,7 @@ object Application extends Controller {
       ))
     } else if (`type` == "notebook") {
       Logger.debug("content: " + path)
-      val name = if (path.endsWith(".snb")) {path.dropRight(".snb".size)} else {path}
+      val name = if (path.endsWith(".snb")) { path.dropRight(".snb".size) } else { path }
       getNotebook(name, path, "json")
     } else {
       BadRequest("Dunno what to do with contents for " + `type` + "at " + path)
