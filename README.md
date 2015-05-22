@@ -217,7 +217,19 @@ In order to develop on the Spark Notebook, you'll have to use the `run` command 
 
 Use
 ---
-Before the first launch, it may be necessary to add some settings to `conf/application.conf`. In particular `manager.kernel.vmArgs` can be used to set environment variables for the driver (e.g. `-Dhdp.version=$HDP-Version` if you want to run spark-notebook on a **Hortonworks** cluster). These are the settings that you would commonly pass via `spark.driver.extraJavaOptions`.
+Before the first launch, it may be necessary to add some settings to `conf/application.conf`. 
+
+> **Warn:** When using a distribution, this `conf/application.conf` is already present in the installed package.
+> 
+> However, it won't be taken into account until you include it into you launch environment. To do so, you have to > create a `conf/application.ini` file with the following content:
+> ```
+> -Dconfig.file=./conf/application.conf
+> ```
+> This allows you to have several environment that can be switched via this `ini` file
+> 
+> A **less** cleaner way would be to launch the script like this: `./bin/spark-notebook -Dconfig.file=./conf/application.conf`
+
+In particular `manager.kernel.vmArgs` can be used to set environment variables for the driver (e.g. `-Dhdp.version=$HDP-Version` if you want to run spark-notebook on a **Hortonworks** cluster). These are the settings that you would commonly pass via `spark.driver.extraJavaOptions`.
 
 When the server has been started, you can head to the page `http://localhost:9000` and you'll see something similar to:
 ![Notebook list](https://raw.github.com/andypetrella/spark-notebook/master/images/list.png)
