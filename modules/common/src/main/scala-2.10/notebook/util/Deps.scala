@@ -57,7 +57,7 @@ object Deps extends java.io.Serializable {
                                 include.excludeAll(thisExclusions:_*)
                               }
     val conf = InlineConfiguration(
-      "org.scala-lang" % "scala" % (notebook.BuildInfo.scalaVersion/*notebook.BuildInfo.scalaVersion*/) % "compile",
+      "org.scala-lang" % "scala" % (notebook.BuildInfo.scalaVersion) % "compile",
       ModuleInfo("dl deps"),
       deps,
       Set.empty,
@@ -65,8 +65,8 @@ object Deps extends java.io.Serializable {
       Seq(Compile, Test, Runtime),
       None,
       Some(new IvyScala(
-        scalaFullVersion = notebook.BuildInfo.scalaVersion/*notebook.BuildInfo.scalaVersion*/,
-        scalaBinaryVersion = cross.CrossVersionUtil.binaryScalaVersion(notebook.BuildInfo.scalaVersion/*notebook.BuildInfo.scalaVersion*/),
+        scalaFullVersion = notebook.BuildInfo.scalaVersion,
+        scalaBinaryVersion = cross.CrossVersionUtil.binaryScalaVersion(notebook.BuildInfo.scalaVersion),
         configurations = Nil,
         checkExplicit = true,
         filterImplicit = false,
@@ -166,33 +166,4 @@ object CustomResolvers extends java.io.Serializable {
       println(s"CustomResolvers#fromString → Cannot parse $r")
       throw e
   }
-
-
-  def apply(id:String, name:String, url:String, username:Option[String] = None, password:Option[String] = None):Option[Resolver] = {
-    //val r = new RemoteRepository(id, name, url)
-    //for {
-    //  u <- username
-    //  p <- password
-    //} {
-    //  r.setAuthentication(new Authentication(u, p))
-    //}
-    //for {
-    //  p        <- proxy
-    //  protocol <- Try(p.getString("protocol")).toOption
-    //  host     <- Try(p.getString("host")).toOption
-    //  port     <- Try(p.getInt("port")).toOption
-    //} {
-    //  val auth = (for {
-    //    username <- Try(p.getString("username")).toOption
-    //    password <- Try(p.getString("password")).toOption
-    //  } yield new Authentication(username, password)).getOrElse(null)
-    //  val px = new AetherProxy(protocol, host, port, auth)
-    //  r.setProxy(px)
-    //}
-    //r
-    ???
-  }
-
-  //alias for clarity
-  def s3(id:String, name:String, url:String, key:String, secret:String) = ???//Repos.apply(id, name, url, Some(key), Some(secret))
 }
