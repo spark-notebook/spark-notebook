@@ -28,6 +28,7 @@ Spark Notebook
         - [Launch the server](#launch-the-server)
         - [Change relevant versions](#change-relevant-versions)
         - [Create your distribution](#create-your-distribution)
+        - [Using unreleased Spark version](#using-unreleased-spark-version)
   - [Use](#use)
 - [Features](#features)
   - [Configure the environment](#configure-the-environment)
@@ -208,11 +209,19 @@ sbt -D"spark.version"="1.2.1" -D"hadoop.version"="1.0.4" -D"jets3t.version"="0.7
 ```
 
 ##### Create your distribution
+For a simple `zip` distro, you can run
 ```
 [spark-notebook] $ dist
 ```
 
 In order to develop on the Spark Notebook, you'll have to use the `run` command instead.
+
+##### Using unreleased Spark version
+While using the repository from SBT, you can use any version of Apache Spark you want (**up to 1.4 atm**), this will require several these things:
+
+* you have a local install (maven) of the version (let's say Spark 1.4-RC1 or even Spark-1.4-SNAPSHOT)
+* you run the sbt command using the wanted version `sbt -Dspark.version=1.4.0-SNAPSHOT`
+* there is a folder in `modules/spark/src/main/scala-2.1X` that points to the base of the required version (excl. the classifier SNAPHOST or RC): `spark-1.4`
 
 
 Use
