@@ -56,8 +56,6 @@ scalacOptions += "-deprecation"
 
 scalacOptions ++= Seq("-Xmax-classfile-name", "100")
 
-commands ++= Seq( distZips, distDebs, distAll, dockerPublishLocalAll, dockerPublishAll )
-
 val ClasspathPattern = "declare -r app_classpath=\"(.*)\"\n".r
 
 bashScriptDefines :=  bashScriptDefines.value.map {
@@ -114,6 +112,9 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).ena
     )
     .settings(
       includeFilter in (Assets, LessKeys.less) := "*.less"
+    )
+    .settings(
+      unmanagedSourceDirectories in Compile <<= (scalaSource in Compile)(Seq(_)) //avoid app-2.10 and co to be created
     )
 
 lazy val subprocess =  project.in(file("modules/subprocess"))
@@ -200,7 +201,7 @@ lazy val spark = Project(id = "spark", base = file("modules/spark"))
                                   "org.scala-lang" % "scala-compiler" % scalaVersion.value
                                 ),
                                 unmanagedSourceDirectories in Compile +=
-                                  (sourceDirectory in Compile).value / ("scala_" + ((scalaBinaryVersion.value, sparkVersion.value) match {
+                                  (sourceDirectory in Compile).value / ("scala_" + ((scalaBinaryVersion.value, sparkVersion.value.takeWhile(_ != '-')) match {
                                     case (v, sv) if v startsWith "2.10" => "2.10"+"/spark-"+sv
                                     case (v, sv) if v startsWith "2.11" => "2.11"+"/spark-"+sv
                                     case (v, sv) => throw new IllegalArgumentException("Bad scala version: " + v)
