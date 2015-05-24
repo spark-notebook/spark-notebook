@@ -58,13 +58,18 @@ object Shared {
 
   lazy val sparkSettings:Seq[Def.Setting[_]] = Seq(
     libraryDependencies <++= (sparkVersion, hadoopVersion, jets3tVersion) { (sv, hv, jv) =>
+      val jets3tVersion = sys.props.get("jets3t.version") match {
+        case Some(jv) => jets3t(Some(jv), None)
+        case _        => jets3t(None, Some(hv))
+      }
+
       val libs = Seq(
         breeze,
         sparkCore(sv),
         sparkYarn(sv),
         sparkSQL(sv),
         hadoopClient(hv),
-        jets3t(jv),
+        jets3tVersion,
         commonsCodec
       )
       libs
@@ -72,9 +77,9 @@ object Shared {
   ) ++  repl ++ hive
 
   lazy val tachyonSettings:Seq[Def.Setting[_]] = {
-    def tachyonVersion(sv:String) = (sv.takeWhile(_ != '-' /*get rid of -SNAPSHOT*/).split("\\.").toList.map(_.toInt)) match {
+    def tachyonVersion(sv:String) = (sv.takeWhile(_ != '-' /*get rid of -SNAPSHOT, -RC or whatever*/).split("\\.").toList.map(_.toInt)) match {
       case List(1, y, z) if y <= 3              => "0.5.0"
-      case List(1, y, z)                        => "0.6.3"
+      case List(1, y, z)                        => "0.6.4"
       case _                                    => throw new IllegalArgumentException("Bad spark version for tachyon: " + sv)
     }
 

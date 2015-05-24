@@ -24,8 +24,6 @@ import akka.actor._
 import akka.pattern.ask
 import akka.util.Timeout
 
-import tachyon.client.TachyonFS
-
 import notebook._
 import notebook.server._
 import notebook.kernel.remote._
@@ -34,14 +32,14 @@ import notebook.NBSerializer.Metadata
 object TachyonProxy extends Controller {
   lazy val tachyonUrl = AppUtils.config.tachyonInfo.url
   lazy val shareDir = AppUtils.config.tachyonInfo.baseDir
-  lazy val tachyonClient = tachyonUrl.map( url => TachyonFS.get(url)).getOrElse(notebook.share.Tachyon.fs)
+  lazy val tachyonClient = new notebook.share.Client(tachyonUrl)
 
   import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 
   def ls(p:String = shareDir) = Action.async { Future {
     val path = URLDecoder.decode(p)
-    val list = tachyonClient.ls(path, false).asScala
+    val list = tachyonClient.list(path)
     Ok(Json.toJson(list))
   } }
 
