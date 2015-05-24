@@ -34,6 +34,7 @@ parallelExecution in Test in ThisBuild := false
 javaOptions in ThisBuild ++= Seq("-Xmx512M", "-XX:MaxPermSize=128M")
 
 resolvers in ThisBuild ++=  Seq(
+                              Resolver.mavenLocal,
                               Resolver.typesafeRepo("releases"),
                               Resolver.sonatypeRepo("releases"),
                               Resolver.typesafeIvyRepo("releases"),

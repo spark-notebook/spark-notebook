@@ -86,6 +86,7 @@ object Dependencies {
   object SparkVersion extends Enumeration {
     type SparkVersion = Value
     val `1.2.0`, `1.2.1`, `1.2.2`, `1.3.0`, `1.3.1` = Value
+    val `1.2.3-SNAPSHOT`, `1.3.2-SNAPSHOT`, `1.4.0-SNAPSHOT` = Value
   }
 
   object HadoopVersion extends Enumeration {
@@ -93,75 +94,30 @@ object Dependencies {
     val `1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0`, `2.6.0`, `2.5.0-cdh5.3.1`, `2.5.0-cdh5.3.2` = Value
   }
 
-  val crossConf = Map(
-    SparkVersion.`1.2.0` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0`, `2.6.0`, `2.5.0-cdh5.3.1`, `2.5.0-cdh5.3.2`) },
-    SparkVersion.`1.2.1` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0`, `2.6.0`, `2.5.0-cdh5.3.1`, `2.5.0-cdh5.3.2`) },
-    SparkVersion.`1.2.2` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0`, `2.6.0`, `2.5.0-cdh5.3.1`, `2.5.0-cdh5.3.2`) },
-    SparkVersion.`1.3.0` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0`, `2.6.0`, `2.5.0-cdh5.3.1`, `2.5.0-cdh5.3.2`) },
-    SparkVersion.`1.3.1` → { import HadoopVersion._; List(`1.0.4`, `2.0.0-cdh4.2.0`, `2.2.0`, `2.3.0`, `2.4.0`, `2.5.0`, `2.6.0`, `2.5.0-cdh5.3.1`, `2.5.0-cdh5.3.2`) }
-  )
+  val crossConf = SparkVersion.values.toList.map(spv => spv → HadoopVersion.values).toMap
+  val extraConf:Map[(SparkVersion.Value, HadoopVersion.Value), List[sbt.Def.Setting[_]]] = {
+    val modulesWithJets3t090 =  List(
+                                  Shared.jets3tVersion := "0.9.0",
+                                  Shared.jets3tVersion in "common" := "0.9.0",
+                                  Shared.jets3tVersion in "kernel" := "0.9.0",
+                                  Shared.jets3tVersion in "subprocess" := "0.9.0",
+                                  Shared.jets3tVersion in "spark" := "0.9.0",
+                                  Shared.jets3tVersion in "tachyon" := "0.9.0"
+                                )
 
-  val extraConf:Map[(SparkVersion.Value, HadoopVersion.Value), List[sbt.Def.Setting[_]]] = Map(
-    (SparkVersion.`1.2.0`, List(HadoopVersion.`2.3.0`, HadoopVersion.`2.4.0`, HadoopVersion.`2.5.0`, HadoopVersion.`2.6.0`, HadoopVersion.`2.5.0-cdh5.3.1`, HadoopVersion.`2.5.0-cdh5.3.2`)) → {
-      List(
-        Shared.jets3tVersion := "0.9.0",
-        Shared.jets3tVersion in "common" := "0.9.0",
-        Shared.jets3tVersion in "kernel" := "0.9.0",
-        Shared.jets3tVersion in "subprocess" := "0.9.0",
-        Shared.jets3tVersion in "spark" := "0.9.0"
-      )
-    },
-    (SparkVersion.`1.2.1`, List(HadoopVersion.`2.3.0`, HadoopVersion.`2.4.0`, HadoopVersion.`2.5.0`, HadoopVersion.`2.6.0`, HadoopVersion.`2.5.0-cdh5.3.1`, HadoopVersion.`2.5.0-cdh5.3.2`)) → {
-      List(
-        Shared.jets3tVersion := "0.9.0",
-        Shared.jets3tVersion in "common" := "0.9.0",
-        Shared.jets3tVersion in "kernel" := "0.9.0",
-        Shared.jets3tVersion in "subprocess" := "0.9.0",
-        Shared.jets3tVersion in "spark" := "0.9.0",
-        Shared.jets3tVersion in "tachyon" := "0.9.0"
-      )
-    },
-    (SparkVersion.`1.2.2`, List(HadoopVersion.`2.3.0`, HadoopVersion.`2.4.0`, HadoopVersion.`2.5.0`, HadoopVersion.`2.6.0`, HadoopVersion.`2.5.0-cdh5.3.1`, HadoopVersion.`2.5.0-cdh5.3.2`)) → {
-      List(
-        Shared.jets3tVersion := "0.9.0",
-        Shared.jets3tVersion in "common" := "0.9.0",
-        Shared.jets3tVersion in "kernel" := "0.9.0",
-        Shared.jets3tVersion in "subprocess" := "0.9.0",
-        Shared.jets3tVersion in "spark" := "0.9.0"
-      )
-    },
-    (SparkVersion.`1.3.0`, List(HadoopVersion.`2.3.0`, HadoopVersion.`2.4.0`, HadoopVersion.`2.5.0`, HadoopVersion.`2.6.0`, HadoopVersion.`2.5.0-cdh5.3.1`, HadoopVersion.`2.5.0-cdh5.3.2`)) → {
-      List(
-        Shared.jets3tVersion := "0.9.0",
-        Shared.jets3tVersion in "common" := "0.9.0",
-        Shared.jets3tVersion in "kernel" := "0.9.0",
-        Shared.jets3tVersion in "subprocess" := "0.9.0",
-        Shared.jets3tVersion in "spark" := "0.9.0",
-        Shared.jets3tVersion in "tachyon" := "0.9.0"
-      )
-    },
-    (SparkVersion.`1.3.0`, List(HadoopVersion.`2.3.0`)) → {
-      List(
-        Shared.jets3tVersion := "0.9.0",
-        Shared.jets3tVersion in "common" := "0.9.0",
-        Shared.jets3tVersion in "kernel" := "0.9.0",
-        Shared.jets3tVersion in "subprocess" := "0.9.0",
-        Shared.jets3tVersion in "spark" := "0.9.0",
-        Shared.jets3tVersion in "tachyon" := "0.9.0"
-      )
-    },
-    (SparkVersion.`1.3.1`, List(HadoopVersion.`2.3.0`, HadoopVersion.`2.4.0`, HadoopVersion.`2.5.0`, HadoopVersion.`2.6.0`, HadoopVersion.`2.5.0-cdh5.3.1`, HadoopVersion.`2.5.0-cdh5.3.2`)) → {
-      List(
-        Shared.jets3tVersion := "0.9.0",
-        Shared.jets3tVersion in "common" := "0.9.0",
-        Shared.jets3tVersion in "kernel" := "0.9.0",
-        Shared.jets3tVersion in "subprocess" := "0.9.0",
-        Shared.jets3tVersion in "spark" := "0.9.0"
-      )
-    }
-  ).flatMap { case ((s,hs), sg) =>
-    hs.map(h => (s, h) → sg )
-  }.toMap
+    val needsJets3t090 = List(HadoopVersion.`2.3.0`,
+                              HadoopVersion.`2.4.0`,
+                              HadoopVersion.`2.5.0`,
+                              HadoopVersion.`2.6.0`,
+                              HadoopVersion.`2.5.0-cdh5.3.1`,
+                              HadoopVersion.`2.5.0-cdh5.3.2`)
+
+    SparkVersion.values.toList.map { spv =>
+      (spv, needsJets3t090) → modulesWithJets3t090
+    }.flatMap { case ((s,hs), sg) =>
+      hs.map(h => (s, h) → sg )
+    }.toMap
+  }
 
   def extractEnumVersionName(s:String):String = s.toString.replaceAll("\\$u002E", ".").replaceAll("\\$minus", "-")
 
