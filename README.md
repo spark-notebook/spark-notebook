@@ -28,6 +28,8 @@ Spark Notebook
         - [Launch the server](#launch-the-server)
         - [Change relevant versions](#change-relevant-versions)
         - [Create your distribution](#create-your-distribution)
+          - [Docker](#docker-1)
+          - [Mesos in Docker](#mesos-in-docker)
         - [Using unreleased Spark version](#using-unreleased-spark-version)
   - [Use](#use)
 - [Features](#features)
@@ -215,6 +217,27 @@ For a simple `zip` distro, you can run
 ```
 
 In order to develop on the Spark Notebook, you'll have to use the `run` command instead.
+
+###### Docker
+The docker version requires a specific `java` image on `Ubuntu/trusty`: `dockerfile/java:openjdk-7-jdk`
+
+You can build it this way:
+```
+docker build -t="dockerfile/ubuntu" github.com/dockerfile/ubuntu
+git clone https://github.com/dockerfile/java.git
+cd java
+cd openjdk-7-jdk
+docker build -t="dockerfile/java:openjdk-7-jdk" .
+```
+
+###### Mesos in Docker
+By default, the docker distro will install mesos `0.22.0` (the current DCOS version), however this can be changed using the property `mesos.version`.
+
+So if you need the mesos version `0.23.0` in your docker image you can publish it to you local machine like this:
+```
+sbt -Dmesos.version=0.23.0 docker:publishLocal
+```
+
 
 ##### Using unreleased Spark version
 While using the repository from SBT, you can use any version of Apache Spark you want (**up to 1.4 atm**), this will require several these things:

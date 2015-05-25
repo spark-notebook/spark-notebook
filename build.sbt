@@ -20,7 +20,32 @@ enablePlugins(DockerPlugin)
 
 import NativePackagerHelper._
 
-dockerExposedPorts in Docker := Seq(9000, 9443) //Docker
+import com.typesafe.sbt.packager.docker._
+
+// java image based on ubuntu trusty rather than debian jessie (to use mesosphere distros)
+// build it like this:
+// ```
+// docker build -t="dockerfile/ubuntu" github.com/dockerfile/ubuntu
+// git clone https://github.com/dockerfile/java.git
+// cd java
+// cd openjdk-7-jdk
+// docker build -t="dockerfile/java:openjdk-7-jdk" .
+// ```
+dockerBaseImage := "dockerfile/java:openjdk-7-jdk"
+
+dockerCommands ++= Seq(
+  Cmd("USER", "root"),
+  ExecCmd("RUN", "apt-key adv --keyserver keyserver.ubuntu.com --recv E56151BF"),
+  ExecCmd("RUN", "echo \\\"deb http://repos.mesosphere.io/ubuntu trusty main\\\" | tee /etc/apt/sources.list.d/mesosphere.list"),
+  ExecCmd("RUN", "apt-get -y update --fix-missing"),
+  ExecCmd("RUN", s"apt-get -y install mesos=$mesosVersion-1.0.ubuntu1404"), //ubuntu 14.04 is base for java:latest → https://github.com/dockerfile/ubuntu/blob/master/Dockerfile
+  Cmd("ENV", s"MESOS_JAVA_NATIVE_LIBRARY /usr/local/lib/libmesos-$mesosVersion.so"),
+  Cmd("USER", (daemonUser in Docker).value)
+)
+
+dockerExposedVolumes ++= Seq("/opt/docker/notebooks", "/opt/docker/logs")
+
+dockerExposedPorts ++= Seq(9000, 9443) //Docker
 
 dockerRepository := Some("andypetrella") //Docker
 
