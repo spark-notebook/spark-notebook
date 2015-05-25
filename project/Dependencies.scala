@@ -4,6 +4,7 @@ import Keys._
 import com.typesafe.sbt.SbtNativePackager._, Keys._
 
 object Dependencies {
+  val mesosVersion            = sys.props.getOrElse("mesos.version", "0.22.0") //0.22.0 is current DCOS version
 
   val playDeps                = Seq(
                                     "com.typesafe.play"         %%            "play"              %      "2.3.7"                     excludeAll(ExclusionRule("com.typesafe.akka"), ExclusionRule("com.google.guava")),
