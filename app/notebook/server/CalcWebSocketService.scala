@@ -1,43 +1,37 @@
-package notebook
-package server
+package notebook.server
 
-import java.io.File
-
-import scala.concurrent._
-import scala.concurrent.duration._
-
-import akka.actor._
-import akka.actor.Terminated
-
+import akka.actor.{Terminated, _}
+import notebook.client._
 import play.api._
 import play.api.libs.json._
 
-import notebook.client._
+import scala.concurrent._
+import scala.concurrent.duration._
 
 /**
  * Provides a web-socket interface to the Calculator
  */
 class CalcWebSocketService(
   system: ActorSystem,
-  customLocalRepo:Option[String],
-  customRepos:Option[List[String]],
-  customDeps:Option[List[String]],
-  customImports:Option[List[String]],
-  customSparkConf:Option[Map[String, String]],
+  customLocalRepo: Option[String],
+  customRepos: Option[List[String]],
+  customDeps: Option[List[String]],
+  customImports: Option[List[String]],
+  customSparkConf: Option[Map[String, String]],
   initScripts: List[(String, String)],
   compilerArgs: List[String],
   remoteDeployFuture: Future[Deploy],
-  tachyonInfo:notebook.server.TachyonInfo) {
+  tachyonInfo: notebook.server.TachyonInfo) {
 
   implicit val executor = system.dispatcher
 
-  val calcActor = system.actorOf(Props( new CalcActor ))
+  val calcActor = system.actorOf(Props(new CalcActor))
 
-  def register(ws:WebSockWrapper) = {
+  def register(ws: WebSockWrapper) = {
     calcActor ! Register(ws)
   }
 
-  def unregister(ws:WebSockWrapper) = {
+  def unregister(ws: WebSockWrapper) = {
     calcActor ! Unregister(ws)
   }
 
@@ -48,7 +42,8 @@ class CalcWebSocketService(
     var wss: List[WebSockWrapper] = Nil
 
     val ws = new {
-      def send(header: JsValue, session: JsValue /*ignored*/, msgType: String, channel:String, content: JsValue) = {
+      def send(header: JsValue, session: JsValue /*ignored*/ , msgType: String, channel: String,
+        content: JsValue) = {
         Logger.debug(s"Sending info to websockets $wss in $this")
         wss.foreach { ws =>
           ws.send(header, ws.session, msgType, channel, content)
@@ -66,7 +61,7 @@ class CalcWebSocketService(
       val kCustomImports = customImports
 
       val tachyon = Map(
-        "spark.tachyonStore.url"     → tachyonInfo.url.getOrElse("tachyon://"+notebook.share.Tachyon.host+":"+notebook.share.Tachyon.port),
+        "spark.tachyonStore.url" → tachyonInfo.url.getOrElse("tachyon://" + notebook.share.Tachyon.host + ":" + notebook.share.Tachyon.port),
         "spark.tachyonStore.baseDir" → tachyonInfo.baseDir
       )
       val kCustomSparkConf = customSparkConf.map(_ ++ tachyon).orElse(Some(tachyon))
@@ -75,29 +70,30 @@ class CalcWebSocketService(
       val remoteDeploy = Await.result(remoteDeployFuture, 2 minutes)
 
       calculator = context.actorOf {
-        Props(new ReplCalculator( kCustomLocalRepo,
-                                  kCustomRepos,
-                                  kCustomDeps,
-                                  kCustomImports,
-                                  kCustomSparkConf,
-                                  kInitScripts,
-                                  kCompilerArgs)
+        Props(new ReplCalculator(
+          kCustomLocalRepo,
+          kCustomRepos,
+          kCustomDeps,
+          kCustomImports,
+          kCustomSparkConf,
+          kInitScripts,
+          kCompilerArgs)
         ).withDeploy(remoteDeploy)
       }
     }
 
     def receive = {
-      case Register(ws:WebSockWrapper) if wss.isEmpty && calculator == null =>
+      case Register(ws: WebSockWrapper) if wss.isEmpty && calculator == null =>
         Logger.info(s"Registering first web-socket ($ws) in service ${this}")
         wss = List(ws)
         Logger.info(s"Spawning calculator in service ${this}")
         spawnCalculator()
 
-      case Register(ws:WebSockWrapper) =>
+      case Register(ws: WebSockWrapper) =>
         Logger.info(s"Registering web-socket ($ws) in service ${this} (current cout is ${wss.size})")
         wss = ws :: wss
 
-      case Unregister(ws:WebSockWrapper) =>
+      case Unregister(ws: WebSockWrapper) =>
         Logger.info(s"UN-registering web-socket ($ws) in service ${this} (current cout is ${wss.size})")
         wss = wss.filterNot(_ == ws)
 
@@ -111,7 +107,7 @@ class CalcWebSocketService(
         val operationActor = (request: @unchecked) match {
           case ExecuteRequest(counter, code) =>
             ws.send(header, session, "status", "iopub", Json.obj("execution_state" → "busy"))
-            ws.send(header, session, "pyin",  "iopub", Json.obj("execution_count" → counter, "code" → code))
+            ws.send(header, session, "pyin", "iopub", Json.obj("execution_count" → counter, "code" → code))
             operations.singleExecution(counter)
 
           case _: CompletionRequest =>
@@ -163,7 +159,7 @@ class CalcWebSocketService(
       def completion = Props(new Actor {
         def receive = {
           case CompletionResponse(cursorPosition, candidates, matchedText) =>
-            ws.send(header, session, "complete_reply", "shell", Json.obj("matched_text" → matchedText, "matches" → candidates.map(_.toJson).toList, "cursor_start" → (cursorPosition-matchedText.size), "cursor_end" → cursorPosition))
+            ws.send(header, session, "complete_reply", "shell", Json.obj("matched_text" → matchedText, "matches" → candidates.map(_.toJson).toList, "cursor_start" → (cursorPosition - matchedText.size), "cursor_end" → cursorPosition))
             context.stop(self)
         }
       })
@@ -176,12 +172,7 @@ class CalcWebSocketService(
               session,
               "object_info_reply",
               "shell",
-              Json.obj(
-                "found" → found,
-                "name" → name,
-                "call_def" → callDef,
-                "call_docstring" → "Description TBD"
-              )
+              Json.obj("found" → found, "name" → name, "call_def" → callDef, "call_docstring" → "Description TBD")
             )
             context.stop(self)
         }

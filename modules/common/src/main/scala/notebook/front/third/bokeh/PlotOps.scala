@@ -1,6 +1,6 @@
 package notebook.front.third.bokeh
 
-import io.continuum.bokeh.{Renderer, Plot}
+import io.continuum.bokeh.{Plot, Renderer}
 
 /**
  * Created by gerrit on 15.11.14.

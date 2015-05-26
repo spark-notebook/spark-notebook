@@ -1,12 +1,8 @@
 package notebook.kernel.remote
 
-import com.typesafe.config.{ConfigFactory, Config}
+import com.typesafe.config.{Config, ConfigFactory}
+
 import scala.collection.JavaConversions._
-
-
-/**
- *
- */
 
 object AkkaConfigUtils {
 

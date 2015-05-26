@@ -1,17 +1,19 @@
 import play.api._
-import play.api.mvc._
 
 
 object Global extends GlobalSettings {
+
+  val encoding = "UTF-8"
+
   override def onStart(app: Application) {
-    app.configuration.getString("manager.tachyon.url") match   {
+    app.configuration.getString("manager.tachyon.url") match {
       case None =>
         Logger.warn("Start local micro tachyon")
         notebook.share.Tachyon.start
       case Some(x) =>
         Logger.info("Using tachyon at " + x)
     }
- }
+  }
 
   override def onStop(app: Application) {
     if (app.mode == Mode.Dev) {
@@ -19,7 +21,7 @@ object Global extends GlobalSettings {
       notebook.KernelManager.stopAll
     }
 
-    app.configuration.getString("manager.tachyon.url") match   {
+    app.configuration.getString("manager.tachyon.url") match {
       case None =>
         Logger.warn("Stop local micro tachyon")
         notebook.share.Tachyon.stop

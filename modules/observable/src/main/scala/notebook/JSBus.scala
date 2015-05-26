@@ -1,23 +1,17 @@
 package notebook
 
-import java.util.concurrent.ConcurrentHashMap
 import java.security.SecureRandom
 
-import scala.collection.JavaConversions._
-import scala.collection.mutable
-
-import org.slf4j.LoggerFactory
 import org.apache.commons.codec.binary.Hex
-
+import org.slf4j.LoggerFactory
+import play.api.libs.json._
 import rx.lang.scala._
 
-import play.api.libs.json._
-//import play.api.libs.functional.syntax._
+import scala.collection.mutable
 
-
-private object JSBusState  {
+private object JSBusState {
   private val events = mutable.ArrayBuffer.empty[(String, JsValue)]
-  val log = LoggerFactory.getLogger(getClass())
+  val log = LoggerFactory.getLogger(getClass)
 
   @volatile private var publishCallback: (String, JsValue) => Unit = null
 
@@ -43,7 +37,7 @@ private object JSBusState  {
         }
       }
     }
-    log.debug("Sending %s to %s"format( value, id))
+    log.debug("Sending %s to %s" format(value, id))
     publishCallback(id, value)
   }
 }
@@ -61,11 +55,11 @@ object JSBus {
   protected[this] def send(id: String, value: JsValue) {
     JSBusState.publish(id, value)
   }
-  val log = LoggerFactory.getLogger(getClass())
 
-  private[notebook] def forwardClientUpdateMessage(obsId: String, newValue: JsValue) = idToSubject.get(obsId).map(x => {
-    x.onJsReceived(newValue)
-  })
+  val log = LoggerFactory.getLogger(getClass)
+
+  private[notebook] def forwardClientUpdateMessage(obsId: String,
+    newValue: JsValue) = idToSubject.get(obsId).map(_.onJsReceived(newValue))
 
   // TODO: How do these things get disposed? Need a notice from Javascript to Scala when an id is disposed, then we dispose all subscriptions (onComplete?)
   private val idToSubject: scala.collection.concurrent.Map[String, ValueConnection] = new scala.collection.concurrent.TrieMap[String, ValueConnection]()
@@ -90,10 +84,10 @@ object JSBus {
     }
 
     private[this] val subject = Subject[JsValue]()
-    val observable:Observable[JsValue] = new WrappedObservable[JsValue](subject)
+    val observable: Observable[JsValue] = new WrappedObservable[JsValue](subject)
 
     val id = newID
-    var current:JsValue  = null
+    var current: JsValue = null
 
 
     def onJsReceived(v: JsValue) {

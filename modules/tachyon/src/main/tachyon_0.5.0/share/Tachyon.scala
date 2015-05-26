@@ -2,8 +2,8 @@ package notebook.share
 
 import java.io.File
 
-import tachyon.master.LocalTachyonCluster
 import tachyon.client.TachyonFS
+import tachyon.master.LocalTachyonCluster
 
 object Tachyon {
 
@@ -19,16 +19,14 @@ object Tachyon {
   val MaxColumns = 257
 
   lazy val home = Option(new File("./tachyon"))
-                    .filter(_.exists)
-                  .orElse(Option(new File("../tachyon")))
-                    .filter(_.exists)
-                  .getOrElse(throw new IllegalStateException(
-                    "Arg tachyon home has to be handled specifically... :-/ → current cwd is " + new File(".").getAbsolutePath
-                  ))
-                  .getAbsolutePath
+    .filter(_.exists).orElse(Option(new File("../tachyon")))
+    .filter(_.exists).getOrElse(throw new IllegalStateException(
+    "Arg tachyon home has to be handled specifically... :-/ → current cwd is " + new File(".").getAbsolutePath
+  ))
+    .getAbsolutePath
 
 
-  lazy val sLocalTachyonCluster:LocalTachyonCluster = {
+  lazy val sLocalTachyonCluster: LocalTachyonCluster = {
     //println("TACHYON HOME IS: " + home)
     //System.setProperty("tachyon.home", home);
 
@@ -40,17 +38,17 @@ object Tachyon {
     sLocalTachyonCluster
   }
 
-  lazy val host = sLocalTachyonCluster.getMasterHostname()
-  lazy val port = sLocalTachyonCluster.getMasterPort()
+  lazy val host = sLocalTachyonCluster.getMasterHostname
+  lazy val port = sLocalTachyonCluster.getMasterPort
 
-  lazy val fs:TachyonFS = sLocalTachyonCluster.getClient()
+  lazy val fs: TachyonFS = sLocalTachyonCluster.getClient
 
   lazy val start = {
-    println("""
-      |*******************************************
-      |********** STARTING TACHYON  **************
-      |*******************************************
-      |""".stripMargin.trim)
+    println( """
+               |*******************************************
+               |********** STARTING TACHYON  **************
+               |*******************************************
+               | """.stripMargin.trim)
     sLocalTachyonCluster.start();
     println(s"Tachyon running on http://$host:$port")
     println("<<< Some properties >>>")
@@ -72,10 +70,10 @@ object Tachyon {
     sLocalTachyonCluster
   }
 
-  lazy val stop:Unit = {
-    sLocalTachyonCluster.stop();
-    System.clearProperty("tachyon.user.quota.unit.bytes");
-    System.clearProperty("tachyon.max.columns");
+  lazy val stop: Unit = {
+    sLocalTachyonCluster.stop()
+    System.clearProperty("tachyon.user.quota.unit.bytes")
+    System.clearProperty("tachyon.max.columns")
     ()
   }
 

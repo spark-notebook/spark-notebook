@@ -1,9 +1,8 @@
 package notebook
 
-import akka.actor._
-import collection.mutable
-import akka.actor.Terminated
-import scala.Some
+import akka.actor.{Terminated, _}
+
+import scala.collection.mutable
 
 class Router extends Actor with ActorLogging {
 
@@ -25,13 +24,17 @@ class Router extends Actor with ActorLogging {
       case Remove(key) =>
         actors.remove(key) match {
           case Some(actor) =>
-            keys get actor foreach { _ -= key }
+            keys get actor foreach {
+              _ -= key
+            }
             context.stop(actor)
             log.debug("Stopped actor for key: %s".format(key))
           case None => log.info("Actor with id " + key + " not found, skipping remove")
         }
       case Terminated(actorRef) => {
-        keys.remove(actorRef) foreach { _ foreach actors.remove }
+        keys.remove(actorRef) foreach {
+          _ foreach actors.remove
+        }
       }
     }
   }))
@@ -42,8 +45,13 @@ class Router extends Actor with ActorLogging {
 }
 
 object Router {
+
   sealed trait RouterMessage
+
   case class Forward(key: Any, msg: Any) extends RouterMessage
+
   case class Put(key: Any, actorRef: ActorRef) extends RouterMessage
+
   case class Remove(key: Any) extends RouterMessage
+
 }
