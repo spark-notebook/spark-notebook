@@ -1,26 +1,22 @@
 package notebook.front.widgets
 
-import play.api.libs.json._
-
-import notebook._, JSBus._
-
-import notebook.front._
-import notebook.front.third._
-
 import io.continuum.bokeh._
 import io.continuum.bokeh.widgets.{HandsonTable, TableColumn}
+import notebook._
+import notebook.front.third._
+import play.api.libs.json._
 
-class DataTable[T](data:Seq[T])(implicit val codec:Codec[JsValue, T]) {
+class DataTable[T](data: Seq[T])(implicit val codec: Codec[JsValue, T]) {
 
-  lazy val array:JsArray = JsonCodec.tSeq(codec).decode(data).asInstanceOf[JsArray]
+  lazy val array: JsArray = JsonCodec.tSeq(codec).decode(data).asInstanceOf[JsArray]
 
-  lazy val table =  {
+  lazy val table = {
     val source = new ColumnDataSource()
     val keys = array(0).asInstanceOf[JsObject].keys.toList
     val columns = keys map { k =>
-      (array(0) \ k)  match {
+      (array(0) \ k) match {
         case JsString(_) =>
-          val values = array.value.map{ i =>
+          val values = array.value.map { i =>
             (i \ k).as[String]
           }
           source.addColumn(Symbol(k), values)
@@ -28,7 +24,7 @@ class DataTable[T](data:Seq[T])(implicit val codec:Codec[JsValue, T]) {
           c
 
         case JsNumber(n) =>
-          val values = array.value.map{ i =>
+          val values = array.value.map { i =>
             (i \ k).as[Double]
           }
           source.addColumn(Symbol(k), values)
@@ -36,7 +32,7 @@ class DataTable[T](data:Seq[T])(implicit val codec:Codec[JsValue, T]) {
           c
 
         case JsBoolean(b) =>
-          val values = array.value.map{ i =>
+          val values = array.value.map { i =>
             (i \ k).as[Boolean]
           }
           source.addColumn(Symbol(k), values)
@@ -44,7 +40,7 @@ class DataTable[T](data:Seq[T])(implicit val codec:Codec[JsValue, T]) {
           c
       }
     }
-    new HandsonTable().source(source).columns(columns)//.editable(true
+    new HandsonTable().source(source).columns(columns) //.editable(true
   }
 
 

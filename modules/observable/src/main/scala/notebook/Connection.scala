@@ -7,12 +7,15 @@ package notebook
 trait Connection[T] extends notebook.util.Logging {
 
   def observable: Observable[T]
+
   def observer: Observer[T]
 
-  def biMap[A](codec: Codec[T,A]): Connection[A] = new MappingConnection[T,A](Connection.this, codec)
+  def biMap[A](
+    codec: Codec[T, A]): Connection[A] = new MappingConnection[T, A](Connection.this, codec)
 
-  def biMap[A](aToB: A=>T, bToA: T=>A): Connection[A] = biMap[A](new Codec[T,A] {
+  def biMap[A](aToB: A => T, bToA: T => A): Connection[A] = biMap[A](new Codec[T, A] {
     def encode(x: T) = bToA(x)
+
     def decode(x: A) = aToB(x)
   })
 
@@ -30,21 +33,25 @@ trait Connection[T] extends notebook.util.Logging {
   }
 }
 
-class ConcreteConnection[T](val observable: Observable[T], val observer: Observer[T]) extends Connection[T]
+class ConcreteConnection[T](val observable: Observable[T],
+  val observer: Observer[T]) extends Connection[T]
 
 object Connection {
   def just[T](v: T) = new ConcreteConnection[T](Observable.just(v), new NoopObserver[T]())
-  def fromObserver[T](f:T => Unit) = new ConcreteConnection(Observable.noop, Observer(f))
+
+  def fromObserver[T](f: T => Unit) = new ConcreteConnection(Observable.noop, Observer(f))
 }
 
-class MappingConnection[A,B](innerConn:Connection[A], codec: Codec[A,B]) extends Connection[B] {
-  val observable =  new MappingObservable[A,B] {
+class MappingConnection[A, B](innerConn: Connection[A], codec: Codec[A, B]) extends Connection[B] {
+  val observable = new MappingObservable[A, B] {
     protected def innerObservable = innerConn.observable
+
     protected def observableMapper = codec.encode
   }
 
-  val observer = new MappingObserver[A,B] {
+  val observer = new MappingObserver[A, B] {
     protected def innerObserver = innerConn.observer
+
     protected def observerMapper = codec.decode
   }
 }

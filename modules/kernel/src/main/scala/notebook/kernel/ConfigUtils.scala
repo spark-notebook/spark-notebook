@@ -1,14 +1,13 @@
 package notebook.kernel
 
-import java.io.File
-import com.typesafe.config.Config
-import collection.JavaConversions._
-import com.typesafe.config.ConfigException
+import com.typesafe.config.{Config, ConfigException}
+
+import scala.collection.JavaConversions._
 
 
 object ConfigUtils {
 
-  implicit def configToRichConfig(config: Config) = new EasyConfig(config)
+  implicit def configToRichConfig(config: Config): EasyConfig = new EasyConfig(config)
 
   class EasyConfig(config: Config) {
     def get(key: String) = if (config.hasPath(key)) Some(config.getString(key)) else None
@@ -36,7 +35,7 @@ object ConfigUtils {
   private def parseMem(memString: String) = {
     val MemSpec(mem, unit) = memString
     mem.toLong << (unit match {
-      case ""  =>  0
+      case "" => 0
       case "k" => 10
       case "m" => 20
       case "g" => 30

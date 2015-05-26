@@ -1,8 +1,10 @@
 package notebook.front
 
-import notebook.util.ClassUtils
-import xml.{Node, NodeSeq}
 import java.util.UUID
+
+import notebook.util.ClassUtils
+
+import scala.xml.{Node, NodeSeq}
 import scalaz._
 
 trait Widget extends Iterable[Node] {
@@ -12,27 +14,32 @@ trait Widget extends Iterable[Node] {
 
   def ++(other: Widget): Widget = toHtml ++ other
 
-  override def toString = "<" + ClassUtils.getSimpleName(getClass) + " widget>"
+  override def toString() = "<" + ClassUtils.getSimpleName(getClass) + " widget>"
 }
 
 class SimpleWidget(html: NodeSeq) extends Widget {
   def toHtml = html
-  override def toString = "<widget>"
+
+  override def toString() = "<widget>"
 }
 
 object Widget {
   implicit def toHtml(widget: Widget): NodeSeq = widget.toHtml
+
   def fromHtml(html: NodeSeq): Widget = new SimpleWidget(html)
 
-  implicit def fromRenderer[A](value: A)(implicit renderer: Renderer[A]): Widget = fromHtml(renderer.render(value))
+  implicit def fromRenderer[A](value: A)
+      (implicit renderer: Renderer[A]): Widget = fromHtml(renderer.render(value))
 
   object Empty extends Widget {
     def toHtml = NodeSeq.Empty
-    override def toString = "<empty widget>"
+
+    override def toString() = "<empty widget>"
   }
 
   implicit val widgetInstances = new Monoid[Widget] {
     def zero = Empty
+
     def append(s1: Widget, s2: ⇒ Widget) = s1 ++ s2
   }
 

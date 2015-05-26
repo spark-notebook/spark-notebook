@@ -1,26 +1,20 @@
 package notebook.kernel.pfork
 
-import java.io.{EOFException, ObjectInputStream, ObjectOutputStream, File}
+import java.io.{EOFException, File, ObjectInputStream, ObjectOutputStream}
 import java.net._
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 
-import scala.collection.mutable
+import com.typesafe.config.Config
+import org.apache.commons.exec._
+import org.apache.log4j.PropertyConfigurator
+import org.slf4j.LoggerFactory
+import play.api.{Logger, Play}
+
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
 import scala.concurrent._
-import duration.Duration
-
-import com.sun.org.apache.xpath.internal.functions.FuncTrue
-
-import org.apache.commons.exec._
-import org.apache.log4j.PropertyConfigurator
-
-import org.slf4j.LoggerFactory
-
-import com.typesafe.config.{ConfigFactory, Config}
-
-import play.api.{Play, Logger}
+import scala.concurrent.duration.Duration
 
 
 trait ForkableProcess {
@@ -29,7 +23,8 @@ trait ForkableProcess {
    * @param args
    * @return
    */
-  def init(args: Seq[String]):String
+  def init(args: Seq[String]): String
+
   def waitForExit()
 }
 
@@ -37,7 +32,8 @@ trait ForkableProcess {
 /**
  * I am so sick of this being a thing that gets implemented everywhere. Let's abstract.
  */
-class BetterFork[A <: ForkableProcess : reflect.ClassTag](config:Config, executionContext: ExecutionContext) {
+class BetterFork[A <: ForkableProcess : reflect.ClassTag](config: Config,
+  executionContext: ExecutionContext) {
   private implicit val ec = executionContext
 
   import BetterFork._
@@ -46,15 +42,25 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config:Config, executi
 
 
   def workingDirectory = new File(if (config.hasPath("wd")) config.getString("wd") else ".")
+
   def heap: Long = if (config.hasPath("heap")) config.getBytes("heap") else defaultHeap
+
   def stack: Long = if (config.hasPath("stack")) config.getBytes("stack") else -1
+
   def permGen: Long = if (config.hasPath("permGen")) config.getBytes("permGen") else -1
+
   def reservedCodeCache: Long = if (config.hasPath("reservedCodeCache")) config.getBytes("reservedCodeCache") else -1
+
   def server: Boolean = true
+
   def debugPort: Option[Int] = if (config.hasPath("debug.port")) Some(config.getInt("debug.port")) else None
+
   def logLevel: String = if (config.hasPath("log.level")) config.getString("log.level") else "info"
-  def vmArgs:List[String] = if (config.hasPath("vmArgs")) config.getStringList("vmArgs").toList else Nil
+
+  def vmArgs: List[String] = if (config.hasPath("vmArgs")) config.getStringList("vmArgs").toList else Nil
+
   def classPath: IndexedSeq[String] = defaultClassPath
+
   def classPathString = classPath.mkString(File.pathSeparator)
 
   def jvmArgs = {
@@ -73,7 +79,7 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config:Config, executi
 
     if (server) builder += "-server"
     debugPort.foreach { p =>
-      builder ++= IndexedSeq("-Xdebug", "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address="+p)
+      builder ++= IndexedSeq("-Xdebug", "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=" + p)
     }
 
     builder ++= vmArgs
@@ -85,7 +91,9 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config:Config, executi
 
   protected final class SuffixOps(i: Int) {
     def k: Long = i.toLong << 10
+
     def m: Long = i.toLong << 20
+
     def g: Long = i.toLong << 30
   }
 
@@ -104,10 +112,10 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config:Config, executi
       log.info("Spawning %s".format(cmd.toString))
 
       // use environment because classpaths can be longer here than as a command line arg
-      val environment = System.getenv + ("CLASSPATH" -> (sys.env.get("HADOOP_CONF_DIR").map(_ + ":").getOrElse("")+classPathString))
+      val environment = System.getenv + ("CLASSPATH" -> (sys.env.get("HADOOP_CONF_DIR").map(_ + ":").getOrElse("") + classPathString))
       val exec = new KillableExecutor
 
-      val completion = Promise[Int]
+      val completion = Promise[Int]()
       exec.setWorkingDirectory(workingDirectory)
       exec.execute(cmd, environment, new ExecuteResultHandler {
         Logger.info(s"Spawning $cmd")
@@ -115,8 +123,9 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config:Config, executi
         Logger.info(s"In working directory $workingDirectory")
 
         def onProcessFailed(e: ExecuteException) {
-          e.printStackTrace
+          e.printStackTrace()
         }
+
         def onProcessComplete(exitValue: Int) {
           completion.success(exitValue)
         }
@@ -128,15 +137,17 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config:Config, executi
         val resp = ois.readObject().asInstanceOf[String]
         new ProcessInfo(() => exec.kill(), resp, completion.future)
       } catch {
-        case ex:SocketException => throw new ExecuteException("Failed to start process %s".format(cmd), 1, ex)
-        case ex:EOFException =>    throw new ExecuteException("Failed to start process %s".format(cmd), 1, ex)
+        case ex: SocketException => throw new ExecuteException("Failed to start process %s".format(cmd), 1, ex)
+        case ex: EOFException => throw new ExecuteException("Failed to start process %s".format(cmd), 1, ex)
       }
     }
   }
 }
 
 class ProcessInfo(killer: () => Unit, val initReturn: String, val completion: Future[Int]) {
-  def kill() { killer() }
+  def kill() {
+    killer()
+  }
 }
 
 object BetterFork {
@@ -145,9 +156,9 @@ object BetterFork {
   private val serverSockets = new ListBuffer[Socket]()
 
 
-//  →→→→→→→→→→→→→    NEEDED WHEN running in SBT/Play ...
+  //  →→→→→→→→→→→→→    NEEDED WHEN running in SBT/Play ...
   def defaultClassPath: IndexedSeq[String] = {
-    def urls(cl:ClassLoader, acc:IndexedSeq[String]=IndexedSeq.empty):IndexedSeq[String] = {
+    def urls(cl: ClassLoader, acc: IndexedSeq[String] = IndexedSeq.empty): IndexedSeq[String] = {
       if (cl != null) {
         val us = if (!cl.isInstanceOf[URLClassLoader]) {
           //println(" ----- ")
@@ -165,7 +176,7 @@ object BetterFork {
       }
     }
     val loader = Play.current.classloader
-    val gurls = urls(loader).distinct.filter(!_.contains("logback-classic"))//.filter(!_.contains("sbt/"))
+    val gurls = urls(loader).distinct.filter(!_.contains("logback-classic")) //.filter(!_.contains("sbt/"))
     gurls
   }
 
@@ -175,17 +186,20 @@ object BetterFork {
   private class KillableExecutor extends DefaultExecutor {
     val killed = new AtomicBoolean(false)
     setWatchdog(new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT) {
-      override def start(p: Process) { if (killed.get()) p.destroy() }
+      override def start(p: Process) {
+        if (killed.get()) p.destroy()
+      }
     })
+
     def kill() {
       if (killed.compareAndSet(false, true))
-        Option(getExecutorThread()) foreach(_.interrupt())
+        Option(getExecutorThread) foreach (_.interrupt())
     }
   }
 
   private lazy val javaHome = System.getProperty("java.home")
 
-  private lazy val log = LoggerFactory.getLogger(getClass())
+  private lazy val log = LoggerFactory.getLogger(getClass)
 
   private[pfork] def main(args: Array[String]) {
     val className = args(0)
@@ -219,8 +233,12 @@ object BetterFork {
     val executorService = Executors.newFixedThreadPool(10)
     implicit val ec = ExecutionContext.fromExecutorService(executorService)
 
-    val parentDone = Future { socket.getInputStream.read() }
-    val localDone = Future{ hostedClass.waitForExit() }
+    val parentDone = Future {
+      socket.getInputStream.read()
+    }
+    val localDone = Future {
+      hostedClass.waitForExit()
+    }
 
     val done = Future.firstCompletedOf(Seq(parentDone, localDone))
 

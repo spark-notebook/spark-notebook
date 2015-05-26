@@ -1,10 +1,7 @@
 package notebook.front
 
-import xml.{NodeBuffer, Text, NodeSeq}
-import runtime.BoxedUnit
-import notebook.util._
-import play.api.libs.json.JsObject
-import play.api.libs.json.Json.JsValueWrapper
+import scala.runtime.BoxedUnit
+import scala.xml.{NodeBuffer, NodeSeq, Text}
 
 /**
  * Typeclass for rendering objects of a specific type. Implement one of these and import it
@@ -19,18 +16,23 @@ class WidgetRenderer[-A](toWidget: A => Widget) extends Renderer[A] {
 }
 
 object Renderer extends LowPriorityRenderers {
+
   implicit object htmlAsItself extends Renderer[NodeSeq] {
     def render(value: NodeSeq) = value
   }
+
   implicit object nodeBufferAsItself extends Renderer[NodeBuffer] {
     def render(value: NodeBuffer) = value
   }
+
   implicit object widgetAsItself extends Renderer[Widget] {
     def render(value: Widget) = value.toHtml
   }
+
   implicit object stringAsItself extends Renderer[String] {
     def render(value: String) = Text(value)
   }
+
   implicit object anyValAsItself extends Renderer[AnyVal] {
     def render(value: AnyVal) = {
       if (value == BoxedUnit.UNIT) {
@@ -40,13 +42,15 @@ object Renderer extends LowPriorityRenderers {
       }
     }
   }
+
 }
 
 trait LowPriorityRenderers {
+
   import widgets._
 
-  implicit object mapAsTable extends Renderer[Map[_ , _]] {
-    def render(x: Map[_ , _]) = if (x.isEmpty) {
+  implicit object mapAsTable extends Renderer[Map[_, _]] {
+    def render(x: Map[_, _]) = if (x.isEmpty) {
       widgets.text("")
     } else {
       display(x)
@@ -55,8 +59,9 @@ trait LowPriorityRenderers {
 
   implicit object seqAsTable extends Renderer[Seq[_]] {
     def render(x: Seq[_]) = x match {
-                              case Nil => widgets.layout(0, Seq(widgets.text("")))
-                              case _   => display(x)
-                            }
+      case Nil => widgets.layout(0, Seq(widgets.text("")))
+      case _ => display(x)
+    }
   }
+
 }

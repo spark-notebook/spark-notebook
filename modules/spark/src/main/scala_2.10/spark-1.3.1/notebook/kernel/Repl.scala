@@ -1,29 +1,23 @@
 package notebook.kernel
 
-import java.io.{StringWriter, PrintWriter, ByteArrayOutputStream}
-import java.net.{URLDecoder, JarURLConnection}
-import java.util.ArrayList
-
-import scala.collection.JavaConversions
-import scala.collection.JavaConversions._
-import scala.xml.{NodeSeq, Text}
-import scala.util.control.NonFatal
-import scala.util.Try
-
-import tools.nsc.Settings
-import tools.nsc.interpreter._
-import tools.nsc.interpreter.Completion.{Candidates, ScalaCompleter}
-import tools.nsc.interpreter.Results.{Incomplete => ReplIncomplete, Success => ReplSuccess, Error}
-
-import tools.jline.console.completer.{ArgumentCompleter, Completer}
-
-import org.apache.spark.repl._
+import java.io.{ByteArrayOutputStream, PrintWriter, StringWriter}
+import java.net.URLDecoder
+import java.util
 
 import notebook.front.Widget
 import notebook.util.Match
-import notebook.kernel._
+import org.apache.spark.repl._
 
-class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
+import scala.collection.JavaConversions._
+import scala.tools.jline.console.completer.{ArgumentCompleter, Completer}
+import scala.tools.nsc.Settings
+import scala.tools.nsc.interpreter.Completion.{Candidates, ScalaCompleter}
+import scala.tools.nsc.interpreter.Results.{Error, Incomplete => ReplIncomplete, Success => ReplSuccess}
+import scala.tools.nsc.interpreter._
+import scala.util.control.NonFatal
+import scala.xml.{NodeSeq, Text}
+
+class Repl(val compilerOpts: List[String], val jars: List[String] = Nil) {
 
   def this() = this(Nil)
 
@@ -54,16 +48,16 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
   private lazy val stdoutBytes = new MyOutputStream
   private lazy val stdout = new PrintWriter(stdoutBytes)
 
-  private var loop:HackSparkILoop = _
+  private var loop: HackSparkILoop = _
 
-  var classServerUri:Option[String] = None
+  var classServerUri: Option[String] = None
 
-  val interp:org.apache.spark.repl.SparkIMain = {
+  val interp: org.apache.spark.repl.SparkIMain = {
     val settings = new Settings
 
     settings.embeddedDefaults[Repl]
 
-    if (!compilerOpts.isEmpty) settings.processArguments(compilerOpts, false)
+    if (compilerOpts.nonEmpty) settings.processArguments(compilerOpts, processAll = false)
 
     // fix for #52
     settings.usejavacp.value = false
@@ -71,9 +65,9 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
 
     // fix for #52
     val urls: IndexedSeq[String] = {
-      import java.net.URLClassLoader
       import java.io.File
-      def urls(cl:ClassLoader, acc:IndexedSeq[String]=IndexedSeq.empty):IndexedSeq[String] = {
+      import java.net.URLClassLoader
+      def urls(cl: ClassLoader, acc: IndexedSeq[String] = IndexedSeq.empty): IndexedSeq[String] = {
         if (cl != null) {
           val us = if (!cl.isInstanceOf[URLClassLoader]) {
             acc
@@ -89,11 +83,11 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
         }
       }
       val loader = getClass.getClassLoader
-      val gurls = urls(loader).distinct//.filter(!_.contains("logback-classic"))//.filter(!_.contains("sbt/"))
+      val gurls = urls(loader).distinct //.filter(!_.contains("logback-classic"))//.filter(!_.contains("sbt/"))
       gurls
     }
 
-    val classpath = urls// map {_.toString}
+    val classpath = urls // map {_.toString}
     settings.classpath.value = classpath.distinct.mkString(java.io.File.pathSeparator)
 
     //bootclasspath → settings.classpath.isDefault = false → settings.classpath is used
@@ -110,7 +104,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
 
     loop.process(settings)
     val i = {
-      val l:HackSparkILoop = loop.asInstanceOf[HackSparkILoop]
+      val l: HackSparkILoop = loop
       l.interpreter
     }
     //i.initializeSynchronous()
@@ -125,7 +119,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
 
   private def scalaToJline(tc: ScalaCompleter): Completer = new Completer {
     def complete(_buf: String, cursor: Int, candidates: JList[CharSequence]): Int = {
-      val buf   = if (_buf == null) "" else _buf
+      val buf = if (_buf == null) "" else _buf
       val Candidates(newCursor, newCandidates) = tc.complete(buf, cursor)
       newCandidates foreach (candidates add _)
       newCursor
@@ -142,9 +136,11 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
   private lazy val stringCompletor = StringCompletorResolver.completor
 
   private def getCompletions(line: String, cursorPosition: Int) = {
-    val candidates = new ArrayList[CharSequence]()
+    val candidates = new util.ArrayList[CharSequence]()
     argCompletor.complete(line, cursorPosition, candidates)
-    candidates map { _.toString } toList
+    candidates map {
+      _.toString
+    } toList
   }
 
   /**
@@ -176,13 +172,14 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
 
     val result = res match {
       case ReplSuccess =>
-        val request:interp.Request = interp.getClass.getMethods.find(_.getName == "prevRequestList").map(_.invoke(interp)).get.asInstanceOf[List[interp.Request]].last
+        val request: interp.Request = interp.getClass.getMethods.find(_.getName == "prevRequestList").map(_.invoke(interp)).get.asInstanceOf[List[interp.Request]].last
         //val request:Request = interp.prevRequestList.last
 
-        val lastHandler/*: interp.memberHandlers.MemberHandler*/ = request.handlers.last
+        val lastHandler /*: interp.memberHandlers.MemberHandler*/ = request.handlers.last
 
         try {
-          val evalValue = if (lastHandler.definesValue) { // This is true for def's with no parameters, not sure that executing/outputting this is desirable
+          val evalValue = if (lastHandler.definesValue) {
+            // This is true for def's with no parameters, not sure that executing/outputting this is desirable
             // CY: So for whatever reason, line.evalValue attemps to call the $eval method
             // on the class...a method that does not exist. Not sure if this is a bug in the
             // REPL or some artifact of how we are calling it.
@@ -203,12 +200,12 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
                 val classLoader = interp.getClass.getMethods.find(_.getName == "classLoader").map(_.invoke(interp)).get.asInstanceOf[java.lang.ClassLoader]
 
                 val renderedClass2 = Class.forName(
-                  line.pathTo("$rendered")+"$", true, classLoader
+                  line.pathTo("$rendered") + "$", true, classLoader
                 )
 
                 val o = renderedClass2.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get()
 
-                def iws(o:Any):NodeSeq = {
+                def iws(o: Any): NodeSeq = {
                   val iw = o.getClass.getMethods.find(_.getName == "$iw")
                   val o2 = iw map { m =>
                     m.invoke(o)
@@ -224,12 +221,17 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
                 }
                 iws(o)
               } catch {
-                case e => <span style="color:red;">Ooops, exception in the cell: {e.getMessage}</span>
+                case e: Throwable => <span style="color:red;">Ooops, exception in the cell: {e.getMessage} </span>
               }
             } else {
               // a line like println(...) is technically a val, but returns null for some reason
               // so wrap it in an option in case that happens...
-              Option(line.call("$result")) map { result => Text(try { result.toString } catch { case e => "Fail to `toString` the result: " + e.getMessage }) } getOrElse NodeSeq.Empty
+              Option(line.call("$result")) map { result => Text(try {
+                result.toString
+              } catch {
+                case e: Throwable => "Fail to `toString` the result: " + e.getMessage
+              })
+              } getOrElse NodeSeq.Empty
             }
           } else {
             NodeSeq.Empty
@@ -245,17 +247,17 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
         }
 
       case ReplIncomplete => Incomplete
-      case Error          => Failure(stdoutBytes.toString)
+      case Error => Failure(stdoutBytes.toString)
     }
 
     (result, stdoutBytes.toString)
   }
 
-  def addCp(newJars:List[String]) = {
+  def addCp(newJars: List[String]) = {
     val requests = interp.getClass.getMethods.find(_.getName == "prevRequestList").map(_.invoke(interp)).get.asInstanceOf[List[interp.Request]]
 
     val prevCode = requests.map(_.originalLine)
-    val jarList = newJars:::jars
+    val jarList = newJars ::: jars
     val r = new Repl(compilerOpts, jarList)
     (r, () => prevCode.dropWhile(_.trim != "\"END INIT\"") foreach (c => r.evaluate(c, _ => ())))
   }
@@ -295,7 +297,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     }
   }
 
-  def objectInfo(line: String, position:Int): Seq[String] = {
+  def objectInfo(line: String, position: Int): Seq[String] = {
     // CY: The REPL is stateful -- it isn't until you ask to complete
     // the thing twice does it give you the method signature (i.e. you
     // hit tab twice).  So we simulate that here... (nutty, I know)

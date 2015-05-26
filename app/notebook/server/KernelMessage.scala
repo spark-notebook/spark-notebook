@@ -1,5 +1,4 @@
-package notebook
-package server
+package notebook.server
 
 import notebook.client.CalcRequest
 import play.api.libs.json._
