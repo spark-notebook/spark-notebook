@@ -135,7 +135,8 @@ class NotebookManager(val name: String, val notebookDir: File) {
     val file = notebookFile(path)
     if (file.exists())
       Some(NBSerializer.read(FileUtils.readFileToString(file)))
-    else None
+    else
+      None
   }
 
 

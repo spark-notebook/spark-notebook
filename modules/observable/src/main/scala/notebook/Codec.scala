@@ -1,5 +1,6 @@
 package notebook
 
+import java.text.DateFormat
 import java.util.Date
 
 import org.slf4j.LoggerFactory
@@ -30,19 +31,22 @@ object JsonCodec {
   implicit val doubles: Codec[JsValue, Double] = formatToCodec(Format.of[Double])
   implicit val floats: Codec[JsValue, Float] = formatToCodec(Format.of[Float])
   implicit val strings: Codec[JsValue, String] = formatToCodec(Format.of[String])
-  implicit val chars: Codec[JsValue, Char] = formatToCodec(Format(Reads.of[String].map(_.head), Writes((
-  c: Char) => JsString(c.toString))))
+  implicit val chars: Codec[JsValue, Char] = formatToCodec(Format(
+    Reads.of[String].map(_.head),
+    Writes((c: Char) => JsString(c.toString))
+  ))
   implicit val bools: Codec[JsValue, Boolean] = formatToCodec(Format.of[Boolean])
 
-  implicit def defaultDates(implicit d: java.text.DateFormat): Codec[JsValue, Date] with Object {def decode(
-    t: Date): JsValue; def encode(v: JsValue): Date} = new Codec[JsValue, java.util.Date] {
-    def decode(t: java.util.Date): JsValue = JsNumber(t.getTime)
+  implicit def defaultDates(implicit d: DateFormat): Codec[JsValue, Date] = {
+    new Codec[JsValue, Date] {
 
-    def encode(v: JsValue): java.util.Date = v match {
-      case JsString(s) => Try(s.toLong).toOption.map(
-        x => new java.util.Date(x)).getOrElse(d.parse(s))
-      case JsNumber(i) => new java.util.Date(i.toLong)
-      case x => new java.util.Date(v.as[Long])
+      def decode(t: Date): JsValue = JsNumber(t.getTime)
+
+      def encode(v: JsValue): Date = v match {
+        case JsString(s) => Try(s.toLong).toOption.map(new Date(_)).getOrElse(d.parse(s))
+        case JsNumber(i) => new Date(i.toLong)
+        case x => new Date(v.as[Long])
+      }
     }
   }
 

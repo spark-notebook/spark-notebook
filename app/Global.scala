@@ -3,8 +3,6 @@ import play.api._
 
 object Global extends GlobalSettings {
 
-  val encoding = "UTF-8"
-
   override def onStart(app: Application) {
     app.configuration.getString("manager.tachyon.url") match {
       case None =>

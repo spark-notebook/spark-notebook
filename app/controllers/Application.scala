@@ -16,11 +16,12 @@ import play.api.libs.iteratee.Concurrent.Channel
 import play.api.libs.iteratee._
 import play.api.libs.json._
 import play.api.mvc._
+import utils.AppUtils
 import utils.Const.UTF_8
-import utils.{Const, AppUtils}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Future, Promise}
+import scala.language.postfixOps
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
 
@@ -42,14 +43,12 @@ object Application extends Controller {
   val clustersActor = kernelSystem.actorOf(Props(NotebookClusters(AppUtils.clustersConf)))
   implicit val GetClustersTimeout = Timeout(60 seconds)
 
-  val project = "Spark Notebook"
-  //TODO from application.conf
+  val project = "Spark Notebook"  //  TODO from application.conf
   val base_project_url = current.configuration.getString("application.context").getOrElse("/")
   val base_kernel_url = "/"
   val base_observable_url = "observable"
-  // TODO: Ugh...
-  val read_only = false.toString
-  val terminals_available = false.toString //TODO
+  val read_only = false.toString  //  TODO: Ugh...
+  val terminals_available = false.toString // TODO
 
   def configTree() = Action {
     Ok(Json.obj())
@@ -201,42 +200,7 @@ object Application extends Controller {
   }
 
   /**
-   * {
-   * "name": "Med At Scale",
-   * "profile": "Local",
-   * "template": {
-   * "customLocalRepo": "/tmp/spark-notebook/repo",
-   * "customRepos": [],
-   * "customDeps": [
-   * "org.bdgenomics.adam % adam-apis % 0.15.0",
-   * "- org.apache.hadoop % hadoop-client %   _",
-   * "- org.apache.spark  % spark-core    %   _",
-   * "- org.scala-lang    %     _         %   _",
-   * "- org.scoverage     %     _         %   _",
-   * "+ org.apache.spark  %  spark-mllib_2.10  % 1.2.0"
-   * ],
-   * "customImports": [
-   * "import org.apache.hadoop.fs.{FileSystem, Path}",
-   * "import org.bdgenomics.adam.converters.{ VCFLine, VCFLineConverter, VCFLineParser }",
-   * "import org.bdgenomics.formats.avro.{Genotype, FlatGenotype}",
-   * "import org.bdgenomics.adam.models.VariantContext",
-   * "import org.bdgenomics.adam.rdd.ADAMContext._",
-   * "import org.bdgenomics.adam.rdd.variation.VariationContext._",
-   * "import org.bdgenomics.adam.rdd.ADAMContext",
-   * "import org.apache.spark.rdd.RDD"
-   * ],
-   * "customSparkConf": {
-   * "spark.app.name": "Local Adam Analysis",
-   * "spark.master": "local[8]",
-   * "spark.executor.memory": "1G",
-   * "spark.serializer": "org.apache.spark.serializer.KryoSerializer",
-   * "spark.kryo.registrator": "org.bdgenomics.adam.serialization.ADAMKryoRegistrator",
-   * "spark.kryoserializer.buffer.mb": "4",
-   * "spark.kryo.referenceTracking": "true",
-   * "spark.executor.memory": "2g"
-   * }
-   * }
-   * }
+   * add a spark cluster by json meta
    */
   def addCluster() = Action.async(parse.tolerantJson) { request =>
     val json = request.body
@@ -252,41 +216,41 @@ object Application extends Controller {
     }
   }
 
-  def contents(`type`: String, p: String = "/") = Action {
-    val path = URLDecoder.decode(p, UTF_8)
+  def contents(tpe: String, uri: String = "/") = Action { request =>
+    val path = URLDecoder.decode(uri, UTF_8)
     val lengthToRoot = config.notebooksDir.getAbsolutePath.length
     def dropRoot(f: java.io.File) = f.getAbsolutePath.drop(lengthToRoot).dropWhile(_ == '/')
     val baseDir = new java.io.File(config.notebooksDir, path)
 
-    if (`type` == "directory") {
+    if (tpe == "directory") {
       val content = Option(baseDir.listFiles.toList)
         .getOrElse(Nil)
         .map { f =>
         val n = f.getName
         if (f.isFile && n.endsWith(".snb")) {
           Json.obj(
-            "type" → "notebook",
-            "name" → n.dropRight(".snb".length),
-            "path" → dropRoot(f) //todo → build relative path
+            "type" -> "notebook",
+            "name" -> n.dropRight(".snb".length),
+            "path" -> dropRoot(f) //todo → build relative path
           )
         } else if (f.isFile) {
           Json.obj(
-            "type" → "file",
-            "name" → n,
-            "path" → dropRoot(f) //todo → build relative path
+            "type" -> "file",
+            "name" -> n,
+            "path" -> dropRoot(f) //todo → build relative path
           )
         } else {
           Json.obj(
-            "type" → "directory",
-            "name" → n,
-            "path" → dropRoot(f) //todo → build relative path
+            "type" -> "directory",
+            "name" -> n,
+            "path" -> dropRoot(f) //todo → build relative path
           )
         }
       }
       Ok(Json.obj(
         "content" → content
       ))
-    } else if (`type` == "notebook") {
+    } else if (tpe == "notebook") {
       Logger.debug("content: " + path)
       val name = if (path.endsWith(".snb")) {
         path.dropRight(".snb".length)
@@ -295,7 +259,7 @@ object Application extends Controller {
       }
       getNotebook(name, path, "json")
     } else {
-      BadRequest("Dunno what to do with contents for " + `type` + "at " + path)
+      BadRequest("Dunno what to do with contents for " + tpe + "at " + path)
     }
   }
 
@@ -330,13 +294,12 @@ object Application extends Controller {
 
   def newNotebook(path: String, tryJson: Try[JsValue]) = {
     def findkey[T](x: JsValue, k: String)(init: T)(implicit m: ClassTag[T]): Try[T] =
-      x \ k match {
+      (x \ k) match {
         case j: JsUndefined => Failure(new IllegalArgumentException("No " + k))
         case JsNull => Success(init)
         case o if m.runtimeClass == o.getClass => Success(o.asInstanceOf[T])
-        case `x` => Failure(new IllegalArgumentException("Bad type: " + x))
+        case x => Failure(new IllegalArgumentException("Bad type: " + x))
       }
-
 
     lazy val custom = for {
       x <- tryJson
@@ -394,20 +357,19 @@ object Application extends Controller {
       case x => x + "/ws"
     }
     val prefix = if (request.secure) "wss" else "ws"
-    def ws_url(path: Option[String] = None) = s"""
-                                                 |window.notebookWsUrl = function() {
-                                                 | return '$prefix:/'+window.location.host+'$wsPath${
-      path.map(x => "/" + x).getOrElse("")
-    }';
-       |};
-    """.stripMargin.replaceAll("\n", " ")
+    def ws_url(path: Option[String] = None) = {
+      s"""
+         |window.notebookWsUrl = function() {
+         |  return '$prefix:/'+window.location.host+'$wsPath${path.map(x => "/" + x).getOrElse("")}'
+         |};
+      """.stripMargin.replaceAll("\n", " ")
+    }
 
     Ok(views.html.notebook(
       nbm.name,
       Map(
         "base-url" -> base_project_url,
         "ws-url" -> ws_url(),
-
         "base-project-url" -> base_project_url,
         "base-kernel-url" -> base_kernel_url,
         "base-observable-url" -> ws_url(Some(base_observable_url)),
@@ -565,15 +527,15 @@ object Application extends Controller {
   def getNotebook(name: String, path: String, format: String, dl: Boolean = false) = {
     try {
       Logger.debug(s"getNotebook: name is '$name', path is '$path' and format is '$format'")
-      val response = nbm.getNotebook(path).map { case (lastMod, `name`, data, `path`) =>
+      val response = nbm.getNotebook(path).map { case (lastMod, nbname, data, fpath) =>
         format match {
           case "json" =>
             val j = Json.parse(data)
             val json = if (!dl) {
               Json.obj(
                 "content" → j,
-                "name" → name,
-                "path" → path, //FIXME
+                "name" → nbname,
+                "path" → fpath, //FIXME
                 "writable" -> true //TODO
               )
             } else {
@@ -610,7 +572,7 @@ object Application extends Controller {
       response getOrElse NotFound(s"Notebook '$name' not found at $path.")
     } catch {
       case e: Exception =>
-        Logger.error("Error accessing notebook %s".format(name), e)
+        Logger.error("Error accessing notebook [%s]".format(name), e)
         InternalServerError
     }
   }
