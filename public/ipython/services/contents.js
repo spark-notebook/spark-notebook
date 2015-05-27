@@ -1,13 +1,13 @@
 // Copyright (c) IPython Development Team.
 // Distributed under the terms of the Modified BSD License.
 
-define(function(require) {
+define(function (require) {
   "use strict";
 
   var $ = require('jquery');
   var utils = require('base/js/utils');
 
-  var Contents = function(options) {
+  var Contents = function (options) {
     /**
      * Constructor
      *
@@ -26,7 +26,7 @@ define(function(require) {
   /** Error type */
   Contents.DIRECTORY_NOT_EMPTY_ERROR = 'DirectoryNotEmptyError';
 
-  Contents.DirectoryNotEmptyError = function() {
+  Contents.DirectoryNotEmptyError = function () {
     // Constructor
     //
     // An error representing the result of attempting to delete a non-empty
@@ -39,9 +39,9 @@ define(function(require) {
     Contents.DIRECTORY_NOT_EMPTY_ERROR;
 
 
-  Contents.prototype.api_url = function() {
+  Contents.prototype.api_url = function () {
     var url_parts = [this.base_url, 'api/contents'].concat(
-                Array.prototype.slice.apply(arguments));
+      Array.prototype.slice.apply(arguments));
     return utils.url_join_encode.apply(null, url_parts);
   };
 
@@ -56,11 +56,11 @@ define(function(require) {
    * @param{Function} callback
    * @return{Function}
    */
-  Contents.prototype.create_basic_error_handler = function(callback) {
+  Contents.prototype.create_basic_error_handler = function (callback) {
     if (!callback) {
       return utils.log_ajax_error;
     }
-    return function(xhr, status, error) {
+    return function (xhr, status, error) {
       callback(utils.wrap_ajax_error(xhr, status, error));
     };
   };
@@ -84,16 +84,22 @@ define(function(require) {
      * We do the call with settings so we can set cache to false.
      */
     var settings = {
-      processData : false,
-      cache : false,
-      type : "GET",
-      dataType : "json",
+      processData: false,
+      cache: false,
+      type: "GET",
+      dataType: "json",
     };
     var url = this.api_url(path);
     var params = {};
-    if (options.type) { params.type = options.type; }
-    if (options.format) { params.format = options.format; }
-    if (options.content === false) { params.content = '0'; }
+    if (options.type) {
+      params.type = options.type;
+    }
+    if (options.format) {
+      params.format = options.format;
+    }
+    if (options.content === false) {
+      params.content = '0';
+    }
     return utils.promising_ajax(url + '?' + $.param(params), settings);
   };
 
@@ -107,11 +113,11 @@ define(function(require) {
    *    ext: file extension to use
    *    type: model type to create ('notebook', 'file', or 'directory')
    */
-  Contents.prototype.new_untitled = function(path, options) {
+  Contents.prototype.new_untitled = function (path, options) {
     if (options.type !== "notebook") {
       //options.custom = null
     } else if (options.type === "notebook") {
-      options.custom = options.custom.originalEvent?null:options.custom
+      options.custom = options.custom.originalEvent ? null : options.custom
     }
     var data = JSON.stringify({
       ext: options.ext,
@@ -120,25 +126,25 @@ define(function(require) {
     });
 
     var settings = {
-      processData : false,
-      type : "POST",
-      data : data,
+      processData: false,
+      type: "POST",
+      data: data,
       contentType: "application/json; charset=utf-8",
-      dataType : "json",
+      dataType: "json",
     };
     return utils.promising_ajax(this.api_url(path), settings);
   };
 
-  Contents.prototype.delete = function(path) {
+  Contents.prototype.delete = function (path) {
     var settings = {
-      processData : false,
-      type : "DELETE",
-      dataType : "json",
+      processData: false,
+      type: "DELETE",
+      dataType: "json",
     };
     var url = this.api_url(path);
     return utils.promising_ajax(url, settings).catch(
       // Translate certain errors to more specific ones.
-      function(error) {
+      function (error) {
         // TODO: update IPEP27 to specify errors more precisely, so
         // that error types can be detected here with certainty.
         if (error.xhr.status === 400) {
@@ -149,12 +155,12 @@ define(function(require) {
     );
   };
 
-  Contents.prototype.rename = function(path, new_path) {
+  Contents.prototype.rename = function (path, new_path) {
     var data = {path: new_path};
     var settings = {
-      processData : false,
-      type : "PATCH",
-      data : JSON.stringify(data),
+      processData: false,
+      type: "PATCH",
+      data: JSON.stringify(data),
       dataType: "json",
       contentType: 'application/json',
     };
@@ -162,22 +168,22 @@ define(function(require) {
     return utils.promising_ajax(url, settings);
   };
 
-  Contents.prototype.save = function(path, model) {
+  Contents.prototype.save = function (path, model) {
     /**
      * We do the call with settings so we can set cache to false.
      */
     var settings = {
-      processData : false,
-      type : "PUT",
+      processData: false,
+      type: "PUT",
       dataType: "json",
-      data : JSON.stringify(model),
+      data: JSON.stringify(model),
       contentType: 'application/json',
     };
     var url = this.api_url(path);
     return utils.promising_ajax(url, settings);
   };
 
-  Contents.prototype.copy = function(from_file, to_dir) {
+  Contents.prototype.copy = function (from_file, to_dir) {
     /**
      * Copy a file into a given directory via POST
      * The server will select the name of the copied file
@@ -187,10 +193,10 @@ define(function(require) {
     console.warn("Temporary for notebook only!");
 
     var settings = {
-      processData : false,
+      processData: false,
       type: "POST",
       data: JSON.stringify({type: "notebook", copy_from: from_file}),
-      dataType : "json",
+      dataType: "json",
     };
     return utils.promising_ajax(url, settings);
   };
@@ -199,37 +205,37 @@ define(function(require) {
    * Checkpointing Functions
    */
 
-  Contents.prototype.create_checkpoint = function(path) {
+  Contents.prototype.create_checkpoint = function (path) {
     var url = this.api_url(path, 'checkpoints');
     var settings = {
-      type : "POST",
-      dataType : "json",
+      type: "POST",
+      dataType: "json",
     };
     return utils.promising_ajax(url, settings);
   };
 
-  Contents.prototype.list_checkpoints = function(path) {
+  Contents.prototype.list_checkpoints = function (path) {
     var url = this.api_url(path, 'checkpoints');
     var settings = {
-      type : "GET",
+      type: "GET",
       cache: false,
       dataType: "json",
     };
     return utils.promising_ajax(url, settings);
   };
 
-  Contents.prototype.restore_checkpoint = function(path, checkpoint_id) {
+  Contents.prototype.restore_checkpoint = function (path, checkpoint_id) {
     var url = this.api_url(path, 'checkpoints', checkpoint_id);
     var settings = {
-      type : "POST",
+      type: "POST",
     };
     return utils.promising_ajax(url, settings);
   };
 
-  Contents.prototype.delete_checkpoint = function(path, checkpoint_id) {
+  Contents.prototype.delete_checkpoint = function (path, checkpoint_id) {
     var url = this.api_url(path, 'checkpoints', checkpoint_id);
     var settings = {
-      type : "DELETE",
+      type: "DELETE",
     };
     return utils.promising_ajax(url, settings);
   };
@@ -250,7 +256,7 @@ define(function(require) {
    * @method list_notebooks
    * @param {String} path The path to list notebooks in
    */
-  Contents.prototype.list_contents = function(path) {
+  Contents.prototype.list_contents = function (path) {
     return this.get(path, {type: 'directory'});
   };
 

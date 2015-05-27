@@ -12,6 +12,7 @@ import notebook._
 import notebook.server._
 import play.api.Play.current
 import play.api._
+import play.api.http.HeaderNames
 import play.api.libs.iteratee.Concurrent.Channel
 import play.api.libs.iteratee._
 import play.api.libs.json._
@@ -32,16 +33,13 @@ case class Breadcrumbs(home: String = "/", crumbs: List[Crumb] = Nil)
 
 object Application extends Controller {
 
-  lazy val config = AppUtils.config
-  lazy val nbm = AppUtils.nbm
-  lazy val notebookServerConfig = AppUtils.notebookServerConfig
+  private lazy val config = AppUtils.config
+  private lazy val nbm = AppUtils.nbm
+  private val kernelIdToCalcService = collection.mutable.Map[String, CalcWebSocketService]()
+  private val clustersActor = kernelSystem.actorOf(Props(NotebookClusters(AppUtils.clustersConf)))
 
-  implicit def kernelSystem: ActorSystem = AppUtils.kernelSystem
-
-  val kernelIdToCalcService = collection.mutable.Map[String, CalcWebSocketService]()
-
-  val clustersActor = kernelSystem.actorOf(Props(NotebookClusters(AppUtils.clustersConf)))
-  implicit val GetClustersTimeout = Timeout(60 seconds)
+  private implicit def kernelSystem: ActorSystem = AppUtils.kernelSystem
+  private implicit val GetClustersTimeout = Timeout(60 seconds)
 
   val project = "Spark Notebook"  //  TODO from application.conf
   val base_project_url = current.configuration.getString("application.context").getOrElse("/")
@@ -62,7 +60,7 @@ object Application extends Controller {
     Ok(Json.obj())
   }
 
-  val kernelDef = Json.parse(
+  private val kernelDef = Json.parse(
     s"""
     |{
     |  "kernelspecs": {
@@ -252,11 +250,7 @@ object Application extends Controller {
       ))
     } else if (tpe == "notebook") {
       Logger.debug("content: " + path)
-      val name = if (path.endsWith(".snb")) {
-        path.dropRight(".snb".length)
-      } else {
-        path
-      }
+      val name = if (path.endsWith(".snb")) path.dropRight(".snb".length) else path
       getNotebook(name, path, "json")
     } else {
       BadRequest("Dunno what to do with contents for " + tpe + "at " + path)
@@ -391,9 +385,8 @@ object Application extends Controller {
     }
   }
 
-  def openKernel(kernelId: String, session_id: String) = ImperativeWebsocket.using[JsValue](
-    onOpen =
-      channel => WebSocketKernelActor.props(channel, kernelIdToCalcService(kernelId), session_id),
+  def openKernel(kernelId: String, sessionId: String) = ImperativeWebsocket.using[JsValue](
+    onOpen = channel => WebSocketKernelActor.props(channel, kernelIdToCalcService(kernelId), sessionId),
     onMessage = (msg, ref) => ref ! msg,
     onClose = ref => {
       // try to not close the kernel to allow long live sessions
@@ -542,8 +535,8 @@ object Application extends Controller {
               j
             }
             Ok(json).withHeaders(
-              "Content-Disposition" → s"""attachment; filename="$path" """,
-              "Last-Modified" → lastMod
+              HeaderNames.CONTENT_DISPOSITION → s"""attachment; filename="$path" """,
+              HeaderNames.LAST_MODIFIED → lastMod
             )
           case "scala" =>
             val nb = NBSerializer.fromJson(Json.parse(data))
@@ -559,11 +552,11 @@ object Application extends Controller {
               |}
               """.stripMargin
               code
-            }.getOrElse( """ //NO CELLS! """)
+            }.getOrElse("//NO CELLS!")
 
             Ok(code).withHeaders(
-              "Content-Disposition" → s"""attachment; filename="$name.scala" """,
-              "Last-Modified" → lastMod
+              HeaderNames.CONTENT_DISPOSITION → s"""attachment; filename="$name.scala" """,
+              HeaderNames.LAST_MODIFIED → lastMod
             )
           case _ => InternalServerError(s"Unsupported format $format")
         }
@@ -582,10 +575,10 @@ object Application extends Controller {
 
   def dockerAvailable = Action {
     Ok(Json.obj("available" → docker.isDefined)).withHeaders(
-      "Access-Control-Allow-Origin" -> "*",
-      "Access-Control-Allow-Methods" -> "GET, POST, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers" -> "Accept, Origin, Content-type",
-      "Access-Control-Allow-Credentials" -> "true"
+      HeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN -> "*",
+      HeaderNames.ACCESS_CONTROL_ALLOW_METHODS -> "GET, POST, PUT, DELETE, OPTIONS",
+      HeaderNames.ACCESS_CONTROL_ALLOW_METHODS -> "Accept, Origin, Content-type",
+      HeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS -> "true"
     )
   }
 

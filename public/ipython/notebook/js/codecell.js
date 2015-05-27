@@ -419,8 +419,15 @@ define([
         var callbacks = this.get_callbacks();
 
         var old_msg_id = this.last_msg_id;
-        this.last_msg_id = this.kernel.execute(this.get_text(), callbacks, {silent: false, store_history: true,
-            stop_on_error : stop_on_error});
+        this.last_msg_id = this.kernel.execute(
+          this.get_text(),
+          callbacks,
+          {
+            silent: false,
+            store_history: true,
+            stop_on_error : stop_on_error
+          }
+        );
         if (old_msg_id) {
             delete CodeCell.msg_cells[old_msg_id];
         }
@@ -449,7 +456,7 @@ define([
                 },
                 clear_output : function() {
                     that.output_area.handle_clear_output.apply(that.output_area, arguments);
-                },
+                }
             },
             input : $.proxy(this._handle_input_request, this)
         };

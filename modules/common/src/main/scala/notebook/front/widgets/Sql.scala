@@ -3,7 +3,7 @@ package notebook.front.widgets
 import notebook.JsonCodec._
 import notebook._
 import notebook.front._
-import org.apache.spark.sql.{SQLContext, SchemaRDD}
+import org.apache.spark.sql.{DataFrame, SQLContext}
 import play.api.Logger
 import play.api.libs.json._
 
@@ -31,7 +31,7 @@ class Sql(sqlContext: SQLContext, call: String) extends Widget {
         val h = (b, TypedInput(tpe, name.trim))
         val t = inputs.sliding(2).toList.map {
           case i :: j :: Nil =>
-            val b = j.before.toString.substring(i.before.toString.size + i.matched.size)
+            val b = j.before.toString.substring(i.before.toString.length + i.matched.length)
             val sqlTypedInputRegex(tpe, name) = j.matched
             (b, TypedInput(tpe, name.trim))
         }
@@ -58,15 +58,15 @@ class Sql(sqlContext: SQLContext, call: String) extends Widget {
     RxObservable.from(l).flatten
   }
 
-  val sql = new SingleConnector[Option[Try[SchemaRDD]]] with Widget {
-    implicit val codec = new Codec[JsValue, Option[Try[SchemaRDD]]] {
-      def encode(x: JsValue): Option[Try[SchemaRDD]] = None
+  val sql = new SingleConnector[Option[Try[DataFrame]]] with Widget {
+    implicit val codec = new Codec[JsValue, Option[Try[DataFrame]]] {
+      def encode(x: JsValue): Option[Try[DataFrame]] = None
 
-      def decode(x: Option[Try[SchemaRDD]]): JsValue = JsString {
-        x.flatMap(t => t match {
-          case Success(s) => Some(s.toString)
+      def decode(x: Option[Try[DataFrame]]): JsValue = JsString {
+        x.flatMap {
+          case Success(s) => Some(s.toString())
           case Failure(ex) => Some(ex.getMessage)
-        }).getOrElse("<no enough info>")
+        }.getOrElse("<no enough info>")
       }
     }
 
@@ -88,12 +88,12 @@ class Sql(sqlContext: SQLContext, call: String) extends Widget {
     </p>
   }
 
-  val subject: Subject[Option[Try[SchemaRDD]]] = subjects.ReplaySubject(1)
+  val subject: Subject[Option[Try[DataFrame]]] = subjects.ReplaySubject(1)
 
   var result: Subject[Any] = subjects.ReplaySubject(1)
 
   def updateValue(c: String) = {
-    val tried: Option[Try[SchemaRDD]] = Some(Try {
+    val tried: Option[Try[DataFrame]] = Some(Try {
       sqlContext.sql(c)
     })
     Logger.info(" Tried => " + tried.toString)
@@ -109,9 +109,9 @@ class Sql(sqlContext: SQLContext, call: String) extends Widget {
     }
   }
 
-  def react[A](f: SchemaRDD => A, w: SingleConnectedWidget[A]) = {
+  def react[A](f: DataFrame => A, w: SingleConnectedWidget[A]) = {
     result.subscribe(x => w(x.asInstanceOf[A])) //argl → asInstanceOf
-    val sub = (o: Option[Try[SchemaRDD]]) => {
+    val sub = (o: Option[Try[DataFrame]]) => {
         o match {
           case Some(Success(s)) =>
             val r = f(s)
@@ -195,7 +195,7 @@ case class IntInput(name: String) extends TypedInput[Int] {
     val r = Reads.of[Int] orElse Reads.of[String].map(_.toInt)
     val w = Writes.of[Int].transform { x =>
       val JsNumber(n) = x
-      JsString(n.toString)
+      JsString(n.toString())
     }
     Format(r, w)
   }

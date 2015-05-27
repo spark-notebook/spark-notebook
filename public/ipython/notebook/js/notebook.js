@@ -561,14 +561,10 @@ define([
      * Check whether a cell index is valid.
      *
      * @param {integer} index - A cell index
-     * @return True if the index is valid, false otherwise
+     * @return boolean return true if the index is valid, false otherwise
      */
     Notebook.prototype.is_valid_cell_index = function (index) {
-        if (index !== null && index >= 0 && index < this.ncells()) {
-            return true;
-        } else {
-            return false;
-        }
+        return index !== null && index >= 0 && index < this.ncells();
     };
 
     /**

@@ -12,8 +12,13 @@ object NBSerializer {
     def output_type: String
   }
 
-  case class ScalaOutput(name: String, output_type: String, prompt_number: Int,
-    html: Option[String], text: Option[String]) extends Output
+  case class ScalaOutput(
+    name: String,
+    output_type: String,
+    prompt_number: Int,
+    html: Option[String],
+    text: Option[String]
+  ) extends Output
 
   implicit val scalaOutputFormat = Json.format[ScalaOutput]
 
@@ -21,13 +26,21 @@ object NBSerializer {
 
   implicit val executeResultMetadataFormat = Json.format[ExecuteResultMetadata]
 
-  case class ScalaExecuteResult(metadata: ExecuteResultMetadata, data: Map[String, String],
-    output_type: String, execution_count: Int) extends Output
+  case class ScalaExecuteResult(
+    metadata: ExecuteResultMetadata,
+    data: Map[String, String],
+    output_type: String,
+    execution_count: Int
+  ) extends Output
 
   implicit val scalaExecuteResultFormat = Json.format[ScalaExecuteResult]
 
-  case class ScalaError(name: String, output_type: String, prompt_number: Int,
-    traceback: String) extends Output
+  case class ScalaError(
+    name: String,
+    output_type: String,
+    prompt_number: Int,
+    traceback: String
+  ) extends Output
 
   implicit val scalaErrorFormat = Json.format[ScalaError]
 
@@ -55,8 +68,12 @@ object NBSerializer {
   }
   implicit val outputFormat: Format[Output] = Format(outputReads, outputWrites)
 
-  case class CellMetadata(trusted: Option[Boolean], input_collapsed: Option[Boolean],
-    output_stream_collapsed: Option[Boolean], collapsed: Option[Boolean])
+  case class CellMetadata(
+    trusted: Option[Boolean],
+    input_collapsed: Option[Boolean],
+    output_stream_collapsed: Option[Boolean],
+    collapsed: Option[Boolean]
+  )
 
   implicit val codeCellMetadataFormat = Json.format[CellMetadata]
 
@@ -66,14 +83,22 @@ object NBSerializer {
     def cell_type: String
   }
 
-  case class CodeCell(metadata: CellMetadata, cell_type: String = "code", source: String,
-    language: Option[String], prompt_number: Option[Int] = None,
-    outputs: Option[List[Output]] = None) extends Cell
+  case class CodeCell(
+    metadata: CellMetadata,
+    cell_type: String = "code",
+    source: String,
+    language: Option[String],
+    prompt_number: Option[Int] = None,
+    outputs: Option[List[Output]] = None
+  ) extends Cell
 
   implicit val codeCellFormat = Json.format[CodeCell]
 
-  case class MarkdownCell(metadata: CellMetadata, cell_type: String = "markdown",
-    source: String) extends Cell
+  case class MarkdownCell(
+    metadata: CellMetadata,
+    cell_type: String = "markdown",
+    source: String
+  ) extends Cell
 
   implicit val markdownCellFormat = Json.format[MarkdownCell]
 
@@ -81,8 +106,12 @@ object NBSerializer {
 
   implicit val rawCellFormat = Json.format[RawCell]
 
-  case class HeadingCell(metadata: CellMetadata, cell_type: String = "heading", source: String,
-    level: Int) extends Cell
+  case class HeadingCell(
+    metadata: CellMetadata,
+    cell_type: String = "heading",
+    source: String,
+    level: Int
+  ) extends Cell
 
   implicit val headingCellFormat = Json.format[HeadingCell]
 
@@ -165,8 +194,11 @@ object NBSerializer {
 
   implicit val worksheetFormat = Json.format[Worksheet]
 
-  case class Notebook(metadata: Option[Metadata] = None, cells: Option[List[Cell]] = Some(Nil),
-    worksheets: Option[List[Worksheet]] = None, autosaved: Option[List[Worksheet]] = None,
+  case class Notebook(
+    metadata: Option[Metadata] = None,
+    cells: Option[List[Cell]] = Some(Nil),
+    worksheets: Option[List[Worksheet]] = None,
+    autosaved: Option[List[Worksheet]] = None,
     nbformat: Option[Int]) {
     def name = metadata.map(_.name).getOrElse("Anonymous")
   }
