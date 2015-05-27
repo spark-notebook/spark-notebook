@@ -52,7 +52,7 @@ docstring
 case class ObjectInfoResponse(found: Boolean, name: String, callDef: String, callDocString: String)
 
 /**
- * @param initScripts List of scala source strings to be executed during REPL startup.
+ * @param _initScripts List of scala source strings to be executed during REPL startup.
  * @param customSparkConf Map configuring the notebook (spark configuration).
  * @param compilerArgs Command line arguments to pass to the REPL compiler
  */
@@ -215,9 +215,9 @@ class ReplCalculator(
                     s"""
                        |//updating deps
                        |jars = (${deps.mkString("List(\"", "\",\"", "\")")} ::: jars.toList).distinct.toArray
-                                                                             |//restarting spark
-                                                                             |reset()
-                                                                             |jars.toList
+                       |//restarting spark
+                       |reset()
+                       |jars.toList
                     """.stripMargin
                   case TFailure(ex) =>
                     log.error(ex, "Cannot add dependencies")

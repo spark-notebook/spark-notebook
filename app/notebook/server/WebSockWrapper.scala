@@ -17,8 +17,11 @@ trait WebSockWrapper {
   def send(header: JsValue, session: String, msgType: String, channel: String, content: JsValue)
 }
 
-class WebSockWrapperImpl(sock: Concurrent.Channel[JsValue],
-  val session: String) extends WebSockWrapper with Logging {
+class WebSockWrapperImpl(
+  sock: Concurrent.Channel[JsValue],
+  val session: String
+) extends WebSockWrapper with Logging {
+
   private def send(msg: JsValue) {
     logTrace("Sending " + msg)
     sock.push(msg)
