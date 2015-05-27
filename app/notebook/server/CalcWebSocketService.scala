@@ -3,6 +3,7 @@ package notebook.server
 import akka.actor.{Terminated, _}
 import notebook.client._
 import play.api._
+import play.api.libs.json.Json.obj
 import play.api.libs.json._
 
 import scala.concurrent._
@@ -27,14 +28,9 @@ class CalcWebSocketService(
 
   val calcActor = system.actorOf(Props(new CalcActor))
 
-  def register(ws: WebSockWrapper) = {
-    calcActor ! Register(ws)
-  }
+  def register(ws: WebSockWrapper) = calcActor ! Register(ws)
 
-  def unregister(ws: WebSockWrapper) = {
-    calcActor ! Unregister(ws)
-  }
-
+  def unregister(ws: WebSockWrapper) = calcActor ! Unregister(ws)
 
   class CalcActor extends Actor with ActorLogging {
     private var currentSessionOperation: Option[ActorRef] = None
@@ -61,11 +57,12 @@ class CalcWebSocketService(
       val kCustomImports = customImports
 
       val tachyon = Map(
-        "spark.tachyonStore.url" → tachyonInfo.url.getOrElse("tachyon://" + notebook.share.Tachyon.host + ":" + notebook.share.Tachyon.port),
+        "spark.tachyonStore.url" → tachyonInfo.url.getOrElse(
+          "tachyon://" + notebook.share.Tachyon.host + ":" + notebook.share.Tachyon.port
+        ),
         "spark.tachyonStore.baseDir" → tachyonInfo.baseDir
       )
       val kCustomSparkConf = customSparkConf.map(_ ++ tachyon).orElse(Some(tachyon))
-
       val kInitScripts = initScripts
       val remoteDeploy = Await.result(remoteDeployFuture, 2 minutes)
 
@@ -106,8 +103,8 @@ class CalcWebSocketService(
         val operations = new SessionOperationActors(header, session)
         val operationActor = (request: @unchecked) match {
           case ExecuteRequest(counter, code) =>
-            ws.send(header, session, "status", "iopub", Json.obj("execution_state" → "busy"))
-            ws.send(header, session, "pyin", "iopub", Json.obj("execution_count" → counter, "code" → code))
+            ws.send(header, session, "status", "iopub", obj("execution_state" → "busy"))
+            ws.send(header, session, "pyin", "iopub", obj("execution_count" → counter, "code" → code))
             operations.singleExecution(counter)
 
           case _: CompletionRequest =>
@@ -135,23 +132,32 @@ class CalcWebSocketService(
       def singleExecution(counter: Int) = Props(new Actor {
         def receive = {
           case StreamResponse(data, name) =>
-            ws.send(header, session, "stream", "iopub", Json.obj("text" → data, "name" → name))
+            ws.send(header, session, "stream", "iopub", obj("text" → data, "name" → name))
 
           case ExecuteResponse(html) =>
-            ws.send(header, session, "execute_result", "iopub", Json.obj("execution_count" → counter, "data" → Json.obj("text/html" → html)))
-            ws.send(header, session, "status", "iopub", Json.obj("execution_state" → "idle"))
-            ws.send(header, session, "execute_reply", "shell", Json.obj("execution_count" → counter))
+            ws.send(header, session, "execute_result", "iopub", obj(
+              "execution_count" → counter,
+              "data" → obj("text/html" → html)
+            ))
+            ws.send(header, session, "status", "iopub", obj("execution_state" → "idle"))
+            ws.send(header, session, "execute_reply", "shell", obj("execution_count" → counter))
             context.stop(self)
 
           case ErrorResponse(msg, incomplete) =>
             if (incomplete) {
-              ws.send(header, session, "error", "iopub", Json.obj("execution_count" → counter, "status" → "error", "ename" → "Error", "traceback" → Seq(msg)))
+              ws.send(header, session, "error", "iopub", obj(
+                "execution_count" → counter,
+                "status" → "error",
+                "ename" → "Error",
+                "traceback" → Seq(msg)
+              ))
             } else {
               //already printed by the repl!
-              //ws.send(header, session, "error", "iopub", Json.obj("execution_count" → counter, "status" → "error", "ename" → "Error", "traceback" → Seq(msg)))
+              //ws.send(header, session, "error", "iopub", Json.obj("execution_count" → counter,
+              // "status" → "error", "ename" → "Error", "traceback" → Seq(msg)))
             }
-            ws.send(header, session, "status", "iopub", Json.obj("execution_state" → "idle"))
-            ws.send(header, session, "execute_reply", "shell", Json.obj("execution_count" → counter))
+            ws.send(header, session, "status", "iopub", obj("execution_state" → "idle"))
+            ws.send(header, session, "execute_reply", "shell", obj("execution_count" → counter))
             context.stop(self)
         }
       })
@@ -159,7 +165,11 @@ class CalcWebSocketService(
       def completion = Props(new Actor {
         def receive = {
           case CompletionResponse(cursorPosition, candidates, matchedText) =>
-            ws.send(header, session, "complete_reply", "shell", Json.obj("matched_text" → matchedText, "matches" → candidates.map(_.toJson).toList, "cursor_start" → (cursorPosition - matchedText.size), "cursor_end" → cursorPosition))
+            ws.send(header, session, "complete_reply", "shell", obj(
+              "matched_text" → matchedText,
+              "matches" → candidates.map(_.toJson).toList,
+              "cursor_start" → (cursorPosition - matchedText.length),
+              "cursor_end" → cursorPosition))
             context.stop(self)
         }
       })
@@ -167,16 +177,17 @@ class CalcWebSocketService(
       def objectInfo = Props(new Actor {
         def receive = {
           case ObjectInfoResponse(found, name, callDef, callDocString) =>
-            ws.send(
-              header,
-              session,
-              "object_info_reply",
-              "shell",
-              Json.obj("found" → found, "name" → name, "call_def" → callDef, "call_docstring" → "Description TBD")
-            )
+            ws.send(header, session, "object_info_reply", "shell", obj(
+              "found" → found,
+              "name" → name,
+              "call_def" → callDef,
+              "call_docstring" → "Description TBD"
+            ))
             context.stop(self)
         }
       })
     }
+
   }
+
 }

@@ -5,21 +5,27 @@ import java.util.concurrent.atomic.AtomicInteger
 import akka.actor._
 import notebook.client._
 import notebook.server._
-import play.api.libs.iteratee._
+import play.api.libs.iteratee.Concurrent
 import play.api.libs.json._
 
+/**
+ * re
+ */
 object WebSocketKernelActor {
-  def props(channel: Concurrent.Channel[JsValue], calcService: CalcWebSocketService,
-    session_id: String)(implicit system: ActorSystem): ActorRef =
+  def props(
+    channel: Concurrent.Channel[JsValue],
+    calcService: CalcWebSocketService,
+    session_id: String)(implicit system: ActorSystem): ActorRef = {
     system.actorOf(Props(new WebSocketKernelActor(channel, calcService, session_id)))
+  }
 }
 
-class WebSocketKernelActor(channel: Concurrent.Channel[JsValue],
-  val calcService: CalcWebSocketService, session_id: String)(implicit system: ActorSystem)
-  extends Actor with akka.actor.ActorLogging {
+class WebSocketKernelActor(
+  channel: Concurrent.Channel[JsValue],
+  val calcService: CalcWebSocketService,
+  session_id: String)(implicit system: ActorSystem) extends Actor with akka.actor.ActorLogging {
 
   private lazy val executionCounter = new AtomicInteger(0)
-
   private lazy val ws = new WebSockWrapperImpl(channel, session_id)
 
   override def preStart() = {
@@ -30,6 +36,18 @@ class WebSocketKernelActor(channel: Concurrent.Channel[JsValue],
     calcService.unregister(ws)
   }
 
+  /**
+   * process the akka message from web
+   * the whole invoke path is:
+   * <pre>
+   * +-----------+        +----------+                  +--------------+            +------------+
+   * |session.js |  --->  | kernel.js|    websockets    | route->Action|    --->    | ActorSystem|
+   * |api/xxxx   |  --->  | api/xxxx |    --------->    | Application  |    --->    |    this    |
+   * +-----------+        +----------+                  +--------------+            +------------+
+   * </pre>
+   *
+   * @return
+   */
   def receive = {
     case json: JsValue =>
       val header = json \ "header"

@@ -5,7 +5,7 @@ define([
     'jquery',
     'base/js/namespace',
     'base/js/utils',
-    'base/js/dialog',
+    'base/js/dialog'
 ], function ($, IPython, utils, dialog) {
     "use strict";
 
@@ -59,14 +59,14 @@ define([
         for (var i = keys.length - 1; i >= 0; i--) {
             var ks = this.kernelspecs[keys[i]];
             var li = $("<li>")
-                .attr("id", "kernel-" +ks.name)
+                .attr("id", "kernel-" + ks.name)
                 .data('kernelspec', ks).append(
-                    $('<a>')
-                        .attr('href', '#')
-                        .click($.proxy(this.new_notebook, this, ks.name))
-                        .text(ks.spec.display_name)
-                        .attr('title', 'Create a new notebook with ' + ks.spec.display_name)
-                );
+                $('<a>')
+                    .attr('href', '#')
+                    .click($.proxy(this.new_notebook, this, ks.name))
+                    .text(ks.spec.display_name)
+                    .attr('title', 'Create a new notebook with ' + ks.spec.display_name)
+            );
             menu.after(li);
         }
     };
@@ -76,7 +76,12 @@ define([
         var that = this;
         kernel_name = kernel_name || this.default_kernel;
         var w = window.open();
-        this.contents.new_untitled(that.notebook_path, {type: "notebook", custom: customMetadata}).then(
+        this.contents.new_untitled(
+            that.notebook_path,
+            {
+                type: "notebook",
+                custom: customMetadata
+            }).then(
             function (data) {
                 var url = utils.url_join_encode(
                     that.base_url, 'notebooks', data.path
@@ -89,9 +94,9 @@ define([
             function (error) {
                 w.close();
                 dialog.modal({
-                    title : 'Creating Notebook Failed',
-                    body : "The error was: " + error.message,
-                    buttons : {'OK' : {'class' : 'btn-primary'}}
+                    title: 'Creating Notebook Failed',
+                    body: "The error was: " + error.message,
+                    buttons: {'OK': {'class': 'btn-primary'}}
                 });
             }
         );
