@@ -1,15 +1,13 @@
 package org.apache.spark.repl
 
 import scala.reflect._
-import scala.reflect.api.{Mirror, Universe, TypeCreator}
-import scala.tools.nsc.{io, Properties, Settings, interpreter}
+import scala.reflect.api.{Mirror, TypeCreator, Universe => ApiUniverse}
 import scala.tools.nsc.interpreter._
 import scala.tools.nsc.util.ScalaClassLoader._
-import scala.reflect.api.{Mirror, TypeCreator, Universe => ApiUniverse}
+import scala.tools.nsc.{Settings, io}
 
-import scala.tools.nsc.interpreter._
-
-class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) { loop:SparkILoop =>
+class HackSparkILoop(out: JPrintWriter) extends SparkILoop(None, out, None) {
+  loop: SparkILoop =>
   def getMaster(): String = {
     val master = this.master match {
       case Some(m) => m
@@ -20,24 +18,28 @@ class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) { loo
     }
     master
   }
-  //override var intp: SparkIMain = _
+
+  override var intp: SparkIMain = super.intp
 
   // classpath entries added via :cp
   // CP DOESN'T WORK WITH THIS → var addedClasspath: String = ""
   //var addedClasspath: String = ""
-  val addedClasspathGS:(() => String, String=>Unit) = {
+  val addedClasspathGS: (() => String, String => Unit) = {
     val getter = classOf[SparkILoop].getDeclaredMethods.find(_.getName == "org$apache$spark$repl$SparkILoop$$addedClasspath").get
     val get = () => getter.invoke(loop).asInstanceOf[String]
 
     val setter = classOf[SparkILoop].getDeclaredMethods.find(_.getName == "org$apache$spark$repl$SparkILoop$$addedClasspath_$eq").get
-    val set = (s:String) => { setter.invoke(loop, s); ()}
+    val set = (s: String) => {
+      setter.invoke(loop, s)
+      ()
+    }
 
     (get, set)
   }
 
-  def addCps(jars:List[String]) = {
+  def addCps(jars: List[String]) = {
     import scala.tools.nsc.util.ClassPath
-    var s:String = addedClasspathGS._1()
+    var s: String = addedClasspathGS._1()
     jars foreach { jar =>
       val f = scala.tools.nsc.io.File(jar).normalize
       s = ClassPath.join(s, f.path)
@@ -56,12 +58,14 @@ class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) { loo
 
   val u: scala.reflect.runtime.universe.type = scala.reflect.runtime.universe
   val m = u.runtimeMirror(getClass.getClassLoader)
+
   def tagOfStaticClass[T: ClassTag]: u.TypeTag[T] =
     u.TypeTag[T](
       m,
       new TypeCreator {
-        def apply[U <: ApiUniverse with Singleton](m: Mirror[U]): U # Type =
-          m.staticClass(classTag[T].runtimeClass.getName).toTypeConstructor.asInstanceOf[U # Type]
+        def apply[U <: ApiUniverse with Singleton](m: Mirror[U]): U#Type = {
+          m.staticClass(classTag[T].runtimeClass.getName).toTypeConstructor.asInstanceOf[U#Type]
+        }
       })
 
   override def initializeSpark() {
@@ -74,12 +78,12 @@ class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) { loo
     echo("Spark context available as sc.")*/
   }
 
-  var in: InteractiveReader = _   // the input stream from which commands come
+  var in: InteractiveReader = _ // the input stream from which commands come
 
   /** Tries to create a JLineReader, falling back to SimpleReader:
-   *  unless settings or properties are such that it should start
-   *  with SimpleReader.
-   */
+    * unless settings or properties are such that it should start
+    * with SimpleReader.
+    */
   // anyway → not used and the spark one hangs with nohup
   def chooseReader(settings: Settings): InteractiveReader = SimpleReader()
 
@@ -99,12 +103,13 @@ class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) { loo
     intp.reset()
     // unleashAndSetPhase()
   }
+
   def replay() {
     reset()
     if (replayCommandStack.isEmpty)
       echo("Nothing to replay.")
     else for (cmd <- replayCommands) {
-      echo("Replaying: " + cmd)  // flush because maybe cmd will have its own output
+      echo("Replaying: " + cmd) // flush because maybe cmd will have its own output
       command(cmd)
       echo("")
     }
@@ -119,21 +124,18 @@ class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) { loo
     createInterpreter()
 
     // sets in to some kind of reader depending on environmental cues
-    in ={
-        // some post-initialization
-        chooseReader(settings) match {
-          case x: SparkJLineReader => addThunk(x.consoleReader.postInit) ; x
-          case x                   => x
-        }
+    in = {
+      // some post-initialization
+      chooseReader(settings) match {
+        case x: SparkJLineReader => addThunk(x.consoleReader.postInit); x
+        case x => x
+      }
     }
     lazy val tagOfSparkIMain = tagOfStaticClass[org.apache.spark.repl.SparkIMain]
     // Bind intp somewhere out of the regular namespace where
     // we can get at it in generated code.
     addThunk(intp.quietBind(NamedParam[SparkIMain]("$intp", intp)(tagOfSparkIMain, classTag[SparkIMain])))
     addThunk({
-      import scala.tools.nsc.io._
-      import Properties.userHome
-      import scala.compat.Platform.EOL
       val autorun = replProps.replAutorunCode.option flatMap (f => io.File(f).safeSlurp())
       if (autorun.isDefined) intp.quietRun(autorun.get)
     })

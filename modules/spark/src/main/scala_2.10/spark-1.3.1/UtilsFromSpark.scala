@@ -1,34 +1,10 @@
 package notebook
 
 import java.io._
-import java.lang.management.ManagementFactory
 import java.net._
-import java.nio.ByteBuffer
-import java.util.concurrent.{ConcurrentHashMap, Executors, ThreadFactory, ThreadPoolExecutor}
-import java.util.{Locale, Properties, Random, UUID}
 
-import scala.collection.JavaConversions._
-import scala.collection.Map
-import scala.collection.mutable.ArrayBuffer
-import scala.io.Source
-import scala.reflect.ClassTag
-import scala.util.Try
-import scala.util.control.{ControlThrowable, NonFatal}
-
-import com.google.common.io.{ByteStreams, Files}
-import com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.apache.commons.lang3.SystemUtils
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, FileUtil, Path}
-import org.apache.log4j.PropertyConfigurator
-import org.eclipse.jetty.util.MultiException
-import org.json4s._
-import tachyon.client.{TachyonFS, TachyonFile}
-
 import org.apache.spark._
-import org.apache.spark.deploy.SparkHadoopUtil
-import org.apache.spark.serializer.{DeserializationStream, SerializationStream, SerializerInstance}
-
 
 /**
  * Copied from https://github.com/apache/spark/blob/branch-1.2/core/src/main/scala/org/apache/spark/util/Utils.scala
