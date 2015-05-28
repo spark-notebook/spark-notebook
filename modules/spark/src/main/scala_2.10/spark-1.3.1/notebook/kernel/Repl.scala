@@ -105,7 +105,7 @@ class Repl(val compilerOpts: List[String], val jars: List[String] = Nil) {
     loop.process(settings)
     val i = {
       val l: HackSparkILoop = loop
-      l.interpreter
+      l.intp
     }
     //i.initializeSynchronous()
     classServerUri = Some(i.classServerUri)
