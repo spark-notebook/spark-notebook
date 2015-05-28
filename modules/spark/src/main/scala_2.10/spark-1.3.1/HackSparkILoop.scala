@@ -19,7 +19,7 @@ class HackSparkILoop(out: JPrintWriter) extends SparkILoop(None, out, None) {
     master
   }
 
-  override var intp: SparkIMain = super.intp
+//  override var intp: SparkIMain = super.intp
 
   // classpath entries added via :cp
   // CP DOESN'T WORK WITH THIS → var addedClasspath: String = ""
