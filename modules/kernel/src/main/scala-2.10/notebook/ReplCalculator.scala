@@ -1,5 +1,4 @@
-package notebook
-package client
+package notebook.client
 
 import java.io.{File, FileWriter}
 
@@ -9,6 +8,7 @@ import scala.util.{Try, Success=>TSuccess, Failure=>TFailure}
 import akka.actor.{ActorLogging, Props, Actor}
 import kernel._
 
+<<<<<<< HEAD
 import sbt._
 
 import notebook.util.{CustomResolvers, Deps, Match}
@@ -48,6 +48,17 @@ docstring
 */
 case class ObjectInfoResponse(found: Boolean, name: String, callDef: String, callDocString: String)
 
+=======
+import akka.actor.{Actor, ActorRef, Props}
+import notebook.kernel._
+import notebook.util.{CustomResolvers, Deps, Match}
+import sbt._
+
+import scala.concurrent.duration._
+import scala.collection.immutable.Queue
+import scala.util.{Failure => TFailure, Success => TSuccess}
+
+>>>>>>> 4a9dce8... Fixes _Run All_, broken by the introduction of lazy eval of code to allow cancelling jobs
 /**
  * @param initScripts List of scala source strings to be executed during REPL startup.
  * @param customSparkConf Map configuring the notebook (spark configuration).
@@ -157,7 +168,14 @@ class ReplCalculator(
   private val executor = context.actorOf(Props(new Actor {
     implicit val ec = context.dispatcher
 
+<<<<<<< HEAD
     def eval(b: => String, notify:Boolean=true)(success: => String = "", failure: String=>String=(s:String)=>"Error evaluating " + b + ": "+ s) {
+=======
+    private var queue:Queue[(ActorRef, ExecuteRequest)] = Queue.empty
+
+    def eval(b: => String, notify: Boolean = true)(success: => String = "",
+      failure: String => String = (s: String) => "Error evaluating " + b + ": " + s) {
+>>>>>>> 4a9dce8... Fixes _Run All_, broken by the introduction of lazy eval of code to allow cancelling jobs
       repl.evaluate(b)._1 match {
         case Failure(str) =>
           if (notify) {
@@ -175,6 +193,7 @@ class ReplCalculator(
     }
 
     def receive = {
+<<<<<<< HEAD
       case ExecuteRequest(_, code) =>
         val result = {
           val newCode =
@@ -282,6 +301,140 @@ class ReplCalculator(
       case InterruptRequest =>
         val thisSender = sender
         repl.evaluate("sparkContext.cancelAllJobs()", msg => thisSender ! StreamResponse(msg, "stdout"))
+=======
+      case "process-next" =>
+        log.debug(s"Processing next asked, queue is ${queue.size} length now")
+        if (queue.nonEmpty) { //queue could be empty if InterruptRequest was asked!
+          log.debug("Dequeuing execute request current size: " + queue.size)
+          queue = queue.dequeue._2
+          queue.headOption foreach { case (ref, er) =>
+            log.debug("About to execute request from the queue")
+            execute(ref, er)
+          }
+        }
+
+      case er@ExecuteRequest(_, code) if queue.nonEmpty =>
+        log.debug("Enqueuing execute request at: " + queue.size)
+        queue = queue.enqueue(sender(), er)
+
+      case er@ExecuteRequest(_, code) =>
+        log.debug("Enqueuing execute request at: " + queue.size)
+        queue = queue.enqueue(sender(), er)
+        log.debug("Executing execute request")
+        execute(sender(), er)
+
+      case InterruptRequest =>
+        log.debug("Interrupting the spark context")
+        val thisSender = sender()
+        log.debug("Clearing the queue of size " + queue.size)
+        queue = scala.collection.immutable.Queue.empty
+        repl.evaluate(
+          "sparkContext.cancelAllJobs()",
+          msg => {
+            thisSender ! StreamResponse(msg, "stdout")
+          }
+        )
+>>>>>>> 4a9dce8... Fixes _Run All_, broken by the introduction of lazy eval of code to allow cancelling jobs
+    }
+
+    def execute(sender:ActorRef, er:ExecuteRequest):Unit = {
+      val newCode = er.code match {
+        case resolverRegex(r) =>
+          log.debug("Adding resolver: " + r)
+          val (logR, resolver) = CustomResolvers.fromString(r)
+          resolvers = resolver :: resolvers
+          s""" "Resolver added: $logR!" """
+
+        case repoRegex(r) =>
+          log.debug("Updating local repo: " + r)
+          repo = new File(r.trim)
+          repo.mkdirs
+          s""" "Repo changed to ${repo.getAbsolutePath}!" """
+
+        case dpRegex(cp) =>
+          log.debug("Fetching deps using repos: " + resolvers.mkString(" -- "))
+          eval( """""", notify = false)()
+          val tryDeps = Deps.script(cp, resolvers, repo)
+          eval( """""", notify = false)()
+
+          tryDeps match {
+            case TSuccess(deps) =>
+              eval( """sparkContext.stop() """)("CP reload processed successfully",
+                (str: String) => "Error in :dp: \n%s".format(str)
+              )
+              val (_r, replay) = repl.addCp(deps)
+              _repl = Some(_r)
+              preStartLogic()
+              replay()
+
+              s"""
+                 |//updating deps
+                 |jars = (${deps.mkString("List(\"", "\",\"", "\")")} ::: jars.toList).distinct.toArray
+                 |//restarting spark
+                 |reset()
+                 |jars.toList
+                 """.stripMargin
+            case TFailure(ex) =>
+              log.error(ex, "Cannot add dependencies")
+              s""" <p style="color:red">${ex.getMessage}</p> """
+          }
+
+        case cpRegex(cp) =>
+          val jars = cp.trim().split("\n").toList.map(_.trim()).filter(_.length > 0)
+          repl.evaluate( """sparkContext.stop()""")._1 match {
+            case Failure(str) =>
+              log.error("Error in :cp: \n%s".format(str))
+            case _ =>
+              log.info("CP reload processed successfully")
+          }
+          val (_r, replay) = repl.addCp(jars)
+          _repl = Some(_r)
+          preStartLogic()
+          replay()
+          s""""Classpath CHANGED!" """
+
+        case shRegex(sh) =>
+          val ps = "s\"\"\"" + sh.replaceAll("\\s*\\|\\s*", "\" #\\| \"").replaceAll("\\s*&&\\s*", "\" #&& \"") + "\"\"\""
+          s"""
+             |import sys.process._
+             |<pre>{$ps !!}</pre>
+              """.stripMargin.trim
+
+        case sqlRegex(n, sql) =>
+          log.debug(s"Received sql code: [$n] $sql")
+          val qs = "\"\"\""
+          //if (!sqlGen.parts.isEmpty) {
+          val name = Option(n).map(nm => s"@transient val $nm = ").getOrElse("")
+          s"""
+            import notebook.front.widgets.Sql
+            import notebook.front.widgets.Sql._
+            ${name}new Sql(sqlContext, s$qs$sql$qs)
+            """
+        case _ => er.code
+      }
+      val start = System.currentTimeMillis
+      val thisSelf = self
+      val thisSender = sender
+      val result = scala.concurrent.Future {
+        // this future is required to allow InterruptRequest messages to be received and process
+        // so that spark jobs can be killed and the hand given back to the user to refine their tasks
+        val result = repl.evaluate(newCode, msg => thisSender ! StreamResponse(msg, "stdout"))
+        val d = toCoarsest(Duration(System.currentTimeMillis - start, MILLISECONDS))
+        (d, result._1)
+      }
+
+      result foreach {
+        case (timeToEval, Success(result)) =>
+          thisSender ! ExecuteResponse(result.toString + s"\n <div class='pull-right text-info'><small>$timeToEval</small></div>")
+        case (timeToEval, Failure(stackTrace)) =>
+          thisSender ! ErrorResponse(stackTrace, incomplete = false)
+        case (timeToEval, notebook.kernel.Incomplete) =>
+          thisSender ! ErrorResponse("Incomplete (hint: check the parenthesis)", incomplete = true)
+      }
+
+      result onComplete {
+        _ => thisSelf ! "process-next"
+      }
     }
   }))
 
