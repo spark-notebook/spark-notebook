@@ -314,10 +314,7 @@ define([
     Cell.prototype.at_top = function () {
         var cm = this.code_mirror;
         var cursor = cm.getCursor();
-        if (cursor.line === 0 && cursor.ch === 0) {
-            return true;
-        }
-        return false;
+        return !!(cursor.line === 0 && cursor.ch === 0);
     };
 
     /**

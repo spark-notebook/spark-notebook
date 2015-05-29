@@ -3,17 +3,14 @@ package notebook.kernel.remote
 import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.typesafe.config.{ConfigFactory, Config}
-
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
-
 import akka.actor._
-import akka.remote.{RemoteScope, RemoteActorRefProvider}
-
+import akka.remote.RemoteScope
+import com.typesafe.config.{Config, ConfigFactory}
+import notebook.kernel.pfork.{BetterFork, ForkableProcess, ProcessInfo}
 import org.apache.commons.io.FileUtils
 
-import notebook.kernel.pfork.{ProcessInfo, BetterFork, ForkableProcess}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
  * Author: Ken
@@ -23,12 +20,12 @@ class RemoteActorProcess extends ForkableProcess {
   var _system: ActorSystem = null
 
   def init(args: Seq[String]): String = {
-    val configFile = args(0)
+    val configFile = args.head
     val cfg = ConfigFactory.load(configFile)
 
     // Cookie file is optional second argument
     val actualCfg = args.take(2) match {
-      case Seq(_, cookieFile) if (cookieFile.size > 0) =>
+      case Seq(_, cookieFile) if cookieFile.size > 0 =>
         val cookie = FileUtils.readFileToString(new File(cookieFile))
         AkkaConfigUtils.requireCookie(cfg, cookie)
       case _ => cfg
@@ -38,7 +35,7 @@ class RemoteActorProcess extends ForkableProcess {
 
     val address = GetAddress(_system).address
     address.toString
-   // address.port.getOrElse(sys.error("not a remote actor system: %s".format(cfg))).toString
+    // address.port.getOrElse(sys.error("not a remote actor system: %s".format(cfg))).toString
   }
 
   def waitForExit() {
@@ -55,6 +52,7 @@ class FindAddressImpl(system: ExtendedActorSystem) extends Extension {
 }
 
 object GetAddress extends ExtensionKey[FindAddressImpl]
+
 case object RemoteShutdown
 
 class ShutdownActor extends Actor {
@@ -71,7 +69,8 @@ class ShutdownActor extends Actor {
 /**
  * Represents a running remote actor system, with an address and the ability to kill it
  */
-class RemoteActorSystem(localSystem: ActorSystem, info: ProcessInfo, remoteContext: ActorRefFactory) {
+class RemoteActorSystem(localSystem: ActorSystem, info: ProcessInfo,
+  remoteContext: ActorRefFactory) {
   def this(localSystem: ActorSystem, info: ProcessInfo) = this(localSystem, info, localSystem)
 
   val address = AddressFromURIString(info.initReturn)
@@ -82,8 +81,13 @@ class RemoteActorSystem(localSystem: ActorSystem, info: ProcessInfo, remoteConte
 
   def actorOf(context: ActorRefFactory, props: Props) = context.actorOf(props.withDeploy(deploy))
 
-  def shutdownRemote() { shutdownActor ! PoisonPill }
-  def killRemote() { info.kill() }
+  def shutdownRemote() {
+    shutdownActor ! PoisonPill
+  }
+
+  def killRemote() {
+    info.kill()
+  }
 
 }
 
@@ -92,7 +96,9 @@ class RemoteActorSystem(localSystem: ActorSystem, info: ProcessInfo, remoteConte
  */
 object RemoteActorSystem {
   val nextId = new AtomicInteger(1)
-  def spawn(config:Config, system: ActorSystem, configFile:String, kernelId:String, notebookPath:Option[String]): Future[RemoteActorSystem] = {
+
+  def spawn(config: Config, system: ActorSystem, configFile: String, kernelId: String,
+    notebookPath: Option[String]): Future[RemoteActorSystem] = {
     //val cookiePath = AkkaConfigUtils.requiredCookie(system.settings.config) match {
     //  case Some(cookie) =>
     //    val cookieFile = new File(".", ".akka-cookie")
@@ -100,7 +106,9 @@ object RemoteActorSystem {
     //    cookieFile.getAbsolutePath
     //  case _ => ""
     //}cookiePath
-     val cookiePath = ""
-    new BetterFork[RemoteActorProcess](config, system.dispatcher).execute(kernelId, notebookPath.getOrElse("no-path"), configFile, cookiePath) map { new RemoteActorSystem(system, _) }
+    val cookiePath = ""
+    new BetterFork[RemoteActorProcess](config, system.dispatcher).execute(kernelId, notebookPath.getOrElse("no-path"), configFile, cookiePath) map {
+      new RemoteActorSystem(system, _)
+    }
   }
 }

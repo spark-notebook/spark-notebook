@@ -1,9 +1,10 @@
 package notebook
 package kernel.remote
 
-import akka.actor.{Actor, Props}
-import kernel.pfork.ProcessFork
 import java.io.File
+
+import akka.actor.{Actor, Props}
+import notebook.kernel.pfork.ProcessFork
 
 class VMManager(process: ProcessFork[RemoteProcess]) extends Actor {
 
@@ -22,7 +23,11 @@ class VMManager(process: ProcessFork[RemoteProcess]) extends Actor {
 }
 
 object VMManager {
+
   case class Start(key: Any, location: File)
+
   case class Spawn(key: Any, props: Props)
+
   case class Kill(key: Any)
+
 }

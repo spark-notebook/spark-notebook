@@ -2,17 +2,18 @@ package notebook
 package kernel
 package remote
 
-import akka.actor._
-import akka.remote.transport.Transport.{InboundAssociation, AssociationEvent}
-import akka.remote.{DisassociatedEvent, RemoteScope}
-import pfork.ProcessFork
-import com.typesafe.config.ConfigFactory
-import collection.JavaConversions._
-import akka.actor.Deploy
-import org.apache.commons.io.FileUtils
 import java.io.File
+
+import akka.actor.{Deploy, _}
+import akka.remote.transport.Transport.InboundAssociation
+import akka.remote.{DisassociatedEvent, RemoteScope}
+import com.typesafe.config.ConfigFactory
+import notebook.kernel.pfork.ProcessFork
+import org.apache.commons.io.FileUtils
+import org.apache.log4j.PropertyConfigurator
 import org.slf4j.LoggerFactory
-import org.apache.log4j.{Logger, PropertyConfigurator}
+
+import scala.collection.JavaConversions._
 
 class SingleVM(fork: ProcessFork[RemoteProcess], location: File) extends Actor with ActorLogging {
 
@@ -58,7 +59,11 @@ class SingleVM(fork: ProcessFork[RemoteProcess], location: File) extends Actor w
       val a = address
       if (a != null) {
         log.info("Shutting down remote VM: %s".format(a))
-        context.system.actorOf(Props(new Actor with ActorLogging { log.info("Shutting down VM"); sys.exit(0); def receive = Actor.emptyBehavior }).withDeploy(Deploy(scope = RemoteScope(a))))
+        context.system.actorOf(Props(new Actor with ActorLogging {
+          log.info("Shutting down VM"); sys.exit(0);
+
+          def receive = Actor.emptyBehavior
+        }).withDeploy(Deploy(scope = RemoteScope(a))))
       } else {
         log.info("Forcibly shutting down remote VM.")
         val killer = procKiller
@@ -78,8 +83,8 @@ class SingleVM(fork: ProcessFork[RemoteProcess], location: File) extends Actor w
 }
 
 
-
 object SingleVM {
+
   case class Spawn(props: Props)
 
   case class RemoteProcessReady(address: Address)
@@ -123,28 +128,32 @@ object SingleVM {
     }
   }
 
-  def externalAddress(system: ActorSystem) = system.asInstanceOf[ExtendedActorSystem].provider.getExternalAddressFor(Address("akka", "", "", 0)).get
+  def externalAddress(
+    system: ActorSystem) = system.asInstanceOf[ExtendedActorSystem].provider.getExternalAddressFor(Address("akka", "", "", 0)).get
 }
 
 class RemoteProcess(port: String, parentPath: String, cookieFile: String, configPath: String) {
 
-  def this(port: String, parentPath: String, cookieFile: String) = this(port, parentPath, cookieFile, "kernel.conf")
+  def this(port: String, parentPath: String,
+    cookieFile: String) = this(port, parentPath, cookieFile, "kernel.conf")
 
   def this(port: String, parentPath: String) = this(port, parentPath, "")
 
   locally {
     //TODO: This doesn't really belong here?
-    PropertyConfigurator.configure(getClass().getResource("/log4j.subprocess.properties"))
+    PropertyConfigurator.configure(getClass.getResource("/log4j.subprocess.properties"))
   }
 
   val system = {
     val cookie = Some(new File(cookieFile)).filter(_.exists).map(FileUtils.readFileToString)
     val baseConfig = ConfigFactory.load(configPath)
-    val config = cookie map { AkkaConfigUtils.requireCookie(baseConfig, _) } getOrElse baseConfig
+    val config = cookie map {
+      AkkaConfigUtils.requireCookie(baseConfig, _)
+    } getOrElse baseConfig
     ActorSystem("RemoteProcess", ConfigFactory.parseMap(Map("akka.remote.netty.port" -> port)).withFallback(config))
   }
 
-  val log = LoggerFactory.getLogger(getClass())
+  val log = LoggerFactory.getLogger(getClass)
 
   if (log.isTraceEnabled) {
     system.eventStream.subscribe(system.actorOf(Props(new Actor {

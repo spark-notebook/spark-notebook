@@ -1,18 +1,20 @@
 package notebook.kernel.pfork
 
-import collection.mutable
-import collection.JavaConversions._
-import org.apache.commons.exec._
 import java.io.File
-import java.net.{URLDecoder, URLClassLoader, Socket, ServerSocket}
-import org.slf4j.LoggerFactory
+import java.net.{ServerSocket, Socket, URLClassLoader, URLDecoder}
 import java.util.concurrent.atomic.AtomicBoolean
-import scala.Option
+
+import org.apache.commons.exec._
+import org.slf4j.LoggerFactory
+
+import scala.collection.JavaConversions._
+import scala.collection.mutable
 
 /**
  * I am so sick of this being a thing that gets implemented everywhere. Let's abstract.
  */
 class ProcessFork[A: reflect.ClassTag] {
+
   import ProcessFork._
 
   val processClass = (implicitly[reflect.ClassTag[A]]).runtimeClass
@@ -22,13 +24,22 @@ class ProcessFork[A: reflect.ClassTag] {
   }, "Class %s can't be used by ProcessFork because it does not have a constructor that can take strings.".format(processClass))
 
   def workingDirectory = new File(".")
+
   def heap: Long = defaultHeap
+
   def stack: Long = -1
+
   def permGen: Long = -1
+
   def reservedCodeCache: Long = -1
+
   def server: Boolean = true
-  def debug: Boolean = false // If true, then you will likely get address in use errors spawning multiple processes
+
+  def debug: Boolean = false
+
+  // If true, then you will likely get address in use errors spawning multiple processes
   def classPath: IndexedSeq[String] = defaultClassPath
+
   def classPathString = classPath.mkString(File.pathSeparator)
 
   def jvmArgs = {
@@ -53,7 +64,9 @@ class ProcessFork[A: reflect.ClassTag] {
 
   protected final class SuffixOps(i: Int) {
     def k: Long = i.toLong << 10
+
     def m: Long = i.toLong << 20
+
     def g: Long = i.toLong << 30
   }
 
@@ -68,7 +81,7 @@ class ProcessFork[A: reflect.ClassTag] {
     log.info("Spawning %s".format(cmd.toString))
 
     // use environment because classpaths can be longer here than as a command line arg
-    val environment = System.getenv + ("CLASSPATH" -> (sys.env.get("HADOOP_CONF_DIR").map(_ + ":").getOrElse("")+classPathString))
+    val environment = System.getenv + ("CLASSPATH" -> (sys.env.get("HADOOP_CONF_DIR").map(_ + ":").getOrElse("") + classPathString))
 
     val exec = new KillableExecutor
 
@@ -76,6 +89,7 @@ class ProcessFork[A: reflect.ClassTag] {
     exec.setWorkingDirectory(workingDirectory)
     exec.execute(cmd, environment, new ExecuteResultHandler {
       def onProcessFailed(e: ExecuteException) {}
+
       def onProcessComplete(exitValue: Int) {}
     })
     () => exec.kill()
@@ -102,11 +116,15 @@ object ProcessFork {
   private class KillableExecutor extends DefaultExecutor {
     val killed = new AtomicBoolean(false)
     setWatchdog(new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT) {
-      override def start(p: Process) { if (killed.get()) p.destroy() }
+      override def start(p: Process) {
+        if (killed.get()) p.destroy()
+      }
     })
+
     def kill() {
-      if (killed.compareAndSet(false, true))
-        Option(getExecutorThread()) foreach(_.interrupt())
+      if (killed.compareAndSet(false, true)) {
+        Option(getExecutorThread) foreach (_.interrupt())
+      }
     }
   }
 
@@ -126,7 +144,7 @@ object ProcessFork {
           conns += conn //TODO: mem/resource leak...
         }
       } catch {
-        case e: Throwable => e.printStackTrace() ; throw e
+        case e: Throwable => e.printStackTrace(); throw e
       }
     }
     ss.getLocalPort
@@ -134,7 +152,7 @@ object ProcessFork {
 
   private lazy val javaHome = System.getProperty("java.home")
 
-  private lazy val log = LoggerFactory.getLogger(getClass())
+  private lazy val log = LoggerFactory.getLogger(getClass)
 
   private[pfork] def main(args: Array[String]) {
     val className = args(0)
@@ -158,6 +176,8 @@ object ProcessFork {
     }
   }
 
-  private def singleSeqParameter(types: Array[Class[_]]) = types.length == 1 && types(0).isAssignableFrom(classOf[IndexedSeq[_]])
+  private def singleSeqParameter(
+    types: Array[Class[_]]) = types.length == 1 && types(0).isAssignableFrom(classOf[IndexedSeq[_]])
+
   private def allStringParameters(types: Array[Class[_]]) = types.forall(_ == classOf[String])
 }

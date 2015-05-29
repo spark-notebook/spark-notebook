@@ -8,7 +8,7 @@ define([
     './comm',
     './serialize',
     'widgets/js/init'
-], function(IPython, $, utils, comm, serialize, widgetmanager) {
+], function (IPython, $, utils, comm, serialize, widgetmanager) {
     "use strict";
 
     /**
@@ -70,20 +70,19 @@ define([
      * @function _get_msg
      */
     Kernel.prototype._get_msg = function (msg_type, content, metadata, buffers) {
-        var msg = {
-            header : {
-                msg_id : utils.uuid(),
-                username : this.username,
-                session : this.session_id,
-                msg_type : msg_type,
-                version : "5.0"
+        return {
+            header: {
+                msg_id: utils.uuid(),
+                username: this.username,
+                session: this.session_id,
+                msg_type: msg_type,
+                version: "5.0"
             },
-            metadata : metadata || {},
-            content : content,
-            buffers : buffers || [],
-            parent_header : {}
+            metadata: metadata || {},
+            content: content,
+            buffers: buffers || [],
+            parent_header: {}
         };
-        return msg;
     };
 
     /**
@@ -91,7 +90,7 @@ define([
      */
     Kernel.prototype.bind_events = function () {
         var that = this;
-        this.events.on('send_input_reply.Kernel', function(evt, data) {
+        this.events.on('send_input_reply.Kernel', function (evt, data) {
             that.send_input_reply(data);
         });
 
@@ -135,7 +134,7 @@ define([
         this.register_iopub_handler('clear_output', $.proxy(this._handle_clear_output, this));
         this.register_iopub_handler('execute_input', $.proxy(this._handle_input_message, this));
 
-        for (var i=0; i < output_msg_types.length; i++) {
+        for (var i = 0; i < output_msg_types.length; i++) {
             this.register_iopub_handler(output_msg_types[i], $.proxy(this._handle_output_message, this));
         }
     };
@@ -171,7 +170,7 @@ define([
      * WILL be out of sync!
      *
      * @function start
-     * @param {params} [Object] - parameters to include in the query string
+     * @param params - parameters to include in the query string
      * @param {function} [success] - function executed on ajax success
      * @param {function} [error] - functon executed on ajax error
      */
@@ -433,7 +432,7 @@ define([
          */
         var that = this;
         this.stop_channels();
-        var kernel_base_ws = (this.base_url === "/")? this.kernel_url : this.kernel_url.substring(this.base_url.length)
+        var kernel_base_ws = (this.base_url === "/") ? this.kernel_url : this.kernel_url.substring(this.base_url.length)
         var ws_host_url = this.ws_url + kernel_base_ws;
 
         console.log("Starting WebSockets:", ws_host_url);
@@ -446,12 +445,12 @@ define([
         );
 
         var already_called_onclose = false; // only alert once
-        var ws_closed_early = function(evt){
-            if (already_called_onclose){
+        var ws_closed_early = function (evt) {
+            if (already_called_onclose) {
                 return;
             }
             already_called_onclose = true;
-            if ( ! evt.wasClean ){
+            if (!evt.wasClean) {
                 // If the websocket was closed early, that could mean
                 // that the kernel is actually dead. Try getting
                 // information about the kernel from the API call --
@@ -466,17 +465,17 @@ define([
                 });
             }
         };
-        var ws_closed_late = function(evt){
-            if (already_called_onclose){
+        var ws_closed_late = function (evt) {
+            if (already_called_onclose) {
                 return;
             }
             already_called_onclose = true;
-            if ( ! evt.wasClean ){
+            if (!evt.wasClean) {
                 that._ws_closed(ws_host_url, false);
             }
         };
-        var ws_error = function(evt){
-            if (already_called_onclose){
+        var ws_error = function (evt) {
+            if (already_called_onclose) {
                 return;
             }
             already_called_onclose = true;
@@ -487,7 +486,7 @@ define([
         this.ws.onclose = ws_closed_early;
         this.ws.onerror = ws_error;
         // switch from early-close to late-close message after 1s
-        setTimeout(function() {
+        setTimeout(function () {
             if (that.ws !== null) {
                 that.ws.onclose = ws_closed_late;
             }
@@ -508,7 +507,7 @@ define([
         }
     };
 
-    Kernel.prototype._ws_closed = function(ws_url, error) {
+    Kernel.prototype._ws_closed = function (ws_url, error) {
         /**
          * Handle a websocket entering the closed state.  If the websocket
          * was not closed due to an error, try to reconnect to the kernel.
@@ -522,7 +521,11 @@ define([
         this.events.trigger('kernel_disconnected.Kernel', {kernel: this});
         if (error) {
             console.log('WebSocket connection failed: ', ws_url);
-            this.events.trigger('kernel_connection_failed.Kernel', {kernel: this, ws_url: ws_url, attempt: this._reconnect_attempt});
+            this.events.trigger('kernel_connection_failed.Kernel', {
+                kernel: this,
+                ws_url: ws_url,
+                attempt: this._reconnect_attempt
+            });
         }
         this._schedule_reconnect();
     };
@@ -628,7 +631,7 @@ define([
          */
         var callbacks;
         if (callback) {
-            callbacks = { shell : { reply : callback } };
+            callbacks = {shell: {reply: callback}};
         }
         return this.send_shell_message("kernel_info_request", {}, callbacks);
     };
@@ -648,13 +651,13 @@ define([
          */
         var callbacks;
         if (callback) {
-            callbacks = { shell : { reply : callback } };
+            callbacks = {shell: {reply: callback}};
         }
 
         var content = {
-            code : code,
-            cursor_pos : cursor_pos,
-            detail_level : 0
+            code: code,
+            cursor_pos: cursor_pos,
+            detail_level: 0
         };
         return this.send_shell_message("inspect_request", content, callbacks);
     };
@@ -710,11 +713,11 @@ define([
          * payload and the execute_reply message.
          */
         var content = {
-            code : code,
-            silent : true,
-            store_history : false,
-            user_expressions : {},
-            allow_stdin : false
+            code: code,
+            silent: true,
+            store_history: false,
+            user_expressions: {},
+            allow_stdin: false
         };
         callbacks = callbacks || {};
         if (callbacks.input !== undefined) {
@@ -740,11 +743,11 @@ define([
     Kernel.prototype.complete = function (code, cursor_pos, callback) {
         var callbacks;
         if (callback) {
-            callbacks = { shell : { reply : callback } };
+            callbacks = {shell: {reply: callback}};
         }
         var content = {
-            code : code,
-            cursor_pos : cursor_pos
+            code: code,
+            cursor_pos: cursor_pos
         };
         return this.send_shell_message("complete_request", content, callbacks);
     };
@@ -758,10 +761,9 @@ define([
     Kernel.prototype.cancelJobs = function (callback) {
         var callbacks;
         if (callback) {
-            callbacks = { shell : { reply : callback } };
+            callbacks = {shell: {reply: callback}};
         }
-        var content = {
-        };
+        var content = {};
         return this.send_shell_message("interrupt_request", content, callbacks);
     };
 
@@ -773,7 +775,7 @@ define([
             throw new Error("kernel is not connected");
         }
         var content = {
-            value : input
+            value: input
         };
         this.events.trigger('input_reply.Kernel', {kernel: this, content: content});
         var msg = this._get_msg("input_reply", content);
@@ -817,7 +819,7 @@ define([
      * @function clear_callbacks_for_msg
      */
     Kernel.prototype.clear_callbacks_for_msg = function (msg_id) {
-        if (this._msg_callbacks[msg_id] !== undefined ) {
+        if (this._msg_callbacks[msg_id] !== undefined) {
             delete this._msg_callbacks[msg_id];
         }
     };
@@ -893,7 +895,7 @@ define([
     };
 
     Kernel.prototype._handle_shell_reply = function (reply) {
-        this.events.trigger('shell_reply.Kernel', {kernel: this, reply:reply});
+        this.events.trigger('shell_reply.Kernel', {kernel: this, reply: reply});
         var content = reply.content;
         var metadata = reply.metadata;
         var parent_id = reply.parent_header.msg_id;
@@ -921,7 +923,7 @@ define([
         var l = payloads.length;
         // Payloads are handled by triggering events because we don't want the Kernel
         // to depend on the Notebook or Pager classes.
-        for (var i=0; i<l; i++) {
+        for (var i = 0; i < l; i++) {
             var payload = payloads[i];
             var callback = payload_callbacks[payload.source];
             if (callback) {
@@ -974,7 +976,10 @@ define([
             // autorestart shows the more prominent dialog.
             this._autorestart_attempt = this._autorestart_attempt + 1;
             this.events.trigger('kernel_restarting.Kernel', {kernel: this});
-            this.events.trigger('kernel_autorestarting.Kernel', {kernel: this, attempt: this._autorestart_attempt});
+            this.events.trigger('kernel_autorestarting.Kernel', {
+                kernel: this,
+                attempt: this._autorestart_attempt
+            });
 
         } else if (execution_state === 'dead') {
             this.events.trigger('kernel_dead.Kernel', {kernel: this});
