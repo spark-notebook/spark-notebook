@@ -7,6 +7,7 @@ import play.api.libs.json.Json.obj
 import play.api.libs.json._
 
 import scala.concurrent._
+import scala.collection.immutable.Queue
 import scala.concurrent.duration._
 
 /**
@@ -33,7 +34,7 @@ class CalcWebSocketService(
   def unregister(ws: WebSockWrapper) = calcActor ! Unregister(ws)
 
   class CalcActor extends Actor with ActorLogging {
-    private var currentSessionOperation: Option[ActorRef] = None
+    private var currentSessionOperation: Queue[ActorRef] = Queue.empty
     var calculator: ActorRef = null
     var wss: List[WebSockWrapper] = Nil
 
@@ -95,9 +96,16 @@ class CalcWebSocketService(
         wss = wss.filterNot(_ == ws)
 
       case InterruptCalculator =>
-        for (op <- currentSessionOperation) {
+        Logger.info(s"Interrupting the computations, current is $currentSessionOperation")
+        currentSessionOperation.headOption.foreach { op =>
+          //cancelling the spark jobs in the first cell
           calculator.tell(InterruptRequest, op)
         }
+        if(currentSessionOperation.tail.nonEmpty) {
+          //cleaning the other cells
+          currentSessionOperation.tail.foreach(_ ! StreamResponse("Previous cell has been interrupted", "stdout"))
+        }
+        currentSessionOperation = Queue.empty
 
       case req@SessionRequest(header, session, request) =>
         val operations = new SessionOperationActors(header, session)
@@ -115,16 +123,18 @@ class CalcWebSocketService(
         }
         val operation = context.actorOf(operationActor)
         context.watch(operation)
-        currentSessionOperation = Some(operation)
+        currentSessionOperation = currentSessionOperation.enqueue(operation)
         calculator.tell(request, operation)
 
 
       case Terminated(actor) =>
-        log.warning("Termination")
+        Logger.debug("Termination of op calculator")
         if (actor == calculator) {
           spawnCalculator()
         } else {
-          currentSessionOperation = None
+          if (currentSessionOperation.nonEmpty) {
+            currentSessionOperation = currentSessionOperation.dequeue._2
+          }
         }
     }
 
