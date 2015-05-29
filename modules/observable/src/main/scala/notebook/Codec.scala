@@ -1,49 +1,59 @@
 package notebook
 
-import scala.util.Try
-
-import play.api.libs.json._
-import play.api.libs.functional.syntax._
+import java.text.DateFormat
+import java.util.Date
 
 import org.slf4j.LoggerFactory
+import play.api.libs.json._
 
-import notebook.util._
+import scala.util.Try
 
-trait Codec[A,B] {
-  def encode(x:A):B
-  def decode(x:B):A
+trait Codec[A, B] {
+  def encode(x: A): B
+
+  def decode(x: B): A
 }
 
 object JsonCodec {
-  val log = LoggerFactory.getLogger(getClass())
+  val log = LoggerFactory.getLogger(getClass)
 
-  implicit def formatToCodec[A](implicit f:Format[A]):Codec[JsValue, A] = new Codec[JsValue, A] {
-    def decode(a: A):JsValue = f.writes(a)
-    def encode(v: JsValue):A = f.reads(v) match {
+  implicit def formatToCodec[A](implicit f: Format[A]): Codec[JsValue, A] = new Codec[JsValue, A] {
+    def decode(a: A): JsValue = f.writes(a)
+
+    def encode(v: JsValue): A = f.reads(v) match {
       case s: JsSuccess[A] => s.get
       case e: JsError => throw new RuntimeException("Errors: " + JsError.toFlatJson(e).toString())
     }
   }
 
   //implicit val ints:Codec[JsValue, Int] = formatToCodec(Format.of[Int])
-  implicit val longs:Codec[JsValue, Long] = formatToCodec(Format.of[Long])
-  implicit val doubles:Codec[JsValue, Double] = formatToCodec(Format.of[Double])
-  implicit val floats:Codec[JsValue, Float] = formatToCodec(Format.of[Float])
-  implicit val strings:Codec[JsValue, String] = formatToCodec(Format.of[String])
-  implicit val chars:Codec[JsValue, Char] = formatToCodec(Format(Reads.of[String].map(_.head), Writes((c:Char) => JsString(c.toString))))
-  implicit val bools:Codec[JsValue, Boolean] = formatToCodec(Format.of[Boolean])
+  implicit val longs: Codec[JsValue, Long] = formatToCodec(Format.of[Long])
+  implicit val doubles: Codec[JsValue, Double] = formatToCodec(Format.of[Double])
+  implicit val floats: Codec[JsValue, Float] = formatToCodec(Format.of[Float])
+  implicit val strings: Codec[JsValue, String] = formatToCodec(Format.of[String])
+  implicit val chars: Codec[JsValue, Char] = formatToCodec(Format(
+    Reads.of[String].map(_.head),
+    Writes((c: Char) => JsString(c.toString))
+  ))
+  implicit val bools: Codec[JsValue, Boolean] = formatToCodec(Format.of[Boolean])
 
-  implicit def defaultDates(implicit d:java.text.DateFormat) = new Codec[JsValue, java.util.Date] {
-    def decode(t: java.util.Date):JsValue = JsNumber(t.getTime)
-    def encode(v: JsValue):java.util.Date = v match {
-      case JsString(s)  => Try(s.toLong).toOption.map(x => new java.util.Date(x)).getOrElse(d.parse(s))
-      case JsNumber(i) => new java.util.Date(i.toLong)
-      case x           => new java.util.Date(v.as[Long])
+  implicit def defaultDates(implicit d: DateFormat): Codec[JsValue, Date] = {
+    new Codec[JsValue, Date] {
+
+      def decode(t: Date): JsValue = JsNumber(t.getTime)
+
+      def encode(v: JsValue): Date = v match {
+        case JsString(s) => Try(s.toLong).toOption.map(new Date(_)).getOrElse(d.parse(s))
+        case JsNumber(i) => new Date(i.toLong)
+        case x => new Date(v.as[Long])
+      }
     }
   }
+
   implicit val ints = new Codec[JsValue, Int] {
     def decode(t: Int) = JsNumber(t)
-    def encode(v: JsValue):Int = v match {
+
+    def encode(v: JsValue): Int = v match {
       case JsString(s) => s.toInt
       case JsNumber(i) => i.toInt
     }
@@ -111,26 +121,31 @@ object JsonCodec {
     }
   }*/
 
-  implicit val pair = new Codec[JsValue, (Double,Double)] {
-    def decode(t: (Double,Double)): JsValue = Json.arr(t._1, t._2)
+  implicit val pair = new Codec[JsValue, (Double, Double)] {
+    def decode(t: (Double, Double)): JsValue = Json.arr(t._1, t._2)
+
     def encode(v: JsValue) = {
       val Seq(JsNumber(x), JsNumber(y)) = v.asInstanceOf[JsArray].value
       (x.toDouble, y.toDouble)
     }
   }
 
-  implicit def tMap[T](implicit codec:Codec[JsValue, T]):Codec[JsValue, Map[String, T]] = new Codec[JsValue, Map[String, T]] {
-    def encode(vs: JsValue):Map[String, T] = {
-      val jo:JsObject = vs.asInstanceOf[JsObject]
+  implicit def tMap[T](implicit
+    codec: Codec[JsValue, T]): Codec[JsValue, Map[String, T]] = new Codec[JsValue, Map[String, T]] {
+    def encode(vs: JsValue): Map[String, T] = {
+      val jo: JsObject = vs.asInstanceOf[JsObject]
       jo.value.map { case (name, jsValue) =>
         name -> codec.encode(jsValue)
       }.toMap
     }
-    def decode(ts: Map[String, T]): JsValue = JsObject( ts.map{ case (n, t) => (n, codec.decode(t))}.toSeq )
+
+    def decode(
+      ts: Map[String, T]): JsValue = JsObject(ts.map { case (n, t) => (n, codec.decode(t)) }.toSeq)
   }
 
-  implicit def tSeq[T](implicit codec:Codec[JsValue, T]):Codec[JsValue, Seq[T]] = new Codec[JsValue, Seq[T]] {
-    def encode(vs: JsValue) = vs.asInstanceOf[JsArray].value.map(codec.encode _)
+  implicit def tSeq[T](implicit
+    codec: Codec[JsValue, T]): Codec[JsValue, Seq[T]] = new Codec[JsValue, Seq[T]] {
+    def encode(vs: JsValue) = vs.asInstanceOf[JsArray].value.map(codec.encode)
 
     def decode(ts: Seq[T]): JsValue = JsArray(ts.map(t => codec.decode(t)))
   }
@@ -141,8 +156,9 @@ object JsonCodec {
     def decode(x:T):JsValue = codec.decode(x)
   }*/
 
-  implicit def idCodec[T]:Codec[T, T] = new Codec[T, T] {
+  implicit def idCodec[T]: Codec[T, T] = new Codec[T, T] {
     def encode(x: T): T = x
+
     def decode(x: T): T = x
   }
 

@@ -34,6 +34,35 @@
       }
     }
   },
+  "Example YARN" : {
+    "name" : "Example YARN-Client",
+    "profile" : "yarn-client",
+    "status" : "stopped",
+    "template" : {
+      "customLocalRepo" : "",
+      "customRepos" : [ ],
+      "customDeps" : [ ],
+      "customImports" : [ ],
+      "customSparkConf" : {
+        "spark.app.name" : "Notebook",
+        "spark.master" : "yarn-client",
+        "spark.executor.memory" : "1G",
+        "spark.yarn.jar" : "hdfs:///user/spark/spark-assembly.jar"
+      }
+    }
+  },
+  "sjk" : {
+    "profile" : "",
+    "name" : "sjk",
+    "status" : "stopped",
+    "template" : {
+      "customLocalRepo" : "",
+      "customRepos" : [ ],
+      "customDeps" : [ ],
+      "customImports" : [ ],
+      "customSparkConf" : { }
+    }
+  },
   "Example local" : {
     "profile" : "local",
     "name" : "Example local",
@@ -60,23 +89,6 @@
       "customImports" : [ "import scala.util._", "import org.apache.spark.SparkContext._" ],
       "customSparkConf" : {
         "spark.master" : "local[4]"
-      }
-    }
-  },
-  "Example YARN" : {
-    "name" : "Example YARN-Client",
-    "profile" : "yarn-client",
-    "status" : "stopped",
-    "template" : {
-      "customLocalRepo" : "",
-      "customRepos" : [ ],
-      "customDeps" : [ ],
-      "customImports" : [ ],
-      "customSparkConf" : {
-        "spark.app.name" : "Notebook",
-        "spark.master" : "yarn-client",
-        "spark.executor.memory" : "1G",
-        "spark.yarn.jar" : "hdfs:///user/spark/spark-assembly.jar"
       }
     }
   }

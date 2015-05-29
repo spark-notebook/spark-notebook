@@ -7,19 +7,19 @@ define([
     'codemirror/lib/codemirror',
     'moment',
     // silently upgrades CodeMirror
-    'codemirror/mode/meta',
-], function(IPython, $, CodeMirror, moment){
+    'codemirror/mode/meta'
+], function (IPython, $, CodeMirror, moment) {
     "use strict";
-    
+
     var load_extensions = function () {
         // load one or more IPython notebook extensions with requirejs
-        
+
         var extensions = [];
         var extension_names = arguments;
         for (var i = 0; i < extension_names.length; i++) {
             extensions.push("nbextensions/" + arguments[i]);
         }
-        
+
         require(extensions,
             function () {
                 for (var i = 0; i < arguments.length; i++) {
@@ -38,7 +38,7 @@ define([
             }
         );
     };
-    
+
     IPython.load_extensions = load_extensions;
 
     /**
@@ -46,10 +46,10 @@ define([
      * in a 'load_extensions' key inside it.
      */
     function load_extensions_from_config(section) {
-        section.loaded.then(function() {
+        section.loaded.then(function () {
             if (section.data.load_extensions) {
                 var nbextension_paths = Object.getOwnPropertyNames(
-                                            section.data.load_extensions);
+                    section.data.load_extensions);
                 load_extensions.apply(this, nbextension_paths);
             }
         });
@@ -100,9 +100,9 @@ define([
     var regex_split = function (str, separator, limit) {
         var output = [],
             flags = (separator.ignoreCase ? "i" : "") +
-                    (separator.multiline  ? "m" : "") +
-                    (separator.extended   ? "x" : "") + // Proposed for ES6
-                    (separator.sticky     ? "y" : ""), // Firefox 3+
+                (separator.multiline ? "m" : "") +
+                (separator.extended ? "x" : "") + // Proposed for ES6
+                (separator.sticky ? "y" : ""), // Firefox 3+
             lastLastIndex = 0,
             separator2, match, lastIndex, lastLength;
         // Make `global` and avoid `lastIndex` issues by working with a copy
@@ -121,8 +121,8 @@ define([
          * If other: Type-convert, then use the above rules
          */
         limit = typeof(limit) === "undefined" ?
-            -1 >>> 0 : // Math.pow(2, 32) - 1
-            limit >>> 0; // ToUint32(limit)
+        -1 >>> 0 : // Math.pow(2, 32) - 1
+        limit >>> 0; // ToUint32(limit)
         for (match = separator.exec(str); match; match = separator.exec(str)) {
             // `separator.lastIndex` is not reliable cross-browser
             lastIndex = match.index + match[0].length;
@@ -186,43 +186,43 @@ define([
 
     //Fix raw text to parse correctly in crazy XML
     function xmlencode(string) {
-        return string.replace(/\&/g,'&'+'amp;')
-            .replace(/</g,'&'+'lt;')
-            .replace(/>/g,'&'+'gt;')
-            .replace(/\'/g,'&'+'apos;')
-            .replace(/\"/g,'&'+'quot;')
-            .replace(/`/g,'&'+'#96;');
+        return string.replace(/\&/g, '&' + 'amp;')
+            .replace(/</g, '&' + 'lt;')
+            .replace(/>/g, '&' + 'gt;')
+            .replace(/\'/g, '&' + 'apos;')
+            .replace(/\"/g, '&' + 'quot;')
+            .replace(/`/g, '&' + '#96;');
     }
 
 
     //Map from terminal commands to CSS classes
     var ansi_colormap = {
-        "01":"ansibold",
-        
-        "30":"ansiblack",
-        "31":"ansired",
-        "32":"ansigreen",
-        "33":"ansiyellow",
-        "34":"ansiblue",
-        "35":"ansipurple",
-        "36":"ansicyan",
-        "37":"ansigray",
-        
-        "40":"ansibgblack",
-        "41":"ansibgred",
-        "42":"ansibggreen",
-        "43":"ansibgyellow",
-        "44":"ansibgblue",
-        "45":"ansibgpurple",
-        "46":"ansibgcyan",
-        "47":"ansibggray"
+        "01": "ansibold",
+
+        "30": "ansiblack",
+        "31": "ansired",
+        "32": "ansigreen",
+        "33": "ansiyellow",
+        "34": "ansiblue",
+        "35": "ansipurple",
+        "36": "ansicyan",
+        "37": "ansigray",
+
+        "40": "ansibgblack",
+        "41": "ansibgred",
+        "42": "ansibggreen",
+        "43": "ansibgyellow",
+        "44": "ansibgblue",
+        "45": "ansibgpurple",
+        "46": "ansibgcyan",
+        "47": "ansibggray"
     };
-    
+
     function _process_numbers(attrs, numbers) {
         // process ansi escapes
         var n = numbers.shift();
         if (ansi_colormap[n]) {
-            if ( ! attrs["class"] ) {
+            if (!attrs["class"]) {
                 attrs["class"] = ansi_colormap[n];
             } else {
                 attrs["class"] += " " + ansi_colormap[n];
@@ -233,9 +233,9 @@ define([
                 console.log("Not enough fields for VT100 color", numbers);
                 return;
             }
-            
+
             var index_or_rgb = numbers.shift();
-            var r,g,b;
+            var r, g, b;
             if (index_or_rgb == "5") {
                 // 256 color
                 var idx = parseInt(numbers.shift(), 10);
@@ -244,7 +244,7 @@ define([
                     // ignore bright / non-bright distinction
                     idx = idx % 8;
                     var ansiclass = ansi_colormap[n[0] + (idx % 8).toString()];
-                    if ( ! attrs["class"] ) {
+                    if (!attrs["class"]) {
                         attrs["class"] = ansiclass;
                     } else {
                         attrs["class"] += " " + ansiclass;
@@ -289,7 +289,7 @@ define([
                     line = "background-color: ";
                 }
                 line = line + "rgb(" + r + "," + g + "," + b + ");";
-                if ( !attrs.style ) {
+                if (!attrs.style) {
                     attrs.style = line;
                 } else {
                     attrs.style += " " + line;
@@ -302,7 +302,7 @@ define([
         // ansispan function adapted from github.com/mmalecki/ansispan (MIT License)
         // regular ansi escapes (using the table above)
         var is_open = false;
-        return str.replace(/\033\[(0?[01]|22|39)?([;\d]+)?m/g, function(match, prefix, pattern) {
+        return str.replace(/\033\[(0?[01]|22|39)?([;\d]+)?m/g, function (match, prefix, pattern) {
             if (!pattern) {
                 // [(01|22|39|)m close spans
                 if (is_open) {
@@ -340,7 +340,7 @@ define([
         // all ANSI codes that do not end with "m".
         var ignored_re = /(?=(\033\[[\d;=]*[a-ln-zA-Z]{1}))\1(?!m)/g;
         txt = txt.replace(ignored_re, "");
-        
+
         // color ansi codes
         txt = ansispan(txt);
         return txt;
@@ -370,11 +370,11 @@ define([
          */
         var test = $('<div style="display: none; width: 10000pt; padding:0; border:0;"></div>');
         $('body').append(test);
-        var pixel_per_point = test.width()/10000;
+        var pixel_per_point = test.width() / 10000;
         test.remove();
-        return Math.floor(points*pixel_per_point);
+        return Math.floor(points * pixel_per_point);
     };
-    
+
     var always_new = function (constructor) {
         /**
          * wrapper around contructor to avoid requiring `var a = new constructor()`
@@ -398,7 +398,7 @@ define([
             if (arguments[i] === '') {
                 continue;
             }
-            if (url.length > 0 && url[url.length-1] != '/') {
+            if (url.length > 0 && url[url.length - 1] != '/') {
                 url = url + '/' + arguments[i];
             } else {
                 url = url + arguments[i];
@@ -407,21 +407,21 @@ define([
         url = url.replace(/\/\/+/, '/');
         return url;
     };
-    
+
     var url_path_split = function (path) {
         /**
          * Like os.path.split for URLs.
          * Always returns two strings, the directory path and the base filename
          */
-        
+
         var idx = path.lastIndexOf('/');
         if (idx === -1) {
             return ['', path];
         } else {
-            return [ path.slice(0, idx), path.slice(idx + 1) ];
+            return [path.slice(0, idx), path.slice(idx + 1)];
         }
     };
-    
+
     var parse_url = function (url) {
         /**
          * an `a` element with an href allows attr-access to the parsed segments of a URL
@@ -437,7 +437,7 @@ define([
         a.href = url;
         return a;
     };
-    
+
     var encode_uri_components = function (uri) {
         /**
          * encode just the components of a multi-segment uri,
@@ -445,7 +445,7 @@ define([
          */
         return uri.split('/').map(encodeURIComponent).join('/');
     };
-    
+
     var url_join_encode = function () {
         /**
          * join a sequence of url components with '/',
@@ -477,7 +477,7 @@ define([
     };
 
 
-    var get_body_data = function(key) {
+    var get_body_data = function (key) {
         /**
          * get a url-encoded item from body.data and decode it
          * we should never have any encoded URLs anywhere else in code
@@ -485,7 +485,7 @@ define([
          */
         return decodeURIComponent($('body').data(key));
     };
-    
+
     var to_absolute_cursor_pos = function (cm, cursor) {
         /**
          * get the absolute cursor position from CodeMirror's col, ch
@@ -499,40 +499,40 @@ define([
         }
         return cursor_pos;
     };
-    
+
     var from_absolute_cursor_pos = function (cm, cursor_pos) {
         /**
          * turn absolute cursor postion into CodeMirror col, ch cursor
          */
         var i, line;
         var offset = 0;
-        for (i = 0, line=cm.getLine(i); line !== undefined; i++, line=cm.getLine(i)) {
+        for (i = 0, line = cm.getLine(i); line !== undefined; i++, line = cm.getLine(i)) {
             if (offset + line.length < cursor_pos) {
                 offset += line.length + 1;
             } else {
                 return {
-                    line : i,
-                    ch : cursor_pos - offset,
+                    line: i,
+                    ch: cursor_pos - offset,
                 };
             }
         }
         // reached end, return endpoint
         return {
-            ch : line.length - 1,
-            line : i - 1,
+            ch: line.length - 1,
+            line: i - 1,
         };
     };
-    
+
     // http://stackoverflow.com/questions/2400935/browser-detection-in-javascript
-    var browser = (function() {
+    var browser = (function () {
         if (typeof navigator === 'undefined') {
             // navigator undefined in node
             return 'None';
         }
-        var N= navigator.appName, ua= navigator.userAgent, tem;
-        var M= ua.match(/(opera|chrome|safari|firefox|msie)\/?\s*(\.?\d+(\.\d+)*)/i);
-        if (M && (tem= ua.match(/version\/([\.\d]+)/i)) !== null) M[2]= tem[1];
-        M= M? [M[1], M[2]]: [N, navigator.appVersion,'-?'];
+        var N = navigator.appName, ua = navigator.userAgent, tem;
+        var M = ua.match(/(opera|chrome|safari|firefox|msie)\/?\s*(\.?\d+(\.\d+)*)/i);
+        if (M && (tem = ua.match(/version\/([\.\d]+)/i)) !== null) M[2] = tem[1];
+        M = M ? [M[1], M[2]] : [N, navigator.appVersion, '-?'];
         return M;
     })();
 
@@ -542,28 +542,28 @@ define([
             // navigator undefined in node
             return 'None';
         }
-        var OSName="None";
-        if (navigator.appVersion.indexOf("Win")!=-1) OSName="Windows";
-        if (navigator.appVersion.indexOf("Mac")!=-1) OSName="MacOS";
-        if (navigator.appVersion.indexOf("X11")!=-1) OSName="UNIX";
-        if (navigator.appVersion.indexOf("Linux")!=-1) OSName="Linux";
+        var OSName = "None";
+        if (navigator.appVersion.indexOf("Win") != -1) OSName = "Windows";
+        if (navigator.appVersion.indexOf("Mac") != -1) OSName = "MacOS";
+        if (navigator.appVersion.indexOf("X11") != -1) OSName = "UNIX";
+        if (navigator.appVersion.indexOf("Linux") != -1) OSName = "Linux";
         return OSName;
     })();
-    
+
     var get_url_param = function (name) {
         // get a URL parameter. I cannot believe we actually need this.
         // Based on http://stackoverflow.com/a/25359264/938949
         var match = new RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
-        if (match){
+        if (match) {
             return decodeURIComponent(match[1] || '');
         }
     };
-    
+
     var is_or_has = function (a, b) {
         /**
          * Is b a child of a or a itself?
          */
-        return a.has(b).length !==0 || a.is(b);
+        return a.has(b).length !== 0 || a.is(b);
     };
 
     var is_focused = function (e) {
@@ -582,13 +582,13 @@ define([
             return false;
         }
     };
-    
-    var mergeopt = function(_class, options, overwrite){
+
+    var mergeopt = function (_class, options, overwrite) {
         options = options || {};
         overwrite = overwrite || {};
         return $.extend(true, {}, _class.options_default, options, overwrite);
     };
-    
+
     var ajax_error_msg = function (jqXHR) {
         /**
          * Return a JSON error message if there is one,
@@ -613,14 +613,14 @@ define([
     };
 
     var requireCodeMirrorMode = function (mode, callback, errback) {
-        /** 
+        /**
          * find a predefined mode or detect from CM metadata then
          * require and callback with the resolveable mode string: mime or
          * custom name
          */
 
         var modename = (typeof mode == "string") ? mode :
-            mode.mode || mode.name;
+        mode.mode || mode.name;
 
         // simplest, cheapest check by mode name: mode may also have config
         if (CodeMirror.modes.hasOwnProperty(modename)) {
@@ -640,41 +640,41 @@ define([
         require([
                 // might want to use CodeMirror.modeURL here
                 ['codemirror/mode', info.mode, info.mode].join('/'),
-            ], function() {
-              // return the original mode, as from a kernelspec on first load
-              // or the mimetype, as for most highlighting
-              callback(mode.name ? mode : info.mime);
+            ], function () {
+                // return the original mode, as from a kernelspec on first load
+                // or the mimetype, as for most highlighting
+                callback(mode.name ? mode : info.mime);
             }, errback
         );
     };
-    
+
     /** Error type for wrapped XHR errors. */
     var XHR_ERROR = 'XhrError';
-    
+
     /**
      * Wraps an AJAX error as an Error object.
      */
     var wrap_ajax_error = function (jqXHR, status, error) {
         var wrapped_error = new Error(ajax_error_msg(jqXHR));
-        wrapped_error.name =  XHR_ERROR;
+        wrapped_error.name = XHR_ERROR;
         // provide xhr response
         wrapped_error.xhr = jqXHR;
         wrapped_error.xhr_status = status;
         wrapped_error.xhr_error = error;
         return wrapped_error;
     };
-    
-    var promising_ajax = function(url, settings) {
+
+    var promising_ajax = function (url, settings) {
         /**
          * Like $.ajax, but returning an ES6 promise. success and error settings
          * will be ignored.
          */
         settings = settings || {};
-        return new Promise(function(resolve, reject) {
-            settings.success = function(data, status, jqXHR) {
+        return new Promise(function (resolve, reject) {
+            settings.success = function (data, status, jqXHR) {
                 resolve(data);
             };
-            settings.error = function(jqXHR, status, error) {
+            settings.error = function (jqXHR, status, error) {
                 log_ajax_error(jqXHR, status, error);
                 reject(wrap_ajax_error(jqXHR, status, error));
             };
@@ -682,7 +682,7 @@ define([
         });
     };
 
-    var WrappedError = function(message, error){
+    var WrappedError = function (message, error) {
         /**
          * Wrappable Error class
          *
@@ -712,21 +712,21 @@ define([
     WrappedError.prototype = Object.create(Error.prototype, {});
 
 
-    var load_class = function(class_name, module_name, registry) {
+    var load_class = function (class_name, module_name, registry) {
         /**
          * Tries to load a class
          *
-         * Tries to load a class from a module using require.js, if a module 
-         * is specified, otherwise tries to load a class from the global 
+         * Tries to load a class from a module using require.js, if a module
+         * is specified, otherwise tries to load a class from the global
          * registry, if the global registry is provided.
          */
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
 
             // Try loading the view module using require.js
             if (module_name) {
-                require([module_name], function(module) {
+                require([module_name], function (module) {
                     if (module[class_name] === undefined) {
-                        reject(new Error('Class '+class_name+' not found in module '+module_name));
+                        reject(new Error('Class ' + class_name + ' not found in module ' + module_name));
                     } else {
                         resolve(module[class_name]);
                     }
@@ -735,47 +735,47 @@ define([
                 if (registry && registry[class_name]) {
                     resolve(registry[class_name]);
                 } else {
-                    reject(new Error('Class '+class_name+' not found in registry '));
+                    reject(new Error('Class ' + class_name + ' not found in registry '));
                 }
             }
         });
     };
 
-    var resolve_promises_dict = function(d) {
+    var resolve_promises_dict = function (d) {
         /**
          * Resolve a promiseful dictionary.
          * Returns a single Promise.
          */
         var keys = Object.keys(d);
         var values = [];
-        keys.forEach(function(key) {
+        keys.forEach(function (key) {
             values.push(d[key]);
         });
-        return Promise.all(values).then(function(v) {
+        return Promise.all(values).then(function (v) {
             d = {};
-            for(var i=0; i<keys.length; i++) {
+            for (var i = 0; i < keys.length; i++) {
                 d[keys[i]] = v[i];
             }
             return d;
         });
     };
 
-    var reject = function(message, log) {
+    var reject = function (message, log) {
         /**
          * Creates a wrappable Promise rejection function.
-         * 
+         *
          * Creates a function that returns a Promise.reject with a new WrappedError
-         * that has the provided message and wraps the original error that 
+         * that has the provided message and wraps the original error that
          * caused the promise to reject.
          */
-        return function(error) { 
+        return function (error) {
             var wrapped_error = new WrappedError(message, error);
-            if (log) console.error(wrapped_error); 
-            return Promise.reject(wrapped_error); 
+            if (log) console.error(wrapped_error);
+            return Promise.reject(wrapped_error);
         };
     };
 
-    var typeset = function(element, text) {
+    var typeset = function (element, text) {
         /**
          * Apply MathJax rendering to an element, and optionally set its text
          *
@@ -790,25 +790,25 @@ define([
          * text: option string
          */
         var $el = element.jquery ? element : $(element);
-        if(arguments.length > 1){
+        if (arguments.length > 1) {
             $el.text(text);
         }
-        if(!window.MathJax){
+        if (!window.MathJax) {
             return;
         }
-        return $el.map(function(){
+        return $el.map(function () {
             // MathJax takes a DOM node: $.map makes `this` the context
             return MathJax.Hub.Queue(["Typeset", MathJax.Hub, this]);
         });
     };
-    
+
     var time = {};
     time.milliseconds = {};
     time.milliseconds.s = 1000;
     time.milliseconds.m = 60 * time.milliseconds.s;
     time.milliseconds.h = 60 * time.milliseconds.m;
     time.milliseconds.d = 24 * time.milliseconds.h;
-    
+
     time.thresholds = {
         // moment.js thresholds in milliseconds
         s: moment.relativeTimeThreshold('s') * time.milliseconds.s,
@@ -816,18 +816,18 @@ define([
         h: moment.relativeTimeThreshold('h') * time.milliseconds.h,
         d: moment.relativeTimeThreshold('d') * time.milliseconds.d,
     };
-    
+
     time.timeout_from_dt = function (dt) {
         /** compute a timeout based on dt
-        
-        input and output both in milliseconds
-        
-        use moment's relative time thresholds:
-        
-        - 10 seconds if in 'seconds ago' territory
-        - 1 minute if in 'minutes ago'
-        - 1 hour otherwise
-        */
+
+         input and output both in milliseconds
+
+         use moment's relative time thresholds:
+
+         - 10 seconds if in 'seconds ago' territory
+         - 1 minute if in 'minutes ago'
+         - 1 hour otherwise
+         */
         if (dt < time.thresholds.s) {
             return 10 * time.milliseconds.s;
         } else if (dt < time.thresholds.m) {
@@ -836,39 +836,39 @@ define([
             return time.milliseconds.h;
         }
     };
-    
+
     var utils = {
         load_extensions: load_extensions,
         load_extensions_from_config: load_extensions_from_config,
-        regex_split : regex_split,
-        uuid : uuid,
-        fixConsole : fixConsole,
-        fixCarriageReturn : fixCarriageReturn,
-        autoLinkUrls : autoLinkUrls,
-        points_to_pixels : points_to_pixels,
-        get_body_data : get_body_data,
-        parse_url : parse_url,
-        url_path_split : url_path_split,
-        url_path_join : url_path_join,
-        url_join_encode : url_join_encode,
-        encode_uri_components : encode_uri_components,
-        splitext : splitext,
-        escape_html : escape_html,
-        always_new : always_new,
-        to_absolute_cursor_pos : to_absolute_cursor_pos,
-        from_absolute_cursor_pos : from_absolute_cursor_pos,
-        browser : browser,
+        regex_split: regex_split,
+        uuid: uuid,
+        fixConsole: fixConsole,
+        fixCarriageReturn: fixCarriageReturn,
+        autoLinkUrls: autoLinkUrls,
+        points_to_pixels: points_to_pixels,
+        get_body_data: get_body_data,
+        parse_url: parse_url,
+        url_path_split: url_path_split,
+        url_path_join: url_path_join,
+        url_join_encode: url_join_encode,
+        encode_uri_components: encode_uri_components,
+        splitext: splitext,
+        escape_html: escape_html,
+        always_new: always_new,
+        to_absolute_cursor_pos: to_absolute_cursor_pos,
+        from_absolute_cursor_pos: from_absolute_cursor_pos,
+        browser: browser,
         platform: platform,
         get_url_param: get_url_param,
-        is_or_has : is_or_has,
-        is_focused : is_focused,
+        is_or_has: is_or_has,
+        is_focused: is_focused,
         mergeopt: mergeopt,
-        ajax_error_msg : ajax_error_msg,
-        log_ajax_error : log_ajax_error,
-        requireCodeMirrorMode : requireCodeMirrorMode,
-        XHR_ERROR : XHR_ERROR,
-        wrap_ajax_error : wrap_ajax_error,
-        promising_ajax : promising_ajax,
+        ajax_error_msg: ajax_error_msg,
+        log_ajax_error: log_ajax_error,
+        requireCodeMirrorMode: requireCodeMirrorMode,
+        XHR_ERROR: XHR_ERROR,
+        wrap_ajax_error: wrap_ajax_error,
+        promising_ajax: promising_ajax,
         WrappedError: WrappedError,
         load_class: load_class,
         resolve_promises_dict: resolve_promises_dict,
@@ -879,6 +879,6 @@ define([
 
     // Backwards compatability.
     IPython.utils = utils;
-    
+
     return utils;
 }); 

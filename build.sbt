@@ -1,7 +1,5 @@
 import Dependencies._
-
 import Shared._
-
 import sbtbuildinfo.Plugin._
 
 organization := "noootsab"
@@ -18,8 +16,7 @@ enablePlugins(UniversalPlugin)
 
 enablePlugins(DockerPlugin)
 
-import NativePackagerHelper._
-
+import com.typesafe.sbt.SbtNativePackager.autoImport.NativePackagerHelper._
 import com.typesafe.sbt.packager.docker._
 
 // java image based on ubuntu trusty rather than debian jessie (to use mesosphere distros)
@@ -51,23 +48,25 @@ dockerRepository := Some("andypetrella") //Docker
 
 packageName in Docker := "spark-notebook"
 
-ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) }
+ivyScala := ivyScala.value map {
+  _.copy(overrideScalaVersion = true)
+}
 
 parallelExecution in Test in ThisBuild := false
 
 // these java options are for the forked test JVMs
 javaOptions in ThisBuild ++= Seq("-Xmx512M", "-XX:MaxPermSize=128M")
 
-resolvers in ThisBuild ++=  Seq(
-                              Resolver.mavenLocal,
-                              Resolver.typesafeRepo("releases"),
-                              Resolver.sonatypeRepo("releases"),
-                              Resolver.typesafeIvyRepo("releases"),
-                              Resolver.typesafeIvyRepo("snapshots"),
-                              "cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos",
-                              // docker
-                              "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
-                            )
+resolvers in ThisBuild ++= Seq(
+  Resolver.mavenLocal,
+  Resolver.typesafeRepo("releases"),
+  Resolver.sonatypeRepo("releases"),
+  Resolver.typesafeIvyRepo("releases"),
+  Resolver.typesafeIvyRepo("snapshots"),
+  "cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos",
+  // docker
+  "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
+)
 
 EclipseKeys.skipParents in ThisBuild := false
 
@@ -83,12 +82,11 @@ scalacOptions ++= Seq("-Xmax-classfile-name", "100")
 
 val ClasspathPattern = "declare -r app_classpath=\"(.*)\"\n".r
 
-bashScriptDefines :=  bashScriptDefines.value.map {
-                              case ClasspathPattern(classpath) =>
-                                "declare -r app_classpath=\"${HADOOP_CONF_DIR}:" + classpath + "\"\n"
-                              case _@entry =>
-                                entry
-                          }
+bashScriptDefines := bashScriptDefines.value.map {
+  case ClasspathPattern(classpath) =>
+    "declare -r app_classpath=\"${HADOOP_CONF_DIR}:" + classpath + "\"\n"
+  case _@entry => entry
+}
 
 //scriptClasspath += "${HADOOP_CONF_DIR}"
 
@@ -120,144 +118,114 @@ libraryDependencies ++= List(
 )
 
 //for aether
-libraryDependencies <++= (scalaBinaryVersion) {
+libraryDependencies <++= scalaBinaryVersion {
   case "2.10" => Nil
   case "2.11" => List(ningAsyncHttpClient)
 }
 
 lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).enablePlugins(SbtWeb)
-    .aggregate(tachyon, subprocess, observable, common, spark, kernel)
-    .dependsOn(tachyon, subprocess, observable, common, spark, kernel)
-    .settings(
-      sharedSettings:_*
-    )
-    .settings(
-      mappings in Universal ++= directory("notebooks"),
-      mappings in Docker ++= directory("notebooks")
-    )
-    .settings(
-      includeFilter in (Assets, LessKeys.less) := "*.less"
-    )
-    .settings(
-      unmanagedSourceDirectories in Compile <<= (scalaSource in Compile)(Seq(_)) //avoid app-2.10 and co to be created
-    )
+  .aggregate(tachyon, subprocess, observable, common, spark, kernel)
+  .dependsOn(tachyon, subprocess, observable, common, spark, kernel)
+  .settings(sharedSettings: _*)
+  .settings(
+    mappings in Universal ++= directory("notebooks"),
+    mappings in Docker ++= directory("notebooks")
+  )
+  .settings(includeFilter in(Assets, LessKeys.less) := "*.less")
+  .settings(unmanagedSourceDirectories in Compile <<= (scalaSource in Compile)(Seq(_))) //avoid app-2.10 and co to be created
 
-lazy val subprocess =  project.in(file("modules/subprocess"))
-                              .settings(
-                                libraryDependencies ++= playDeps
-                              )
-                              .settings(
-                                libraryDependencies ++= {
-                                  Seq(
-                                    akka,
-                                    akkaRemote,
-                                    akkaSlf4j,
-                                    commonsIO,
-                                    commonsExec,
-                                    log4j
-                                  )
-                                }
-                              )
-                              .settings(
-                                sharedSettings:_*
-                              )
-                              .settings(
-                                sparkSettings:_*
-                              )
+lazy val subprocess = project.in(file("modules/subprocess"))
+  .settings(libraryDependencies ++= playDeps)
+  .settings(
+    libraryDependencies ++= {
+      Seq(
+        akka,
+        akkaRemote,
+        akkaSlf4j,
+        commonsIO,
+        commonsExec,
+        log4j
+      )
+    }
+  )
+  .settings(sharedSettings: _*)
+  .settings(sparkSettings: _*)
 
 
 lazy val observable = Project(id = "observable", base = file("modules/observable"))
-                              .dependsOn(subprocess)
-                              .settings(
-                                libraryDependencies ++= Seq(
-                                  akkaRemote,
-                                  akkaSlf4j,
-                                  slf4jLog4j,
-                                  rxScala
-                                )
-                              )
-                              .settings(
-                                sharedSettings:_*
-                              )
+  .dependsOn(subprocess)
+  .settings(
+    libraryDependencies ++= Seq(
+      akkaRemote,
+      akkaSlf4j,
+      slf4jLog4j,
+      rxScala
+    )
+  )
+  .settings(sharedSettings: _*)
 
 lazy val common = Project(id = "common", base = file("modules/common"))
-                              .dependsOn(observable)
-                              .settings(
-                                libraryDependencies ++= Seq(
-                                  akka,
-                                  log4j,
-                                  scalaZ
-                                ),
-                                libraryDependencies ++= depsToDownloadDeps(scalaBinaryVersion.value, sbtVersion.value),
-                                // plotting functionality
-                                libraryDependencies ++= Seq(
-                                  bokeh,
-                                  wisp
-                                ),// ++ customJacksonScala
-                                unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-"+scalaBinaryVersion.value)
-                              )
-                              .settings(
-                                sharedSettings:_*
-                              )
-                              .settings(
-                                sparkSettings:_*
-                              )
-                              .settings(
-                                buildInfoSettings:_*
-                              )
-                              .settings(
-                                sourceGenerators in Compile <+= buildInfo,
-                                buildInfoKeys := Seq[BuildInfoKey](version, scalaVersion, sparkVersion, hadoopVersion, withHive, jets3tVersion, jlineDef, sbtVersion),
-                                buildInfoPackage := "notebook"
-                              )
+  .dependsOn(observable)
+  .settings(
+    libraryDependencies ++= Seq(
+      akka,
+      log4j,
+      scalaZ
+    ),
+    libraryDependencies ++= depsToDownloadDeps(scalaBinaryVersion.value, sbtVersion.value),
+    // plotting functionality
+    libraryDependencies ++= Seq(
+      bokeh,
+      wisp
+    ), // ++ customJacksonScala
+    unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
+  )
+  .settings(sharedSettings: _*)
+  .settings(sparkSettings: _*)
+  .settings(buildInfoSettings: _*)
+  .settings(
+    sourceGenerators in Compile <+= buildInfo,
+    buildInfoKeys := Seq[BuildInfoKey](version, scalaVersion, sparkVersion, hadoopVersion, withHive, jets3tVersion, jlineDef, sbtVersion),
+    buildInfoPackage := "notebook"
+  )
 
 
 lazy val spark = Project(id = "spark", base = file("modules/spark"))
-                              .dependsOn(common, subprocess, observable)
-                              .settings(
-                                libraryDependencies ++= Seq(
-                                  akkaRemote,
-                                  akkaSlf4j,
-                                  slf4jLog4j,
-                                  commonsIO
-                                ),
-                                libraryDependencies ++= Seq(
-                                  jlineDef.value._1 % "jline" % jlineDef.value._2,
-                                  "org.scala-lang" % "scala-compiler" % scalaVersion.value
-                                ),
-                                unmanagedSourceDirectories in Compile +=
-                                  (sourceDirectory in Compile).value / ("scala_" + ((scalaBinaryVersion.value, sparkVersion.value.takeWhile(_ != '-')) match {
-                                    case (v, sv) if v startsWith "2.10" => "2.10"+"/spark-"+sv
-                                    case (v, sv) if v startsWith "2.11" => "2.11"+"/spark-"+sv
-                                    case (v, sv) => throw new IllegalArgumentException("Bad scala version: " + v)
-                                  }))
-                              )
-                              .settings(
-                                sharedSettings:_*
-                              )
-                              .settings(
-                                sparkSettings:_*
-                              )
+  .dependsOn(common, subprocess, observable)
+  .settings(
+    libraryDependencies ++= Seq(
+      akkaRemote,
+      akkaSlf4j,
+      slf4jLog4j,
+      commonsIO
+    ),
+    libraryDependencies ++= Seq(
+      jlineDef.value._1 % "jline" % jlineDef.value._2,
+      "org.scala-lang" % "scala-compiler" % scalaVersion.value
+    ),
+    unmanagedSourceDirectories in Compile +=
+      (sourceDirectory in Compile).value / ("scala_" + ((scalaBinaryVersion.value, sparkVersion.value.takeWhile(_ != '-')) match {
+        case (v, sv) if v startsWith "2.10" => "2.10" + "/spark-" + sv
+        case (v, sv) if v startsWith "2.11" => "2.11" + "/spark-" + sv
+        case (v, sv) => throw new IllegalArgumentException("Bad scala version: " + v)
+      }))
+  )
+  .settings(sharedSettings: _*)
+  .settings(sparkSettings: _*)
 
 lazy val tachyon = Project(id = "tachyon", base = file("modules/tachyon"))
-                              .settings(
-                                sharedSettings:_*
-                              )
-                              .settings(
-                                tachyonSettings:_*
-                              )
+  .settings(sharedSettings: _*)
+  .settings(tachyonSettings: _*)
 
 lazy val kernel = Project(id = "kernel", base = file("modules/kernel"))
-                              .dependsOn(common, subprocess, observable, spark)
-                              .settings(
-                                libraryDependencies ++= Seq(
-                                  akkaRemote,
-                                  akkaSlf4j,
-                                  slf4jLog4j,
-                                  commonsIO
-                                ),
-                                unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-"+scalaBinaryVersion.value)
-                              )
-                              .settings(
-                                sharedSettings:_*
-                              )
+  .dependsOn(common, subprocess, observable, spark)
+  .settings(
+    libraryDependencies ++= Seq(
+      akkaRemote,
+      akkaSlf4j,
+      slf4jLog4j,
+      commonsIO
+    ),
+    unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
+  )
+  .settings(sharedSettings: _*)

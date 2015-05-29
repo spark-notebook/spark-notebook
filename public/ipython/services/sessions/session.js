@@ -5,8 +5,8 @@ define([
     'base/js/namespace',
     'jquery',
     'base/js/utils',
-    'services/kernels/kernel',
-], function(IPython, $, utils, kernel) {
+    'services/kernels/kernel'
+], function (IPython, $, utils, kernel) {
     "use strict";
 
     /**
@@ -110,7 +110,12 @@ define([
             }
         };
         var on_error = function (xhr, status, err) {
-            that.events.trigger('kernel_dead.Session', {session: that, xhr: xhr, status: status, error: err});
+            that.events.trigger('kernel_dead.Session', {
+                session: that,
+                xhr: xhr,
+                status: status,
+                error: err
+            });
             if (error) {
                 error(xhr, status, err);
             }

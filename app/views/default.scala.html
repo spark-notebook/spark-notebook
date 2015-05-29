@@ -1,33 +1,22 @@
-@(title: String, params:Map[String, String], logo:Option[String]=None, version_hash:Option[String]=None, contents_js_source:Option[String]=None)(stylesheet: Html)(meta: Html)(headercontainer: Html)(header: Html)(site: Html)(script: Html)
-
+@(title: String, params: Map[String, String], logo: Option[String] = None, version_hash: Option[String] = None, contents_js_source: Option[String] = None)(stylesheet: Html)(meta: Html)(headercontainer: Html)(header: Html)(site: Html)(script: Html)
 <!DOCTYPE html>
-
 <html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>@title</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <link rel="shortcut icon" type="image/x-icon" href="@routes.Assets.at("images/favicon.ico")">
+        <link rel="stylesheet" href="@routes.Assets.at("ipython/components/jquery-ui/themes/smoothness/jquery-ui.min.css")" type="text/css" />
 
-<head>
-  <meta charset="utf-8" />
-
-  <title>@title</title>
-
-  <link rel="shortcut icon" type="image/x-icon" href="@routes.Assets.at("images/favicon.ico")">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-
-  <link rel="stylesheet" href="@routes.Assets.at("ipython/components/jquery-ui/themes/smoothness/jquery-ui.min.css")" type="text/css" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-
-  @stylesheet
-
-  <!--<link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/bootstrap/css/bootstrap.min.css")" type="text/css" />-->
-  <link rel="stylesheet" href="@routes.Assets.at("ipython/custom/custom.css")" type="text/css" />
-  <script src="@routes.Assets.at("ipython/components/es6-promise/promise.min.js")" type="text/javascript" charset="utf-8"></script>
-  <script src="@routes.Assets.at("ipython/components/requirejs/require.js")" type="text/javascript" charset="utf-8"></script>
-
-  <script>
-    require.config({
-      @{version_hash.map { v =>
-        s""" urlArgs: "v=$v", """
-      }}
+        @stylesheet
+        @*<link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/bootstrap/css/bootstrap.min.css")" type="text/css" />*@
+        <link rel="stylesheet" href="@routes.Assets.at("ipython/custom/custom.css")" type="text/css" />
+        <script src="@routes.Assets.at("ipython/components/es6-promise/promise.min.js")" type="text/javascript" charset="utf-8"></script>
+        <script src="@routes.Assets.at("ipython/components/requirejs/require.js")" type="text/javascript" charset="utf-8"></script>
+        <script>
+      require.config({
+        @version_hash.map(v => s""" urlArgs: "v=$v", """)
         baseUrl: '@routes.Assets.at("/ipython/")',
         paths: {
           nbextensions : '/nbextensions',
@@ -41,13 +30,9 @@
           moment: 'components/moment/moment',
           codemirror: 'components/codemirror',
           termjs: 'components/term.js/src/term',
-
           termjs: 'components/term.js/src/term',
-
-
           highcharts: '@routes.Assets.at("javascripts/third/highcharts")',
           highchartsExporting: '@routes.Assets.at("javascripts/third/exporting")',
-
 
           knockout: '@routes.Assets.at("javascripts/third/knockout")',
           'knockout-bootstrap': '@routes.Assets.at("javascripts/third/knockout-bootstrap.min")',
@@ -55,10 +40,8 @@
           dimple: '@routes.Assets.at("javascripts/third/dimple.v2.1.2")',
           rickshaw: '@routes.Assets.at("javascripts/third/rickshaw/rickshaw")',
           wizard: '@routes.Assets.at("javascripts/third/jquery/js/jquery.bootstrap.wizard.min")',
-
           observable: '@routes.Assets.at("javascripts/notebook/observable")',
           equiv: '@routes.Assets.at("javascripts/notebook/equiv")',
-
           tachyon: '@routes.Assets.at("javascripts/notebook/tachyon")'
           //'jwerty.js': '@routes.Assets.at("javascripts/third/jwerty.js")'
         },
@@ -83,64 +66,60 @@
             exports: "$"
           }
         }
-    });
+      });
 
-    require.config({
-      map: {
+      require.config({
+        map: {
         '*':{
-          'contents': '@{contents_js_source.getOrElse("services/contents")}',
+          'contents': '@contents_js_source.getOrElse("services/contents")'
         }
-      }
-    });
-  </script>
+        }
+      });
+    </script>
 
-  @meta
+        @meta
+    </head>
 
-</head>
+        <!-- todo bodyclasses (=notebook_app for notebook.scala.html)  â†’ class="" -->
+    <body class="notebook_app data" @Html(params.map(x => s"""data-${x._1}="${x._2}"""").mkString(" "))>
 
-<!-- todo bodyclasses (=notebook_app for notebook.scala.html)  â†’ class="" -->
-<body class="notebook_app data" @{Html(params.map(x => s""" data-${x._1}="${x._2}" """).mkString(" "))}>
+        <noscript>
+            <div id='noscript'>
+                Spark Notebook requires JavaScript.<br>
+                Please enable it to proceed.
+            </div>
+        </noscript>
 
-
-<noscript>
-    <div id='noscript'>
-      Spark Notebook requires JavaScript.<br>
-      Please enable it to proceed.
-  </div>
-</noscript>
-
-<div id="header">
-  <div id="header-container" class="container">
-  <div id="ipython_notebook" class="nav navbar-brand pull-left"><a href="@routes.Application.dash("/")" title='dashboard'>@logo<img src='@routes.Assets.at("images/logo.png")' alt='Spark Notebook'/></a></div>
+        <div id="header">
+            <div id="header-container" class="container">
+                <div id="ipython_notebook" class="nav navbar-brand pull-left"><a href="@routes.Application.dash("/")" title='dashboard'>@logo <img src='@routes.Assets.at("images/logo.png")' alt='Spark Notebook'/></a></div>
 
   <!--
   {% block login_widget %}
 
-    <span id="login_widget">
-      {% if logged_in %}
-        <button id="logout" class="btn btn-sm navbar-btn">Logout</button>
-      {% elif login_available and not logged_in %}
-        <button id="login" class="btn btn-sm navbar-btn">Login</button>
-      {% endif %}
-    </span>
+  <span id="login_widget">
+    {% if logged_in %}
+    <button id="logout" class="btn btn-sm navbar-btn">Logout</button>
+    {% elif login_available and not logged_in %}
+    <button id="login" class="btn btn-sm navbar-btn">Login</button>
+    {% endif %}
+  </span>
 
   {% endblock %}
   -->
 
-  @headercontainer
-  </div>
+                @headercontainer
+            </div>
 
-  <div class="header-bar"></div>
+            <div class="header-bar"></div>
 
-  @header
-</div>
+            @header
+        </div>
 
-<div id="site">
-@site
-</div>
+        <div id="site">
+        @site
+        </div>
 
-@script
-
-</body>
-
+        @script
+    </body>
 </html>

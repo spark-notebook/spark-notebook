@@ -1,21 +1,19 @@
 package notebook.front.third
 
-import io.continuum.bokeh.{Widget=>BWidget, _}
-import io.continuum.bokeh.Glyph
+import io.continuum.bokeh.{Glyph, Widget => BWidget, _}
 import notebook._
 import notebook.front._
-
-import scala.xml.NodeSeq
-
 import play.api.libs.json._
 
 /**
  * Created by gerrit on 15.11.14.
  */
-class LowLevelBokeh[A](data: Seq[A], plottingScript:String)(override implicit val singleCodec:Codec[JsValue, A])
+class LowLevelBokeh[A](data: Seq[A], plottingScript: String)
+    (override implicit val singleCodec: Codec[JsValue, A])
   extends Playground[A](data) {
 
-  override val scripts = Nil // bokeh is currently directly imported... no AMD atm
+  override val scripts = Nil
+  // bokeh is currently directly imported... no AMD atm
   override val snippets = List(
     """
     function(dataO, container, options, mutableContext) {
@@ -35,54 +33,56 @@ class LowLevelBokeh[A](data: Seq[A], plottingScript:String)(override implicit va
   )
 }
 
-class Bokeh(data: Seq[PlotContext])(override implicit val singleCodec:Codec[JsValue, PlotContext])
+class Bokeh(data: Seq[PlotContext])(override implicit val singleCodec: Codec[JsValue, PlotContext])
   extends Playground[PlotContext](data, List(Script("bokehWrap", JsObject(Nil))), Nil) {
 
 }
 
 object Bokeh {
-  implicit val contextCodec:Codec[JsValue, PlotContext] = new Codec[JsValue, PlotContext] {
+  implicit val contextCodec: Codec[JsValue, PlotContext] = new Codec[JsValue, PlotContext] {
     val serializer = new JSONSerializer {
       val stringifyFn = Resources.default.stringify _
     }
+
     import serializer._
-    def encode(x:JsValue):PlotContext = ???
-    def decode(x:PlotContext):JsValue =  Json.obj(
-                                          ("models" ->  Json.toJson(serializer.collectObjs(x).map(serializer.getModel))),
-                                          ("modelType" -> x.getRef.`type`),
-                                          ("modelId" -> x.getRef.id)
-                                        )
+
+    def encode(x: JsValue): PlotContext = ???
+
+    def decode(x: PlotContext): JsValue = Json.obj(
+      "models" -> Json.toJson(serializer.collectObjs(x).map(serializer.getModel)),
+      "modelType" -> x.getRef.`type`,
+      "modelId" -> x.getRef.id
+    )
   }
 
   /**
    * Renders the plots onto the display
    */
-  def plot(plots : List[Plot]) = new Bokeh(Seq(new PlotContext().children(plots)))
+  def plot(plots: List[Plot]) = new Bokeh(Seq(new PlotContext().children(plots)))
 
   /**
    * Renders the plots onto the display
    */
-  def widget(widgets : List[BWidget]) = new Bokeh(Seq(new PlotContext().children(widgets)))
+  def widget(widgets: List[BWidget]) = new Bokeh(Seq(new PlotContext().children(widgets)))
 
   case class Point(x: Double, y: Double)
 
-  def buildLine(points : Seq[Point], line_color : Color = Color.Black, line_width : Double = 2.0) = {
+  def buildLine(points: Seq[Point], line_color: Color = Color.Black, line_width: Double = 2.0) = {
     val xs = points.map(_.x)
     val ys = points.map(_.y)
     val lines_source = new ColumnDataSource()
-          .addColumn('x,xs)
-          .addColumn('y,ys)
+      .addColumn('x, xs)
+      .addColumn('y, ys)
 
     val line = new Line().x('x).y('y)
       .line_color(line_color)
       .line_width(line_width)
 
-    val line_renderer = new Glyph()
-      .data_source(lines_source)
-      .glyph(line)
+    val line_renderer = new Glyph().data_source(lines_source).glyph(line)
 
     line_renderer
   }
+
   /**
    * Creates a plot of the image real-valued function of the given points.
    * @param xs The parameter values.
@@ -114,13 +114,16 @@ object Bokeh {
 
   def plotFunctionGraph(xs: Seq[Double], f: Double => Double) = plot(functionGraph(xs, f) :: Nil)
 
-  case class ScatterGroup(r: Double = 1.0, fill_color : Color = Color.Aqua, line_color : Color = Color.Black)
+  case class ScatterGroup(r: Double = 1.0, fill_color: Color = Color.Aqua,
+    line_color: Color = Color.Black)
+
   val stdGroup = ScatterGroup()
+
   // Scatter plot constructor
   case class ScatterPoint(x: Double, y: Double, group: ScatterGroup = stdGroup)
 
-  def scatter(points : Seq[ScatterPoint]) = {
-    def buildPlotBase(points : Seq[ScatterPoint]) = {
+  def scatter(points: Seq[ScatterPoint]) = {
+    def buildPlotBase(points: Seq[ScatterPoint]) = {
       // Structure data
       val source = new ColumnDataSource()
         .addColumn('x, points.map(_.x))
@@ -132,7 +135,7 @@ object Bokeh {
       plot
     }
 
-    def buildGlyph(group: ScatterGroup, points: Seq[ScatterPoint]) : Glyph = {
+    def buildGlyph(group: ScatterGroup, points: Seq[ScatterPoint]): Glyph = {
       val source = new ColumnDataSource()
         .addColumn('x, points.map(_.x))
         .addColumn('y, points.map(_.y))
@@ -143,8 +146,8 @@ object Bokeh {
         .line_color(group.line_color)
 
       val glyph = new Glyph()
-      .data_source(source)
-      .glyph(circle)
+        .data_source(source)
+        .glyph(circle)
 
       glyph
     }
@@ -164,6 +167,6 @@ object Bokeh {
     plot
   }
 
-  def scatterPlot(points : Seq[ScatterPoint]) = plot(scatter(points) :: Nil)
+  def scatterPlot(points: Seq[ScatterPoint]) = plot(scatter(points) :: Nil)
 }
 
