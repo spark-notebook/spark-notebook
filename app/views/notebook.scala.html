@@ -1,6 +1,6 @@
-@(project:String, params:Map[String, String], sys_info:Option[String]=None)(implicit request:RequestHeader)
+@(title:String, project:String, params:Map[String, String], page:Option[String] = Some("dashboard"), sys_info:Option[String]=None)(implicit request:RequestHeader)
 
-@default("Spark Notebook", params){
+@default(title, project, params, page){
   <!-- stylesheet -->
 
   <script type="text/javascript">

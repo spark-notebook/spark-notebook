@@ -1,4 +1,4 @@
-@(title: String, params: Map[String, String], logo: Option[String] = None, version_hash: Option[String] = None, contents_js_source: Option[String] = None)(stylesheet: Html)(meta: Html)(headercontainer: Html)(header: Html)(site: Html)(script: Html)
+@(title: String = "Spark Notebook", project: String = "Spark Notebook", params: Map[String, String], page:Option[String] = Some("dashboard"), version_hash: Option[String] = None, contents_js_source: Option[String] = None)(stylesheet: Html)(meta: Html)(headercontainer: Html)(header: Html)(site: Html)(script: Html)
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
@@ -6,7 +6,10 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <link rel="shortcut icon" type="image/x-icon" href="@routes.Assets.at("images/favicon.ico")">
+        <link rel="shortcut icon" type="image/x-icon" href="@routes.Assets.at("images/favicon.png")">
+
+        <link href='http://fonts.googleapis.com/css?family=Bowlby+One+SC' rel='stylesheet' type='text/css'>
+
         <link rel="stylesheet" href="@routes.Assets.at("ipython/components/jquery-ui/themes/smoothness/jquery-ui.min.css")" type="text/css" />
 
         @stylesheet
@@ -81,7 +84,7 @@
     </head>
 
         <!-- todo bodyclasses (=notebook_app for notebook.scala.html)  â†’ class="" -->
-    <body class="notebook_app data" @Html(params.map(x => s"""data-${x._1}="${x._2}"""").mkString(" "))>
+    <body class="@{page.get} notebook_app data" @Html(params.map(x => s"""data-${x._1}="${x._2}"""").mkString(" "))>
 
         <noscript>
             <div id='noscript'>
@@ -92,7 +95,7 @@
 
         <div id="header">
             <div id="header-container" class="container">
-                <div id="ipython_notebook" class="nav navbar-brand pull-left"><a href="@routes.Application.dash("/")" title='dashboard'>@logo <img src='@routes.Assets.at("images/logo.png")' alt='Spark Notebook'/></a></div>
+                <div id="ipython_notebook" class="nav navbar-brand pull-left"><a href="@routes.Application.dash("/")" title='dashboard'><img src='@routes.Assets.at("images/logo.png")' alt='Spark Notebook'/> @project</a></div>
 
   <!--
   {% block login_widget %}

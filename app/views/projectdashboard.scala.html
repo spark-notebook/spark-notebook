@@ -1,6 +1,6 @@
-@(project:String, params:Map[String, String], breadcrumbs:Breadcrumbs)
+@(title:String, project:String, params:Map[String, String], breadcrumbs:Breadcrumbs, page:Option[String] = Some("dashboard"))
 
-@default("Spark Notebook", params){
+@default(title, project, params, page){
   <!-- stylesheet -->
   <script src="" type="text/javascript" charset="utf-8"></script>
   <link rel="stylesheet" href="@routes.Assets.at("ipython/style/style.min.css")" type="text/css"/>
