@@ -3,10 +3,10 @@
 # ~~~~
 
 # Home page
-GET            /                                         controllers.Application.dash(title:String="Spark Notebook", path:String="/")
-GET            /tree                                     controllers.Application.dash(title:String="Spark Notebook", path:String="/")
-GET            /tree/                                    controllers.Application.dash(title:String="Spark Notebook", path:String="/")
-GET            /tree/*path                               controllers.Application.dash(title:String="Spark Notebook", path:String)
+GET            /                                         controllers.Application.dash(path:String="/")
+GET            /tree                                     controllers.Application.dash(path:String="/")
+GET            /tree/                                    controllers.Application.dash(path:String="/")
+GET            /tree/*path                               controllers.Application.dash(path:String)
 
 GET            /api/config/tree                          controllers.Application.configTree()
 GET            /api/config/common                        controllers.Application.configCommon()

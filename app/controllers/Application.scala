@@ -41,7 +41,7 @@ object Application extends Controller {
   private implicit def kernelSystem: ActorSystem = AppUtils.kernelSystem
   private implicit val GetClustersTimeout = Timeout(60 seconds)
 
-  val project = "Spark Notebook"  //  TODO from application.conf
+  val project = nbm.name
   val base_project_url = current.configuration.getString("application.context").getOrElse("/")
   val base_kernel_url = "/"
   val base_observable_url = "observable"
@@ -360,7 +360,8 @@ object Application extends Controller {
     }
 
     Ok(views.html.notebook(
-      nbm.name,
+      project + ":" + path,
+      project,
       Map(
         "base-url" -> base_project_url,
         "ws-url" -> ws_url(),
@@ -371,7 +372,8 @@ object Application extends Controller {
         "notebook-name" -> nbm.name,
         "notebook-path" -> path,
         "notebook-writable" -> "true"
-      )
+      ),
+      Some("notebook")
     ))
   }
 
@@ -485,11 +487,12 @@ object Application extends Controller {
     getNotebook(path.dropRight(".snb".length), path, format, dl = true)
   }
 
-  def dash(title: String, p: String = base_kernel_url) = Action {
+  def dash(p: String = base_kernel_url) = Action {
     val path = URLDecoder.decode(p, UTF_8)
     Logger.debug("DASH → " + path)
     Ok(views.html.projectdashboard(
-      title,
+      nbm.name,
+      project,
       Map(
         "project" → project,
         "base-project-url" → base_project_url,
@@ -504,7 +507,8 @@ object Application extends Controller {
         path.split("/").toList.scanLeft(("", "")) { case ((accPath, accName), p) => (accPath + "/" + p, p) }.tail.map { case (p, x) =>
           Crumb(controllers.routes.Application.dash(p.tail).url, x)
         }
-      )
+      ),
+      Some("dashboard")
     ))
   }
 

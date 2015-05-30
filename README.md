@@ -67,6 +67,9 @@ Spark Notebook
     - [Add `remote-repo`](#add-remote-repo)
       - [`remote-repo` with authentication](#remote-repo-with-authentication)
     - [Download and add dependencies](#download-and-add-dependencies)
+- [CUSTOMIZE](#customize)
+  - [Logo](#logo)
+  - [Project Name](#project-name)
 - [TIPS AND TROUBLESHOOTING](#tips-and-troubleshooting)
 - [IMPORTANT](#important)
 - [KNOWN ISSUES](#known-issues)
@@ -810,6 +813,21 @@ For example, if you want to use [ADAM](https://github.com/bigdatagenomics/adam),
 In live, you can check the notebook named `Update classpath and Spark's jars`, which looks like this:
 
 ![Spark Jars](https://raw.github.com/andypetrella/spark-notebook/master/images/spark-jars.png)
+
+# CUSTOMIZE
+There are two ways you can customize your spark notebook.
+
+## Logo
+The logo is a proprietary of the Data Fellas company (BE), but it's not mandatory for you to change it when using the tool.
+
+However, you can still change it to put your own, this is easily achieved when running a distro.
+
+After having unpacked the spark notebook distro, create the `public/images` folder and put your `logo.png` file in. 
+
+## Project Name
+By default the project name is set to `Spark Notebook`, but you might want to clearly show your own business name in the title.
+
+This can be configured in the `application.conf` file by updating the `manager.name` property to whatever you like.
 
 # TIPS AND TROUBLESHOOTING
 
