@@ -1,0 +1,747 @@
+{
+  "metadata" : {
+    "name" : "AnomalyDetectionDemo",
+    "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customSparkConf" : {
+      "spark.app.name" : "Notebook",
+      "spark.master" : "local[8]",
+      "spark.driver.memory" : "10G"
+    }
+  },
+  "cells" : [ {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#Spark Use Case for Anomaly Detection"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### Anomaly Detection with Apache Spark - inspired by Sean Owen's presentation https://www.youtube.com/watch?v=TC5cKYBZAeI\n\n#### Data available from: http://kdd.ics.uci.edu/databases/kddcup99/kddcup99.html"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Set up"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Get data"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### The unlabeled testdata "
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import sys.process._\ns\"rm -rf /tmp/kddcup.testdata.unlabeled*\"!!\n\nval dataUrl = \"http://kdd.ics.uci.edu/databases/kddcup99/kddcup.testdata.unlabeled.gz\"\n\nval gz = \"/tmp/kddcup.testdata.unlabeled.gz\"\ns\"wget $dataUrl -O $gz\"!!\n\ns\"gunzip $gz\"!!\n\nval file = \"/tmp/kddcup.testdata.unlabeled\"",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "warning: there were 2 feature warning(s); re-run with -feature for details\nimport sys.process._\ndataUrl: String = http://kdd.ics.uci.edu/databases/kddcup99/kddcup.testdata.unlabeled.gz\ngz: String = /tmp/kddcup.testdata.unlabeled.gz\nres2: String = \"\"\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "\n <div class='pull-right text-info'><small>10 seconds 114 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 1
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### The labeled dataset "
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import sys.process._\ns\"rm -rf /tmp/kddcup.data*\"!!\n\nval dataUrl = \"http://kdd.ics.uci.edu/databases/kddcup99/kddcup.data.gz\"\n\nval gz = \"/tmp/kddcup.data.gz\"\ns\"wget $dataUrl -O $gz\"!!\n\ns\"gunzip $gz\"!!\n\nval origfile = \"/tmp/kddcup.data\"",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "warning: there were 3 feature warning(s); re-run with -feature for details\nimport sys.process._\ndataUrl: String = http://kdd.ics.uci.edu/databases/kddcup99/kddcup.data.gz\ngz: String = /tmp/kddcup.data.gz\norigfile: String = /tmp/kddcup.data\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "/tmp/kddcup.data\n <div class='pull-right text-info'><small>21 seconds 613 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 3
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Create json version of the data"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val jsonFields = List(\"duration\", \"protocol_type\", \"service\", \"flag\", \"src_bytes\", \"dst_bytes\", \"land\", \"wrong_fragment\", \"urgent\", \"hot\", \"num_failed_logins\", \"logged_in\", \"num_compromised\", \"root_shell\", \"su_attempted\", \"num_root\", \"num_file_creations\", \"num_shells\", \"num_access_files\", \"num_outbound_cmds\", \"is_host_login\", \"is_guest_login\", \"count\", \"srv_count\", \"serror_rate\", \"srv_serror_rate\", \"rerror_rate\", \"srv_rerror_rate\", \"same_srv_rate\", \"diff_srv_rate\", \"srv_diff_host_rate\", \"dst_host_count\", \"dst_host_srv_count\", \"dst_host_same_srv_rate\", \"dst_host_diff_srv_rate\", \"dst_host_same_src_port_rate\", \"dst_host_srv_diff_host_rate\", \"dst_host_serror_rate\", \"dst_host_srv_serror_rate\", \"dst_host_rerror_rate\", \"dst_host_srv_rerror_rate\", \"label\")\n\nval json = scala.io.Source.fromFile(origfile).getLines.map { line => \n                                                    line.split(\",\").zip(jsonFields)\n                                                        .toMap\n                                                        .map { case (v, k) => s\"\"\" \"$k\": \"$v\" \"\"\"}\n                                                        .mkString(\"{\", \",\", \"}\")\n                                                  }\nval jsonFile = origfile + \".json\"\nval w = new java.io.FileWriter(new java.io.File(jsonFile))\njson.foreach { j => w.write(j + \"\\n\") }\nw.close",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "jsonFields: List[String] = List(duration, protocol_type, service, flag, src_bytes, dst_bytes, land, wrong_fragment, urgent, hot, num_failed_logins, logged_in, num_compromised, root_shell, su_attempted, num_root, num_file_creations, num_shells, num_access_files, num_outbound_cmds, is_host_login, is_guest_login, count, srv_count, serror_rate, srv_serror_rate, rerror_rate, srv_rerror_rate, same_srv_rate, diff_srv_rate, srv_diff_host_rate, dst_host_count, dst_host_srv_count, dst_host_same_srv_rate, dst_host_diff_srv_rate, dst_host_same_src_port_rate, dst_host_srv_diff_host_rate, dst_host_serror_rate, dst_host_srv_serror_rate, dst_host_rerror_rate, dst_host_srv_rerror_rate, label)\njson: Iterator[String] = empty iterator\njsonFile: String = /tmp/kddcup.data.json\nw: java.io.FileWriter = java.io..."
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "\n <div class='pull-right text-info'><small>51 seconds 201 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 4
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Start the server externally on testdata"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : true,
+      "output_stream_collapsed" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "<code><pre>\ncd conf/demo\nsbt \"runMain notebook.demo.LineStreamer {file} 9999\"\n</pre></code>",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res15: scala.xml.Elem = \n<code><pre>\ncd conf/demo\nsbt &quot;runMain notebook.demo.LineStreamer /tmp/kddcup.testdata.unlabeled 9999&quot;\n</pre></code>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<code><pre>\ncd conf/demo\nsbt &quot;runMain notebook.demo.LineStreamer /tmp/kddcup.testdata.unlabeled 9999&quot;\n</pre></code>\n <div class='pull-right text-info'><small>302 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 20
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Set local repo for deps"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : ":local-repo /tmp/repo",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res4: String = Repo changed to /tmp/repo!\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "Repo changed to /tmp/repo!\n <div class='pull-right text-info'><small>287 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 5
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Add streaming deps "
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "//:dp org.apache.spark % spark-streaming_2.10 % 1.2.1\n//- org.apache.spark % spark-core_2.10 % _\n//- org.apache.hadoop % _ % _",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### All the imports"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import org.apache.spark.sql.SQLContext\nimport org.apache.spark.mllib.clustering._\nimport org.apache.spark.mllib.linalg._\nimport org.apache.spark.mllib.feature.StandardScaler\nimport org.apache.spark.mllib.util.MLUtils\nimport org.apache.spark.rdd._\nimport org.apache.spark.sql.Row\nimport org.apache.spark.streaming._\nimport org.apache.spark.Logging\nimport org.apache.log4j.{Level, Logger}",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import org.apache.spark.sql.SQLContext\nimport org.apache.spark.mllib.clustering._\nimport org.apache.spark.mllib.linalg._\nimport org.apache.spark.mllib.feature.StandardScaler\nimport org.apache.spark.mllib.util.MLUtils\nimport org.apache.spark.rdd._\nimport org.apache.spark.sql.Row\nimport org.apache.spark.streaming._\nimport org.apache.spark.Logging\nimport org.apache.log4j.{Level, Logger}\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "\n <div class='pull-right text-info'><small>141 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 6
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "***\n## Reading in and exploring the data -- Spark SQL (and DataFrame)"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val sqlContext = new SQLContext(sparkContext)\n//-rw-r--r--  1 radek  staff   4.3G 15 May 23:44 kddcup.data.json.big\nval dataFrame = sqlContext.jsonFile(jsonFile).cache",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "sqlContext: org.apache.spark.sql.SQLContext = org.apache.spark.sql.SQLContext@3c41ba67\ndataFrame: org.apache.spark.sql.DataFrame = [count: string, diff_srv_rate: string, dst_bytes: string, dst_host_count: string, dst_host_diff_srv_rate: string, dst_host_rerror_rate: string, dst_host_same_src_port_rate: string, dst_host_same_srv_rate: string, dst_host_serror_rate: string, dst_host_srv_count: string, dst_host_srv_diff_host_rate: string, dst_host_srv_rerror_rate: string, dst_host_srv_serror_rate: string, duration: string, flag: string, hot: string, is_guest_login: string, is_host_login: string, label: string, land: string, logged_in: string, num_access_files: string, num_compromised: string, num_failed_logins: string, num_file_creations: string, num_root: string, num_shells: string, protoc..."
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "[count: string, diff_srv_rate: string, dst_bytes: string, dst_host_count: string, dst_host_diff_srv_rate: string, dst_host_rerror_rate: string, dst_host_same_src_port_rate: string, dst_host_same_srv_rate: string, dst_host_serror_rate: string, dst_host_srv_count: string, dst_host_srv_diff_host_rate: string, dst_host_srv_rerror_rate: string, dst_host_srv_serror_rate: string, duration: string, flag: string, hot: string, is_guest_login: string, is_host_login: string, label: string, land: string, logged_in: string, num_access_files: string, num_compromised: string, num_failed_logins: string, num_file_creations: string, num_root: string, num_shells: string, protocol_type: string, rerror_rate: string, root_shell: string, same_srv_rate: string, serror_rate: string, service: string, src_bytes: string, srv_count: string, srv_diff_host_rate: string, srv_rerror_rate: string, srv_serror_rate: string, su_attempted: string, urgent: string, wrong_fragment: string]\n <div class='pull-right text-info'><small>18 seconds 417 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 7
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### We are using a modified training dataset from the competition"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "<code>{\"duration\":\"0\",\"protocol_type\":\"tcp\",\"service\":\"http\",\"flag\":\"SF\",\"src_bytes\":\"215\",\"dst_bytes\":\"45076\",\"land\":\"0\",\n\"wrong_fragment\":\"0\",\"urgent\":\"0\",\"hot\":\"0\",\"num_failed_logins\":\"0\",\"logged_in\":\"1\",\"num_compromised\":\"0\",\n\"root_shell\":\"0\",\"su_attempted\":\"0\",\"num_root\":\"0\",\"num_file_creations\":\"0\",\"num_shells\":\"0\",\"num_access_files\":\"0\",\n\"num_outbound_cmds\":\"0\",\"is_host_login\":\"0\",\"is_guest_login\":\"0\",\"count\":\"1\",\"srv_count\":\"1\",\"serror_rate\":\"0.00\",\n\"srv_serror_rate\":\"0.00\",\"rerror_rate\":\"0.00\",\"srv_rerror_rate\":\"0.00\",\"same_srv_rate\":\"1.00\",\"diff_srv_rate\":\"0.00\",\n\"srv_diff_host_rate\":\"0.00\",\"dst_host_count\":\"0\",\"dst_host_srv_count\":\"0\",\"dst_host_same_srv_rate\":\"0.00\",\n\"dst_host_diff_srv_rate\":\"0.00\",\"dst_host_same_src_port_rate\":\"0.00\",\"dst_host_srv_diff_host_rate\":\"0.00\",\n\"dst_host_serror_rate\":\"0.00\",\"dst_host_srv_serror_rate\":\"0.00\",\"dst_host_rerror_rate\":\"0.00\",\n\"dst_host_srv_rerror_rate\":\"0.00\",\"label\":\"normal.\"}\n</code>"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "dataFrame.printSchema",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "root\n |-- count: string (nullable = true)\n |-- diff_srv_rate: string (nullable = true)\n |-- dst_bytes: string (nullable = true)\n |-- dst_host_count: string (nullable = true)\n |-- dst_host_diff_srv_rate: string (nullable = true)\n |-- dst_host_rerror_rate: string (nullable = true)\n |-- dst_host_same_src_port_rate: string (nullable = true)\n |-- dst_host_same_srv_rate: string (nullable = true)\n |-- dst_host_serror_rate: string (nullable = true)\n |-- dst_host_srv_count: string (nullable = true)\n |-- dst_host_srv_diff_host_rate: string (nullable = true)\n |-- dst_host_srv_rerror_rate: string (nullable = true)\n |-- dst_host_srv_serror_rate: string (nullable = true)\n |-- duration: string (nullable = true)\n |-- flag: string (nullable = true)\n |-- hot: string (nullable = true)\n |-- is_guest_login: string (nullable = true)\n |-- is_host_login: string (nullable = true)\n |-- label: string (nullable = true)\n |-- land: string (nullable = true)\n |-- logged_in: string (nullable = true)\n |-- num_access_files: string (nullable = true)\n |-- num_compromised: string (nullable = true)\n |-- num_failed_logins: string (nullable = true)\n |-- num_file_creations: string (nullable = true)\n |-- num_root: string (nullable = true)\n |-- num_shells: string (nullable = true)\n |-- protocol_type: string (nullable = true)\n |-- rerror_rate: string (nullable = true)\n |-- root_shell: string (nullable = true)\n |-- same_srv_rate: string (nullable = true)\n |-- serror_rate: string (nullable = true)\n |-- service: string (nullable = true)\n |-- src_bytes: string (nullable = true)\n |-- srv_count: string (nullable = true)\n |-- srv_diff_host_rate: string (nullable = true)\n |-- srv_rerror_rate: string (nullable = true)\n |-- srv_serror_rate: string (nullable = true)\n |-- su_attempted: string (nullable = true)\n |-- urgent: string (nullable = true)\n |-- wrong_fragment: string (nullable = true)\n\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "\n <div class='pull-right text-info'><small>429 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 8
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### There are nearly 5 million records"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "dataFrame.count",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res6: Long = 4898431\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "4898431\n <div class='pull-right text-info'><small>25 seconds 655 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 9
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Let's look at the labels"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val labelsCount = dataFrame.groupBy(\"label\").count().collect",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "labelsCount: Array[org.apache.spark.sql.Row] = Array([satan.,15892], [rootkit.,10], [portsweep.,10413], [ipsweep.,12481], [land.,21], [imap.,12], [nmap.,2316], [neptune.,1072017], [back.,2203], [normal.,972781], [warezclient.,1020], [guess_passwd.,53], [ftp_write.,8], [phf.,4], [multihop.,7], [loadmodule.,9], [smurf.,2807886], [perl.,3], [spy.,2], [buffer_overflow.,30], [pod.,264], [teardrop.,979], [warezmaster.,20])\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "[Lorg.apache.spark.sql.Row;@5fce1530\n <div class='pull-right text-info'><small>3 seconds 721 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 10
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "labelsCount.toList.map( row => (row.getString(0), row.getLong(1)))",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res7: List[(String, Long)] = List((satan.,15892), (rootkit.,10), (portsweep.,10413), (ipsweep.,12481), (land.,21), (imap.,12), (nmap.,2316), (neptune.,1072017), (back.,2203), (normal.,972781), (warezclient.,1020), (guess_passwd.,53), (ftp_write.,8), (phf.,4), (multihop.,7), (loadmodule.,9), (smurf.,2807886), (perl.,3), (spy.,2), (buffer_overflow.,30), (pod.,264), (teardrop.,979), (warezmaster.,20))\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon1dd935fb9d9562ea39db5abbda9e65d8&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:&quot;satan.&quot;,&quot;Y&quot;:15892},{&quot;X&quot;:&quot;rootkit.&quot;,&quot;Y&quot;:10},{&quot;X&quot;:&quot;portsweep.&quot;,&quot;Y&quot;:10413},{&quot;X&quot;:&quot;ipsweep.&quot;,&quot;Y&quot;:12481},{&quot;X&quot;:&quot;land.&quot;,&quot;Y&quot;:21},{&quot;X&quot;:&quot;imap.&quot;,&quot;Y&quot;:12},{&quot;X&quot;:&quot;nmap.&quot;,&quot;Y&quot;:2316},{&quot;X&quot;:&quot;neptune.&quot;,&quot;Y&quot;:1072017},{&quot;X&quot;:&quot;back.&quot;,&quot;Y&quot;:2203},{&quot;X&quot;:&quot;normal.&quot;,&quot;Y&quot;:972781},{&quot;X&quot;:&quot;warezclient.&quot;,&quot;Y&quot;:1020},{&quot;X&quot;:&quot;guess_passwd.&quot;,&quot;Y&quot;:53},{&quot;X&quot;:&quot;ftp_write.&quot;,&quot;Y&quot;:8},{&quot;X&quot;:&quot;phf.&quot;,&quot;Y&quot;:4},{&quot;X&quot;:&quot;multihop.&quot;,&quot;Y&quot;:7},{&quot;X&quot;:&quot;loadmodule.&quot;,&quot;Y&quot;:9},{&quot;X&quot;:&quot;smurf.&quot;,&quot;Y&quot;:2807886},{&quot;X&quot;:&quot;perl.&quot;,&quot;Y&quot;:3},{&quot;X&quot;:&quot;spy.&quot;,&quot;Y&quot;:2},{&quot;X&quot;:&quot;buffer_overflow.&quot;,&quot;Y&quot;:30},{&quot;X&quot;:&quot;pod.&quot;,&quot;Y&quot;:264},{&quot;X&quot;:&quot;teardrop.&quot;,&quot;Y&quot;:979},{&quot;X&quot;:&quot;warezmaster.&quot;,&quot;Y&quot;:20}],&quot;genId&quot;:&quot;2106555086&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tabs'], \n      function(playground, _magictabs) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictabs,\n    \"o\": {}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <ul class=\"nav nav-tabs\" id=\"ul2106555086\"><li>\n              <a href=\"#tab2106555086-0\"><i class=\"fa fa-table\"/></a>\n            </li><li>\n              <a href=\"#tab2106555086-1\"><i class=\"fa fa-bar-chart\"/></a>\n            </li><li>\n              <a href=\"#tab2106555086-2\"><i class=\"fa fa-pie-chart\"/></a>\n            </li></ul>\n\n        <div class=\"tab-content\" id=\"tab2106555086\"><div class=\"tab-pane\" id=\"tab2106555086-0\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anona4102a33ce1d3ae905e2d89d52755078&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:&quot;satan.&quot;,&quot;Y&quot;:15892},{&quot;X&quot;:&quot;rootkit.&quot;,&quot;Y&quot;:10},{&quot;X&quot;:&quot;portsweep.&quot;,&quot;Y&quot;:10413},{&quot;X&quot;:&quot;ipsweep.&quot;,&quot;Y&quot;:12481},{&quot;X&quot;:&quot;land.&quot;,&quot;Y&quot;:21},{&quot;X&quot;:&quot;imap.&quot;,&quot;Y&quot;:12},{&quot;X&quot;:&quot;nmap.&quot;,&quot;Y&quot;:2316},{&quot;X&quot;:&quot;neptune.&quot;,&quot;Y&quot;:1072017},{&quot;X&quot;:&quot;back.&quot;,&quot;Y&quot;:2203},{&quot;X&quot;:&quot;normal.&quot;,&quot;Y&quot;:972781},{&quot;X&quot;:&quot;warezclient.&quot;,&quot;Y&quot;:1020},{&quot;X&quot;:&quot;guess_passwd.&quot;,&quot;Y&quot;:53},{&quot;X&quot;:&quot;ftp_write.&quot;,&quot;Y&quot;:8},{&quot;X&quot;:&quot;phf.&quot;,&quot;Y&quot;:4},{&quot;X&quot;:&quot;multihop.&quot;,&quot;Y&quot;:7},{&quot;X&quot;:&quot;loadmodule.&quot;,&quot;Y&quot;:9},{&quot;X&quot;:&quot;smurf.&quot;,&quot;Y&quot;:2807886},{&quot;X&quot;:&quot;perl.&quot;,&quot;Y&quot;:3},{&quot;X&quot;:&quot;spy.&quot;,&quot;Y&quot;:2},{&quot;X&quot;:&quot;buffer_overflow.&quot;,&quot;Y&quot;:30},{&quot;X&quot;:&quot;pod.&quot;,&quot;Y&quot;:264},{&quot;X&quot;:&quot;teardrop.&quot;,&quot;Y&quot;:979},{&quot;X&quot;:&quot;warezmaster.&quot;,&quot;Y&quot;:20}],&quot;genId&quot;:&quot;1778210955&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tableChart'], \n      function(playground, _magictableChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictableChart,\n    \"o\": {\"headers\":[\"X\",\"Y\"],\"nrow\":23,\"shown\":25,\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab2106555086-1\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anonfbbb1cfb814ecdbe1ce1956095134c5f&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:&quot;satan.&quot;,&quot;Y&quot;:15892},{&quot;X&quot;:&quot;rootkit.&quot;,&quot;Y&quot;:10},{&quot;X&quot;:&quot;portsweep.&quot;,&quot;Y&quot;:10413},{&quot;X&quot;:&quot;ipsweep.&quot;,&quot;Y&quot;:12481},{&quot;X&quot;:&quot;land.&quot;,&quot;Y&quot;:21},{&quot;X&quot;:&quot;imap.&quot;,&quot;Y&quot;:12},{&quot;X&quot;:&quot;nmap.&quot;,&quot;Y&quot;:2316},{&quot;X&quot;:&quot;neptune.&quot;,&quot;Y&quot;:1072017},{&quot;X&quot;:&quot;back.&quot;,&quot;Y&quot;:2203},{&quot;X&quot;:&quot;normal.&quot;,&quot;Y&quot;:972781},{&quot;X&quot;:&quot;warezclient.&quot;,&quot;Y&quot;:1020},{&quot;X&quot;:&quot;guess_passwd.&quot;,&quot;Y&quot;:53},{&quot;X&quot;:&quot;ftp_write.&quot;,&quot;Y&quot;:8},{&quot;X&quot;:&quot;phf.&quot;,&quot;Y&quot;:4},{&quot;X&quot;:&quot;multihop.&quot;,&quot;Y&quot;:7},{&quot;X&quot;:&quot;loadmodule.&quot;,&quot;Y&quot;:9},{&quot;X&quot;:&quot;smurf.&quot;,&quot;Y&quot;:2807886},{&quot;X&quot;:&quot;perl.&quot;,&quot;Y&quot;:3},{&quot;X&quot;:&quot;spy.&quot;,&quot;Y&quot;:2},{&quot;X&quot;:&quot;buffer_overflow.&quot;,&quot;Y&quot;:30},{&quot;X&quot;:&quot;pod.&quot;,&quot;Y&quot;:264},{&quot;X&quot;:&quot;teardrop.&quot;,&quot;Y&quot;:979},{&quot;X&quot;:&quot;warezmaster.&quot;,&quot;Y&quot;:20}],&quot;genId&quot;:&quot;925767830&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/barChart'], \n      function(playground, _magicbarChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magicbarChart,\n    \"o\": {\"x\":\"X\",\"y\":\"Y\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab2106555086-2\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon46a686266ed36c2b9f6646bfa239c0b6&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:&quot;satan.&quot;,&quot;Y&quot;:15892},{&quot;X&quot;:&quot;rootkit.&quot;,&quot;Y&quot;:10},{&quot;X&quot;:&quot;portsweep.&quot;,&quot;Y&quot;:10413},{&quot;X&quot;:&quot;ipsweep.&quot;,&quot;Y&quot;:12481},{&quot;X&quot;:&quot;land.&quot;,&quot;Y&quot;:21},{&quot;X&quot;:&quot;imap.&quot;,&quot;Y&quot;:12},{&quot;X&quot;:&quot;nmap.&quot;,&quot;Y&quot;:2316},{&quot;X&quot;:&quot;neptune.&quot;,&quot;Y&quot;:1072017},{&quot;X&quot;:&quot;back.&quot;,&quot;Y&quot;:2203},{&quot;X&quot;:&quot;normal.&quot;,&quot;Y&quot;:972781},{&quot;X&quot;:&quot;warezclient.&quot;,&quot;Y&quot;:1020},{&quot;X&quot;:&quot;guess_passwd.&quot;,&quot;Y&quot;:53},{&quot;X&quot;:&quot;ftp_write.&quot;,&quot;Y&quot;:8},{&quot;X&quot;:&quot;phf.&quot;,&quot;Y&quot;:4},{&quot;X&quot;:&quot;multihop.&quot;,&quot;Y&quot;:7},{&quot;X&quot;:&quot;loadmodule.&quot;,&quot;Y&quot;:9},{&quot;X&quot;:&quot;smurf.&quot;,&quot;Y&quot;:2807886},{&quot;X&quot;:&quot;perl.&quot;,&quot;Y&quot;:3},{&quot;X&quot;:&quot;spy.&quot;,&quot;Y&quot;:2},{&quot;X&quot;:&quot;buffer_overflow.&quot;,&quot;Y&quot;:30},{&quot;X&quot;:&quot;pod.&quot;,&quot;Y&quot;:264},{&quot;X&quot;:&quot;teardrop.&quot;,&quot;Y&quot;:979},{&quot;X&quot;:&quot;warezmaster.&quot;,&quot;Y&quot;:20}],&quot;genId&quot;:&quot;1301639549&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/pieChart'], \n      function(playground, _magicpieChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magicpieChart,\n    \"o\": {\"series\":\"X\",\"p\":\"Y\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div></div>\n      </div></div>\n <div class='pull-right text-info'><small>510 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 11
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### For simplicity, selecting only non-numeric columns"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "//val nonNumericFrame = dataFrame.select(\"protocol_type\" ,\"service\", \"flag\")\nval labeledNumericFrame = dataFrame.select(\"label\", \"duration\",\"src_bytes\",\"dst_bytes\",\"land\",\"wrong_fragment\",\"urgent\",\"hot\",\"num_failed_logins\",\"logged_in\",\"num_compromised\",\"root_shell\",\"su_attempted\",\"num_root\",\"num_file_creations\",\"num_shells\",\"num_access_files\",/*\"num_outbound_cmds\",*/\"is_host_login\",\"is_guest_login\",\"count\",\"srv_count\",\"serror_rate\",\"srv_serror_rate\",\"rerror_rate\",\"srv_rerror_rate\",\"same_srv_rate\",\"diff_srv_rate\",\"srv_diff_host_rate\",\"dst_host_count\",\"dst_host_srv_count\",\"dst_host_same_srv_rate\",\"dst_host_diff_srv_rate\",\"dst_host_same_src_port_rate\",\"dst_host_srv_diff_host_rate\",\"dst_host_serror_rate\",\"dst_host_srv_serror_rate\",\"dst_host_rerror_rate\",\"dst_host_srv_rerror_rate\")\n\nlabeledNumericFrame.take(1)(0)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "labeledNumericFrame: org.apache.spark.sql.DataFrame = [label: string, duration: string, src_bytes: string, dst_bytes: string, land: string, wrong_fragment: string, urgent: string, hot: string, num_failed_logins: string, logged_in: string, num_compromised: string, root_shell: string, su_attempted: string, num_root: string, num_file_creations: string, num_shells: string, num_access_files: string, is_host_login: string, is_guest_login: string, count: string, srv_count: string, serror_rate: string, srv_serror_rate: string, rerror_rate: string, srv_rerror_rate: string, same_srv_rate: string, diff_srv_rate: string, srv_diff_host_rate: string, dst_host_count: string, dst_host_srv_count: string, dst_host_same_srv_rate: string, dst_host_diff_srv_rate: string, dst_host_same_src_port_rate: string,..."
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "[normal.,null,215,45076,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1,null,null,null,null,1.00,null,null,null,0,null,null,null,null,null,null,null,0.00]\n <div class='pull-right text-info'><small>489 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 12
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Running standard SQL queries against your dataset"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "dataFrame.registerTempTable(\"logs\")\nval allColumns = sqlContext.sql(\"SELECT * FROM logs WHERE protocol_type = 'udp' LIMIT 1\").first",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "allColumns: org.apache.spark.sql.Row = [null,null,null,6,0.33,null,0.17,null,null,1,null,0.00,null,null,SF,null,0,null,normal.,null,null,null,null,null,null,null,null,udp,null,null,null,null,domain_u,30,2,1.00,null,null,null,null,null]\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "[null,null,null,6,0.33,null,0.17,null,null,1,null,0.00,null,null,SF,null,0,null,normal.,null,null,null,null,null,null,null,null,udp,null,null,null,null,domain_u,30,2,1.00,null,null,null,null,null]\n <div class='pull-right text-info'><small>587 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 13
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "***\n## Build a clustering model -- Spark MLlib"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Prepare the data"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### Every row becomes (Label, Vector[numeric values])"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val labeledPoint = labeledNumericFrame.map(row => \n      (row.getString(0), Vectors.dense(row.toSeq.tail.map(s => if(s == null) 0.0 else s.toString.toDouble).toArray)))\n\nval rawData = labeledPoint.map(_._2)\nrawData.first",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "labeledPoint: org.apache.spark.rdd.RDD[(String, org.apache.spark.mllib.linalg.Vector)] = MapPartitionsRDD[30] at map at DataFrame.scala:848\nrawData: org.apache.spark.rdd.RDD[org.apache.spark.mllib.linalg.Vector] = MapPartitionsRDD[31] at map at <console>:71\nres9: org.apache.spark.mllib.linalg.Vector = [0.0,215.0,45076.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "[0.0,215.0,45076.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]\n <div class='pull-right text-info'><small>515 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 14
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### Labels are not going to be used when building the model"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Scale the features and cache the results"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val scaler = new StandardScaler().fit(rawData)\nval data = scaler.transform(rawData).cache",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "scaler: org.apache.spark.mllib.feature.StandardScalerModel = org.apache.spark.mllib.feature.StandardScalerModel@266bba12\ndata: org.apache.spark.rdd.RDD[org.apache.spark.mllib.linalg.Vector] = MapPartitionsRDD[36] at map at VectorTransformer.scala:49\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "MapPartitionsRDD[36] at map at VectorTransformer.scala:49\n <div class='pull-right text-info'><small>7 seconds 64 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 15
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "data.first.toArray.toList",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res10: List[Double] = List(0.0, 2.2837572039613438E-4, 0.06988393497606493, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.004024284336750945, 0.0, 0.0, 0.0, 0.0, 4.450007003751533, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anoncc82ea2d9af3afde2895ada429fd44d2&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:0,&quot;Y&quot;:0.0},{&quot;X&quot;:1,&quot;Y&quot;:0.00022837572039613438},{&quot;X&quot;:2,&quot;Y&quot;:0.06988393497606493},{&quot;X&quot;:3,&quot;Y&quot;:0.0},{&quot;X&quot;:4,&quot;Y&quot;:0.0},{&quot;X&quot;:5,&quot;Y&quot;:0.0},{&quot;X&quot;:6,&quot;Y&quot;:0.0},{&quot;X&quot;:7,&quot;Y&quot;:0.0},{&quot;X&quot;:8,&quot;Y&quot;:0.0},{&quot;X&quot;:9,&quot;Y&quot;:0.0},{&quot;X&quot;:10,&quot;Y&quot;:0.0},{&quot;X&quot;:11,&quot;Y&quot;:0.0},{&quot;X&quot;:12,&quot;Y&quot;:0.0},{&quot;X&quot;:13,&quot;Y&quot;:0.0},{&quot;X&quot;:14,&quot;Y&quot;:0.0},{&quot;X&quot;:15,&quot;Y&quot;:0.0},{&quot;X&quot;:16,&quot;Y&quot;:0.0},{&quot;X&quot;:17,&quot;Y&quot;:0.0},{&quot;X&quot;:18,&quot;Y&quot;:0.0},{&quot;X&quot;:19,&quot;Y&quot;:0.004024284336750945},{&quot;X&quot;:20,&quot;Y&quot;:0.0},{&quot;X&quot;:21,&quot;Y&quot;:0.0},{&quot;X&quot;:22,&quot;Y&quot;:0.0},{&quot;X&quot;:23,&quot;Y&quot;:0.0},{&quot;X&quot;:24,&quot;Y&quot;:4.450007003751533},{&quot;X&quot;:25,&quot;Y&quot;:0.0},{&quot;X&quot;:26,&quot;Y&quot;:0.0},{&quot;X&quot;:27,&quot;Y&quot;:0.0},{&quot;X&quot;:28,&quot;Y&quot;:0.0},{&quot;X&quot;:29,&quot;Y&quot;:0.0},{&quot;X&quot;:30,&quot;Y&quot;:0.0},{&quot;X&quot;:31,&quot;Y&quot;:0.0},{&quot;X&quot;:32,&quot;Y&quot;:0.0},{&quot;X&quot;:33,&quot;Y&quot;:0.0},{&quot;X&quot;:34,&quot;Y&quot;:0.0},{&quot;X&quot;:35,&quot;Y&quot;:0.0},{&quot;X&quot;:36,&quot;Y&quot;:0.0}],&quot;genId&quot;:&quot;431981300&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tabs'], \n      function(playground, _magictabs) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictabs,\n    \"o\": {}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <ul class=\"nav nav-tabs\" id=\"ul431981300\"><li>\n              <a href=\"#tab431981300-0\"><i class=\"fa fa-table\"/></a>\n            </li><li>\n              <a href=\"#tab431981300-1\"><i class=\"fa fa-dot-circle-o\"/></a>\n            </li><li>\n              <a href=\"#tab431981300-2\"><i class=\"fa fa-line-chart\"/></a>\n            </li><li>\n              <a href=\"#tab431981300-3\"><i class=\"fa fa-bar-chart\"/></a>\n            </li></ul>\n\n        <div class=\"tab-content\" id=\"tab431981300\"><div class=\"tab-pane\" id=\"tab431981300-0\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anonba515d630bae922663fc8672f7d5c236&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:0,&quot;Y&quot;:0.0},{&quot;X&quot;:1,&quot;Y&quot;:0.00022837572039613438},{&quot;X&quot;:2,&quot;Y&quot;:0.06988393497606493},{&quot;X&quot;:3,&quot;Y&quot;:0.0},{&quot;X&quot;:4,&quot;Y&quot;:0.0},{&quot;X&quot;:5,&quot;Y&quot;:0.0},{&quot;X&quot;:6,&quot;Y&quot;:0.0},{&quot;X&quot;:7,&quot;Y&quot;:0.0},{&quot;X&quot;:8,&quot;Y&quot;:0.0},{&quot;X&quot;:9,&quot;Y&quot;:0.0},{&quot;X&quot;:10,&quot;Y&quot;:0.0},{&quot;X&quot;:11,&quot;Y&quot;:0.0},{&quot;X&quot;:12,&quot;Y&quot;:0.0},{&quot;X&quot;:13,&quot;Y&quot;:0.0},{&quot;X&quot;:14,&quot;Y&quot;:0.0},{&quot;X&quot;:15,&quot;Y&quot;:0.0},{&quot;X&quot;:16,&quot;Y&quot;:0.0},{&quot;X&quot;:17,&quot;Y&quot;:0.0},{&quot;X&quot;:18,&quot;Y&quot;:0.0},{&quot;X&quot;:19,&quot;Y&quot;:0.004024284336750945},{&quot;X&quot;:20,&quot;Y&quot;:0.0},{&quot;X&quot;:21,&quot;Y&quot;:0.0},{&quot;X&quot;:22,&quot;Y&quot;:0.0},{&quot;X&quot;:23,&quot;Y&quot;:0.0},{&quot;X&quot;:24,&quot;Y&quot;:4.450007003751533}],&quot;genId&quot;:&quot;1155541407&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tableChart'], \n      function(playground, _magictableChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictableChart,\n    \"o\": {\"headers\":[\"X\",\"Y\"],\"nrow\":37,\"shown\":25,\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab431981300-1\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon65c1ebeeffde170cd3f588de9f776a75&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:0,&quot;Y&quot;:0.0},{&quot;X&quot;:1,&quot;Y&quot;:0.00022837572039613438},{&quot;X&quot;:2,&quot;Y&quot;:0.06988393497606493},{&quot;X&quot;:3,&quot;Y&quot;:0.0},{&quot;X&quot;:4,&quot;Y&quot;:0.0},{&quot;X&quot;:5,&quot;Y&quot;:0.0},{&quot;X&quot;:6,&quot;Y&quot;:0.0},{&quot;X&quot;:7,&quot;Y&quot;:0.0},{&quot;X&quot;:8,&quot;Y&quot;:0.0},{&quot;X&quot;:9,&quot;Y&quot;:0.0},{&quot;X&quot;:10,&quot;Y&quot;:0.0},{&quot;X&quot;:11,&quot;Y&quot;:0.0},{&quot;X&quot;:12,&quot;Y&quot;:0.0},{&quot;X&quot;:13,&quot;Y&quot;:0.0},{&quot;X&quot;:14,&quot;Y&quot;:0.0},{&quot;X&quot;:15,&quot;Y&quot;:0.0},{&quot;X&quot;:16,&quot;Y&quot;:0.0},{&quot;X&quot;:17,&quot;Y&quot;:0.0},{&quot;X&quot;:18,&quot;Y&quot;:0.0},{&quot;X&quot;:19,&quot;Y&quot;:0.004024284336750945},{&quot;X&quot;:20,&quot;Y&quot;:0.0},{&quot;X&quot;:21,&quot;Y&quot;:0.0},{&quot;X&quot;:22,&quot;Y&quot;:0.0},{&quot;X&quot;:23,&quot;Y&quot;:0.0},{&quot;X&quot;:24,&quot;Y&quot;:4.450007003751533},{&quot;X&quot;:25,&quot;Y&quot;:0.0},{&quot;X&quot;:26,&quot;Y&quot;:0.0},{&quot;X&quot;:27,&quot;Y&quot;:0.0},{&quot;X&quot;:28,&quot;Y&quot;:0.0},{&quot;X&quot;:29,&quot;Y&quot;:0.0},{&quot;X&quot;:30,&quot;Y&quot;:0.0},{&quot;X&quot;:31,&quot;Y&quot;:0.0},{&quot;X&quot;:32,&quot;Y&quot;:0.0},{&quot;X&quot;:33,&quot;Y&quot;:0.0},{&quot;X&quot;:34,&quot;Y&quot;:0.0},{&quot;X&quot;:35,&quot;Y&quot;:0.0},{&quot;X&quot;:36,&quot;Y&quot;:0.0}],&quot;genId&quot;:&quot;1079218107&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/scatterChart'], \n      function(playground, _magicscatterChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magicscatterChart,\n    \"o\": {\"x\":\"X\",\"y\":\"Y\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab431981300-2\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anoncc6947e1b85cfc0921a8f0b86edbf1fc&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:0,&quot;Y&quot;:0.0},{&quot;X&quot;:1,&quot;Y&quot;:0.00022837572039613438},{&quot;X&quot;:2,&quot;Y&quot;:0.06988393497606493},{&quot;X&quot;:3,&quot;Y&quot;:0.0},{&quot;X&quot;:4,&quot;Y&quot;:0.0},{&quot;X&quot;:5,&quot;Y&quot;:0.0},{&quot;X&quot;:6,&quot;Y&quot;:0.0},{&quot;X&quot;:7,&quot;Y&quot;:0.0},{&quot;X&quot;:8,&quot;Y&quot;:0.0},{&quot;X&quot;:9,&quot;Y&quot;:0.0},{&quot;X&quot;:10,&quot;Y&quot;:0.0},{&quot;X&quot;:11,&quot;Y&quot;:0.0},{&quot;X&quot;:12,&quot;Y&quot;:0.0},{&quot;X&quot;:13,&quot;Y&quot;:0.0},{&quot;X&quot;:14,&quot;Y&quot;:0.0},{&quot;X&quot;:15,&quot;Y&quot;:0.0},{&quot;X&quot;:16,&quot;Y&quot;:0.0},{&quot;X&quot;:17,&quot;Y&quot;:0.0},{&quot;X&quot;:18,&quot;Y&quot;:0.0},{&quot;X&quot;:19,&quot;Y&quot;:0.004024284336750945},{&quot;X&quot;:20,&quot;Y&quot;:0.0},{&quot;X&quot;:21,&quot;Y&quot;:0.0},{&quot;X&quot;:22,&quot;Y&quot;:0.0},{&quot;X&quot;:23,&quot;Y&quot;:0.0},{&quot;X&quot;:24,&quot;Y&quot;:4.450007003751533},{&quot;X&quot;:25,&quot;Y&quot;:0.0},{&quot;X&quot;:26,&quot;Y&quot;:0.0},{&quot;X&quot;:27,&quot;Y&quot;:0.0},{&quot;X&quot;:28,&quot;Y&quot;:0.0},{&quot;X&quot;:29,&quot;Y&quot;:0.0},{&quot;X&quot;:30,&quot;Y&quot;:0.0},{&quot;X&quot;:31,&quot;Y&quot;:0.0},{&quot;X&quot;:32,&quot;Y&quot;:0.0},{&quot;X&quot;:33,&quot;Y&quot;:0.0},{&quot;X&quot;:34,&quot;Y&quot;:0.0},{&quot;X&quot;:35,&quot;Y&quot;:0.0},{&quot;X&quot;:36,&quot;Y&quot;:0.0}],&quot;genId&quot;:&quot;104817605&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/lineChart'], \n      function(playground, _magiclineChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magiclineChart,\n    \"o\": {\"x\":\"X\",\"y\":\"Y\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab431981300-3\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon54208c9700483d5557c491d941e91782&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:0,&quot;Y&quot;:0.0},{&quot;X&quot;:1,&quot;Y&quot;:0.00022837572039613438},{&quot;X&quot;:2,&quot;Y&quot;:0.06988393497606493},{&quot;X&quot;:3,&quot;Y&quot;:0.0},{&quot;X&quot;:4,&quot;Y&quot;:0.0},{&quot;X&quot;:5,&quot;Y&quot;:0.0},{&quot;X&quot;:6,&quot;Y&quot;:0.0},{&quot;X&quot;:7,&quot;Y&quot;:0.0},{&quot;X&quot;:8,&quot;Y&quot;:0.0},{&quot;X&quot;:9,&quot;Y&quot;:0.0},{&quot;X&quot;:10,&quot;Y&quot;:0.0},{&quot;X&quot;:11,&quot;Y&quot;:0.0},{&quot;X&quot;:12,&quot;Y&quot;:0.0},{&quot;X&quot;:13,&quot;Y&quot;:0.0},{&quot;X&quot;:14,&quot;Y&quot;:0.0},{&quot;X&quot;:15,&quot;Y&quot;:0.0},{&quot;X&quot;:16,&quot;Y&quot;:0.0},{&quot;X&quot;:17,&quot;Y&quot;:0.0},{&quot;X&quot;:18,&quot;Y&quot;:0.0},{&quot;X&quot;:19,&quot;Y&quot;:0.004024284336750945},{&quot;X&quot;:20,&quot;Y&quot;:0.0},{&quot;X&quot;:21,&quot;Y&quot;:0.0},{&quot;X&quot;:22,&quot;Y&quot;:0.0},{&quot;X&quot;:23,&quot;Y&quot;:0.0},{&quot;X&quot;:24,&quot;Y&quot;:4.450007003751533},{&quot;X&quot;:25,&quot;Y&quot;:0.0},{&quot;X&quot;:26,&quot;Y&quot;:0.0},{&quot;X&quot;:27,&quot;Y&quot;:0.0},{&quot;X&quot;:28,&quot;Y&quot;:0.0},{&quot;X&quot;:29,&quot;Y&quot;:0.0},{&quot;X&quot;:30,&quot;Y&quot;:0.0},{&quot;X&quot;:31,&quot;Y&quot;:0.0},{&quot;X&quot;:32,&quot;Y&quot;:0.0},{&quot;X&quot;:33,&quot;Y&quot;:0.0},{&quot;X&quot;:34,&quot;Y&quot;:0.0},{&quot;X&quot;:35,&quot;Y&quot;:0.0},{&quot;X&quot;:36,&quot;Y&quot;:0.0}],&quot;genId&quot;:&quot;1329435150&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/barChart'], \n      function(playground, _magicbarChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magicbarChart,\n    \"o\": {\"x\":\"X\",\"y\":\"Y\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div></div>\n      </div></div>\n <div class='pull-right text-info'><small>965 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 16
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Use K-Means clustering"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val numIterations = 10\n//in production it should be more",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "numIterations: Int = 10\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "10\n <div class='pull-right text-info'><small>270 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 17
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val K = 150",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "K: Int = 150\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "150\n <div class='pull-right text-info'><small>361 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 18
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val clusters = KMeans.train(data, K, numIterations)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "clusters: org.apache.spark.mllib.clustering.KMeansModel = org.apache.spark.mllib.clustering.KMeansModel@51611f70\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "org.apache.spark.mllib.clustering.KMeansModel@51611f70\n <div class='pull-right text-info'><small>1 minute 56 seconds 894 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 19
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### Meantime let's have a look at Spark UI"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Now we have our model, let's apply it to the data"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val predictions = labeledPoint.map(x => (clusters.predict(scaler.transform(x._2)), x._1))\npredictions.count",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "org.apache.spark.SparkException: Task not serializable\n\tat org.apache.spark.util.ClosureCleaner$.ensureSerializable(ClosureCleaner.scala:166)\n\tat org.apache.spark.util.ClosureCleaner$.clean(ClosureCleaner.scala:158)\n\tat org.apache.spark.SparkContext.clean(SparkContext.scala:1623)\n\tat org.apache.spark.rdd.RDD.map(RDD.scala:286)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:84)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:93)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:95)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:97)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:99)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:101)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:103)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:105)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:107)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:109)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:111)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:113)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:115)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:117)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:119)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:121)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:123)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:125)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:127)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:129)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:131)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:133)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:135)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:137)\n\tat $iwC$$iwC$$iwC$$iwC.<init>(<console>:139)\n\tat $iwC$$iwC$$iwC.<init>(<console>:141)\n\tat $iwC$$iwC.<init>(<console>:143)\n\tat $iwC.<init>(<console>:145)\n\tat <init>(<console>:147)\n\tat .<init>(<console>:151)\n\tat .<clinit>(<console>)\n\tat .<init>(<console>:7)\n\tat .<clinit>(<console>)\n\tat $print(<console>)\n\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\n\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n\tat java.lang.reflect.Method.invoke(Method.java:606)\n\tat org.apache.spark.repl.SparkIMain$ReadEvalPrint.call(SparkIMain.scala:1065)\n\tat org.apache.spark.repl.SparkIMain$Request.loadAndRun(SparkIMain.scala:1338)\n\tat org.apache.spark.repl.SparkIMain.loadAndRunReq$1(SparkIMain.scala:840)\n\tat org.apache.spark.repl.SparkIMain.interpret(SparkIMain.scala:871)\n\tat org.apache.spark.repl.SparkIMain.interpret(SparkIMain.scala:819)\n\tat notebook.kernel.Repl$$anonfun$3.apply(Repl.scala:168)\n\tat notebook.kernel.Repl$$anonfun$3.apply(Repl.scala:168)\n\tat scala.util.DynamicVariable.withValue(DynamicVariable.scala:57)\n\tat scala.Console$.withOut(Console.scala:126)\n\tat notebook.kernel.Repl.evaluate(Repl.scala:167)\n\tat notebook.client.ReplCalculator$$anonfun$10$$anon$1$$anonfun$26.apply(ReplCalculator.scala:260)\n\tat notebook.client.ReplCalculator$$anonfun$10$$anon$1$$anonfun$26.apply(ReplCalculator.scala:257)\n\tat scala.concurrent.impl.Future$PromiseCompletingRunnable.liftedTree1$1(Future.scala:24)\n\tat scala.concurrent.impl.Future$PromiseCompletingRunnable.run(Future.scala:24)\n\tat akka.dispatch.TaskInvocation.run(AbstractDispatcher.scala:41)\n\tat akka.dispatch.ForkJoinExecutorConfigurator$AkkaForkJoinTask.exec(AbstractDispatcher.scala:393)\n\tat scala.concurrent.forkjoin.ForkJoinTask.doExec(ForkJoinTask.java:260)\n\tat scala.concurrent.forkjoin.ForkJoinPool$WorkQueue.runTask(ForkJoinPool.java:1339)\n\tat scala.concurrent.forkjoin.ForkJoinPool.runWorker(ForkJoinPool.java:1979)\n\tat scala.concurrent.forkjoin.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:107)\nCaused by: java.io.NotSerializableException: scala.collection.Iterator$$anon$11\nSerialization stack:\n\t- object not serializable (class: scala.collection.Iterator$$anon$11, value: empty iterator)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: json, type: interface scala.collection.Iterator)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@213e865a)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@47243269)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@49a7184c)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@a4af4bd)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@56976732)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@76a2c29f)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@3a9b64c4)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@3e10bb65)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@74d11164)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@222eafda)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@33c78cd6)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@2e9a8126)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@4977a7ff)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@12d73218)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC@6e419896)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC@6ae1c1e5)\n\t- field (class: $iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC@2bb84801)\n\t- field (class: $iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC, $iwC$$iwC$$iwC@4b23218b)\n\t- field (class: $iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC, $iwC$$iwC@399ef9a0)\n\t- field (class: $iwC, name: $iw, type: class $iwC$$iwC)\n\t- object (class $iwC, $iwC@3721032d)\n\t- field (class: $line21.$read, name: $iw, type: class $iwC)\n\t- object (class $line21.$read, $line21.$read@161198bf)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $VAL67, type: class $line21.$read)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@517dd49f)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@773fcc44)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@34b14cf2)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@4d1803a8)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@104906b)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@81104aa)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@83697bc)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@33fb5d2f)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@b2348f9)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@6c5f9e06)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@7394615f)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@1ae4dd1a)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@49db7a33)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC@8070843)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC@3af177c0)\n\t- field (class: $iwC$$iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC@4d23055b)\n\t- field (class: $iwC$$iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC, $iwC$$iwC$$iwC@da27126)\n\t- field (class: $iwC$$iwC, name: $iw, type: class $iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC, $iwC$$iwC@2230c015)\n\t- field (class: $iwC, name: $iw, type: class $iwC$$iwC)\n\t- object (class $iwC, $iwC@35edf625)\n\t- field (class: $line30.$read, name: $iw, type: class $iwC)\n\t- object (class $line30.$read, $line30.$read@1ade3ed2)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $VAL310, type: class $line30.$read)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@382b0781)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, name: $outer, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC, $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC@5daaa518)\n\t- field (class: $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$anonfun$1, name: $outer, type: class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC)\n\t- object (class $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$anonfun$1, <function1>)\n\tat org.apache.spark.serializer.SerializationDebugger$.improveException(SerializationDebugger.scala:38)\n\tat org.apache.spark.serializer.JavaSerializationStream.writeObject(JavaSerializer.scala:47)\n\tat org.apache.spark.serializer.JavaSerializerInstance.serialize(JavaSerializer.scala:80)\n\tat org.apache.spark.util.ClosureCleaner$.ensureSerializable(ClosureCleaner.scala:164)\n\t... 61 more\n\n"
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### And let's see the clusters and their size"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val clustersWithSize = predictions.map(x => (x._1, 1)).reduceByKey((x,y) => x+y)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "<console>:84: error: value reduceByKey is not a member of Array[(Int, Int)]\n       val clustersWithSize = predictions.map(x => (x._1, 1)).reduceByKey((x,y) => x+y)\n                                                              ^\n"
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "clustersWithSize.take(25).toList",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "##Use case assumption:\n**All the clusters with only one point in them labeled 'normal' are fishy**"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val clustersWithCountAndLabel = clustersWithSize.join(predictions).distinct\nclustersWithCountAndLabel.take(20).toList",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "//clusters with 1 point and labeled as normal\nval suspectedAnomalousClusters = clustersWithCountAndLabel.filter(x => x._2._1 == 1 && x._2._2 == \"normal.\").map( x => x._1 )",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Now we have discovered the anomalous clusters"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val anomalousClusters = suspectedAnomalousClusters.collect\nanomalousClusters.toList",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "***\n## Listen to the stream of events and predict anomaly -- Spark streaming"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### To create the real-time stream we will use the test dataset from the competition (in CSV format)"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "<code>0,tcp,private,REJ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,107,6,0.00,0.00,1.00,1.00,\n0.06,0.07,0.00,255,6,0.02,0.05,0.00,0.00,0.00,0.00,1.00,1.00</code>\n"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### We will use a simple Java app that reads in the logs and sends them to a TCP socket"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Create streaming context with batch 2s "
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val ssc = new StreamingContext(sparkContext, Seconds(2))",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "ssc: org.apache.spark.streaming.StreamingContext = org.apache.spark.streaming.StreamingContext@7041ea0b\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "org.apache.spark.streaming.StreamingContext@7041ea0b\n <div class='pull-right text-info'><small>228 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 31
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### Turn down the logging"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "Logger.getRootLogger.setLevel(Level.ERROR)",
+    "outputs" : [ {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "\n <div class='pull-right text-info'><small>248 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 32
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### Helper method for removing non-numeric columns"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "def extractNumericColumns(r: RDD[Array[String]]): RDD[Vector] = {\n  val nonNumericColumns = List(1, 2, 3)\n  r.map(s => Vectors.dense(s.filterNot(f => nonNumericColumns.contains(s.indexOf(f))).\n                           map(st => if(st == null) 0.0 else st.toDouble).toArray))\n}",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "extractNumericColumns: (r: org.apache.spark.rdd.RDD[Array[String]])org.apache.spark.rdd.RDD[org.apache.spark.mllib.linalg.Vector]\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "\n <div class='pull-right text-info'><small>217 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 33
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### Helper method for finding the anomalies"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "def findAnomaly(r: RDD[Int], anomalousClusters: Array[Int]): RDD[String] = {\n  r.filter(x => anomalousClusters.contains(x)).map(x => \"Suspected anomaly - entry in cluster \" + x)\n}",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "findAnomaly: (r: org.apache.spark.rdd.RDD[Int], anomalousClusters: Array[Int])org.apache.spark.rdd.RDD[String]\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "\n <div class='pull-right text-info'><small>164 milliseconds</small></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 34
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "###  Start listening to the stream"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val lines = ssc.socketTextStream(\"localhost\", 9999)\n\nlines.map(x => x.split(\",\")).transform(y => extractNumericColumns(y)).\n  transform(x => clusters.predict(scaler.transform(x))).\n  transform(x => findAnomaly(x, anomalousClusters)).print",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "<console>:94: error: not found: value anomalousClusters\n                transform(x => findAnomaly(x, anomalousClusters)).print\n                                              ^\n"
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# Hackers and fraudsters beware!"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "ssc.start()\nssc.awaitTermination()",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "markdown",
+    "source" : "#### Spark UI now is showing Streaming tab"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "",
+    "outputs" : [ ]
+  } ],
+  "nbformat" : 4
+}
