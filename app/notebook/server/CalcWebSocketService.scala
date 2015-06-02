@@ -144,10 +144,11 @@ class CalcWebSocketService(
           case StreamResponse(data, name) =>
             ws.send(header, session, "stream", "iopub", obj("text" → data, "name" → name))
 
-          case ExecuteResponse(html) =>
+          case ExecuteResponse(outputType, content, time) =>
             ws.send(header, session, "execute_result", "iopub", obj(
               "execution_count" → counter,
-              "data" → obj("text/html" → html)
+              "data" → obj(outputType → content),
+              "time" → time
             ))
             ws.send(header, session, "status", "iopub", obj("execution_state" → "idle"))
             ws.send(header, session, "execute_reply", "shell", obj("execution_count" → counter))
