@@ -1,0 +1,921 @@
+{
+  "metadata" : {
+    "name" : "AnomalyDetectionDemo",
+    "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "customLocalRepo" : "/tmp/repo",
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customSparkConf" : {
+      "spark.app.name" : "AnomalyDetectionDemo",
+      "spark.master" : "local[*]",
+      "spark.driver.memory" : "10G",
+      "spark.serializer.extraDebugInfo" : "true"
+    }
+  },
+  "cells" : [ {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#Spark Use Case for Anomaly Detection"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### Anomaly Detection with Apache Spark - inspired by Sean Owen's presentation https://www.youtube.com/watch?v=TC5cKYBZAeI\n\n#### Data available from: http://kdd.ics.uci.edu/databases/kddcup99/kddcup99.html"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Set up"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Get data"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### The unlabeled testdata "
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import sys.process._\n\"rm -f /tmp/kddcup.data /tmp/kddcup.data.json /tmp/kddcup.testdata.unlabeled /tmp/kddcup.testdata.unlabeled.gz /tmp/kddcup.data.gz\"!!",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "warning: there were 1 feature warning(s); re-run with -feature for details\nimport sys.process._\nres2: String = \"\"\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 1
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val file = \"/tmp/kddcup.testdata.unlabeled\"",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "file: String = /tmp/kddcup.testdata.unlabeled\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "/tmp/kddcup.testdata.unlabeled"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 2
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val dataUrl = \"http://kdd.ics.uci.edu/databases/kddcup99/kddcup.testdata.unlabeled.gz\"\n\nval gz = \"/tmp/kddcup.testdata.unlabeled.gz\"\ns\"wget $dataUrl -O $gz\"!!\n\ns\"gunzip $gz\"!!",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "warning: there were 2 feature warning(s); re-run with -feature for details\ndataUrl: String = http://kdd.ics.uci.edu/databases/kddcup99/kddcup.testdata.unlabeled.gz\ngz: String = /tmp/kddcup.testdata.unlabeled.gz\nres3: String = \"\"\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 3
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### The labeled dataset "
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val origfile = \"/tmp/kddcup.data\"",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "origfile: String = /tmp/kddcup.data\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "/tmp/kddcup.data"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 4
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import sys.process._\nval dataUrl = \"http://kdd.ics.uci.edu/databases/kddcup99/kddcup.data.gz\"\n\nval gz = \"/tmp/kddcup.data.gz\"\ns\"wget $dataUrl -O $gz\"!!\n\ns\"gunzip $gz\"!!",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "warning: there were 2 feature warning(s); re-run with -feature for details\nimport sys.process._\ndataUrl: String = http://kdd.ics.uci.edu/databases/kddcup99/kddcup.data.gz\ngz: String = /tmp/kddcup.data.gz\nres4: String = \"\"\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 5
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Create json version of the data"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val jsonFields = List(\"duration\", \"protocol_type\", \"service\", \"flag\", \"src_bytes\", \"dst_bytes\", \"land\", \"wrong_fragment\", \"urgent\", \"hot\", \"num_failed_logins\", \"logged_in\", \"num_compromised\", \"root_shell\", \"su_attempted\", \"num_root\", \"num_file_creations\", \"num_shells\", \"num_access_files\", \"num_outbound_cmds\", \"is_host_login\", \"is_guest_login\", \"count\", \"srv_count\", \"serror_rate\", \"srv_serror_rate\", \"rerror_rate\", \"srv_rerror_rate\", \"same_srv_rate\", \"diff_srv_rate\", \"srv_diff_host_rate\", \"dst_host_count\", \"dst_host_srv_count\", \"dst_host_same_srv_rate\", \"dst_host_diff_srv_rate\", \"dst_host_same_src_port_rate\", \"dst_host_srv_diff_host_rate\", \"dst_host_serror_rate\", \"dst_host_srv_serror_rate\", \"dst_host_rerror_rate\", \"dst_host_srv_rerror_rate\", \"label\")\nval jsonFile = origfile + \".json\"",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "jsonFields: List[String] = List(duration, protocol_type, service, flag, src_bytes, dst_bytes, land, wrong_fragment, urgent, hot, num_failed_logins, logged_in, num_compromised, root_shell, su_attempted, num_root, num_file_creations, num_shells, num_access_files, num_outbound_cmds, is_host_login, is_guest_login, count, srv_count, serror_rate, srv_serror_rate, rerror_rate, srv_rerror_rate, same_srv_rate, diff_srv_rate, srv_diff_host_rate, dst_host_count, dst_host_srv_count, dst_host_same_srv_rate, dst_host_diff_srv_rate, dst_host_same_src_port_rate, dst_host_srv_diff_host_rate, dst_host_serror_rate, dst_host_srv_serror_rate, dst_host_rerror_rate, dst_host_srv_rerror_rate, label)\njsonFile: String = /tmp/kddcup.data.json\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "/tmp/kddcup.data.json"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 6
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val json = scala.io.Source.fromFile(origfile).getLines.map { line => \n  jsonFields.zip(line.split(\",\"))\n            .toMap\n            .map { case (k, v) => s\"\"\" \"$k\": \"$v\" \"\"\"}\n            .mkString(\"{\", \",\", \"}\")\n}\nval w = new java.io.FileWriter(new java.io.File(jsonFile))\njson.foreach { j => w.write(j + \"\\n\") }\nw.close",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "json: Iterator[String] = empty iterator\nw: java.io.FileWriter = java.io.FileWriter@71baac3f\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 7
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Start the server externally on testdata"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : true,
+      "output_stream_collapsed" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : ":markdown\n```\ncd conf/demo\nsbt \"runMain notebook.demo.LineStreamer $file 9999\"\n```",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res6: String = \n```\ncd conf/demo\nsbt \"runMain notebook.demo.LineStreamer /tmp/kddcup.testdata.unlabeled 9999\"\n```\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/markdown" : "```\ncd conf/demo\nsbt &quot;runMain notebook.demo.LineStreamer /tmp/kddcup.testdata.unlabeled 9999&quot;\n```"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 8
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### All the imports"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import org.apache.spark.sql.SQLContext\nimport org.apache.spark.mllib.clustering._\nimport org.apache.spark.mllib.linalg._\nimport org.apache.spark.mllib.feature.StandardScaler\nimport org.apache.spark.mllib.util.MLUtils\nimport org.apache.spark.rdd._\nimport org.apache.spark.sql.Row\nimport org.apache.spark.streaming._\nimport org.apache.spark.Logging\nimport org.apache.log4j.{Level, Logger}",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import org.apache.spark.sql.SQLContext\nimport org.apache.spark.mllib.clustering._\nimport org.apache.spark.mllib.linalg._\nimport org.apache.spark.mllib.feature.StandardScaler\nimport org.apache.spark.mllib.util.MLUtils\nimport org.apache.spark.rdd._\nimport org.apache.spark.sql.Row\nimport org.apache.spark.streaming._\nimport org.apache.spark.Logging\nimport org.apache.log4j.{Level, Logger}\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 9
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "***\n## Reading in and exploring the data -- Spark SQL (and DataFrame)"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val sqlContext = new SQLContext(sparkContext)\n//-rw-r--r--  1 radek  staff   4.3G 15 May 23:44 kddcup.data.json.big\nval dataFrame = sqlContext.jsonFile(jsonFile).cache",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "sqlContext: org.apache.spark.sql.SQLContext = org.apache.spark.sql.SQLContext@305e2149\ndataFrame: org.apache.spark.sql.DataFrame = [count: string, diff_srv_rate: string, dst_bytes: string, dst_host_count: string, dst_host_diff_srv_rate: string, dst_host_rerror_rate: string, dst_host_same_src_port_rate: string, dst_host_same_srv_rate: string, dst_host_serror_rate: string, dst_host_srv_count: string, dst_host_srv_diff_host_rate: string, dst_host_srv_rerror_rate: string, dst_host_srv_serror_rate: string, duration: string, flag: string, hot: string, is_guest_login: string, is_host_login: string, label: string, land: string, logged_in: string, num_access_files: string, num_compromised: string, num_failed_logins: string, num_file_creations: string, num_outbound_cmds: string, num_root: string,..."
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "[count: string, diff_srv_rate: string, dst_bytes: string, dst_host_count: string, dst_host_diff_srv_rate: string, dst_host_rerror_rate: string, dst_host_same_src_port_rate: string, dst_host_same_srv_rate: string, dst_host_serror_rate: string, dst_host_srv_count: string, dst_host_srv_diff_host_rate: string, dst_host_srv_rerror_rate: string, dst_host_srv_serror_rate: string, duration: string, flag: string, hot: string, is_guest_login: string, is_host_login: string, label: string, land: string, logged_in: string, num_access_files: string, num_compromised: string, num_failed_logins: string, num_file_creations: string, num_outbound_cmds: string, num_root: string, num_shells: string, protocol_type: string, rerror_rate: string, root_shell: string, same_srv_rate: string, serror_rate: string, service: string, src_bytes: string, srv_count: string, srv_diff_host_rate: string, srv_rerror_rate: string, srv_serror_rate: string, su_attempted: string, urgent: string, wrong_fragment: string]"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 10
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### We'll be using the modified (json) training dataset from the competition"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Here is an example of the data:"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "output_stream_collapsed" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "\"head -n 1 /tmp/kddcup.data.json\"!!",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "warning: there were 1 feature warning(s); re-run with -feature for details\nres9: String = \n\"{ \"num_file_creations\": \"0\" , \"root_shell\": \"0\" , \"duration\": \"0\" , \"dst_host_same_srv_rate\": \"0.00\" , \"dst_host_srv_count\": \"0\" , \"count\": \"1\" , \"dst_host_srv_rerror_rate\": \"0.00\" , \"land\": \"0\" , \"urgent\": \"0\" , \"serror_rate\": \"0.00\" , \"src_bytes\": \"215\" , \"logged_in\": \"1\" , \"num_failed_logins\": \"0\" , \"num_shells\": \"0\" , \"label\": \"normal.\" , \"su_attempted\": \"0\" , \"is_guest_login\": \"0\" , \"srv_serror_rate\": \"0.00\" , \"service\": \"http\" , \"protocol_type\": \"tcp\" , \"diff_srv_rate\": \"0.00\" , \"num_outbound_cmds\": \"0\" , \"num_root\": \"0\" , \"num_access_files\": \"0\" , \"dst_host_count\": \"0\" , \"dst_host_rerror_rate\": \"0.00\" , \"dst_host_srv_serror_rate\": \"0.00\" , \"dst_host_serror_rate\": \"0.00\" , \"flag\": \"SF\" , \"srv_count\": \"1\" , \"dst_bytes\": \"45076\" , \"same_srv_rate\": \"1.00\" , \"dst_host..."
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "{ &quot;num_file_creations&quot;: &quot;0&quot; , &quot;root_shell&quot;: &quot;0&quot; , &quot;duration&quot;: &quot;0&quot; , &quot;dst_host_same_srv_rate&quot;: &quot;0.00&quot; , &quot;dst_host_srv_count&quot;: &quot;0&quot; , &quot;count&quot;: &quot;1&quot; , &quot;dst_host_srv_rerror_rate&quot;: &quot;0.00&quot; , &quot;land&quot;: &quot;0&quot; , &quot;urgent&quot;: &quot;0&quot; , &quot;serror_rate&quot;: &quot;0.00&quot; , &quot;src_bytes&quot;: &quot;215&quot; , &quot;logged_in&quot;: &quot;1&quot; , &quot;num_failed_logins&quot;: &quot;0&quot; , &quot;num_shells&quot;: &quot;0&quot; , &quot;label&quot;: &quot;normal.&quot; , &quot;su_attempted&quot;: &quot;0&quot; , &quot;is_guest_login&quot;: &quot;0&quot; , &quot;srv_serror_rate&quot;: &quot;0.00&quot; , &quot;service&quot;: &quot;http&quot; , &quot;protocol_type&quot;: &quot;tcp&quot; , &quot;diff_srv_rate&quot;: &quot;0.00&quot; , &quot;num_outbound_cmds&quot;: &quot;0&quot; , &quot;num_root&quot;: &quot;0&quot; , &quot;num_access_files&quot;: &quot;0&quot; , &quot;dst_host_count&quot;: &quot;0&quot; , &quot;dst_host_rerror_rate&quot;: &quot;0.00&quot; , &quot;dst_host_srv_serror_rate&quot;: &quot;0.00&quot; , &quot;dst_host_serror_rate&quot;: &quot;0.00&quot; , &quot;flag&quot;: &quot;SF&quot; , &quot;srv_count&quot;: &quot;1&quot; , &quot;dst_bytes&quot;: &quot;45076&quot; , &quot;same_srv_rate&quot;: &quot;1.00&quot; , &quot;dst_host_diff_srv_rate&quot;: &quot;0.00&quot; , &quot;hot&quot;: &quot;0&quot; , &quot;rerror_rate&quot;: &quot;0.00&quot; , &quot;is_host_login&quot;: &quot;0&quot; , &quot;dst_host_srv_diff_host_rate&quot;: &quot;0.00&quot; , &quot;dst_host_same_src_port_rate&quot;: &quot;0.00&quot; , &quot;srv_rerror_rate&quot;: &quot;0.00&quot; , &quot;wrong_fragment&quot;: &quot;0&quot; , &quot;num_compromised&quot;: &quot;0&quot; , &quot;srv_diff_host_rate&quot;: &quot;0.00&quot; }\n"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 13
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "dataFrame.printSchema",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "root\n |-- count: string (nullable = true)\n |-- diff_srv_rate: string (nullable = true)\n |-- dst_bytes: string (nullable = true)\n |-- dst_host_count: string (nullable = true)\n |-- dst_host_diff_srv_rate: string (nullable = true)\n |-- dst_host_rerror_rate: string (nullable = true)\n |-- dst_host_same_src_port_rate: string (nullable = true)\n |-- dst_host_same_srv_rate: string (nullable = true)\n |-- dst_host_serror_rate: string (nullable = true)\n |-- dst_host_srv_count: string (nullable = true)\n |-- dst_host_srv_diff_host_rate: string (nullable = true)\n |-- dst_host_srv_rerror_rate: string (nullable = true)\n |-- dst_host_srv_serror_rate: string (nullable = true)\n |-- duration: string (nullable = true)\n |-- flag: string (nullable = true)\n |-- hot: string (nullable = true)\n |-- is_guest_login: string (nullable = true)\n |-- is_host_login: string (nullable = true)\n |-- label: string (nullable = true)\n |-- land: string (nullable = true)\n |-- logged_in: string (nullable = true)\n |-- num_access_files: string (nullable = true)\n |-- num_compromised: string (nullable = true)\n |-- num_failed_logins: string (nullable = true)\n |-- num_file_creations: string (nullable = true)\n |-- num_outbound_cmds: string (nullable = true)\n |-- num_root: string (nullable = true)\n |-- num_shells: string (nullable = true)\n |-- protocol_type: string (nullable = true)\n |-- rerror_rate: string (nullable = true)\n |-- root_shell: string (nullable = true)\n |-- same_srv_rate: string (nullable = true)\n |-- serror_rate: string (nullable = true)\n |-- service: string (nullable = true)\n |-- src_bytes: string (nullable = true)\n |-- srv_count: string (nullable = true)\n |-- srv_diff_host_rate: string (nullable = true)\n |-- srv_rerror_rate: string (nullable = true)\n |-- srv_serror_rate: string (nullable = true)\n |-- su_attempted: string (nullable = true)\n |-- urgent: string (nullable = true)\n |-- wrong_fragment: string (nullable = true)\n\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 14
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### There are nearly 5 million records"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "dataFrame.count",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res11: Long = 4898431\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "4898431"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 15
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Let's look at the labels"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val labelsCount = dataFrame.groupBy(\"label\").count().collect",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "labelsCount: Array[org.apache.spark.sql.Row] = Array([satan.,15892], [rootkit.,10], [portsweep.,10413], [ipsweep.,12481], [land.,21], [imap.,12], [nmap.,2316], [neptune.,1072017], [back.,2203], [normal.,972781], [warezclient.,1020], [guess_passwd.,53], [ftp_write.,8], [phf.,4], [multihop.,7], [loadmodule.,9], [smurf.,2807886], [perl.,3], [spy.,2], [buffer_overflow.,30], [pod.,264], [teardrop.,979], [warezmaster.,20])\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "[Lorg.apache.spark.sql.Row;@5486c13e"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 16
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "labelsCount.toList.map( row => (row.getString(0), row.getLong(1)))",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res12: List[(String, Long)] = List((satan.,15892), (rootkit.,10), (portsweep.,10413), (ipsweep.,12481), (land.,21), (imap.,12), (nmap.,2316), (neptune.,1072017), (back.,2203), (normal.,972781), (warezclient.,1020), (guess_passwd.,53), (ftp_write.,8), (phf.,4), (multihop.,7), (loadmodule.,9), (smurf.,2807886), (perl.,3), (spy.,2), (buffer_overflow.,30), (pod.,264), (teardrop.,979), (warezmaster.,20))\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon7a3d19fe7fa65e98b425fcb5c83ad5d9&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:&quot;satan.&quot;,&quot;Y&quot;:15892},{&quot;X&quot;:&quot;rootkit.&quot;,&quot;Y&quot;:10},{&quot;X&quot;:&quot;portsweep.&quot;,&quot;Y&quot;:10413},{&quot;X&quot;:&quot;ipsweep.&quot;,&quot;Y&quot;:12481},{&quot;X&quot;:&quot;land.&quot;,&quot;Y&quot;:21},{&quot;X&quot;:&quot;imap.&quot;,&quot;Y&quot;:12},{&quot;X&quot;:&quot;nmap.&quot;,&quot;Y&quot;:2316},{&quot;X&quot;:&quot;neptune.&quot;,&quot;Y&quot;:1072017},{&quot;X&quot;:&quot;back.&quot;,&quot;Y&quot;:2203},{&quot;X&quot;:&quot;normal.&quot;,&quot;Y&quot;:972781},{&quot;X&quot;:&quot;warezclient.&quot;,&quot;Y&quot;:1020},{&quot;X&quot;:&quot;guess_passwd.&quot;,&quot;Y&quot;:53},{&quot;X&quot;:&quot;ftp_write.&quot;,&quot;Y&quot;:8},{&quot;X&quot;:&quot;phf.&quot;,&quot;Y&quot;:4},{&quot;X&quot;:&quot;multihop.&quot;,&quot;Y&quot;:7},{&quot;X&quot;:&quot;loadmodule.&quot;,&quot;Y&quot;:9},{&quot;X&quot;:&quot;smurf.&quot;,&quot;Y&quot;:2807886},{&quot;X&quot;:&quot;perl.&quot;,&quot;Y&quot;:3},{&quot;X&quot;:&quot;spy.&quot;,&quot;Y&quot;:2},{&quot;X&quot;:&quot;buffer_overflow.&quot;,&quot;Y&quot;:30},{&quot;X&quot;:&quot;pod.&quot;,&quot;Y&quot;:264},{&quot;X&quot;:&quot;teardrop.&quot;,&quot;Y&quot;:979},{&quot;X&quot;:&quot;warezmaster.&quot;,&quot;Y&quot;:20}],&quot;genId&quot;:&quot;1646367207&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tabs'], \n      function(playground, _magictabs) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictabs,\n    \"o\": {}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <ul class=\"nav nav-tabs\" id=\"ul1646367207\"><li>\n              <a href=\"#tab1646367207-0\"><i class=\"fa fa-table\"/></a>\n            </li><li>\n              <a href=\"#tab1646367207-1\"><i class=\"fa fa-bar-chart\"/></a>\n            </li><li>\n              <a href=\"#tab1646367207-2\"><i class=\"fa fa-pie-chart\"/></a>\n            </li></ul>\n\n        <div class=\"tab-content\" id=\"tab1646367207\"><div class=\"tab-pane\" id=\"tab1646367207-0\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon2535b2560b37edc4fdbda58e2e77cb45&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:&quot;satan.&quot;,&quot;Y&quot;:15892},{&quot;X&quot;:&quot;rootkit.&quot;,&quot;Y&quot;:10},{&quot;X&quot;:&quot;portsweep.&quot;,&quot;Y&quot;:10413},{&quot;X&quot;:&quot;ipsweep.&quot;,&quot;Y&quot;:12481},{&quot;X&quot;:&quot;land.&quot;,&quot;Y&quot;:21},{&quot;X&quot;:&quot;imap.&quot;,&quot;Y&quot;:12},{&quot;X&quot;:&quot;nmap.&quot;,&quot;Y&quot;:2316},{&quot;X&quot;:&quot;neptune.&quot;,&quot;Y&quot;:1072017},{&quot;X&quot;:&quot;back.&quot;,&quot;Y&quot;:2203},{&quot;X&quot;:&quot;normal.&quot;,&quot;Y&quot;:972781},{&quot;X&quot;:&quot;warezclient.&quot;,&quot;Y&quot;:1020},{&quot;X&quot;:&quot;guess_passwd.&quot;,&quot;Y&quot;:53},{&quot;X&quot;:&quot;ftp_write.&quot;,&quot;Y&quot;:8},{&quot;X&quot;:&quot;phf.&quot;,&quot;Y&quot;:4},{&quot;X&quot;:&quot;multihop.&quot;,&quot;Y&quot;:7},{&quot;X&quot;:&quot;loadmodule.&quot;,&quot;Y&quot;:9},{&quot;X&quot;:&quot;smurf.&quot;,&quot;Y&quot;:2807886},{&quot;X&quot;:&quot;perl.&quot;,&quot;Y&quot;:3},{&quot;X&quot;:&quot;spy.&quot;,&quot;Y&quot;:2},{&quot;X&quot;:&quot;buffer_overflow.&quot;,&quot;Y&quot;:30},{&quot;X&quot;:&quot;pod.&quot;,&quot;Y&quot;:264},{&quot;X&quot;:&quot;teardrop.&quot;,&quot;Y&quot;:979},{&quot;X&quot;:&quot;warezmaster.&quot;,&quot;Y&quot;:20}],&quot;genId&quot;:&quot;271903701&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tableChart'], \n      function(playground, _magictableChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictableChart,\n    \"o\": {\"headers\":[\"X\",\"Y\"],\"nrow\":23,\"shown\":25,\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab1646367207-1\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon1540ecef77843623e61e574d4b90cc1a&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:&quot;satan.&quot;,&quot;Y&quot;:15892},{&quot;X&quot;:&quot;rootkit.&quot;,&quot;Y&quot;:10},{&quot;X&quot;:&quot;portsweep.&quot;,&quot;Y&quot;:10413},{&quot;X&quot;:&quot;ipsweep.&quot;,&quot;Y&quot;:12481},{&quot;X&quot;:&quot;land.&quot;,&quot;Y&quot;:21},{&quot;X&quot;:&quot;imap.&quot;,&quot;Y&quot;:12},{&quot;X&quot;:&quot;nmap.&quot;,&quot;Y&quot;:2316},{&quot;X&quot;:&quot;neptune.&quot;,&quot;Y&quot;:1072017},{&quot;X&quot;:&quot;back.&quot;,&quot;Y&quot;:2203},{&quot;X&quot;:&quot;normal.&quot;,&quot;Y&quot;:972781},{&quot;X&quot;:&quot;warezclient.&quot;,&quot;Y&quot;:1020},{&quot;X&quot;:&quot;guess_passwd.&quot;,&quot;Y&quot;:53},{&quot;X&quot;:&quot;ftp_write.&quot;,&quot;Y&quot;:8},{&quot;X&quot;:&quot;phf.&quot;,&quot;Y&quot;:4},{&quot;X&quot;:&quot;multihop.&quot;,&quot;Y&quot;:7},{&quot;X&quot;:&quot;loadmodule.&quot;,&quot;Y&quot;:9},{&quot;X&quot;:&quot;smurf.&quot;,&quot;Y&quot;:2807886},{&quot;X&quot;:&quot;perl.&quot;,&quot;Y&quot;:3},{&quot;X&quot;:&quot;spy.&quot;,&quot;Y&quot;:2},{&quot;X&quot;:&quot;buffer_overflow.&quot;,&quot;Y&quot;:30},{&quot;X&quot;:&quot;pod.&quot;,&quot;Y&quot;:264},{&quot;X&quot;:&quot;teardrop.&quot;,&quot;Y&quot;:979},{&quot;X&quot;:&quot;warezmaster.&quot;,&quot;Y&quot;:20}],&quot;genId&quot;:&quot;1006465491&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/barChart'], \n      function(playground, _magicbarChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magicbarChart,\n    \"o\": {\"x\":\"X\",\"y\":\"Y\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab1646367207-2\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anona70d8cef54cf3e96d9d6b06feeedcafe&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:&quot;satan.&quot;,&quot;Y&quot;:15892},{&quot;X&quot;:&quot;rootkit.&quot;,&quot;Y&quot;:10},{&quot;X&quot;:&quot;portsweep.&quot;,&quot;Y&quot;:10413},{&quot;X&quot;:&quot;ipsweep.&quot;,&quot;Y&quot;:12481},{&quot;X&quot;:&quot;land.&quot;,&quot;Y&quot;:21},{&quot;X&quot;:&quot;imap.&quot;,&quot;Y&quot;:12},{&quot;X&quot;:&quot;nmap.&quot;,&quot;Y&quot;:2316},{&quot;X&quot;:&quot;neptune.&quot;,&quot;Y&quot;:1072017},{&quot;X&quot;:&quot;back.&quot;,&quot;Y&quot;:2203},{&quot;X&quot;:&quot;normal.&quot;,&quot;Y&quot;:972781},{&quot;X&quot;:&quot;warezclient.&quot;,&quot;Y&quot;:1020},{&quot;X&quot;:&quot;guess_passwd.&quot;,&quot;Y&quot;:53},{&quot;X&quot;:&quot;ftp_write.&quot;,&quot;Y&quot;:8},{&quot;X&quot;:&quot;phf.&quot;,&quot;Y&quot;:4},{&quot;X&quot;:&quot;multihop.&quot;,&quot;Y&quot;:7},{&quot;X&quot;:&quot;loadmodule.&quot;,&quot;Y&quot;:9},{&quot;X&quot;:&quot;smurf.&quot;,&quot;Y&quot;:2807886},{&quot;X&quot;:&quot;perl.&quot;,&quot;Y&quot;:3},{&quot;X&quot;:&quot;spy.&quot;,&quot;Y&quot;:2},{&quot;X&quot;:&quot;buffer_overflow.&quot;,&quot;Y&quot;:30},{&quot;X&quot;:&quot;pod.&quot;,&quot;Y&quot;:264},{&quot;X&quot;:&quot;teardrop.&quot;,&quot;Y&quot;:979},{&quot;X&quot;:&quot;warezmaster.&quot;,&quot;Y&quot;:20}],&quot;genId&quot;:&quot;593000167&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/pieChart'], \n      function(playground, _magicpieChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magicpieChart,\n    \"o\": {\"series\":\"X\",\"p\":\"Y\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div></div>\n      </div></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 17
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### For simplicity, selecting only non-numeric columns"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val nonNumericFrame = List(\"protocol_type\" ,\"service\", \"flag\")\nval labeledNumericFrame = dataFrame.select(\n  \"label\", \n  \"duration\",\n  \"src_bytes\",\n  \"dst_bytes\",\n  \"land\",\n  \"wrong_fragment\",\n  \"urgent\",\n  \"hot\",\n  \"num_failed_logins\",\n  \"logged_in\",\n  \"num_compromised\",\n  \"root_shell\",\n  \"su_attempted\",\n  \"num_root\",\n  \"num_file_creations\",\n  \"num_shells\",\n  \"num_access_files\",\n  \"num_outbound_cmds\",\n  \"is_host_login\",\n  \"is_guest_login\",\n  \"count\",\n  \"srv_count\",\n  \"serror_rate\",\n  \"srv_serror_rate\",\n  \"rerror_rate\",\n  \"srv_rerror_rate\",\n  \"same_srv_rate\",\n  \"diff_srv_rate\",\n  \"srv_diff_host_rate\",\n  \"dst_host_count\",\n  \"dst_host_srv_count\",\n  \"dst_host_same_srv_rate\",\n  \"dst_host_diff_srv_rate\",\n  \"dst_host_same_src_port_rate\",\n  \"dst_host_srv_diff_host_rate\",\n  \"dst_host_serror_rate\",\n  \"dst_host_srv_serror_rate\",\n  \"dst_host_rerror_rate\",\n  \"dst_host_srv_rerror_rate\"\n)\n\nlabeledNumericFrame.take(1)(0)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "nonNumericFrame: List[String] = List(protocol_type, service, flag)\nlabeledNumericFrame: org.apache.spark.sql.DataFrame = [label: string, duration: string, src_bytes: string, dst_bytes: string, land: string, wrong_fragment: string, urgent: string, hot: string, num_failed_logins: string, logged_in: string, num_compromised: string, root_shell: string, su_attempted: string, num_root: string, num_file_creations: string, num_shells: string, num_access_files: string, num_outbound_cmds: string, is_host_login: string, is_guest_login: string, count: string, srv_count: string, serror_rate: string, srv_serror_rate: string, rerror_rate: string, srv_rerror_rate: string, same_srv_rate: string, diff_srv_rate: string, srv_diff_host_rate: string, dst_host_count: string, dst_host_srv_count: string, dst_ho..."
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "[normal.,0,215,45076,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0.00,0.00,0.00,0.00,1.00,0.00,0.00,0,0,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00]"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 18
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Running standard SQL queries against your dataset"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "dataFrame.registerTempTable(\"logs\")\nval allColumns = sqlContext.sql(\"SELECT * FROM logs WHERE protocol_type = 'udp' LIMIT 1\").first",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "allColumns: org.apache.spark.sql.Row = [1,0.00,0,6,0.33,0.00,0.17,0.17,0.00,1,0.00,0.00,0.00,0,SF,0,0,0,normal.,0,0,0,0,0,0,0,0,0,udp,0.00,0,1.00,0.00,domain_u,30,2,1.00,0.00,0.00,0,0,0]\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "[1,0.00,0,6,0.33,0.00,0.17,0.17,0.00,1,0.00,0.00,0.00,0,SF,0,0,0,normal.,0,0,0,0,0,0,0,0,0,udp,0.00,0,1.00,0.00,domain_u,30,2,1.00,0.00,0.00,0,0,0]"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 19
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "***\n## Build a clustering model -- Spark MLlib"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Prepare the data"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### Every row becomes (Label, Vector[numeric values])"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val labeledPoint = labeledNumericFrame.map(row => \n      (row.getString(0), Vectors.dense(row.toSeq.tail.map(s => if(s == null) 0.0 else s.toString.toDouble).toArray)))\n\nval rawData = labeledPoint.map(_._2)\nrawData.first",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "labeledPoint: org.apache.spark.rdd.RDD[(String, org.apache.spark.mllib.linalg.Vector)] = MapPartitionsRDD[30] at map at DataFrame.scala:848\nrawData: org.apache.spark.rdd.RDD[org.apache.spark.mllib.linalg.Vector] = MapPartitionsRDD[31] at map at <console>:74\nres14: org.apache.spark.mllib.linalg.Vector = [0.0,215.0,45076.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "[0.0,215.0,45076.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 20
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### Labels are not going to be used when building the model"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Scale the features and cache the results"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val scaler = new StandardScaler().fit(rawData)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "scaler: org.apache.spark.mllib.feature.StandardScalerModel = org.apache.spark.mllib.feature.StandardScalerModel@657630d1\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "org.apache.spark.mllib.feature.StandardScalerModel@657630d1"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 21
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val data = scaler.transform(rawData).cache",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "data: org.apache.spark.rdd.RDD[org.apache.spark.mllib.linalg.Vector] = MapPartitionsRDD[36] at map at VectorTransformer.scala:49\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "MapPartitionsRDD[36] at map at VectorTransformer.scala:49"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 22
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "data.first.toArray.toList",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res15: List[Double] = List(0.0, 2.283757205658552E-4, 0.06988393499153434, 0.0, 0.0, 0.0, 0.0, 0.0, 2.8521592459052765, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.004717186229981798, 0.004065161115037389, 0.0, 0.0, 0.0, 0.0, 2.5687405411353827, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anonf8b166dc120fc7f9e231bd0d1b3fd751&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:0,&quot;Y&quot;:0.0},{&quot;X&quot;:1,&quot;Y&quot;:0.0002283757205658552},{&quot;X&quot;:2,&quot;Y&quot;:0.06988393499153434},{&quot;X&quot;:3,&quot;Y&quot;:0.0},{&quot;X&quot;:4,&quot;Y&quot;:0.0},{&quot;X&quot;:5,&quot;Y&quot;:0.0},{&quot;X&quot;:6,&quot;Y&quot;:0.0},{&quot;X&quot;:7,&quot;Y&quot;:0.0},{&quot;X&quot;:8,&quot;Y&quot;:2.8521592459052765},{&quot;X&quot;:9,&quot;Y&quot;:0.0},{&quot;X&quot;:10,&quot;Y&quot;:0.0},{&quot;X&quot;:11,&quot;Y&quot;:0.0},{&quot;X&quot;:12,&quot;Y&quot;:0.0},{&quot;X&quot;:13,&quot;Y&quot;:0.0},{&quot;X&quot;:14,&quot;Y&quot;:0.0},{&quot;X&quot;:15,&quot;Y&quot;:0.0},{&quot;X&quot;:16,&quot;Y&quot;:0.0},{&quot;X&quot;:17,&quot;Y&quot;:0.0},{&quot;X&quot;:18,&quot;Y&quot;:0.0},{&quot;X&quot;:19,&quot;Y&quot;:0.004717186229981798},{&quot;X&quot;:20,&quot;Y&quot;:0.004065161115037389},{&quot;X&quot;:21,&quot;Y&quot;:0.0},{&quot;X&quot;:22,&quot;Y&quot;:0.0},{&quot;X&quot;:23,&quot;Y&quot;:0.0},{&quot;X&quot;:24,&quot;Y&quot;:0.0},{&quot;X&quot;:25,&quot;Y&quot;:2.5687405411353827},{&quot;X&quot;:26,&quot;Y&quot;:0.0},{&quot;X&quot;:27,&quot;Y&quot;:0.0},{&quot;X&quot;:28,&quot;Y&quot;:0.0},{&quot;X&quot;:29,&quot;Y&quot;:0.0},{&quot;X&quot;:30,&quot;Y&quot;:0.0},{&quot;X&quot;:31,&quot;Y&quot;:0.0},{&quot;X&quot;:32,&quot;Y&quot;:0.0},{&quot;X&quot;:33,&quot;Y&quot;:0.0},{&quot;X&quot;:34,&quot;Y&quot;:0.0},{&quot;X&quot;:35,&quot;Y&quot;:0.0},{&quot;X&quot;:36,&quot;Y&quot;:0.0},{&quot;X&quot;:37,&quot;Y&quot;:0.0}],&quot;genId&quot;:&quot;316746270&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tabs'], \n      function(playground, _magictabs) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictabs,\n    \"o\": {}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <ul class=\"nav nav-tabs\" id=\"ul316746270\"><li>\n              <a href=\"#tab316746270-0\"><i class=\"fa fa-table\"/></a>\n            </li><li>\n              <a href=\"#tab316746270-1\"><i class=\"fa fa-dot-circle-o\"/></a>\n            </li><li>\n              <a href=\"#tab316746270-2\"><i class=\"fa fa-line-chart\"/></a>\n            </li><li>\n              <a href=\"#tab316746270-3\"><i class=\"fa fa-bar-chart\"/></a>\n            </li></ul>\n\n        <div class=\"tab-content\" id=\"tab316746270\"><div class=\"tab-pane\" id=\"tab316746270-0\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon48093cd46c396f6ec4e1532e4d86f4b5&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:0,&quot;Y&quot;:0.0},{&quot;X&quot;:1,&quot;Y&quot;:0.0002283757205658552},{&quot;X&quot;:2,&quot;Y&quot;:0.06988393499153434},{&quot;X&quot;:3,&quot;Y&quot;:0.0},{&quot;X&quot;:4,&quot;Y&quot;:0.0},{&quot;X&quot;:5,&quot;Y&quot;:0.0},{&quot;X&quot;:6,&quot;Y&quot;:0.0},{&quot;X&quot;:7,&quot;Y&quot;:0.0},{&quot;X&quot;:8,&quot;Y&quot;:2.8521592459052765},{&quot;X&quot;:9,&quot;Y&quot;:0.0},{&quot;X&quot;:10,&quot;Y&quot;:0.0},{&quot;X&quot;:11,&quot;Y&quot;:0.0},{&quot;X&quot;:12,&quot;Y&quot;:0.0},{&quot;X&quot;:13,&quot;Y&quot;:0.0},{&quot;X&quot;:14,&quot;Y&quot;:0.0},{&quot;X&quot;:15,&quot;Y&quot;:0.0},{&quot;X&quot;:16,&quot;Y&quot;:0.0},{&quot;X&quot;:17,&quot;Y&quot;:0.0},{&quot;X&quot;:18,&quot;Y&quot;:0.0},{&quot;X&quot;:19,&quot;Y&quot;:0.004717186229981798},{&quot;X&quot;:20,&quot;Y&quot;:0.004065161115037389},{&quot;X&quot;:21,&quot;Y&quot;:0.0},{&quot;X&quot;:22,&quot;Y&quot;:0.0},{&quot;X&quot;:23,&quot;Y&quot;:0.0},{&quot;X&quot;:24,&quot;Y&quot;:0.0}],&quot;genId&quot;:&quot;649564822&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tableChart'], \n      function(playground, _magictableChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictableChart,\n    \"o\": {\"headers\":[\"X\",\"Y\"],\"nrow\":38,\"shown\":25,\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab316746270-1\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon6236c6147401b272996268e580028a0a&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:0,&quot;Y&quot;:0.0},{&quot;X&quot;:1,&quot;Y&quot;:0.0002283757205658552},{&quot;X&quot;:2,&quot;Y&quot;:0.06988393499153434},{&quot;X&quot;:3,&quot;Y&quot;:0.0},{&quot;X&quot;:4,&quot;Y&quot;:0.0},{&quot;X&quot;:5,&quot;Y&quot;:0.0},{&quot;X&quot;:6,&quot;Y&quot;:0.0},{&quot;X&quot;:7,&quot;Y&quot;:0.0},{&quot;X&quot;:8,&quot;Y&quot;:2.8521592459052765},{&quot;X&quot;:9,&quot;Y&quot;:0.0},{&quot;X&quot;:10,&quot;Y&quot;:0.0},{&quot;X&quot;:11,&quot;Y&quot;:0.0},{&quot;X&quot;:12,&quot;Y&quot;:0.0},{&quot;X&quot;:13,&quot;Y&quot;:0.0},{&quot;X&quot;:14,&quot;Y&quot;:0.0},{&quot;X&quot;:15,&quot;Y&quot;:0.0},{&quot;X&quot;:16,&quot;Y&quot;:0.0},{&quot;X&quot;:17,&quot;Y&quot;:0.0},{&quot;X&quot;:18,&quot;Y&quot;:0.0},{&quot;X&quot;:19,&quot;Y&quot;:0.004717186229981798},{&quot;X&quot;:20,&quot;Y&quot;:0.004065161115037389},{&quot;X&quot;:21,&quot;Y&quot;:0.0},{&quot;X&quot;:22,&quot;Y&quot;:0.0},{&quot;X&quot;:23,&quot;Y&quot;:0.0},{&quot;X&quot;:24,&quot;Y&quot;:0.0},{&quot;X&quot;:25,&quot;Y&quot;:2.5687405411353827},{&quot;X&quot;:26,&quot;Y&quot;:0.0},{&quot;X&quot;:27,&quot;Y&quot;:0.0},{&quot;X&quot;:28,&quot;Y&quot;:0.0},{&quot;X&quot;:29,&quot;Y&quot;:0.0},{&quot;X&quot;:30,&quot;Y&quot;:0.0},{&quot;X&quot;:31,&quot;Y&quot;:0.0},{&quot;X&quot;:32,&quot;Y&quot;:0.0},{&quot;X&quot;:33,&quot;Y&quot;:0.0},{&quot;X&quot;:34,&quot;Y&quot;:0.0},{&quot;X&quot;:35,&quot;Y&quot;:0.0},{&quot;X&quot;:36,&quot;Y&quot;:0.0},{&quot;X&quot;:37,&quot;Y&quot;:0.0}],&quot;genId&quot;:&quot;1805171838&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/scatterChart'], \n      function(playground, _magicscatterChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magicscatterChart,\n    \"o\": {\"x\":\"X\",\"y\":\"Y\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab316746270-2\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anonc47961aaecfb7f0d9e0e066692b26a2e&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:0,&quot;Y&quot;:0.0},{&quot;X&quot;:1,&quot;Y&quot;:0.0002283757205658552},{&quot;X&quot;:2,&quot;Y&quot;:0.06988393499153434},{&quot;X&quot;:3,&quot;Y&quot;:0.0},{&quot;X&quot;:4,&quot;Y&quot;:0.0},{&quot;X&quot;:5,&quot;Y&quot;:0.0},{&quot;X&quot;:6,&quot;Y&quot;:0.0},{&quot;X&quot;:7,&quot;Y&quot;:0.0},{&quot;X&quot;:8,&quot;Y&quot;:2.8521592459052765},{&quot;X&quot;:9,&quot;Y&quot;:0.0},{&quot;X&quot;:10,&quot;Y&quot;:0.0},{&quot;X&quot;:11,&quot;Y&quot;:0.0},{&quot;X&quot;:12,&quot;Y&quot;:0.0},{&quot;X&quot;:13,&quot;Y&quot;:0.0},{&quot;X&quot;:14,&quot;Y&quot;:0.0},{&quot;X&quot;:15,&quot;Y&quot;:0.0},{&quot;X&quot;:16,&quot;Y&quot;:0.0},{&quot;X&quot;:17,&quot;Y&quot;:0.0},{&quot;X&quot;:18,&quot;Y&quot;:0.0},{&quot;X&quot;:19,&quot;Y&quot;:0.004717186229981798},{&quot;X&quot;:20,&quot;Y&quot;:0.004065161115037389},{&quot;X&quot;:21,&quot;Y&quot;:0.0},{&quot;X&quot;:22,&quot;Y&quot;:0.0},{&quot;X&quot;:23,&quot;Y&quot;:0.0},{&quot;X&quot;:24,&quot;Y&quot;:0.0},{&quot;X&quot;:25,&quot;Y&quot;:2.5687405411353827},{&quot;X&quot;:26,&quot;Y&quot;:0.0},{&quot;X&quot;:27,&quot;Y&quot;:0.0},{&quot;X&quot;:28,&quot;Y&quot;:0.0},{&quot;X&quot;:29,&quot;Y&quot;:0.0},{&quot;X&quot;:30,&quot;Y&quot;:0.0},{&quot;X&quot;:31,&quot;Y&quot;:0.0},{&quot;X&quot;:32,&quot;Y&quot;:0.0},{&quot;X&quot;:33,&quot;Y&quot;:0.0},{&quot;X&quot;:34,&quot;Y&quot;:0.0},{&quot;X&quot;:35,&quot;Y&quot;:0.0},{&quot;X&quot;:36,&quot;Y&quot;:0.0},{&quot;X&quot;:37,&quot;Y&quot;:0.0}],&quot;genId&quot;:&quot;255215532&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/lineChart'], \n      function(playground, _magiclineChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magiclineChart,\n    \"o\": {\"x\":\"X\",\"y\":\"Y\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab316746270-3\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anonc0a4116b633ccdd57f0b88cca51cfd8e&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:0,&quot;Y&quot;:0.0},{&quot;X&quot;:1,&quot;Y&quot;:0.0002283757205658552},{&quot;X&quot;:2,&quot;Y&quot;:0.06988393499153434},{&quot;X&quot;:3,&quot;Y&quot;:0.0},{&quot;X&quot;:4,&quot;Y&quot;:0.0},{&quot;X&quot;:5,&quot;Y&quot;:0.0},{&quot;X&quot;:6,&quot;Y&quot;:0.0},{&quot;X&quot;:7,&quot;Y&quot;:0.0},{&quot;X&quot;:8,&quot;Y&quot;:2.8521592459052765},{&quot;X&quot;:9,&quot;Y&quot;:0.0},{&quot;X&quot;:10,&quot;Y&quot;:0.0},{&quot;X&quot;:11,&quot;Y&quot;:0.0},{&quot;X&quot;:12,&quot;Y&quot;:0.0},{&quot;X&quot;:13,&quot;Y&quot;:0.0},{&quot;X&quot;:14,&quot;Y&quot;:0.0},{&quot;X&quot;:15,&quot;Y&quot;:0.0},{&quot;X&quot;:16,&quot;Y&quot;:0.0},{&quot;X&quot;:17,&quot;Y&quot;:0.0},{&quot;X&quot;:18,&quot;Y&quot;:0.0},{&quot;X&quot;:19,&quot;Y&quot;:0.004717186229981798},{&quot;X&quot;:20,&quot;Y&quot;:0.004065161115037389},{&quot;X&quot;:21,&quot;Y&quot;:0.0},{&quot;X&quot;:22,&quot;Y&quot;:0.0},{&quot;X&quot;:23,&quot;Y&quot;:0.0},{&quot;X&quot;:24,&quot;Y&quot;:0.0},{&quot;X&quot;:25,&quot;Y&quot;:2.5687405411353827},{&quot;X&quot;:26,&quot;Y&quot;:0.0},{&quot;X&quot;:27,&quot;Y&quot;:0.0},{&quot;X&quot;:28,&quot;Y&quot;:0.0},{&quot;X&quot;:29,&quot;Y&quot;:0.0},{&quot;X&quot;:30,&quot;Y&quot;:0.0},{&quot;X&quot;:31,&quot;Y&quot;:0.0},{&quot;X&quot;:32,&quot;Y&quot;:0.0},{&quot;X&quot;:33,&quot;Y&quot;:0.0},{&quot;X&quot;:34,&quot;Y&quot;:0.0},{&quot;X&quot;:35,&quot;Y&quot;:0.0},{&quot;X&quot;:36,&quot;Y&quot;:0.0},{&quot;X&quot;:37,&quot;Y&quot;:0.0}],&quot;genId&quot;:&quot;1496186887&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/barChart'], \n      function(playground, _magicbarChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magicbarChart,\n    \"o\": {\"x\":\"X\",\"y\":\"Y\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div></div>\n      </div></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 23
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Use K-Means clustering"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val numIterations = 10 //in production it should be more\nval K = 150",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "numIterations: Int = 10\nK: Int = 150\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "150"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 24
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val clusters = KMeans.train(data, K, numIterations)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "clusters: org.apache.spark.mllib.clustering.KMeansModel = org.apache.spark.mllib.clustering.KMeansModel@77268571\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "org.apache.spark.mllib.clustering.KMeansModel@77268571"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 25
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### Meantime let's have a look at Spark UI"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Now we have our model, let's apply it to the data"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "// this is a hack to workaround the serialization problems occuring while serializing a anonymous function\n// we rescope locally everything used by the function to be serialized\n// we define the function using the instances\n// we launch the computations withing the safe scope\n@transient val ser = new java.io.Serializable {\n  val lp = labeledPoint\n  val cs = clusters\n  val sc = scaler\n  val f = (x:(String, org.apache.spark.mllib.linalg.Vector)) => (cs.predict(sc.transform(x._2)), x._1)\n  val predictions = lp.map(x => f(x))\n}",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "ser: java.io.Serializable{val lp: org.apache.spark.rdd.RDD[(String, org.apache.spark.mllib.linalg.Vector)]; val cs: org.apache.spark.mllib.clustering.KMeansModel; val sc: org.apache.spark.mllib.feature.StandardScalerModel; val f: ((String, org.apache.spark.mllib.linalg.Vector)) => (Int, String); val predictions: org.apache.spark.rdd.RDD[(Int, String)]} = $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$anon$1@a7d3acb\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "$line63.$read$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$anon$1@a7d3acb"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 26
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "ser.predictions",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "warning: there were 1 feature warning(s); re-run with -feature for details\nres16: org.apache.spark.rdd.RDD[(Int, String)] = MapPartitionsRDD[84] at map at <console>:96\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "MapPartitionsRDD[84] at map at &lt;console&gt;:96"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 27
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### And let's see the clusters and their size"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val clustersWithSize = ser.predictions.map(x => (x._1, 1)).reduceByKey((x,y) => x+y)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "warning: there were 1 feature warning(s); re-run with -feature for details\nclustersWithSize: org.apache.spark.rdd.RDD[(Int, Int)] = ShuffledRDD[86] at reduceByKey at <console>:89\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "ShuffledRDD[86] at reduceByKey at &lt;console&gt;:89"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 28
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "clustersWithSize.take(25).toList",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res17: List[(Int, Int)] = List((0,2806110), (1,1800), (2,8023), (3,49799), (4,1), (5,1), (6,484210), (7,1433), (8,37), (9,9), (10,1), (11,4325), (12,2), (13,158391), (14,18662), (15,12369), (16,242), (17,349), (18,6489), (19,1204), (20,3814), (21,970), (22,307), (23,23434), (24,4372))\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anoneab2f310f1cd4f56d2c5afef1e6cfdfd&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:0,&quot;Y&quot;:2806110},{&quot;X&quot;:1,&quot;Y&quot;:1800},{&quot;X&quot;:2,&quot;Y&quot;:8023},{&quot;X&quot;:3,&quot;Y&quot;:49799},{&quot;X&quot;:4,&quot;Y&quot;:1},{&quot;X&quot;:5,&quot;Y&quot;:1},{&quot;X&quot;:6,&quot;Y&quot;:484210},{&quot;X&quot;:7,&quot;Y&quot;:1433},{&quot;X&quot;:8,&quot;Y&quot;:37},{&quot;X&quot;:9,&quot;Y&quot;:9},{&quot;X&quot;:10,&quot;Y&quot;:1},{&quot;X&quot;:11,&quot;Y&quot;:4325},{&quot;X&quot;:12,&quot;Y&quot;:2},{&quot;X&quot;:13,&quot;Y&quot;:158391},{&quot;X&quot;:14,&quot;Y&quot;:18662},{&quot;X&quot;:15,&quot;Y&quot;:12369},{&quot;X&quot;:16,&quot;Y&quot;:242},{&quot;X&quot;:17,&quot;Y&quot;:349},{&quot;X&quot;:18,&quot;Y&quot;:6489},{&quot;X&quot;:19,&quot;Y&quot;:1204},{&quot;X&quot;:20,&quot;Y&quot;:3814},{&quot;X&quot;:21,&quot;Y&quot;:970},{&quot;X&quot;:22,&quot;Y&quot;:307},{&quot;X&quot;:23,&quot;Y&quot;:23434},{&quot;X&quot;:24,&quot;Y&quot;:4372}],&quot;genId&quot;:&quot;1253129601&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tabs'], \n      function(playground, _magictabs) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictabs,\n    \"o\": {}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <ul class=\"nav nav-tabs\" id=\"ul1253129601\"><li>\n              <a href=\"#tab1253129601-0\"><i class=\"fa fa-table\"/></a>\n            </li><li>\n              <a href=\"#tab1253129601-1\"><i class=\"fa fa-dot-circle-o\"/></a>\n            </li><li>\n              <a href=\"#tab1253129601-2\"><i class=\"fa fa-line-chart\"/></a>\n            </li><li>\n              <a href=\"#tab1253129601-3\"><i class=\"fa fa-bar-chart\"/></a>\n            </li></ul>\n\n        <div class=\"tab-content\" id=\"tab1253129601\"><div class=\"tab-pane\" id=\"tab1253129601-0\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon910401c6c8d1acb6cef149a430c12a1b&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:0,&quot;Y&quot;:2806110},{&quot;X&quot;:1,&quot;Y&quot;:1800},{&quot;X&quot;:2,&quot;Y&quot;:8023},{&quot;X&quot;:3,&quot;Y&quot;:49799},{&quot;X&quot;:4,&quot;Y&quot;:1},{&quot;X&quot;:5,&quot;Y&quot;:1},{&quot;X&quot;:6,&quot;Y&quot;:484210},{&quot;X&quot;:7,&quot;Y&quot;:1433},{&quot;X&quot;:8,&quot;Y&quot;:37},{&quot;X&quot;:9,&quot;Y&quot;:9},{&quot;X&quot;:10,&quot;Y&quot;:1},{&quot;X&quot;:11,&quot;Y&quot;:4325},{&quot;X&quot;:12,&quot;Y&quot;:2},{&quot;X&quot;:13,&quot;Y&quot;:158391},{&quot;X&quot;:14,&quot;Y&quot;:18662},{&quot;X&quot;:15,&quot;Y&quot;:12369},{&quot;X&quot;:16,&quot;Y&quot;:242},{&quot;X&quot;:17,&quot;Y&quot;:349},{&quot;X&quot;:18,&quot;Y&quot;:6489},{&quot;X&quot;:19,&quot;Y&quot;:1204},{&quot;X&quot;:20,&quot;Y&quot;:3814},{&quot;X&quot;:21,&quot;Y&quot;:970},{&quot;X&quot;:22,&quot;Y&quot;:307},{&quot;X&quot;:23,&quot;Y&quot;:23434},{&quot;X&quot;:24,&quot;Y&quot;:4372}],&quot;genId&quot;:&quot;1343787637&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tableChart'], \n      function(playground, _magictableChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictableChart,\n    \"o\": {\"headers\":[\"X\",\"Y\"],\"nrow\":25,\"shown\":25,\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab1253129601-1\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anonf29c5becc9ab7a1d8034031b14336e07&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:0,&quot;Y&quot;:2806110},{&quot;X&quot;:1,&quot;Y&quot;:1800},{&quot;X&quot;:2,&quot;Y&quot;:8023},{&quot;X&quot;:3,&quot;Y&quot;:49799},{&quot;X&quot;:4,&quot;Y&quot;:1},{&quot;X&quot;:5,&quot;Y&quot;:1},{&quot;X&quot;:6,&quot;Y&quot;:484210},{&quot;X&quot;:7,&quot;Y&quot;:1433},{&quot;X&quot;:8,&quot;Y&quot;:37},{&quot;X&quot;:9,&quot;Y&quot;:9},{&quot;X&quot;:10,&quot;Y&quot;:1},{&quot;X&quot;:11,&quot;Y&quot;:4325},{&quot;X&quot;:12,&quot;Y&quot;:2},{&quot;X&quot;:13,&quot;Y&quot;:158391},{&quot;X&quot;:14,&quot;Y&quot;:18662},{&quot;X&quot;:15,&quot;Y&quot;:12369},{&quot;X&quot;:16,&quot;Y&quot;:242},{&quot;X&quot;:17,&quot;Y&quot;:349},{&quot;X&quot;:18,&quot;Y&quot;:6489},{&quot;X&quot;:19,&quot;Y&quot;:1204},{&quot;X&quot;:20,&quot;Y&quot;:3814},{&quot;X&quot;:21,&quot;Y&quot;:970},{&quot;X&quot;:22,&quot;Y&quot;:307},{&quot;X&quot;:23,&quot;Y&quot;:23434},{&quot;X&quot;:24,&quot;Y&quot;:4372}],&quot;genId&quot;:&quot;339474960&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/scatterChart'], \n      function(playground, _magicscatterChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magicscatterChart,\n    \"o\": {\"x\":\"X\",\"y\":\"Y\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab1253129601-2\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon8a6a62e53615651765876e2898a2fb76&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:0,&quot;Y&quot;:2806110},{&quot;X&quot;:1,&quot;Y&quot;:1800},{&quot;X&quot;:2,&quot;Y&quot;:8023},{&quot;X&quot;:3,&quot;Y&quot;:49799},{&quot;X&quot;:4,&quot;Y&quot;:1},{&quot;X&quot;:5,&quot;Y&quot;:1},{&quot;X&quot;:6,&quot;Y&quot;:484210},{&quot;X&quot;:7,&quot;Y&quot;:1433},{&quot;X&quot;:8,&quot;Y&quot;:37},{&quot;X&quot;:9,&quot;Y&quot;:9},{&quot;X&quot;:10,&quot;Y&quot;:1},{&quot;X&quot;:11,&quot;Y&quot;:4325},{&quot;X&quot;:12,&quot;Y&quot;:2},{&quot;X&quot;:13,&quot;Y&quot;:158391},{&quot;X&quot;:14,&quot;Y&quot;:18662},{&quot;X&quot;:15,&quot;Y&quot;:12369},{&quot;X&quot;:16,&quot;Y&quot;:242},{&quot;X&quot;:17,&quot;Y&quot;:349},{&quot;X&quot;:18,&quot;Y&quot;:6489},{&quot;X&quot;:19,&quot;Y&quot;:1204},{&quot;X&quot;:20,&quot;Y&quot;:3814},{&quot;X&quot;:21,&quot;Y&quot;:970},{&quot;X&quot;:22,&quot;Y&quot;:307},{&quot;X&quot;:23,&quot;Y&quot;:23434},{&quot;X&quot;:24,&quot;Y&quot;:4372}],&quot;genId&quot;:&quot;250375144&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/lineChart'], \n      function(playground, _magiclineChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magiclineChart,\n    \"o\": {\"x\":\"X\",\"y\":\"Y\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab1253129601-3\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anond21dac5b92f60a5d59c0b530f98b18f7&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:0,&quot;Y&quot;:2806110},{&quot;X&quot;:1,&quot;Y&quot;:1800},{&quot;X&quot;:2,&quot;Y&quot;:8023},{&quot;X&quot;:3,&quot;Y&quot;:49799},{&quot;X&quot;:4,&quot;Y&quot;:1},{&quot;X&quot;:5,&quot;Y&quot;:1},{&quot;X&quot;:6,&quot;Y&quot;:484210},{&quot;X&quot;:7,&quot;Y&quot;:1433},{&quot;X&quot;:8,&quot;Y&quot;:37},{&quot;X&quot;:9,&quot;Y&quot;:9},{&quot;X&quot;:10,&quot;Y&quot;:1},{&quot;X&quot;:11,&quot;Y&quot;:4325},{&quot;X&quot;:12,&quot;Y&quot;:2},{&quot;X&quot;:13,&quot;Y&quot;:158391},{&quot;X&quot;:14,&quot;Y&quot;:18662},{&quot;X&quot;:15,&quot;Y&quot;:12369},{&quot;X&quot;:16,&quot;Y&quot;:242},{&quot;X&quot;:17,&quot;Y&quot;:349},{&quot;X&quot;:18,&quot;Y&quot;:6489},{&quot;X&quot;:19,&quot;Y&quot;:1204},{&quot;X&quot;:20,&quot;Y&quot;:3814},{&quot;X&quot;:21,&quot;Y&quot;:970},{&quot;X&quot;:22,&quot;Y&quot;:307},{&quot;X&quot;:23,&quot;Y&quot;:23434},{&quot;X&quot;:24,&quot;Y&quot;:4372}],&quot;genId&quot;:&quot;1989921142&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/barChart'], \n      function(playground, _magicbarChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magicbarChart,\n    \"o\": {\"x\":\"X\",\"y\":\"Y\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div></div>\n      </div></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 29
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "##Use case assumption:\n**All the clusters with only one point in them labeled 'normal' are fishy**"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val clustersWithCountAndLabel = clustersWithSize.join(ser.predictions).distinct\nclustersWithCountAndLabel.take(20).toList",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "warning: there were 1 feature warning(s); re-run with -feature for details\nclustersWithCountAndLabel: org.apache.spark.rdd.RDD[(Int, (Int, String))] = MapPartitionsRDD[92] at distinct at <console>:91\nres18: List[(Int, (Int, String))] = List((56,(2498,back.)), (110,(10558,smurf.)), (85,(377294,portsweep.)), (47,(787,normal.)), (41,(4345,satan.)), (131,(937,warezmaster.)), (148,(10794,normal.)), (35,(3,satan.)), (59,(11012,portsweep.)), (111,(517,normal.)), (86,(44916,normal.)), (44,(1,normal.)), (63,(34492,normal.)), (48,(12674,normal.)), (20,(3814,ipsweep.)), (64,(57493,normal.)), (141,(6676,ipsweep.)), (128,(5661,portsweep.)), (59,(11012,satan.)), (110,(10558,normal.)))\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anonf75898725db637d0f1c661817ca4a90c&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:56,&quot;Y&quot;:&quot;(2498,back.)&quot;},{&quot;X&quot;:110,&quot;Y&quot;:&quot;(10558,smurf.)&quot;},{&quot;X&quot;:85,&quot;Y&quot;:&quot;(377294,portsweep.)&quot;},{&quot;X&quot;:47,&quot;Y&quot;:&quot;(787,normal.)&quot;},{&quot;X&quot;:41,&quot;Y&quot;:&quot;(4345,satan.)&quot;},{&quot;X&quot;:131,&quot;Y&quot;:&quot;(937,warezmaster.)&quot;},{&quot;X&quot;:148,&quot;Y&quot;:&quot;(10794,normal.)&quot;},{&quot;X&quot;:35,&quot;Y&quot;:&quot;(3,satan.)&quot;},{&quot;X&quot;:59,&quot;Y&quot;:&quot;(11012,portsweep.)&quot;},{&quot;X&quot;:111,&quot;Y&quot;:&quot;(517,normal.)&quot;},{&quot;X&quot;:86,&quot;Y&quot;:&quot;(44916,normal.)&quot;},{&quot;X&quot;:44,&quot;Y&quot;:&quot;(1,normal.)&quot;},{&quot;X&quot;:63,&quot;Y&quot;:&quot;(34492,normal.)&quot;},{&quot;X&quot;:48,&quot;Y&quot;:&quot;(12674,normal.)&quot;},{&quot;X&quot;:20,&quot;Y&quot;:&quot;(3814,ipsweep.)&quot;},{&quot;X&quot;:64,&quot;Y&quot;:&quot;(57493,normal.)&quot;},{&quot;X&quot;:141,&quot;Y&quot;:&quot;(6676,ipsweep.)&quot;},{&quot;X&quot;:128,&quot;Y&quot;:&quot;(5661,portsweep.)&quot;},{&quot;X&quot;:59,&quot;Y&quot;:&quot;(11012,satan.)&quot;},{&quot;X&quot;:110,&quot;Y&quot;:&quot;(10558,normal.)&quot;}],&quot;genId&quot;:&quot;493965454&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tabs'], \n      function(playground, _magictabs) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictabs,\n    \"o\": {}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <ul class=\"nav nav-tabs\" id=\"ul493965454\"><li>\n              <a href=\"#tab493965454-0\"><i class=\"fa fa-table\"/></a>\n            </li></ul>\n\n        <div class=\"tab-content\" id=\"tab493965454\"><div class=\"tab-pane\" id=\"tab493965454-0\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anonf6a383d397db0c6b5f017ecd55fb3187&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:56,&quot;Y&quot;:&quot;(2498,back.)&quot;},{&quot;X&quot;:110,&quot;Y&quot;:&quot;(10558,smurf.)&quot;},{&quot;X&quot;:85,&quot;Y&quot;:&quot;(377294,portsweep.)&quot;},{&quot;X&quot;:47,&quot;Y&quot;:&quot;(787,normal.)&quot;},{&quot;X&quot;:41,&quot;Y&quot;:&quot;(4345,satan.)&quot;},{&quot;X&quot;:131,&quot;Y&quot;:&quot;(937,warezmaster.)&quot;},{&quot;X&quot;:148,&quot;Y&quot;:&quot;(10794,normal.)&quot;},{&quot;X&quot;:35,&quot;Y&quot;:&quot;(3,satan.)&quot;},{&quot;X&quot;:59,&quot;Y&quot;:&quot;(11012,portsweep.)&quot;},{&quot;X&quot;:111,&quot;Y&quot;:&quot;(517,normal.)&quot;},{&quot;X&quot;:86,&quot;Y&quot;:&quot;(44916,normal.)&quot;},{&quot;X&quot;:44,&quot;Y&quot;:&quot;(1,normal.)&quot;},{&quot;X&quot;:63,&quot;Y&quot;:&quot;(34492,normal.)&quot;},{&quot;X&quot;:48,&quot;Y&quot;:&quot;(12674,normal.)&quot;},{&quot;X&quot;:20,&quot;Y&quot;:&quot;(3814,ipsweep.)&quot;},{&quot;X&quot;:64,&quot;Y&quot;:&quot;(57493,normal.)&quot;},{&quot;X&quot;:141,&quot;Y&quot;:&quot;(6676,ipsweep.)&quot;},{&quot;X&quot;:128,&quot;Y&quot;:&quot;(5661,portsweep.)&quot;},{&quot;X&quot;:59,&quot;Y&quot;:&quot;(11012,satan.)&quot;},{&quot;X&quot;:110,&quot;Y&quot;:&quot;(10558,normal.)&quot;}],&quot;genId&quot;:&quot;1149632965&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tableChart'], \n      function(playground, _magictableChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictableChart,\n    \"o\": {\"headers\":[\"X\",\"Y\"],\"nrow\":20,\"shown\":25,\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div></div>\n      </div></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 30
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "//clusters with 1 point and labeled as normal\nval suspectedAnomalousClusters = clustersWithCountAndLabel.filter(x => x._2._1 == 1 && x._2._2 == \"normal.\").map( x => x._1 )",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "suspectedAnomalousClusters: org.apache.spark.rdd.RDD[Int] = MapPartitionsRDD[94] at map at <console>:94\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "MapPartitionsRDD[94] at map at &lt;console&gt;:94"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 31
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Now we have discovered the anomalous clusters"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val anomalousClusters = suspectedAnomalousClusters.collect\nanomalousClusters.toList",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "anomalousClusters: Array[Int] = Array(44, 96, 109, 50, 33, 108, 5, 91, 4, 145, 100)\nres19: List[Int] = List(44, 96, 109, 50, 33, 108, 5, 91, 4, 145, 100)\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon24039df076397d50f8c6939d3acb0484&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:0,&quot;Y&quot;:44},{&quot;X&quot;:1,&quot;Y&quot;:96},{&quot;X&quot;:2,&quot;Y&quot;:109},{&quot;X&quot;:3,&quot;Y&quot;:50},{&quot;X&quot;:4,&quot;Y&quot;:33},{&quot;X&quot;:5,&quot;Y&quot;:108},{&quot;X&quot;:6,&quot;Y&quot;:5},{&quot;X&quot;:7,&quot;Y&quot;:91},{&quot;X&quot;:8,&quot;Y&quot;:4},{&quot;X&quot;:9,&quot;Y&quot;:145},{&quot;X&quot;:10,&quot;Y&quot;:100}],&quot;genId&quot;:&quot;228221032&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tabs'], \n      function(playground, _magictabs) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictabs,\n    \"o\": {}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <ul class=\"nav nav-tabs\" id=\"ul228221032\"><li>\n              <a href=\"#tab228221032-0\"><i class=\"fa fa-table\"/></a>\n            </li><li>\n              <a href=\"#tab228221032-1\"><i class=\"fa fa-dot-circle-o\"/></a>\n            </li><li>\n              <a href=\"#tab228221032-2\"><i class=\"fa fa-line-chart\"/></a>\n            </li><li>\n              <a href=\"#tab228221032-3\"><i class=\"fa fa-bar-chart\"/></a>\n            </li></ul>\n\n        <div class=\"tab-content\" id=\"tab228221032\"><div class=\"tab-pane\" id=\"tab228221032-0\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anonb16ea981bc5ffb7fbe71e3976184391a&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:0,&quot;Y&quot;:44},{&quot;X&quot;:1,&quot;Y&quot;:96},{&quot;X&quot;:2,&quot;Y&quot;:109},{&quot;X&quot;:3,&quot;Y&quot;:50},{&quot;X&quot;:4,&quot;Y&quot;:33},{&quot;X&quot;:5,&quot;Y&quot;:108},{&quot;X&quot;:6,&quot;Y&quot;:5},{&quot;X&quot;:7,&quot;Y&quot;:91},{&quot;X&quot;:8,&quot;Y&quot;:4},{&quot;X&quot;:9,&quot;Y&quot;:145},{&quot;X&quot;:10,&quot;Y&quot;:100}],&quot;genId&quot;:&quot;1739496890&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tableChart'], \n      function(playground, _magictableChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictableChart,\n    \"o\": {\"headers\":[\"X\",\"Y\"],\"nrow\":11,\"shown\":25,\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab228221032-1\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon2ee85cec111d01214832fd8ba947771e&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:0,&quot;Y&quot;:44},{&quot;X&quot;:1,&quot;Y&quot;:96},{&quot;X&quot;:2,&quot;Y&quot;:109},{&quot;X&quot;:3,&quot;Y&quot;:50},{&quot;X&quot;:4,&quot;Y&quot;:33},{&quot;X&quot;:5,&quot;Y&quot;:108},{&quot;X&quot;:6,&quot;Y&quot;:5},{&quot;X&quot;:7,&quot;Y&quot;:91},{&quot;X&quot;:8,&quot;Y&quot;:4},{&quot;X&quot;:9,&quot;Y&quot;:145},{&quot;X&quot;:10,&quot;Y&quot;:100}],&quot;genId&quot;:&quot;895481461&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/scatterChart'], \n      function(playground, _magicscatterChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magicscatterChart,\n    \"o\": {\"x\":\"X\",\"y\":\"Y\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab228221032-2\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon0feffefe2968d5f69f78a3973fdf7d0d&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:0,&quot;Y&quot;:44},{&quot;X&quot;:1,&quot;Y&quot;:96},{&quot;X&quot;:2,&quot;Y&quot;:109},{&quot;X&quot;:3,&quot;Y&quot;:50},{&quot;X&quot;:4,&quot;Y&quot;:33},{&quot;X&quot;:5,&quot;Y&quot;:108},{&quot;X&quot;:6,&quot;Y&quot;:5},{&quot;X&quot;:7,&quot;Y&quot;:91},{&quot;X&quot;:8,&quot;Y&quot;:4},{&quot;X&quot;:9,&quot;Y&quot;:145},{&quot;X&quot;:10,&quot;Y&quot;:100}],&quot;genId&quot;:&quot;742174547&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/lineChart'], \n      function(playground, _magiclineChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magiclineChart,\n    \"o\": {\"x\":\"X\",\"y\":\"Y\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab228221032-3\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon2fac8eacf9d4b18f4b4b7c906ded1286&quot;,&quot;dataInit&quot;:[{&quot;X&quot;:0,&quot;Y&quot;:44},{&quot;X&quot;:1,&quot;Y&quot;:96},{&quot;X&quot;:2,&quot;Y&quot;:109},{&quot;X&quot;:3,&quot;Y&quot;:50},{&quot;X&quot;:4,&quot;Y&quot;:33},{&quot;X&quot;:5,&quot;Y&quot;:108},{&quot;X&quot;:6,&quot;Y&quot;:5},{&quot;X&quot;:7,&quot;Y&quot;:91},{&quot;X&quot;:8,&quot;Y&quot;:4},{&quot;X&quot;:9,&quot;Y&quot;:145},{&quot;X&quot;:10,&quot;Y&quot;:100}],&quot;genId&quot;:&quot;1439468899&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/barChart'], \n      function(playground, _magicbarChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magicbarChart,\n    \"o\": {\"x\":\"X\",\"y\":\"Y\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div></div>\n      </div></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 32
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "***\n## Listen to the stream of events and predict anomaly -- Spark streaming"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### To create the real-time stream we will use the test dataset from the competition (in CSV format)"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "<code>0,tcp,private,REJ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,107,6,0.00,0.00,1.00,1.00,\n0.06,0.07,0.00,255,6,0.02,0.05,0.00,0.00,0.00,0.00,1.00,1.00</code>\n"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### We will use a simple Java app that reads in the logs and sends them to a TCP socket"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Create streaming context with batch 2s "
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val ssc = new StreamingContext(sparkContext, Seconds(2))",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "ssc: org.apache.spark.streaming.StreamingContext = org.apache.spark.streaming.StreamingContext@554fe51e\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "org.apache.spark.streaming.StreamingContext@554fe51e"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 33
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### Turn down the logging"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "Logger.getRootLogger.setLevel(Level.ERROR)",
+    "outputs" : [ {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 34
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### Helper method for removing non-numeric columns"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "def extractNumericColumns(r: RDD[Array[String]]): RDD[Vector] = {\n  val nonNumericColumns = List(1, 2, 3)\n  r.map(s => Vectors.dense(s.filterNot(f => nonNumericColumns.contains(s.indexOf(f))).\n                           map(st => if(st == null) 0.0 else st.toDouble).toArray))\n}",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "extractNumericColumns: (r: org.apache.spark.rdd.RDD[Array[String]])org.apache.spark.rdd.RDD[org.apache.spark.mllib.linalg.Vector]\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 35
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### Helper method for finding the anomalies"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "def findAnomaly(r: RDD[Int], anomalousClusters: Array[Int]): RDD[String] = {\n  r.filter(x => anomalousClusters.contains(x)).map(x => \"Suspected anomaly - entry in cluster \" + x)\n}",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "findAnomaly: (r: org.apache.spark.rdd.RDD[Int], anomalousClusters: Array[Int])org.apache.spark.rdd.RDD[String]\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 36
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "###  Start listening to the stream"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val lines = ssc.socketTextStream(\"localhost\", 9999)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "lines: org.apache.spark.streaming.dstream.ReceiverInputDStream[String] = org.apache.spark.streaming.dstream.SocketInputDStream@1eec4060\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "org.apache.spark.streaming.dstream.SocketInputDStream@1eec4060"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 37
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "@transient val safeScope = new java.io.Serializable {\n  val cs = clusters\n  val sc = scaler\n  val ac = anomalousClusters\n  val compute = lines .map(x => x.split(\",\"))\n                      .transform(y => extractNumericColumns(y))\n                      .transform(x => cs.predict(sc.transform(x)))\n                      .transform(x => findAnomaly(x, ac)).print\n  \n}",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "safeScope: java.io.Serializable{val cs: org.apache.spark.mllib.clustering.KMeansModel; val sc: org.apache.spark.mllib.feature.StandardScalerModel; val ac: Array[Int]; val compute: Unit} = $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$anon$1@71f2c2b9\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "$line75.$read$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$anon$1@71f2c2b9"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 38
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# Hackers and fraudsters beware!"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "ssc.start()\nssc.awaitTermination()",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "-------------------------------------------\nTime: 1433262368000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262370000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262372000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262374000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262376000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262378000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262380000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262382000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262384000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262386000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262388000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262390000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262392000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262394000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262396000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262398000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262400000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262402000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262404000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262406000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262408000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262410000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262412000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262414000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262416000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262418000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262420000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262422000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262424000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262426000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262428000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262430000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262432000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262434000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262436000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262438000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262440000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262442000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262444000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262446000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262448000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262450000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262452000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262454000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262456000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262458000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262460000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262462000 ms\n-------------------------------------------\n\n-------------------------------------------\nTime: 1433262464000 ms\n-------------------------------------------\n\n"
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "markdown",
+    "source" : "#### Spark UI now is showing Streaming tab"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "ssc.stop()",
+    "outputs" : [ ]
+  } ],
+  "nbformat" : 4
+}
