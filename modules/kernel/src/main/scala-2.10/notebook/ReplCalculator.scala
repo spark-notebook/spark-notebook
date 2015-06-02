@@ -3,6 +3,8 @@ package notebook.client
 import java.io.File
 
 import akka.actor.{Actor, ActorRef, Props}
+
+import notebook.OutputTypes._
 import notebook.kernel._
 import notebook.util.{CustomResolvers, Deps, Match}
 import sbt._
@@ -32,6 +34,17 @@ class ReplCalculator(
   private val resolverRegex = "(?s)^:remote-repo\\s*(.+)\\s*$".r
   private val authRegex = """(?s)^\s*\(([^\)]+)\)\s*$""".r
   private val credRegex = """"([^"]+)"\s*,\s*"([^"]+)"""".r //"
+
+  private def outputTypesRegex(ctx:String, outputType:String) = s"(?s)^:$ctx\\s*\n(.+)\\s*$$".r → outputType
+  private val htmlContext       = outputTypesRegex("html",       `text/html`)
+  private val plainContext      = outputTypesRegex("plain",      `text/plain`)
+  private val markdownContext   = outputTypesRegex("markdown",   `text/markdown`)
+  private val latexContext      = outputTypesRegex("latex",      `text/latex`)
+  private val svgContext        = outputTypesRegex("svg",        `image/svg+xml`)
+  private val pngContext        = outputTypesRegex("png",        `image/png`)
+  private val jpegContext       = outputTypesRegex("jpeg",       `image/jpeg`)
+  private val pdfContext        = outputTypesRegex("pdf",        `application/pdf`)
+  private val javascriptContext = outputTypesRegex("javascript", `application/javascript`)
 
   private val cpRegex = "(?s)^:cp\\s*(.+)\\s*$".r
   private val dpRegex = "(?s)^:dp\\s*(.+)\\s*$".r
@@ -177,24 +190,22 @@ class ReplCalculator(
     }
 
     def execute(sender:ActorRef, er:ExecuteRequest):Unit = {
-      val newCode = er.code match {
+      val (outputType, newCode) = er.code match {
         case resolverRegex(r) =>
           log.debug("Adding resolver: " + r)
           val (logR, resolver) = CustomResolvers.fromString(r)
           resolvers = resolver :: resolvers
-          s""" "Resolver added: $logR!" """
+          (`text/plain`, s""" "Resolver added: $logR!" """)
 
         case repoRegex(r) =>
           log.debug("Updating local repo: " + r)
           repo = new File(r.trim)
           repo.mkdirs
-          s""" "Repo changed to ${repo.getAbsolutePath}!" """
+          (`text/plain`, s""" "Repo changed to ${repo.getAbsolutePath}!" """)
 
         case dpRegex(cp) =>
           log.debug("Fetching deps using repos: " + resolvers.mkString(" -- "))
-          eval( """""", notify = false)()
           val tryDeps = Deps.script(cp, resolvers, repo)
-          eval( """""", notify = false)()
 
           tryDeps match {
             case TSuccess(deps) =>
@@ -206,6 +217,7 @@ class ReplCalculator(
               preStartLogic()
               replay()
 
+              (`text/plain`,
               s"""
                  |//updating deps
                  |jars = (${deps.mkString("List(\"", "\",\"", "\")")} ::: jars.toList).distinct.toArray
@@ -213,9 +225,10 @@ class ReplCalculator(
                  |reset()
                  |jars.toList
                  """.stripMargin
+              )
             case TFailure(ex) =>
               log.error(ex, "Cannot add dependencies")
-              s""" <p style="color:red">${ex.getMessage}</p> """
+              (`text/html`, s""" <p style="color:red">${ex.getMessage}</p> """)
           }
 
         case cpRegex(cp) =>
@@ -230,26 +243,71 @@ class ReplCalculator(
           _repl = Some(_r)
           preStartLogic()
           replay()
-          s""""Classpath CHANGED!" """
+          (`text/plain`, s""""Classpath CHANGED!" """)
 
         case shRegex(sh) =>
           val ps = "s\"\"\"" + sh.replaceAll("\\s*\\|\\s*", "\" #\\| \"").replaceAll("\\s*&&\\s*", "\" #&& \"") + "\"\"\""
-          s"""
+          (`text/plain`, s"""
              |import sys.process._
-             |<pre>{$ps !!}</pre>
+             |$ps !!
               """.stripMargin.trim
+          )
 
         case sqlRegex(n, sql) =>
           log.debug(s"Received sql code: [$n] $sql")
           val qs = "\"\"\""
-          //if (!sqlGen.parts.isEmpty) {
           val name = Option(n).map(nm => s"@transient val $nm = ").getOrElse("")
-          s"""
+          (`text/plain`,
+            s"""
             import notebook.front.widgets.Sql
             import notebook.front.widgets.Sql._
             ${name}new Sql(sqlContext, s$qs$sql$qs)
             """
-        case _ => er.code
+          )
+
+        case htmlContext._1(content)        =>
+          val ctx = htmlContext._2
+          val c = content.toString.replaceAll("\"", "&quot;")
+          (ctx, " scala.xml.XML.loadString(s\"\"\""+c+"\"\"\") ")
+
+        case plainContext._1(content)       =>
+          val ctx = plainContext._2
+          val c = content.toString.replaceAll("\"", "\\\\\\\"")
+          (ctx, " s\"\"\""+c+"\"\"\" ")
+
+        case markdownContext._1(content)    =>
+          val ctx = markdownContext._2
+          val c = content.toString.replaceAll("\"", "\\\\\\\"")
+          (ctx, " s\"\"\""+c+"\"\"\" ")
+
+        case latexContext._1(content)       =>
+          val ctx = latexContext._2
+          val c = content.toString.replaceAll("\"", "\\\\\\\"")
+          (ctx, " s\"\"\""+c+"\"\"\" ")
+
+        case svgContext._1(content)         =>
+          val ctx = svgContext._2
+          val c = content.toString.replaceAll("\"", "&quot;")
+          (ctx, " scala.xml.XML.loadString(s\"\"\""+c+"\"\"\") ")
+
+        case pngContext._1(content)         =>
+          val ctx = pngContext._2
+          (ctx, content.toString)
+
+        case jpegContext._1(content)        =>
+          val ctx = jpegContext._2
+          (ctx, content.toString)
+
+        case pdfContext._1(content)         =>
+          val ctx = pdfContext._2
+          (ctx, content.toString)
+
+        case javascriptContext._1(content)  =>
+          val ctx = javascriptContext._2
+          val c = content.toString//.replaceAll("\"", "\\\"")
+          (ctx, " s\"\"\""+c+"\"\"\" ")
+
+        case whatever => (`text/html`, whatever)
       }
       val start = System.currentTimeMillis
       val thisSelf = self
@@ -264,7 +322,7 @@ class ReplCalculator(
 
       result foreach {
         case (timeToEval, Success(result)) =>
-          thisSender ! ExecuteResponse(result.toString + s"\n <div class='pull-right text-info'><small>$timeToEval</small></div>")
+          thisSender ! ExecuteResponse(outputType, result.toString, timeToEval)
         case (timeToEval, Failure(stackTrace)) =>
           thisSender ! ErrorResponse(stackTrace, incomplete = false)
         case (timeToEval, notebook.kernel.Incomplete) =>
