@@ -310,7 +310,7 @@ object Application extends Controller {
 
   def newDirectory(path: String) = {
     Logger.info("New dir:" + path)
-    val base = new File(AppUtils.config.notebooksDir, path)
+    val base = new File(config.notebooksDir, path)
     val parent = base.getParentFile
     val newDir = new File(parent, "dir")
     newDir.mkdirs()
@@ -319,7 +319,7 @@ object Application extends Controller {
 
   def newFile(path: String) = {
     Logger.info("New file:" + path)
-    val base = new File(AppUtils.config.notebooksDir, path)
+    val base = new File(config.notebooksDir, path)
     val parent = base.getParentFile
     val newF = new File(parent, "file")
     newF.createNewFile()
@@ -386,7 +386,7 @@ object Application extends Controller {
   }
 
   def openKernel(kernelId: String, sessionId: String) = ImperativeWebsocket.using[JsValue](
-    onOpen = ch => WebSocketKernelActor.props(ch, kernelIdToCalcService(kernelId), sessionId),
+    onOpen = channel => WebSocketKernelActor.props(channel, kernelIdToCalcService(kernelId), sessionId),
     onMessage = (msg, ref) => ref ! msg,
     onClose = ref => {
       // try to not close the kernel to allow long live sessions
@@ -445,7 +445,7 @@ object Application extends Controller {
     }
   }
 
-  def saveNotebook(p: String) = Action(parse.tolerantJson(AppUtils.config.maxBytesInFlight)) {
+  def saveNotebook(p: String) = Action(parse.tolerantJson(config.maxBytesInFlight)) {
     request =>
       val path = URLDecoder.decode(p, UTF_8)
       Logger.info("SAVE → " + path)
