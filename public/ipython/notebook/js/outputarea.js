@@ -295,6 +295,7 @@ define([
             json.data = content.data;
             json.metadata = content.metadata;
             json.execution_count = content.execution_count;
+            json.time = content.time;
         } else if (msg_type === "error") {
             json.ename = content.ename;
             json.evalue = content.evalue;
@@ -513,9 +514,12 @@ define([
         this._safe_append(toinsert);
         // If we just output latex, typeset it.
         if ((json.data['text/latex'] !== undefined) ||
-            (json.data['text/html'] !== undefined) ||
+            /*(json.data['text/html'] !== undefined) ||*/
             (json.data['text/markdown'] !== undefined)) {
             this.typeset();
+        }
+        if (json.time) {
+            inserted.append($("<div class='pull-right text-info'><small>"+json.time+"</small></div>"))
         }
     };
 
@@ -675,6 +679,7 @@ define([
         var text_and_math = mathjaxutils.remove_math(markdown);
         var text = text_and_math[0];
         var math = text_and_math[1];
+        text = text.replace(/&quot;/g, '"');
         marked(text, function (err, html) {
             html = mathjaxutils.replace_math(html, math);
             toinsert.append(html);
@@ -697,6 +702,7 @@ define([
         // output can be inserted into at the time of JS execution.
         element = toinsert;
         try {
+            js = js.replace(/&quot;/g, '"');
             eval(js);
         } catch(err) {
             console.log(err);
