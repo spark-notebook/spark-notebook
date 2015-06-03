@@ -213,6 +213,16 @@ object Application extends Controller {
       }
     }
   }
+  /**
+   * add a spark cluster by json meta
+   */
+  def deleteCluster() = Action.async { request =>
+      println("del a cluster ....")
+      val o : JsObject = null;
+      val clusterName = request.queryString.get("name").get.head
+      implicit val ec = kernelSystem.dispatcher
+      (clustersActor ? NotebookClusters.Remove(clusterName, null)).map{ item => Ok("")}
+  }
 
   def contents(tpe: String, uri: String = "/") = Action { request =>
     val path = URLDecoder.decode(uri, UTF_8)
