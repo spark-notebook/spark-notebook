@@ -224,9 +224,9 @@ class ReplCalculator(
                 s"""
                    |//updating deps
                    |jars = (${deps.mkString("List(\"", "\",\"", "\")")} ::: jars.toList).distinct.toArray
-                                                                         |//restarting spark
-                                                                         |reset()
-                                                                         |jars.toList
+                   |//restarting spark
+                   |reset()
+                   |jars.toList
                  """.stripMargin
                 )
             case TFailure(ex) =>
