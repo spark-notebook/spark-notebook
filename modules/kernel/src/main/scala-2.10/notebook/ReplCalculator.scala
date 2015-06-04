@@ -3,14 +3,13 @@ package notebook.client
 import java.io.File
 
 import akka.actor.{Actor, ActorRef, Props}
-
 import notebook.OutputTypes._
 import notebook.kernel._
-import notebook.util.{CustomResolvers, Deps, Match}
+import notebook.util.{CustomResolvers, Deps}
 import sbt._
 
-import scala.concurrent.duration._
 import scala.collection.immutable.Queue
+import scala.concurrent.duration._
 import scala.util.{Failure => TFailure, Success => TSuccess}
 
 /**
@@ -35,15 +34,18 @@ class ReplCalculator(
   private val authRegex = """(?s)^\s*\(([^\)]+)\)\s*$""".r
   private val credRegex = """"([^"]+)"\s*,\s*"([^"]+)"""".r //"
 
-  private def outputTypesRegex(ctx:String, outputType:String) = s"(?s)^:$ctx\\s*\n(.+)\\s*$$".r → outputType
-  private val htmlContext       = outputTypesRegex("html",       `text/html`)
-  private val plainContext      = outputTypesRegex("plain",      `text/plain`)
-  private val markdownContext   = outputTypesRegex("markdown",   `text/markdown`)
-  private val latexContext      = outputTypesRegex("latex",      `text/latex`)
-  private val svgContext        = outputTypesRegex("svg",        `image/svg+xml`)
-  private val pngContext        = outputTypesRegex("png",        `image/png`)
-  private val jpegContext       = outputTypesRegex("jpeg",       `image/jpeg`)
-  private val pdfContext        = outputTypesRegex("pdf",        `application/pdf`)
+  private def outputTypesRegex(ctx: String, outputType: String) = {
+    s"(?s)^:$ctx\\s*\n(.+)\\s*$$".r → outputType
+  }
+
+  private val htmlContext = outputTypesRegex("html", `text/html`)
+  private val plainContext = outputTypesRegex("plain", `text/plain`)
+  private val markdownContext = outputTypesRegex("markdown", `text/markdown`)
+  private val latexContext = outputTypesRegex("latex", `text/latex`)
+  private val svgContext = outputTypesRegex("svg", `image/svg+xml`)
+  private val pngContext = outputTypesRegex("png", `image/png`)
+  private val jpegContext = outputTypesRegex("jpeg", `image/jpeg`)
+  private val pdfContext = outputTypesRegex("pdf", `application/pdf`)
   private val javascriptContext = outputTypesRegex("javascript", `application/javascript`)
 
   private val cpRegex = "(?s)^:cp\\s*(.+)\\s*$".r
@@ -136,7 +138,7 @@ class ReplCalculator(
   private val executor = context.actorOf(Props(new Actor {
     implicit val ec = context.dispatcher
 
-    private var queue:Queue[(ActorRef, ExecuteRequest)] = Queue.empty
+    private var queue: Queue[(ActorRef, ExecuteRequest)] = Queue.empty
 
     def eval(b: => String, notify: Boolean = true)(success: => String = "",
       failure: String => String = (s: String) => "Error evaluating " + b + ": " + s) {
@@ -157,7 +159,8 @@ class ReplCalculator(
     def receive = {
       case "process-next" =>
         log.debug(s"Processing next asked, queue is ${queue.size} length now")
-        if (queue.nonEmpty) { //queue could be empty if InterruptRequest was asked!
+        if (queue.nonEmpty) {
+          //queue could be empty if InterruptRequest was asked!
           log.debug("Dequeuing execute request current size: " + queue.size)
           queue = queue.dequeue._2
           queue.headOption foreach { case (ref, er) =>
@@ -189,7 +192,7 @@ class ReplCalculator(
         )
     }
 
-    def execute(sender:ActorRef, er:ExecuteRequest):Unit = {
+    def execute(sender: ActorRef, er: ExecuteRequest): Unit = {
       val (outputType, newCode) = er.code match {
         case resolverRegex(r) =>
           log.debug("Adding resolver: " + r)
@@ -218,14 +221,14 @@ class ReplCalculator(
               replay()
 
               (`text/plain`,
-              s"""
-                 |//updating deps
-                 |jars = (${deps.mkString("List(\"", "\",\"", "\")")} ::: jars.toList).distinct.toArray
-                 |//restarting spark
-                 |reset()
-                 |jars.toList
+                s"""
+                   |//updating deps
+                   |jars = (${deps.mkString("List(\"", "\",\"", "\")")} ::: jars.toList).distinct.toArray
+                   |//restarting spark
+                   |reset()
+                   |jars.toList
                  """.stripMargin
-              )
+                )
             case TFailure(ex) =>
               log.error(ex, "Cannot add dependencies")
               (`text/html`, s""" <p style="color:red">${ex.getMessage}</p> """)
@@ -248,10 +251,10 @@ class ReplCalculator(
         case shRegex(sh) =>
           val ps = "s\"\"\"" + sh.replaceAll("\\s*\\|\\s*", "\" #\\| \"").replaceAll("\\s*&&\\s*", "\" #&& \"") + "\"\"\""
           (`text/plain`, s"""
-             |import sys.process._
-             |$ps !!
+                            |import sys.process._
+                            |$ps !!
               """.stripMargin.trim
-          )
+            )
 
         case sqlRegex(n, sql) =>
           log.debug(s"Received sql code: [$n] $sql")
@@ -263,49 +266,49 @@ class ReplCalculator(
             import notebook.front.widgets.Sql._
             ${name}new Sql(sqlContext, s$qs$sql$qs)
             """
-          )
+            )
 
-        case htmlContext._1(content)        =>
+        case htmlContext._1(content) =>
           val ctx = htmlContext._2
           val c = content.toString.replaceAll("\"", "&quot;")
-          (ctx, " scala.xml.XML.loadString(s\"\"\""+c+"\"\"\") ")
+          (ctx, " scala.xml.XML.loadString(s\"\"\"" + c + "\"\"\") ")
 
-        case plainContext._1(content)       =>
+        case plainContext._1(content) =>
           val ctx = plainContext._2
           val c = content.toString.replaceAll("\"", "\\\\\\\"")
-          (ctx, " s\"\"\""+c+"\"\"\" ")
+          (ctx, " s\"\"\"" + c + "\"\"\" ")
 
-        case markdownContext._1(content)    =>
+        case markdownContext._1(content) =>
           val ctx = markdownContext._2
           val c = content.toString.replaceAll("\"", "\\\\\\\"")
-          (ctx, " s\"\"\""+c+"\"\"\" ")
+          (ctx, " s\"\"\"" + c + "\"\"\" ")
 
-        case latexContext._1(content)       =>
+        case latexContext._1(content) =>
           val ctx = latexContext._2
           val c = content.toString.replaceAll("\"", "\\\\\\\"")
-          (ctx, " s\"\"\""+c+"\"\"\" ")
+          (ctx, " s\"\"\"" + c + "\"\"\" ")
 
-        case svgContext._1(content)         =>
+        case svgContext._1(content) =>
           val ctx = svgContext._2
           val c = content.toString.replaceAll("\"", "&quot;")
-          (ctx, " scala.xml.XML.loadString(s\"\"\""+c+"\"\"\") ")
+          (ctx, " scala.xml.XML.loadString(s\"\"\"" + c + "\"\"\") ")
 
-        case pngContext._1(content)         =>
+        case pngContext._1(content) =>
           val ctx = pngContext._2
           (ctx, content.toString)
 
-        case jpegContext._1(content)        =>
+        case jpegContext._1(content) =>
           val ctx = jpegContext._2
           (ctx, content.toString)
 
-        case pdfContext._1(content)         =>
+        case pdfContext._1(content) =>
           val ctx = pdfContext._2
           (ctx, content.toString)
 
-        case javascriptContext._1(content)  =>
+        case javascriptContext._1(content) =>
           val ctx = javascriptContext._2
-          val c = content.toString//.replaceAll("\"", "\\\"")
-          (ctx, " s\"\"\""+c+"\"\"\" ")
+          val c = content.toString //.replaceAll("\"", "\\\"")
+          (ctx, " s\"\"\"" + c + "\"\"\" ")
 
         case whatever => (`text/html`, whatever)
       }
@@ -322,7 +325,7 @@ class ReplCalculator(
 
       result foreach {
         case (timeToEval, Success(result)) =>
-          thisSender ! ExecuteResponse(outputType, result.toString, timeToEval)
+          thisSender ! ExecuteResponse(outputType, result.toString(), timeToEval)
         case (timeToEval, Failure(stackTrace)) =>
           thisSender ! ErrorResponse(stackTrace, incomplete = false)
         case (timeToEval, notebook.kernel.Incomplete) =>
@@ -339,12 +342,16 @@ class ReplCalculator(
     log.info("ReplCalculator preStart")
 
     val dummyScript = ("dummy", () => s"""val dummy = ();\n""")
-    val SparkHookScript = ("class server", () => s"""@transient val _5C4L4_N0T3800K_5P4RK_HOOK = "${repl.classServerUri.get}";\n""")
-
-    val CustomSparkConfFromNotebookMD = ("custom conf", () => s"""
-                                                                 |@transient val _5C4L4_N0T3800K_5P4RK_C0NF:Map[String, String] = Map(
-                                                                 | ${customSparkConf.getOrElse(Map.empty[String, String]).map { case (k, v) => "( \"" + k + "\"  → \"" + v + "\" )" }.mkString(",")}
-        |)\n
+    val SparkHookScript = (
+      "class server",
+      () => s"""@transient val _5C4L4_N0T3800K_5P4RK_HOOK = "${repl.classServerUri.get}";\n"""
+      )
+    val CustomSparkConfFromNotebookMD = (
+      "custom conf",
+      () => s"""
+               |@transient val _5C4L4_N0T3800K_5P4RK_C0NF:Map[String, String] = Map(
+               | ${customSparkConf.getOrElse(Map.empty[String, String]).map { case (k, v) => "( \"" + k + "\"  → \"" + v + "\" )" }.mkString(",")}
+          |)\n
       """.stripMargin
       )
 

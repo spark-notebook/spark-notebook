@@ -20,7 +20,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
 
   def getName(path: String) = path.split("/").filter(!_.isEmpty).last.dropRight(extension.length)
 
-  def notebookFile(path: String) = {
+  def notebookFile(path: String): File = {
     val basePath = notebookDir.getCanonicalPath
     val decodedPath = URLDecoder.decode(path, UTF_8)
     val nbFile = new File(basePath, decodedPath)

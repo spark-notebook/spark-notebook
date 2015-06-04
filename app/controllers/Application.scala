@@ -39,13 +39,15 @@ object Application extends Controller {
   private val clustersActor = kernelSystem.actorOf(Props(NotebookClusters(AppUtils.clustersConf)))
 
   private implicit def kernelSystem: ActorSystem = AppUtils.kernelSystem
+
   private implicit val GetClustersTimeout = Timeout(60 seconds)
 
   val project = nbm.name
   val base_project_url = current.configuration.getString("application.context").getOrElse("/")
   val base_kernel_url = "/"
   val base_observable_url = "observable"
-  val read_only = false.toString  //  TODO: Ugh...
+  val read_only = false.toString
+  //  TODO: Ugh...
   val terminals_available = false.toString // TODO
 
   def configTree() = Action {
@@ -221,9 +223,7 @@ object Application extends Controller {
     val baseDir = new java.io.File(config.notebooksDir, path)
 
     if (tpe == "directory") {
-      val content = Option(baseDir.listFiles.toList)
-        .getOrElse(Nil)
-        .map { f =>
+      val content = Option(baseDir.listFiles).getOrElse(Array.empty).map { f =>
         val n = f.getName
         if (f.isFile && n.endsWith(".snb")) {
           Json.obj(
@@ -245,9 +245,7 @@ object Application extends Controller {
           )
         }
       }
-      Ok(Json.obj(
-        "content" → content
-      ))
+      Ok(Json.obj("content" → content))
     } else if (tpe == "notebook") {
       Logger.debug("content: " + path)
       val name = if (path.endsWith(".snb")) path.dropRight(".snb".length) else path
@@ -312,7 +310,7 @@ object Application extends Controller {
 
   def newDirectory(path: String) = {
     Logger.info("New dir:" + path)
-    val base = new File(AppUtils.config.notebooksDir, path)
+    val base = new File(config.notebooksDir, path)
     val parent = base.getParentFile
     val newDir = new File(parent, "dir")
     newDir.mkdirs()
@@ -321,7 +319,7 @@ object Application extends Controller {
 
   def newFile(path: String) = {
     Logger.info("New file:" + path)
-    val base = new File(AppUtils.config.notebooksDir, path)
+    val base = new File(config.notebooksDir, path)
     val parent = base.getParentFile
     val newF = new File(parent, "file")
     newF.createNewFile()
@@ -354,7 +352,7 @@ object Application extends Controller {
     def ws_url(path: Option[String] = None) = {
       s"""
          |window.notebookWsUrl = function() {
-         |  return '$prefix:/'+window.location.host+'$wsPath${path.map(x => "/" + x).getOrElse("")}'
+         |return '$prefix:/'+window.location.host+'$wsPath${path.map(x => "/" + x).getOrElse("")}'
          |};
       """.stripMargin.replaceAll("\n", " ")
     }
@@ -447,8 +445,7 @@ object Application extends Controller {
     }
   }
 
-  def saveNotebook(
-    p: String) = Action(parse.tolerantJson(maxLength = AppUtils.config.maxBytesInFlight)) {
+  def saveNotebook(p: String) = Action(parse.tolerantJson(config.maxBytesInFlight)) {
     request =>
       val path = URLDecoder.decode(p, UTF_8)
       Logger.info("SAVE → " + path)
@@ -504,7 +501,9 @@ object Application extends Controller {
       ),
       Breadcrumbs(
         "/",
-        path.split("/").toList.scanLeft(("", "")) { case ((accPath, accName), p) => (accPath + "/" + p, p) }.tail.map { case (p, x) =>
+        path.split("/").toList.scanLeft(("", "")) {
+          case ((accPath, accName), p) => (accPath + "/" + p, p)
+        }.tail.map { case (p, x) =>
           Crumb(controllers.routes.Application.dash(p.tail).url, x)
         }
       ),
