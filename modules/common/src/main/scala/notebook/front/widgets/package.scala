@@ -256,6 +256,7 @@ package object widgets {
   }
 
   implicit def fromMapToPoint(m:Map[_ , _]):Seq[MagicRenderPoint] = m.toSeq.map(e => MapPoint(e._1, e._2))
+  implicit def fromArrayToPoint(x:Array[_]):Seq[MagicRenderPoint] = fromSeqToPoint(x.toSeq)
   implicit def fromSeqToPoint(x:Seq[_]):Seq[MagicRenderPoint] = if (!x.isEmpty) {
     val points = x.head match {
       case _:String => x.map(i => StringPoint(i.asInstanceOf[String]))
@@ -316,7 +317,8 @@ package object widgets {
 
   trait Chart[T] extends JsWorld[Seq[(String, Any)], Seq[(String, Any)]] {
     def ts:Seq[T]
-    lazy val points:Seq[MagicRenderPoint] = ts
+    def maxPoints:Int
+    lazy val points:Seq[MagicRenderPoint] = ts.take(maxPoints)
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)]
     lazy val data:Seq[Seq[(String, Any)]] = points.map(mToSeq)
     def sizes:(Int, Int)=(600, 400)
@@ -337,7 +339,7 @@ package object widgets {
     lazy val numOfFields = firstElem.numOfFields
   }
 
-  case class ScatterChart[T](ts:Seq[T], fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400)) extends Chart[T] {
+  case class ScatterChart[T](ts:Seq[T], fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[T] {
     val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
 
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
@@ -348,7 +350,7 @@ package object widgets {
     override val scripts = List(Script("magic/scatterChart", Json.obj("x" → f1.toString, "y" → f2.toString, "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class LineChart[T](ts:Seq[T], fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400)) extends Chart[T] {
+  case class LineChart[T](ts:Seq[T], fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[T] {
     val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
 
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
@@ -359,7 +361,7 @@ package object widgets {
     override val scripts = List(Script("magic/lineChart", Json.obj("x" → f1.toString, "y" → f2.toString, "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class BarChart[T](ts:Seq[T], fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400)) extends Chart[T] {
+  case class BarChart[T](ts:Seq[T], fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[T] {
     val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
 
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
@@ -370,7 +372,7 @@ package object widgets {
     override val scripts = List(Script("magic/barChart", Json.obj("x" → f1.toString, "y" → f2.toString, "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class PieChart[T](ts:Seq[T], fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400)) extends Chart[T] {
+  case class PieChart[T](ts:Seq[T], fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[T] {
     val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
 
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
@@ -381,13 +383,13 @@ package object widgets {
     override val scripts = List(Script("magic/pieChart", Json.obj("series" → f1.toString, "p" → f2.toString, "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class DiyChart[T](ts:Seq[T], js:String = "function(data, headers, chart) { console.log({'data': data, 'headers': headers, 'chart': chart}); }", override val sizes:(Int, Int)=(600, 400)) extends Chart[T] {
+  case class DiyChart[T](ts:Seq[T], js:String = "function(data, headers, chart) { console.log({'data': data, 'headers': headers, 'chart': chart}); }", override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[T] {
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
 
     override val scripts = List(Script("magic/diyChart", Json.obj("js" → s"var js = $js;", "headers" → headers, "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class TableChart[T](vs:Seq[T], showUpTo:Int=25, filterCol:Option[Seq[String]]=None, override val sizes:(Int, Int)=(600, 400)) extends Chart[T] {
+  case class TableChart[T](vs:Seq[T], showUpTo:Int=25, filterCol:Option[Seq[String]]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[T] {
     override val ts = vs.take(showUpTo)
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
       t.data.toSeq.filter{case (k, v) => filterCol.getOrElse(headers).contains(k)}
