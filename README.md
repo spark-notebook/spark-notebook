@@ -323,7 +323,11 @@ While the context `:remote-repo` is available from the notebook, we can also add
 Adding dependencies in the classpath **and** in the spark context can be done, this way (see also `:dp`).
 
 ```json
-    "customDeps"      : "med-at-scale        %  ga4gh-model-java % 0.1.0-SNAPSHOT\norg.apache.avro     %  avro-ipc         % 1.7.6\n- org.mortbay.jetty % org.eclipse.jetty % _",
+    "customDeps"      : [ 
+      "med-at-scale        %  ga4gh-model-java  % 0.1.0-SNAPSHOT",
+      "org.apache.avro     %  avro-ipc          % 1.7.6",
+      "- org.mortbay.jetty %  org.eclipse.jetty % _"
+    ] 
 ```
 
 
