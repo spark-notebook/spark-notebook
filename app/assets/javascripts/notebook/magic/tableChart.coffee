@@ -26,8 +26,8 @@ define([
           .attr("style", "color: red")
             .text( (d) ->
               console.log("d is " + d)
-              if options.nrow != d
-                " (Only " +  d + " first items are shown)"
+              if options.nrow > d
+                " (Out of " + options.nrow + " items, only the " +  d + " first items are shown)"
               else
                 ""
             )
