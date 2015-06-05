@@ -64,4 +64,11 @@ trait LowPriorityRenderers {
     }
   }
 
+  implicit object arrayAsTable extends Renderer[Array[_]] {
+    def render(x: Array[_]) = x match {
+      case x if x.isEmpty => widgets.layout(0, Seq(widgets.text("")))
+      case _ => display(x)
+    }
+  }
+
 }
