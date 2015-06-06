@@ -46,22 +46,28 @@ object Dependencies {
   }
 
   val defaultWithHive = sys.props.getOrElse("with.hive", "false").toBoolean
+  val defaultWithParquet = sys.props.getOrElse("with.parquet", "false").toBoolean
+  val parquetList:List[ExclusionRule] =
+    if (!defaultWithParquet) {
+      List(
+        ExclusionRule("com.twitter", "parquet-column"),
+        ExclusionRule("com.twitter", "parquet-hadoop")
+      )
+    } else {
+      Nil
+    }
 
   def sparkHive(v: String) = "org.apache.spark" %% "spark-hive" % v excludeAll(
     ExclusionRule("org.apache.hadoop"),
-    ExclusionRule("org.apache.ivy", "ivy"),
-    ExclusionRule("com.twitter", "parquet-column"),
-    ExclusionRule("com.twitter", "parquet-hadoop")
-    )
+    ExclusionRule("org.apache.ivy", "ivy")
+  ) excludeAll(parquetList:_*)
 
   def sparkRepl(
     v: String) = "org.apache.spark" %% "spark-repl" % v excludeAll ExclusionRule("org.apache.hadoop")
 
   def sparkSQL(v: String) = "org.apache.spark" %% "spark-sql" % v excludeAll(
-    ExclusionRule("org.apache.hadoop"),
-    ExclusionRule("com.twitter", "parquet-column"),
-    ExclusionRule("com.twitter", "parquet-hadoop")
-    )
+    ExclusionRule("org.apache.hadoop")
+  ) excludeAll(parquetList:_*)
 
   val defaultHadoopVersion = sys.props.getOrElse("hadoop.version", "1.0.4")
 
