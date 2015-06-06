@@ -76,14 +76,20 @@ object ArtifactSelector {
 object Deps extends java.io.Serializable {
   type ArtifactPredicate = PartialFunction[(ArtifactMD, Set[ArtifactMD]), Boolean]
 
+  private val PATTERN_MODULEID_1 = """^\s*([^% ]+)\s*%\s*([^% ]+)\s*%\s*([^% ]+)\s*$""".r
+  private val PATTERN_MODULEID_2 = """^\s*([^% ]+)\s*%\s*([^% ]+)\s*%\s*([^% ]+)\s*%\s*([^% ]+)\s*$""".r
+  private val PATTERN_COORDINATE_1 = """^\s*([^:/ ]+)[:/]([^: ]+):([^: ]+)\s*$""".r
+
   def parseInclude(s:String):Option[ArtifactMD] = {
     s.headOption.filter(_ != '-').map(_ => s.dropWhile(_=='+').trim).flatMap { line =>
-      line.replaceAll("\"", "").split("%").toList match {
-        case List(g, a, v) =>
-          Some(ArtifactMD(g.trim, a.trim, v.trim))
-        case List(g, a, v, p) =>
-          Some(ArtifactMD(g.trim, a.trim, v.trim, Some(p.trim)))
-        case _             =>
+      line.replaceAll("\"", "") match {
+        case PATTERN_MODULEID_1(g, a, v) =>
+          Some(ArtifactMD(g, a, v))
+        case PATTERN_MODULEID_2(g, a, v, p) =>
+          Some(ArtifactMD(g, a, v, Some(p)))
+        case PATTERN_COORDINATE_1(g, a, v) =>
+          Some(ArtifactMD(g, a, v))
+        case _ =>
           None
       }
     }
@@ -96,10 +102,12 @@ object Deps extends java.io.Serializable {
   }
   def parseExclude(s:String):Option[ArtifactSelector] = {
     s.headOption.filter(_ == '-').map(_ => s.dropWhile(_=='-').trim).flatMap { line =>
-      line.replaceAll("\"", "").split("%").toList match {
-        case List(g, a, v) =>
+      line.replaceAll("\"", "") match {
+        case PATTERN_MODULEID_1(g, a, v) =>
           Some(ArtifactSelector(parsePartialExclude(g), parsePartialExclude(a), parsePartialExclude(v)))
-        case _             =>
+        case PATTERN_COORDINATE_1(g, a, v) =>
+          Some(ArtifactSelector(parsePartialExclude(g), parsePartialExclude(a), parsePartialExclude(v)))
+        case _ =>
           None
       }
     }
