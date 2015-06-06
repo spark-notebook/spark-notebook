@@ -1,6 +1,6 @@
 {
   "metadata" : {
-    "name" : "Tachon Test",
+    "name" : "Tachyon Test",
     "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
     "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
     "language_info" : {
@@ -59,18 +59,7 @@
     },
     "cell_type" : "code",
     "source" : "sparkContext.getConf.toDebugString",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res2: String = \nspark.app.id=local-1431705813127\nspark.app.name=Notebook\nspark.driver.host=192.168.1.144\nspark.driver.port=39330\nspark.executor.id=<driver>\nspark.fileserver.uri=http://192.168.1.144:56884\nspark.jars=\nspark.master=local[*]\nspark.repl.class.uri=http://192.168.1.144:56703\nspark.tachyonStore.baseDir=/share\nspark.tachyonStore.folderName=spark-e51c8962-1129-4cc3-8f4a-2d631d6e093d\nspark.tachyonStore.url=tachyon://noootsab-beef:18998\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "spark.app.id=local-1431705813127\nspark.app.name=Notebook\nspark.driver.host=192.168.1.144\nspark.driver.port=39330\nspark.executor.id=&lt;driver&gt;\nspark.fileserver.uri=http://192.168.1.144:56884\nspark.jars=\nspark.master=local[*]\nspark.repl.class.uri=http://192.168.1.144:56703\nspark.tachyonStore.baseDir=/share\nspark.tachyonStore.folderName=spark-e51c8962-1129-4cc3-8f4a-2d631d6e093d\nspark.tachyonStore.url=tachyon://noootsab-beef:18998\n <div class='pull-right text-info'><small>349 milliseconds</small></div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 1
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -91,18 +80,7 @@
     },
     "cell_type" : "code",
     "source" : "val dataUrl = \"https://s3-eu-west-1.amazonaws.com/spark-notebook-data/closes.csv\"\nval dataLocalDowloadPath = \"/tmp/closes.csv\"",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "dataUrl: String = https://s3-eu-west-1.amazonaws.com/spark-notebook-data/closes.csv\ndataLocalDowloadPath: String = /tmp/closes.csv\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "/tmp/closes.csv\n <div class='pull-right text-info'><small>315 milliseconds</small></div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 2
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -124,18 +102,7 @@
     },
     "cell_type" : "code",
     "source" : "val dataFile = dataLocalDowloadPath",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "dataFile: String = /tmp/closes.csv\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "/tmp/closes.csv\n <div class='pull-right text-info'><small>292 milliseconds</small></div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 3
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -148,18 +115,7 @@
     },
     "cell_type" : "code",
     "source" : ":sh wc -l $dataFile",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "warning: there were 1 feature warning(s); re-run with -feature for details\nimport sys.process._\nres4: scala.xml.Elem = \n<pre>8655036 /tmp/closes.csv\n</pre>\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<pre>8655036 /tmp/closes.csv\n</pre>\n <div class='pull-right text-info'><small>472 milliseconds</small></div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 5
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -176,18 +132,7 @@
     },
     "cell_type" : "code",
     "source" : "val rdd = sparkContext.textFile(dataFile).cache",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "rdd: org.apache.spark.rdd.RDD[String] = /tmp/closes.csv MapPartitionsRDD[1] at textFile at <console>:41\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "/tmp/closes.csv MapPartitionsRDD[1] at textFile at &lt;console&gt;:41\n <div class='pull-right text-info'><small>776 milliseconds</small></div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 6
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -200,18 +145,7 @@
     },
     "cell_type" : "code",
     "source" : "rdd.flatMap(_.filter(_ == '0')).map(_.toString.toInt).sum",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res5: Double = 0.0\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "0.0\n <div class='pull-right text-info'><small>6 seconds 372 milliseconds</small></div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 7
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -232,18 +166,7 @@
     },
     "cell_type" : "code",
     "source" : "import org.apache.spark.storage.StorageLevel._\nval rdd2 = sparkContext.textFile(dataFile).persist(OFF_HEAP)",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "import org.apache.spark.storage.StorageLevel._\nrdd2: org.apache.spark.rdd.RDD[String] = /tmp/closes.csv MapPartitionsRDD[6] at textFile at <console>:42\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "/tmp/closes.csv MapPartitionsRDD[6] at textFile at &lt;console&gt;:42\n <div class='pull-right text-info'><small>260 milliseconds</small></div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 8
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -256,18 +179,7 @@
     },
     "cell_type" : "code",
     "source" : "rdd2.flatMap(_.filter(_ == '0')).map(_.toString.toInt).sum",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res6: Double = 0.0\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "0.0\n <div class='pull-right text-info'><small>4 seconds 272 milliseconds</small></div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 9
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
