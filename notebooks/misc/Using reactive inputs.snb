@@ -1,6 +1,6 @@
 {
   "metadata" : {
-    "name" : "Using reactive inputs",
+    "name" : "Tachyon Test",
     "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
     "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
     "language_info" : {
@@ -16,148 +16,277 @@
     "customSparkConf" : null
   },
   "cells" : [ {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# Use Tachyon has the local share tool (WIP)"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Context"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "This notebook aims to show how the local tachyon that is started automatically with the notebook can be used in order to cache data OFF_HEAP and can either be:\n* reused in a current notebook\n* or more interestingly here, reused from within **another** notebook"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "<span style=\"color:red\">/!\\</span> The second, and hopefully ephemeral, aim of this notebook is to show what is currently possible and asks the **Tachyon experts** what can be the next step to make the cached data reusable easily. \n\nThat's why there is an important <span style=\"font-size:14pt; color: darkgreen;\">Questions</span> section at the end."
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "**IMPORTANT**: you should have started the notebook server with <span style=\"font-size:18pt;\">enough memory</span> to have tachyon working fine, if <span style=\"font-size:18pt;\">not, please restart</span> the notebook server this way (for `8G` of memory):\n```\nsbt -mem 8000\n```"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Usage"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Running the code can be done is several ways:\n* 1 by 1: using `CTRL+Return`\n* 1 by 1 and going to the next using `SHIFT+Return`\n* all at once from the menu: `Cell` > `Run All`"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Env"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "In the next block we can see the current spark configuration, and specifically the properties:\n* spark.tachyonStore.url\n* spark.tachyonStore.url\n* spark.tachyonStore.folderName"
+  }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "sparkContext.getConf.toDebugString",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Experiment"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Download the data locally (regular csv file on stock prices)"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "<p style=\"color:red\"><strong>IMPORTANT:</strong> you will need</p>\n\n* the `wget` tool to download the file\n* a writeable `/tmp` folder where the file will be downloaded by default\n* `174Mb` of free disk"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val dataUrl = \"https://s3-eu-west-1.amazonaws.com/spark-notebook-data/closes.csv\"\nval dataLocalDowloadPath = \"/tmp/closes.csv\"",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "**Recall: this can take some time → downloading from s3 a file of 174M**"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : ":sh wget $dataUrl -O $dataLocalDowloadPath",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val dataFile = dataLocalDowloadPath",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Let's check the number of lines in the file"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : ":sh wc -l $dataFile",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : true
     },
     "cell_type" : "markdown",
-    "source" : "## Examples using reactive inputs"
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "In this notebook, we'll show how the reactive inputs can be created and how we can use the updated values in other reactive elements\n\nThe reactive behaviors has been merged into a single concept: `Connection` that defines obserable and observers.\n\nHowever, you generally want widgets that declares observables (_inputs_ f.i.) and register observers to tune you demonstration (a _parameter_ in your model f.i.)"
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "### Inputs"
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "There are several reactive elements available, some are simply inputs like `DropDown`s and `InputBox`es.\n\nEach one has his own type and can be create very easily, also the type of the input will be inferred from the given initial value."
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "#### DropDown"
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "Here is how to create a drop down list over integers."
+    "source" : "### Reading data and cache it as usual"
   }, {
     "metadata" : {
       "trusted" : true,
-      "input_collapsed" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val dd = new DropDown(List(1,2,3,5))",
+    "source" : "val rdd = sparkContext.textFile(dataFile).cache",
     "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "Now here is the simples way (but not really helpful) way to deal with its **selected** value."
+    "source" : "Dummy computation to force the cache"
   }, {
     "metadata" : {
       "trusted" : true,
-      "input_collapsed" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val f = (i:Int) => println(i+1)\ndd.selected --> Connection.fromObserver(f)",
+    "source" : "rdd.flatMap(_.filter(_ == '0')).map(_.toString.toInt).sum",
     "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "In this case, each time the selected value changes the incremented value will be printed... in the spark notebook console/out log."
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "A way to show a reactive text in the notebook is to use the **`out`** widget, which reacts on `String` hence we need to convert our selected `Int` to a `String`.\n\nThen we can use the **`currentData`** element in our `out` element, that is, the reactive component to change the printed text on the fly."
+    "source" : "At this stage, we can check [http://localhost:4040/storage](http://localhost:4040/storage) and we'll see that (depending on the available memory) a fraction if not the whole file has been cached."
   }, {
     "metadata" : {
       "trusted" : true,
-      "input_collapsed" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "markdown",
+    "source" : "### Now we use Tachyon to cache"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val t = out\ndd.selected.biMap((_:String).toInt, (_:Int).toString) --> t.currentData\nt",
+    "source" : "import org.apache.spark.storage.StorageLevel._\nval rdd2 = sparkContext.textFile(dataFile).persist(OFF_HEAP)",
     "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "#### Input boxes"
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "Not only drop down lists are available, also the usual `<input>` ones.\n\nHere is how to create an _numeric_ one, just by providing an initial value being a `Number`."
+    "source" : "Dummy computation to force the cache"
   }, {
     "metadata" : {
       "trusted" : true,
-      "input_collapsed" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val ib = new InputBox(0, \"integer\")",
+    "source" : "rdd2.flatMap(_.filter(_ == '0')).map(_.toString.toInt).sum",
     "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "So `ib` is also a reactive component, like `dd` the drop down list.\n\nAn input's reactive element is also **currentData** as for `out`. So we can change the value of our input based on the drop down list."
+    "source" : "Now, we can check [http://localhost:4040/storage](http://localhost:4040/storage) **again** and <span style=\"color:darkred\">Yeepee</span> the data has been cached in tachyon (_see `size in tachyon`_ column)."
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Let's explore the Tachyon's content"
   }, {
     "metadata" : {
       "trusted" : true,
-      "input_collapsed" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : true
     },
     "cell_type" : "code",
-    "source" : "ib.currentData <--> dd.selected",
+    "source" : "import tachyon.client.TachyonFS\nval tachyonUrl = sparkContext.getConf.get(\"spark.tachyonStore.url\")\nval shareDir = sparkContext.getConf.get(\"spark.tachyonStore.baseDir\")\nval tachyonClient = TachyonFS.get(tachyonUrl)",
     "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "### Compose Inputs"
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "You can also create inputs with reaction in chain on others.\n\nHere we create an input for `String` that will have a specific pattern: tuned with `biMap` that takes conversions method to cope with the types."
+    "source" : "<strong>Here is the content of the `share` dir of Spark</strong>"
   }, {
     "metadata" : {
       "trusted" : true,
-      "input_collapsed" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : true
     },
     "cell_type" : "code",
-    "source" : "val is = new InputBox(\"I'm at 0\", \"Where am i?\")",
+    "source" : "import scala.collection.JavaConverters._\nval shared = tachyonClient.ls(shareDir, false).asScala",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val currentCache = shared(1)",
     "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "So the `biMap` says how this text will be updated when new `Int`s are coming from the `selected` **updates**.\n\nBut also it says, how `selected` has to be **updated** based on the current input's value."
+    "source" : "<strong>AFAICT, spark will use `<driver>` as the cache folder</strong>"
   }, {
     "metadata" : {
       "trusted" : true,
-      "input_collapsed" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : true
     },
     "cell_type" : "code",
-    "source" : "is.currentData <--> ib.currentData.biMap((_:String).drop(\"I'm at \".size).toInt, (i:Int) => s\"I'm at $i\") ",
+    "source" : "val currentFiles = tachyonClient.ls(currentCache + \"/<driver>\", false).asScala",
     "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "### Connection are used in Plots!"
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "We can composed these reactive components with plots and their `apply` (or `applyOn` for `Chart`s instances).\n\nFor this we can create a brand new `Connection` from a simple `Observer` that will update the chart based on the incoming data.\n\nIn this case, we'll plot data that will have a length equal to the `dd.selected` value."
+    "source" : "##### Here is the RDD that has been cached! → _ala_ hadoop with each partition written in its own folder and file part"
   }, {
     "metadata" : {
       "trusted" : true,
-      "input_collapsed" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : true
     },
     "cell_type" : "code",
-    "source" : "val lc = LineChart(List((0, 0.0)), None)\ndd.selected --> Connection.fromObserver{ i: Int =>\n                                          val data = List.tabulate(i)(i => (i, scala.util.Random.nextDouble))\n                                          lc.applyOn(data)\n                                       }\nlc",
+    "source" : "val thisRdd = currentFiles(1)\nval whatsInCurrentThisRdd = tachyonClient.ls(thisRdd, true).asScala.map(_.drop(thisRdd.length))",
     "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Above we see the cached folders and partitions"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "<h2 id=\"questions\" name=\"questions\">QUESTIONS :-D</h2>"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "<p style=\"color:red;\">How to not do '/*'?</p>"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "So far, to load the whole data set back from the tachyon cache, we do\n```\nval tachyonThisFileRdd = sparkContext.textFile(tachyonUrl + thisRdd + \"/*\")\n```\n\nWhich is not exaclty what we should do I guess, I mean the `/*` shouldn't be required?"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val tachyonThisFileRdd = sparkContext.textFile(tachyonUrl + thisRdd + \"/*\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "<p style=\"color:red;\">The following will get the whole file as the result</p>"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "//  tachyonRdd.take(1).head",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "<p style=\"color:red\">How to have the returned `RDD` having elements being a line rather than the whole file?</p>"
   } ],
   "nbformat" : 4
 }
