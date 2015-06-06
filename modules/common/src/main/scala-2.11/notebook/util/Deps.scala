@@ -30,6 +30,12 @@ object Repos extends java.io.Serializable {
     "https://oss.sonatype.org/content/repositories/releases/"
   )
 
+  @transient val sparkPackages = new RemoteRepository(
+    "spark-packages",
+    "default",
+    "http://dl.bintray.com/spark-packages/maven/"
+  )
+
   val config = ConfigFactory.load().getConfig("remote-repos")
   val proxy = Try(config.getConfig("proxy")).toOption
 
@@ -76,13 +82,13 @@ object ArtifactSelector {
 object Deps extends java.io.Serializable {
   type ArtifactPredicate = PartialFunction[(ArtifactMD, Set[ArtifactMD]), Boolean]
 
-  private val PATTERN_MODULEID_1 = """^\s*([^% ]+)\s*%\s*([^% ]+)\s*%\s*([^% ]+)\s*$""".r
-  private val PATTERN_MODULEID_2 = """^\s*([^% ]+)\s*%\s*([^% ]+)\s*%\s*([^% ]+)\s*%\s*([^% ]+)\s*$""".r
-  private val PATTERN_COORDINATE_1 = """^\s*([^:/ ]+)[:/]([^: ]+):([^: ]+)\s*$""".r
+  private val PATTERN_MODULEID_1 = """^([^%\s]+)\s*%\s*([^%\s]+)\s*%\s*([^%\s]+)$""".r
+  private val PATTERN_MODULEID_2 = """^([^%\s]+)\s*%\s*([^%\s]+)\s*%\s*([^%\s]+)\s*%\s*([^%\s]+)$""".r
+  private val PATTERN_COORDINATE_1 = """^([^:/]+)[:/]([^:]+):([^:]+)$""".r
 
   def parseInclude(s:String):Option[ArtifactMD] = {
     s.headOption.filter(_ != '-').map(_ => s.dropWhile(_=='+').trim).flatMap { line =>
-      line.replaceAll("\"", "") match {
+      line.replaceAll("\"", "").trim match {
         case PATTERN_MODULEID_1(g, a, v) =>
           Some(ArtifactMD(g, a, v))
         case PATTERN_MODULEID_2(g, a, v, p) =>

@@ -58,7 +58,7 @@ class ReplCalculator(
     val typesafeReleases = Resolver.typesafeIvyRepo("releases")
     val jCenterReleases = Resolver.jcenterRepo
     val sonatypeReleases = Resolver.sonatypeRepo("releases")
-    val spReleases = new MavenRepository("spark-packages", "http://dl.bintray.com/spark-packages/maven")
+    val spReleases = new MavenRepository("spark-packages", "http://dl.bintray.com/spark-packages/maven/")
     val defaults = mavenReleases :: typesafeReleases :: jCenterReleases :: sonatypeReleases :: spReleases :: Nil
     customRepos.getOrElse(List.empty[String]).map(CustomResolvers.fromString).map(_._2) ::: defaults
   }
