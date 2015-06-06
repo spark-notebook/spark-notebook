@@ -220,7 +220,7 @@ class ReplCalculator(
               preStartLogic()
               replay()
 
-              (`text/plain`,
+              (`text/html`,
                 s"""
                    |//updating deps
                    |jars = (${deps.mkString("List(\"", "\",\"", "\")")} ::: jars.toList).distinct.toArray
