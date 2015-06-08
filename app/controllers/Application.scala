@@ -216,6 +216,14 @@ object Application extends Controller {
       }
     }
   }
+  /**
+   * add a spark cluster by json meta
+   */
+  def deleteCluster(clusterName:String) = Action.async { request =>
+      Logger.debug("Delete a cluster")
+      implicit val ec = kernelSystem.dispatcher
+      (clustersActor ? NotebookClusters.Remove(clusterName, null)).map{ item => Ok(Json.obj("result" → s"Cluster $clusterName deleted"))}
+  }
 
   def contents(tpe: String, uri: String = "/") = Action { request =>
     val path = URLDecoder.decode(uri, UTF_8)
