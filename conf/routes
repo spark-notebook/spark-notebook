@@ -39,7 +39,7 @@ GET            /nbconvert/:format/*path                  controllers.Application
 
 GET            /clusters                                 controllers.Application.clusters()
 POST           /clusters                                 controllers.Application.addCluster()
-GET            /delCluster                               controllers.Application.deleteCluster()
+DELETE         /clusters/:name                           controllers.Application.deleteCluster(name:String)
 
 GET            /profiles                                 controllers.Application.profiles()
 
