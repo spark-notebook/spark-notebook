@@ -13,7 +13,7 @@ object ConsoleHelpers {
       def cleanOuputs(path:String) {
         println("Cleaning: " + path)
         val copied =  for {
-                        n <- manager.load("Tachyon Test.snb")
+                        n <- manager.load(path)
                         cells <- n.cells
                       } yield {
                         val cs = cells.map {

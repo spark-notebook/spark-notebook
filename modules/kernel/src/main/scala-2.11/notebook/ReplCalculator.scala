@@ -24,6 +24,7 @@ import notebook.front.widgets._
  * @param compilerArgs Command line arguments to pass to the REPL compiler
  */
 class ReplCalculator(
+  notebookName:String,
   customLocalRepo:Option[String],
   customRepos:Option[List[String]],
   customDeps:Option[List[String]],
@@ -376,9 +377,19 @@ class ReplCalculator(
     val dummyScript = ("dummy", () => s"""val dummy = ();\n""")
     val SparkHookScript = ("class server", () => s"""@transient val _5C4L4_N0T3800K_5P4RK_HOOK = "${repl.classServerUri.get}";\n""")
 
+    val nbName = notebookName.replaceAll("\"", "")
+
+    val SparkConfScript = {
+      val m = customSparkConf .getOrElse(Map.empty[String, String])
+      m .map{ case (k, v) =>
+          "( \"" + k + "\"  → \"" + v + "\" )"
+        }.mkString(",")
+    }
+
     val CustomSparkConfFromNotebookMD = ("custom conf", () => s"""
+      |@transient val notebookName = "$nbName"
       |@transient val _5C4L4_N0T3800K_5P4RK_C0NF:Map[String, String] = Map(
-      |  ${customSparkConf.getOrElse(Map.empty[String, String]).map{ case (k, v) => "( \"" + k + "\"  → \"" + v + "\" )"}.mkString(",") }
+      |  $SparkConfScript
       |)\n
       """.stripMargin
     )

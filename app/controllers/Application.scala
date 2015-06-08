@@ -130,6 +130,7 @@ object Application extends Controller {
       } yield map
 
       val service = new CalcWebSocketService(kernelSystem,
+        md.map(_.name).getOrElse("Spark Notebook"),
         customLocalRepo,
         customRepos,
         customDeps,
