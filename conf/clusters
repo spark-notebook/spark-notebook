@@ -1,4 +1,39 @@
 {
+  "Example standalone" : {
+    "profile" : "standalone",
+    "name" : "Example standalone",
+    "status" : "stopped",
+    "template" : {
+      "customLocalRepo" : null,
+      "customRepos" : null,
+      "customDeps" : null,
+      "customImports" : null,
+      "customSparkConf" : {
+        "spark.app.name" : "Notebook",
+        "spark.master" : "spark://<home>:<port>",
+        "spark.executor.memory" : "5G"
+      }
+    }
+  },
+  "Example mesos" : {
+    "profile" : "mesos",
+    "name" : "Example mesos",
+    "status" : "stopped",
+    "template" : {
+      "customLocalRepo" : null,
+      "customRepos" : null,
+      "customDeps" : null,
+      "customImports" : null,
+      "customSparkConf" : {
+        "spark.app.name" : "Notebook",
+        "spark.master" : "mesos://<master>:<port>",
+        "spark.executor.memory" : "512m",
+        "spark.executor.uri" : "hdfs://<spark>.tgz",
+        "spark.driver.host" : "<host>",
+        "spark.local.dir" : "<path>"
+      }
+    }
+  },
   "Example YARN" : {
     "name" : "Example YARN-Client",
     "profile" : "yarn-client",
@@ -13,6 +48,35 @@
         "spark.master" : "yarn-client",
         "spark.executor.memory" : "1G",
         "spark.yarn.jar" : "hdfs:///user/spark/spark-assembly.jar"
+      }
+    }
+  },
+  "Example local" : {
+    "profile" : "local",
+    "name" : "Example local",
+    "status" : "stopped",
+    "template" : {
+      "customLocalRepo" : null,
+      "customRepos" : null,
+      "customDeps" : null,
+      "customImports" : null,
+      "customSparkConf" : {
+        "spark.app.name" : "Notebook",
+        "spark.master" : "local[8]",
+        "spark.executor.memory" : "1G"
+      }
+    }
+  },
+  "Example custom" : {
+    "name" : "Example custom",
+    "profile" : "local",
+    "template" : {
+      "customLocalRepo" : "/tmp/repo-test",
+      "customRepos" : null,
+      "customDeps" : [ "org.bdgenomics.adam % adam-apis % 0.16.0", "- org.apache.hadoop % hadoop-client %   _", "+ org.apache.spark  %  spark-mllib_2.10  % 1.2.1" ],
+      "customImports" : [ "import scala.util._", "import org.apache.spark.SparkContext._" ],
+      "customSparkConf" : {
+        "spark.master" : "local[4]"
       }
     }
   }

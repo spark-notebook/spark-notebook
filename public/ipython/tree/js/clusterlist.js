@@ -99,11 +99,6 @@ define([
       keyboard_manager: that.keyboard_manager
     });
   };
-  //删除一个集群
-  ClusterList.prototype.delete_cluster = function () {
-      var url = utils.url_join_encode(that.base_url, 'delCluster');
-      $.ajax(url, "sjk","{}");
-  };
 
   ClusterList.prototype.add_cluster_success = function (data, status, xhr) {
     var element = $('<div/>');
@@ -258,17 +253,15 @@ define([
     delete_button.click(function (e) {
         var settings = {
             processData : false,
-            data : "name="+that.data.name,
             cache : false,
-            type : "GET",
+            type : "DELETE",
             dataType : "json",
             success : function () {
                 that.load_sessions();
             },
             error : utils.log_ajax_error
         };
-        alert(that.data.name)
-        var url = utils.url_join_encode(that.base_url, 'delCluster');
+        var url = utils.url_join_encode(that.base_url, 'clusters', that.data.name);
         $.ajax(url, settings);
     });
   };
