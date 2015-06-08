@@ -1,6 +1,6 @@
 {
   "metadata" : {
-    "name" : "Tachyon Test",
+    "name" : "Convert ADAM",
     "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
     "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
     "language_info" : {
@@ -16,41 +16,18 @@
     "customSparkConf" : null
   },
   "cells" : [ {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "# Use Tachyon has the local share tool (WIP)"
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : ":local-repo /tmp/spark-notebook/repo",
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "## Context"
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "This notebook aims to show how the local tachyon that is started automatically with the notebook can be used in order to cache data OFF_HEAP and can either be:\n* reused in a current notebook\n* or more interestingly here, reused from within **another** notebook"
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "<span style=\"color:red\">/!\\</span> The second, and hopefully ephemeral, aim of this notebook is to show what is currently possible and asks the **Tachyon experts** what can be the next step to make the cached data reusable easily. \n\nThat's why there is an important <span style=\"font-size:14pt; color: darkgreen;\">Questions</span> section at the end."
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "**IMPORTANT**: you should have started the notebook server with <span style=\"font-size:18pt;\">enough memory</span> to have tachyon working fine, if <span style=\"font-size:18pt;\">not, please restart</span> the notebook server this way (for `8G` of memory):\n```\nsbt -mem 8000\n```"
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "## Usage"
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "Running the code can be done is several ways:\n* 1 by 1: using `CTRL+Return`\n* 1 by 1 and going to the next using `SHIFT+Return`\n* all at once from the menu: `Cell` > `Run All`"
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "## Env"
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "In the next block we can see the current spark configuration, and specifically the properties:\n* spark.tachyonStore.url\n* spark.tachyonStore.url\n* spark.tachyonStore.folderName"
+    "source" : "Setting Spark with ADAM libs"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -58,20 +35,51 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "sparkContext.getConf.toDebugString",
+    "source" : ":dp org.bdgenomics.adam % adam-core % 0.15.0\n- org.apache.hadoop % hadoop-client %   _\n- org.apache.spark  %     _         %   _\n- org.scala-lang    %     _         %   _\n- org.scoverage     %     _         %   _",
     "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "## Experiment"
+    "source" : "Check the master name to construct the HDFS and configure Spark"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "import sys.process._\nval master = (\"ec2-metadata --public-hostname\"!!).drop(\"public-hostname: \".size).mkString.trim",
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "### Download the data locally (regular csv file on stock prices)"
+    "source" : "The input VCF file on HDFS and the conversion target"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "def hu(s:String) = s\"hdfs://$master:9010/temp/$s\"\nval vcfFile = hu(\"ALL.chr1.integrated_phase1_v3.20101123.snps_indels_svs.genotypes.vcf\")\nval outputFile = vcfFile+\".adam\"  ",
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "<p style=\"color:red\"><strong>IMPORTANT:</strong> you will need</p>\n\n* the `wget` tool to download the file\n* a writeable `/tmp` folder where the file will be downloaded by default\n* `174Mb` of free disk"
+    "source" : "Update Spark configuration to cope with ADAM's needs"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "reset(lastChanges = _.set(\"spark.serializer\", \"org.apache.spark.serializer.KryoSerializer\")\n                     .set(\"spark.kryo.registrator\",\"org.bdgenomics.adam.serialization.ADAMKryoRegistrator\")\n                     .set(\"spark.kryoserializer.buffer.mb\", \"4\")\n                     .set(\"spark.kryo.referenceTracking\", \"true\")\n                     .setMaster(s\"spark://$master:7077\")\n                     .setAppName(\"ADAM 1000genomes\")\n                     .set(\"spark.executor.memory\", \"13g\")\n                     )",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Imports all Spark and ADAM package and types we'll after."
   }, {
     "metadata" : {
       "trusted" : true,
@@ -79,12 +87,12 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val dataUrl = \"https://s3-eu-west-1.amazonaws.com/spark-notebook-data/closes.csv\"\nval dataLocalDowloadPath = \"/tmp/closes.csv\"",
+    "source" : "import org.apache.hadoop.fs.{FileSystem, Path}\n\nimport org.bdgenomics.adam.converters.{ VCFLine, VCFLineConverter, VCFLineParser }\nimport org.bdgenomics.formats.avro.{Genotype, FlatGenotype}\nimport org.bdgenomics.adam.models.VariantContext\nimport org.bdgenomics.adam.rdd.ADAMContext._\nimport org.bdgenomics.adam.rdd.variation.VariationContext._\nimport org.bdgenomics.adam.rdd.ADAMContext\n  \nimport org.apache.spark.rdd.RDD",
     "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "**Recall: this can take some time → downloading from s3 a file of 174M**"
+    "source" : "Load the input file using the `VariantContext` and convert into ADAM's schema"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -92,102 +100,12 @@
       "collapsed" : true
     },
     "cell_type" : "code",
-    "source" : ":sh wget $dataUrl -O $dataLocalDowloadPath",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "val dataFile = dataLocalDowloadPath",
+    "source" : "val variants: RDD[VariantContext] = sparkContext.adamVCFLoad(vcfFile, dict = None)",
     "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "Let's check the number of lines in the file"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : ":sh wc -l $dataFile",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : true
-    },
-    "cell_type" : "markdown",
-    "source" : "### Reading data and cache it as usual"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "val rdd = sparkContext.textFile(dataFile).cache",
-    "outputs" : [ ]
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "Dummy computation to force the cache"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "rdd.flatMap(_.filter(_ == '0')).map(_.toString.toInt).sum",
-    "outputs" : [ ]
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "At this stage, we can check [http://localhost:4040/storage](http://localhost:4040/storage) and we'll see that (depending on the available memory) a fraction if not the whole file has been cached."
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : true
-    },
-    "cell_type" : "markdown",
-    "source" : "### Now we use Tachyon to cache"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "import org.apache.spark.storage.StorageLevel._\nval rdd2 = sparkContext.textFile(dataFile).persist(OFF_HEAP)",
-    "outputs" : [ ]
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "Dummy computation to force the cache"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "rdd2.flatMap(_.filter(_ == '0')).map(_.toString.toInt).sum",
-    "outputs" : [ ]
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "Now, we can check [http://localhost:4040/storage](http://localhost:4040/storage) **again** and <span style=\"color:darkred\">Yeepee</span> the data has been cached in tachyon (_see `size in tachyon`_ column)."
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "### Let's explore the Tachyon's content"
+    "source" : "Keep only the `Genotype`s out of it"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -195,12 +113,12 @@
       "collapsed" : true
     },
     "cell_type" : "code",
-    "source" : "import tachyon.client.TachyonFS\nval tachyonUrl = sparkContext.getConf.get(\"spark.tachyonStore.url\")\nval shareDir = sparkContext.getConf.get(\"spark.tachyonStore.baseDir\")\nval tachyonClient = TachyonFS.get(tachyonUrl)",
+    "source" : "val gts:RDD[Genotype] = variants.flatMap(p => p.genotypes)",
     "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "<strong>Here is the content of the `share` dir of Spark</strong>"
+    "source" : "Save the genotypes back to HDFS (using avro → parquet serialization)"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -208,8 +126,12 @@
       "collapsed" : true
     },
     "cell_type" : "code",
-    "source" : "import scala.collection.JavaConverters._\nval shared = tachyonClient.ls(shareDir, false).asScala",
+    "source" : "import org.bdgenomics.adam.rdd.ADAMContext._\ngts.adamParquetSave(outputFile)",
     "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Test the output file in HDFS"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -217,12 +139,12 @@
       "collapsed" : true
     },
     "cell_type" : "code",
-    "source" : "val currentCache = shared(1)",
+    "source" : "val gts2:RDD[Genotype] = sparkContext.adamLoad(outputFile)",
     "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "<strong>AFAICT, spark will use `<driver>` as the cache folder</strong>"
+    "source" : "Real test → counting how many samples we have in the data"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -230,63 +152,8 @@
       "collapsed" : true
     },
     "cell_type" : "code",
-    "source" : "val currentFiles = tachyonClient.ls(currentCache + \"/<driver>\", false).asScala",
+    "source" : "val sampleCount = gts2.map(_.getSampleId.toString.hashCode).distinct.count\ns\"#Samples: $sampleCount\"",
     "outputs" : [ ]
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "##### Here is the RDD that has been cached! → _ala_ hadoop with each partition written in its own folder and file part"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : true
-    },
-    "cell_type" : "code",
-    "source" : "val thisRdd = currentFiles(1)\nval whatsInCurrentThisRdd = tachyonClient.ls(thisRdd, true).asScala.map(_.drop(thisRdd.length))",
-    "outputs" : [ ]
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "Above we see the cached folders and partitions"
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "<h2 id=\"questions\" name=\"questions\">QUESTIONS :-D</h2>"
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "<p style=\"color:red;\">How to not do '/*'?</p>"
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "So far, to load the whole data set back from the tachyon cache, we do\n```\nval tachyonThisFileRdd = sparkContext.textFile(tachyonUrl + thisRdd + \"/*\")\n```\n\nWhich is not exaclty what we should do I guess, I mean the `/*` shouldn't be required?"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : true
-    },
-    "cell_type" : "code",
-    "source" : "val tachyonThisFileRdd = sparkContext.textFile(tachyonUrl + thisRdd + \"/*\")",
-    "outputs" : [ ]
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "<p style=\"color:red;\">The following will get the whole file as the result</p>"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : true
-    },
-    "cell_type" : "code",
-    "source" : "//  tachyonRdd.take(1).head",
-    "outputs" : [ ]
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "<p style=\"color:red\">How to have the returned `RDD` having elements being a line rather than the whole file?</p>"
   } ],
   "nbformat" : 4
 }
