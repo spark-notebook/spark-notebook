@@ -9,7 +9,11 @@
       "codemirror_mode" : "text/x-scala"
     },
     "trusted" : true,
-    "custom" : null
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customSparkConf" : null
   },
   "cells" : [ {
     "metadata" : {

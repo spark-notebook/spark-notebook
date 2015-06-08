@@ -18,6 +18,7 @@ import scala.util.{Failure => TFailure, Success => TSuccess}
  * @param compilerArgs Command line arguments to pass to the REPL compiler
  */
 class ReplCalculator(
+  notebookName:String,
   customLocalRepo: Option[String],
   customRepos: Option[List[String]], // List("mvn", "my-mvn % repo")
   customDeps: Option[List[String]],
@@ -26,7 +27,6 @@ class ReplCalculator(
   _initScripts: List[(String, String)],
   compilerArgs: List[String]
 ) extends Actor with akka.actor.ActorLogging {
-
   val initScripts = _initScripts ::: List(("end", "\"END INIT\""))
 
   private val repoRegex = "(?s)^:local-repo\\s*(.+)\\s*$".r
@@ -346,14 +346,23 @@ class ReplCalculator(
       "class server",
       () => s"""@transient val _5C4L4_N0T3800K_5P4RK_HOOK = "${repl.classServerUri.get}";\n"""
       )
-    val CustomSparkConfFromNotebookMD = (
-      "custom conf",
-      () => s"""
-               |@transient val _5C4L4_N0T3800K_5P4RK_C0NF:Map[String, String] = Map(
-               | ${customSparkConf.getOrElse(Map.empty[String, String]).map { case (k, v) => "( \"" + k + "\"  → \"" + v + "\" )" }.mkString(",")}
-          |)\n
+
+    val nbName = notebookName.replaceAll("\"", "")
+
+    val SparkConfScript = {
+      val m = customSparkConf .getOrElse(Map.empty[String, String])
+      m .map { case (k, v) =>
+        "( \"" + k + "\"  → \"" + v + "\" )"
+      }.mkString(",")
+    }
+
+    val CustomSparkConfFromNotebookMD = ("custom conf", () => s"""
+      |@transient val notebookName = "$nbName"
+      |@transient val _5C4L4_N0T3800K_5P4RK_C0NF:Map[String, String] = Map(
+      |  $SparkConfScript
+      |)\n
       """.stripMargin
-      )
+    )
 
     def eval(script: () => String): Unit = {
       val sc = script()
