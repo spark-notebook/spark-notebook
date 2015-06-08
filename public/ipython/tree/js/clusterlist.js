@@ -54,7 +54,7 @@ define([
       type : "GET",
       dataType : "json",
       success : $.proxy(this.load_profiles_success, this),
-      error : utils.log_ajax_error,
+      error : utils.log_ajax_error
     };
     var url = utils.url_join_encode(this.base_url, 'profiles');
     $.ajax(url, settings);
@@ -91,14 +91,18 @@ define([
           type : "POST",
           dataType : "json",
           success : $.proxy(that.add_cluster_success, that),
-          error : utils.log_ajax_error,
+          error : utils.log_ajax_error
         };
         var url = utils.url_join_encode(that.base_url, 'clusters');
         $.ajax(url, settings);
       },
       keyboard_manager: that.keyboard_manager
     });
-
+  };
+  //删除一个集群
+  ClusterList.prototype.delete_cluster = function () {
+      var url = utils.url_join_encode(that.base_url, 'delCluster');
+      $.ajax(url, "sjk","{}");
   };
 
   ClusterList.prototype.add_cluster_success = function (data, status, xhr) {
@@ -116,7 +120,7 @@ define([
       type : "GET",
       dataType : "json",
       success : $.proxy(this.load_list_success, this),
-      error : utils.log_ajax_error,
+      error : utils.log_ajax_error
     };
     var url = utils.url_join_encode(this.base_url, 'clusters');
     $.ajax(url, settings);
@@ -215,9 +219,14 @@ define([
     var spark_conf_repo_col = showItemListAndPopup("spark_conf", "Spark Conf", sparkConf, _.identity, "disc", 2);
 
     var create_button = $('<button/>').addClass("btn btn-default btn-xs").text("Create");
+    var delete_button = $('<button/>').addClass("btn btn-default btn-xs").text("Delete");
     var action_col = $('<div/>').addClass('action_col col-xs-1').append(
       $("<span/>").addClass("item_buttons btn-group").append(
         create_button
+      )
+    ).append(
+      $("<span/>").addClass("item_buttons btn-group").append(
+          delete_button
       )
     );
 
@@ -245,6 +254,23 @@ define([
           keyboard_manager: that.keyboard_manager
         });
     });
+
+    delete_button.click(function (e) {
+        var settings = {
+            processData : false,
+            data : "name="+that.data.name,
+            cache : false,
+            type : "GET",
+            dataType : "json",
+            success : function () {
+                that.load_sessions();
+            },
+            error : utils.log_ajax_error
+        };
+        alert(that.data.name)
+        var url = utils.url_join_encode(that.base_url, 'delCluster');
+        $.ajax(url, settings);
+    });
   };
 
 
@@ -254,6 +280,6 @@ define([
 
   return {
     'ClusterList': ClusterList,
-    'ClusterItem': ClusterItem,
+    'ClusterItem': ClusterItem
   };
 });
