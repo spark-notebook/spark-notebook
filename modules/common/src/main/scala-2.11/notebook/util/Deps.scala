@@ -1,13 +1,17 @@
 package notebook.util
 
+import java.io.{ IOException, File }
+import java.net.URL
 import java.util.Arrays
 
 import scala.collection.JavaConversions._
 import scala.util.Try
+import scala.xml.{ Text, NodeSeq, Elem, XML }
 
 import com.typesafe.config.{ConfigFactory, Config}
 
 import org.apache.maven.project.MavenProject
+import org.xml.sax.SAXParseException
 import org.sonatype.aether.repository.{RemoteRepository, Proxy => AetherProxy}
 import org.sonatype.aether.repository.Authentication
 import org.sonatype.aether.artifact.Artifact
@@ -34,6 +38,12 @@ object Repos extends java.io.Serializable {
     "spark-packages",
     "default",
     "http://dl.bintray.com/spark-packages/maven/"
+  )
+
+  @transient val mavenLocal = new RemoteRepository(
+    "Maven2 local",
+    "default",
+    mavenLocalDir.toURI.toString
   )
 
   val config = ConfigFactory.load().getConfig("remote-repos")
@@ -66,6 +76,28 @@ object Repos extends java.io.Serializable {
 
   //alias for clarity
   def s3(id:String, name:String, url:String, key:String, secret:String) = Repos.apply(id, name, url, Some(key), Some(secret))
+
+  private[this] def mavenLocalDir: File = {
+    val userHome = new File(System.getProperty("user.home"))
+    def loadHomeFromSettings(f: () => File): Option[File] =
+      try {
+        val file = f()
+        if (!file.exists) None
+        else ((XML.loadFile(file) \ "localRepository").text match {
+          case ""    => None
+          case e @ _ => Some(new File(e))
+        })
+      } catch {
+        // Occurs inside File constructor when property or environment variable does not exist
+        case _: NullPointerException => None
+        // Occurs when File does not exist
+        case _: IOException          => None
+        case e: SAXParseException    => System.err.println(s"WARNING: Problem parsing ${f().getAbsolutePath}, ${e.getMessage}"); None
+      }
+    loadHomeFromSettings(() => new File(userHome, ".m2/settings.xml")) orElse
+      loadHomeFromSettings(() => new File(new File(System.getenv("M2_HOME")), "conf/settings.xml")) getOrElse
+      new File(userHome, ".m2/repository")
+  }
 }
 
 case class ArtifactMD(group:String, artifact:String, version:String, extension:Option[String]=None, classifier:Option[String]=None)
