@@ -38,6 +38,7 @@ Spark Notebook
       - [Set local repository](#set-local-repository)
       - [Add remote repositories](#add-remote-repositories)
       - [Import (download) dependencies](#import-download-dependencies)
+      - [Add Spark Packages](#add-spark-packages)
       - [Default import statements](#default-import-statements)
       - [Spark Conf](#spark-conf)
       - [Example](#example)
