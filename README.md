@@ -38,6 +38,7 @@ Spark Notebook
       - [Set local repository](#set-local-repository)
       - [Add remote repositories](#add-remote-repositories)
       - [Import (download) dependencies](#import-download-dependencies)
+      - [Add Spark Packages](#add-spark-packages)
       - [Default import statements](#default-import-statements)
       - [Spark Conf](#spark-conf)
       - [Example](#example)
@@ -346,7 +347,7 @@ Alternatively, we can also use Maven coordinates:
 
 #### Add Spark Packages
 
-Spark Notebook supports the new Spark package repository at [spark-packages.org](spark-packages.org).  Include a package in
+Spark Notebook supports the new Spark package repository at [spark-packages.org](http://spark-packages.org).  Include a package in
 your notebook by adding its coordinates to the preconfiguration: 
 
 ```json
