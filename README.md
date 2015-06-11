@@ -38,6 +38,7 @@ Spark Notebook
       - [Set local repository](#set-local-repository)
       - [Add remote repositories](#add-remote-repositories)
       - [Import (download) dependencies](#import-download-dependencies)
+      - [Add Spark Packages](#add-spark-packages)
       - [Default import statements](#default-import-statements)
       - [Spark Conf](#spark-conf)
       - [Example](#example)
@@ -307,14 +308,18 @@ This will save the dependency manager to download the internet.
 
 #### Add remote repositories
 
-Some dependencies might not be available from usual repositories.
+The default repositories are:
+- Maven local repository (of the user account that launched the notebook server)
+- Maven Central
+- Spark Packages repository
+- Typesafe repository
+- JCenter repository
 
-While the context `:remote-repo` is available from the notebook, we can also add them right in the preconfiguration:
+Additional repositories may be added.  While the context `:remote-repo` is available from the notebook, we can also add them right in the preconfiguration:
 
 ```json
     "customRepos"     : [
-      "s3-repo % default % s3://<bucket-name>/<path-to-repo> % maven % (\"$AWS_ACCESS_KEY_ID\", \"$AWS_SECRET_ACCESS_KEY\")",
-      "local % default % file://<home>/.m2/repository"
+      "s3-repo % default % s3://<bucket-name>/<path-to-repo> % maven % (\"$AWS_ACCESS_KEY_ID\", \"$AWS_SECRET_ACCESS_KEY\")"
     ],
 ```
 
@@ -330,6 +335,26 @@ Adding dependencies in the classpath **and** in the spark context can be done, t
     ] 
 ```
 
+Alternatively, we can also use Maven coordinates:
+
+```json
+    "customDeps"      : [ 
+      "med-at-scale:ga4gh-model-java:0.1.0-SNAPSHOT",
+      "org.apache.avro:avro-ipc:1.7.6",
+      "- org.mortbay.jetty:org.eclipse.jetty:_"
+    ] 
+```
+
+#### Add Spark Packages
+
+Spark Notebook supports the new Spark package repository at [spark-packages.org](http://spark-packages.org).  Include a package in
+your notebook by adding its coordinates to the preconfiguration: 
+
+```json
+    "customDeps"      : [ 
+      "com.databricks:spark-avro_2.10:1.0.0"
+    ] 
+```
 
 #### Default import statements
 
