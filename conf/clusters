@@ -51,18 +51,6 @@
       }
     }
   },
-  "sjk" : {
-    "profile" : "",
-    "name" : "sjk",
-    "status" : "stopped",
-    "template" : {
-      "customLocalRepo" : "",
-      "customRepos" : [ ],
-      "customDeps" : [ ],
-      "customImports" : [ ],
-      "customSparkConf" : { }
-    }
-  },
   "Example local" : {
     "profile" : "local",
     "name" : "Example local",
