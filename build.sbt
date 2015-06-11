@@ -8,7 +8,9 @@ name := "spark-notebook"
 
 scalaVersion := defaultScalaVersion
 
-version in ThisBuild <<= (scalaVersion, sparkVersion, hadoopVersion, withHive) { (sc, sv, hv, h) => s"0.6.0-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "") }
+version in ThisBuild <<= (scalaVersion, sparkVersion, hadoopVersion, withHive, withParquet) { (sc, sv, hv, h, p) =>
+  s"0.6.0-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "") + (if (p) "-with-parquet" else "")
+}
 
 maintainer := "Andy Petrella" //Docker
 
@@ -65,7 +67,9 @@ resolvers in ThisBuild ++= Seq(
   Resolver.typesafeIvyRepo("snapshots"),
   "cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos",
   // docker
-  "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
+  "softprops-maven" at "http://dl.bintray.com/content/softprops/maven",
+  //spark 1.4
+  "Apache Spark Prerelease" at "https://repository.apache.org/content/repositories/orgapachespark-1092/"
 )
 
 EclipseKeys.skipParents in ThisBuild := false
@@ -133,6 +137,7 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).ena
   )
   .settings(includeFilter in(Assets, LessKeys.less) := "*.less")
   .settings(unmanagedSourceDirectories in Compile <<= (scalaSource in Compile)(Seq(_))) //avoid app-2.10 and co to be created
+  .settings(initialCommands += ConsoleHelpers.cleanAllOutputs)
 
 lazy val subprocess = project.in(file("modules/subprocess"))
   .settings(libraryDependencies ++= playDeps)

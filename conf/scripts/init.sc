@@ -14,7 +14,8 @@ import org.apache.spark.SparkContext._
 @transient var sparkHome = Option(System.getenv("SPARK_HOME"))
 @transient var sparkMaster = Option(System.getenv("MASTER"))
 
-@transient val addedJars: Array[String] = {    val envJars = sys.env.get("ADD_JARS")
+@transient val addedJars: Array[String] = {
+  val envJars = sys.env.get("ADD_JARS")
   val propJars = sys.props.get("spark.jars").flatMap { p => if (p == "") None else Some(p) }
   val jars = propJars.orElse(envJars).getOrElse("")
   notebook.Utils.resolveURIs(jars).split(",").filter(_.nonEmpty)
@@ -28,12 +29,12 @@ import org.apache.spark.SparkContext._
 
 @transient var sparkContext:SparkContext = _
 
-def reset(appName:String="Notebook", lastChanges:(SparkConf=>Unit)=(_:SparkConf)=>()):Unit = {
+def reset(appName:String=notebookName, lastChanges:(SparkConf=>Unit)=(_:SparkConf)=>()):Unit = {
   conf = new SparkConf()
   conf.setMaster(sparkMaster.getOrElse("local[*]"))
       .setAppName(appName)
-      .set("spark.repl.class.uri", uri)
       .setAll(_5C4L4_N0T3800K_5P4RK_C0NF.toList)
+      .set("spark.repl.class.uri", uri)
 
   execMemory foreach (v => conf.set("spark.executor.memory", v))
   execUri foreach (v => conf.set("spark.executor.uri", v))

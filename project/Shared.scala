@@ -13,6 +13,8 @@ object Shared {
 
   lazy val withHive = SettingKey[Boolean]("x-with-hive")
 
+  lazy val withParquet = SettingKey[Boolean]("x-with-parquet")
+
   lazy val sharedSettings: Seq[Def.Setting[_]] = Seq(
     scalaVersion := defaultScalaVersion,
     sparkVersion := defaultSparkVersion,
@@ -24,6 +26,7 @@ object Shared {
       ("jline", "2.12")
     }),
     withHive := defaultWithHive,
+    withParquet := defaultWithParquet,
     libraryDependencies += guava
   )
 

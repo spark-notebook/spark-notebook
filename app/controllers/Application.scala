@@ -130,6 +130,7 @@ object Application extends Controller {
       } yield map
 
       val service = new CalcWebSocketService(kernelSystem,
+        md.map(_.name).getOrElse("Spark Notebook"),
         customLocalRepo,
         customRepos,
         customDeps,
@@ -214,6 +215,14 @@ object Application extends Controller {
         BadRequest("Add cluster needs an object, got: " + json)
       }
     }
+  }
+  /**
+   * add a spark cluster by json meta
+   */
+  def deleteCluster(clusterName:String) = Action.async { request =>
+      Logger.debug("Delete a cluster")
+      implicit val ec = kernelSystem.dispatcher
+      (clustersActor ? NotebookClusters.Remove(clusterName, null)).map{ item => Ok(Json.obj("result" → s"Cluster $clusterName deleted"))}
   }
 
   def contents(tpe: String, uri: String = "/") = Action { request =>

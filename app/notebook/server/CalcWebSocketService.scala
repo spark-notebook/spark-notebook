@@ -15,6 +15,7 @@ import scala.concurrent.duration._
  */
 class CalcWebSocketService(
   system: ActorSystem,
+  notebookName:String,
   customLocalRepo: Option[String],
   customRepos: Option[List[String]],
   customDeps: Option[List[String]],
@@ -51,6 +52,7 @@ class CalcWebSocketService(
     private def spawnCalculator() {
       // N.B.: without these local copies of the instance variables, we'll capture all sorts of things in our closure
       // that we don't want, then akka's attempts at serialization will fail and kittens everywhere will cry.
+      val kNotebookName = notebookName
       val kCompilerArgs = compilerArgs
       val kCustomLocalRepo = customLocalRepo
       val kCustomRepos = customRepos
@@ -69,6 +71,7 @@ class CalcWebSocketService(
 
       calculator = context.actorOf {
         Props(new ReplCalculator(
+          kNotebookName,
           kCustomLocalRepo,
           kCustomRepos,
           kCustomDeps,
