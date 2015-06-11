@@ -1,13 +1,17 @@
 package notebook.util
 
+import java.io.{ IOException, File }
+import java.net.URL
 import java.util.Arrays
 
 import scala.collection.JavaConversions._
 import scala.util.Try
+import scala.xml.{ Text, NodeSeq, Elem, XML }
 
 import com.typesafe.config.{ConfigFactory, Config}
 
 import org.apache.maven.project.MavenProject
+import org.xml.sax.SAXParseException
 import org.sonatype.aether.repository.{RemoteRepository, Proxy => AetherProxy}
 import org.sonatype.aether.repository.Authentication
 import org.sonatype.aether.artifact.Artifact
@@ -28,6 +32,18 @@ object Repos extends java.io.Serializable {
     "oss-sonatype",
     "default",
     "https://oss.sonatype.org/content/repositories/releases/"
+  )
+
+  @transient val sparkPackages = new RemoteRepository(
+    "spark-packages",
+    "default",
+    "http://dl.bintray.com/spark-packages/maven/"
+  )
+
+  @transient val mavenLocal = new RemoteRepository(
+    "Maven2 local",
+    "default",
+    mavenLocalDir.toURI.toString
   )
 
   val config = ConfigFactory.load().getConfig("remote-repos")
@@ -60,6 +76,28 @@ object Repos extends java.io.Serializable {
 
   //alias for clarity
   def s3(id:String, name:String, url:String, key:String, secret:String) = Repos.apply(id, name, url, Some(key), Some(secret))
+
+  private[this] def mavenLocalDir: File = {
+    val userHome = new File(System.getProperty("user.home"))
+    def loadHomeFromSettings(f: () => File): Option[File] =
+      try {
+        val file = f()
+        if (!file.exists) None
+        else ((XML.loadFile(file) \ "localRepository").text match {
+          case ""    => None
+          case e @ _ => Some(new File(e))
+        })
+      } catch {
+        // Occurs inside File constructor when property or environment variable does not exist
+        case _: NullPointerException => None
+        // Occurs when File does not exist
+        case _: IOException          => None
+        case e: SAXParseException    => System.err.println(s"WARNING: Problem parsing ${f().getAbsolutePath}, ${e.getMessage}"); None
+      }
+    loadHomeFromSettings(() => new File(userHome, ".m2/settings.xml")) orElse
+      loadHomeFromSettings(() => new File(new File(System.getenv("M2_HOME")), "conf/settings.xml")) getOrElse
+      new File(userHome, ".m2/repository")
+  }
 }
 
 case class ArtifactMD(group:String, artifact:String, version:String, extension:Option[String]=None, classifier:Option[String]=None)
@@ -76,14 +114,20 @@ object ArtifactSelector {
 object Deps extends java.io.Serializable {
   type ArtifactPredicate = PartialFunction[(ArtifactMD, Set[ArtifactMD]), Boolean]
 
+  private val PATTERN_MODULEID_1 = """^([^%\s]+)\s*%\s*([^%\s]+)\s*%\s*([^%\s]+)$""".r
+  private val PATTERN_MODULEID_2 = """^([^%\s]+)\s*%\s*([^%\s]+)\s*%\s*([^%\s]+)\s*%\s*([^%\s]+)$""".r
+  private val PATTERN_COORDINATE_1 = """^([^:/]+)[:/]([^:]+):([^:]+)$""".r
+
   def parseInclude(s:String):Option[ArtifactMD] = {
     s.headOption.filter(_ != '-').map(_ => s.dropWhile(_=='+').trim).flatMap { line =>
-      line.replaceAll("\"", "").split("%").toList match {
-        case List(g, a, v) =>
-          Some(ArtifactMD(g.trim, a.trim, v.trim))
-        case List(g, a, v, p) =>
-          Some(ArtifactMD(g.trim, a.trim, v.trim, Some(p.trim)))
-        case _             =>
+      line.replaceAll("\"", "").trim match {
+        case PATTERN_MODULEID_1(g, a, v) =>
+          Some(ArtifactMD(g, a, v))
+        case PATTERN_MODULEID_2(g, a, v, p) =>
+          Some(ArtifactMD(g, a, v, Some(p)))
+        case PATTERN_COORDINATE_1(g, a, v) =>
+          Some(ArtifactMD(g, a, v))
+        case _ =>
           None
       }
     }
@@ -96,10 +140,12 @@ object Deps extends java.io.Serializable {
   }
   def parseExclude(s:String):Option[ArtifactSelector] = {
     s.headOption.filter(_ == '-').map(_ => s.dropWhile(_=='-').trim).flatMap { line =>
-      line.replaceAll("\"", "").split("%").toList match {
-        case List(g, a, v) =>
+      line.replaceAll("\"", "") match {
+        case PATTERN_MODULEID_1(g, a, v) =>
           Some(ArtifactSelector(parsePartialExclude(g), parsePartialExclude(a), parsePartialExclude(v)))
-        case _             =>
+        case PATTERN_COORDINATE_1(g, a, v) =>
+          Some(ArtifactSelector(parsePartialExclude(g), parsePartialExclude(a), parsePartialExclude(v)))
+        case _ =>
           None
       }
     }
