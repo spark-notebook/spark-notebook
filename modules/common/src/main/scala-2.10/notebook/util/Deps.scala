@@ -5,13 +5,19 @@ import sbt._
 import scala.util.Try
 
 object Deps extends java.io.Serializable {
+  private val PATTERN_MODULEID_1 = """^([^%\s]+)\s*%\s*([^%\s]+)\s*%\s*([^%\s]+)$""".r
+  private val PATTERN_MODULEID_2 = """^([^%\s]+)\s*%\s*([^%\s]+)\s*%\s*([^%\s]+)\s*%\s*([^%\s]+)$""".r
+  private val PATTERN_COORDINATE_1 = """^([^:/]+)[:/]([^:]+):([^:]+)$""".r
+
   def parseInclude(s: String): Option[ModuleID] = {
     s.headOption.filter(_ != '-').map(_ => s.dropWhile(_ == '+').trim).flatMap { line =>
-      line.replaceAll("\"", "").split("%").toList match {
-        case List(g, a, v) =>
-          Some(g.trim % a.trim % v.trim % "compile")
-        case List(g, a, v, p) =>
-          Some(g.trim % a.trim % v.trim % p.trim)
+      line.replaceAll("\"", "").trim match {
+        case PATTERN_MODULEID_1(g, a, v) =>
+          Some(g % a % v % "compile")
+        case PATTERN_MODULEID_2(g, a, v, p) =>
+          Some(g % a % v % p)
+        case PATTERN_COORDINATE_1(g, a, v) =>
+          Some(g % a % v % "compile")
         case _ =>
           None
       }
@@ -26,8 +32,10 @@ object Deps extends java.io.Serializable {
 
   def parseExclude(s: String): Option[ExclusionRule] = {
     s.headOption.filter(_ == '-').map(_ => s.dropWhile(_ == '-').trim).flatMap { line =>
-      line.replaceAll("\"", "").split("%").toList match {
-        case List(g, a, v) =>
+      line.replaceAll("\"", "") match {
+        case PATTERN_MODULEID_1(g, a, v) =>
+          Some(ExclusionRule(organization = parsePartialExclude(g), name = parsePartialExclude(a)))
+        case PATTERN_COORDINATE_1(g, a, v) =>
           Some(ExclusionRule(organization = parsePartialExclude(g), name = parsePartialExclude(a)))
         case _ =>
           None
