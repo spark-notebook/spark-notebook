@@ -53,12 +53,16 @@ class ReplCalculator(
   private val sqlRegex = "(?s)^:sql(?:\\[([a-zA-Z0-9][a-zA-Z0-9]*)\\])?\\s*(.+)\\s*$".r
   private val shRegex = "(?s)^:sh\\s*(.+)\\s*$".r
 
+  // note: the resolver list is a superset of Spark's list in o.a.spark.deploy.SparkSubmit
+  // except that the local ivy repo isn't included
   var resolvers: List[Resolver] = {
+    val mavenLocal = Resolver.mavenLocal
     val mavenReleases = sbt.DefaultMavenRepository
     val typesafeReleases = Resolver.typesafeIvyRepo("releases")
     val jCenterReleases = Resolver.jcenterRepo
     val sonatypeReleases = Resolver.sonatypeRepo("releases")
-    val defaults = mavenReleases :: typesafeReleases :: jCenterReleases :: sonatypeReleases :: Nil
+    val spReleases = new MavenRepository("spark-packages", "http://dl.bintray.com/spark-packages/maven/")
+    val defaults = mavenLocal :: mavenReleases :: spReleases :: typesafeReleases :: jCenterReleases :: sonatypeReleases :: Nil
     customRepos.getOrElse(List.empty[String]).map(CustomResolvers.fromString).map(_._2) ::: defaults
   }
 
