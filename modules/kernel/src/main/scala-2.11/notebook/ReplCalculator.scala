@@ -265,8 +265,12 @@ class ReplCalculator(
           preStartLogic()
           replay()
           s"""
-            "Classpath CHANGED!"
-          """
+            |//updating deps
+            |jars = (${ jars.mkString("List(\"", "\",\"", "\")") } ::: jars.toList).distinct.toArray
+            |//restarting spark
+            |reset()
+            |jars.toList
+          """.stripMargin
 
         case shRegex(sh) =>
           val ps = "s\"\"\""+sh.replaceAll("\\s*\\|\\s*", "\" #\\| \"").replaceAll("\\s*&&\\s*", "\" #&& \"")+"\"\"\""
