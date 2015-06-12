@@ -228,7 +228,7 @@ class ReplCalculator(
                    |reset()
                    |jars.toList
                  """.stripMargin
-                )
+              )
             case TFailure(ex) =>
               log.error(ex, "Cannot add dependencies")
               (`text/html`, s""" <p style="color:red">${ex.getMessage}</p> """)
@@ -246,7 +246,16 @@ class ReplCalculator(
           _repl = Some(_r)
           preStartLogic()
           replay()
-          (`text/plain`, s""""Classpath CHANGED!" """)
+
+          (`text/html`,
+            s"""
+              |//updating deps
+              |jars = (${ jars.mkString("List(\"", "\",\"", "\")") } ::: jars.toList).distinct.toArray
+              |//restarting spark
+              |reset()
+              |jars.toList
+            """.stripMargin
+          )
 
         case shRegex(sh) =>
           val ps = "s\"\"\"" + sh.replaceAll("\\s*\\|\\s*", "\" #\\| \"").replaceAll("\\s*&&\\s*", "\" #&& \"") + "\"\"\""
