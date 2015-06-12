@@ -71,24 +71,23 @@ object Shared {
     }
   ) ++  repl ++ hive
 
-  lazy val tachyonSettings:Seq[Def.Setting[_]] = {
-    def tachyonVersion(sv:String) = (sv.split("\\.").toList.map(_.toInt)) match {
-      case List(1, y, z) if y <= 3              => "0.5.0"
-      case List(1, 3, z) if z > 0 /*hopefully*/ => "0.6.3"
-      case _                                    => throw new IllegalArgumentException("Bad spark version for tachyon: " + sv)
+  lazy val tachyonSettings: Seq[Def.Setting[_]] = {
+    def tachyonVersion(
+      sv: String) = sv.takeWhile(_ != '-' /*get rid of -SNAPSHOT, -RC or whatever*/).split("\\.").toList.map(_.toInt) match {
+      case List(1, y, z) if y <= 3 => "0.5.0"
+      case List(1, y, z) => "0.6.4"
+      case _ => throw new IllegalArgumentException("Bad spark version for tachyon: " + sv)
     }
 
     Seq(
-      unmanagedSourceDirectories in Compile <+= (sparkVersion, sourceDirectory in Compile) { (sv, sd) =>
-        sd / ("tachyon_" + tachyonVersion(sv))
+      unmanagedSourceDirectories in Compile <+= (sparkVersion, sourceDirectory in Compile) {
+        (sv, sd) => sd / ("tachyon_" + tachyonVersion(sv))
       },
-
-      libraryDependencies <++= sparkVersion { sv =>
-        Seq(
-          "org.tachyonproject" % "tachyon" % tachyonVersion(sv),
-          "org.tachyonproject" % "tachyon-client" % tachyonVersion(sv),
-          "org.tachyonproject" % "tachyon" % tachyonVersion(sv) classifier "tests"
-        )
+      libraryDependencies <++= sparkVersion { sv => Seq(
+        "org.tachyonproject" % "tachyon" % tachyonVersion(sv) excludeAll ExclusionRule("org.jboss.netty", "netty"),
+        "org.tachyonproject" % "tachyon-client" % tachyonVersion(sv) excludeAll ExclusionRule("org.jboss.netty", "netty"),
+        "org.tachyonproject" % "tachyon" % tachyonVersion(sv) classifier "tests" excludeAll ExclusionRule("org.jboss.netty", "netty")
+      )
       }
     )
   }

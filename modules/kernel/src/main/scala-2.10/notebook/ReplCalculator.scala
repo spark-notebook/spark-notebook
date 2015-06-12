@@ -6,49 +6,8 @@ import scala.concurrent.duration._
 import scala.util.{Try, Success=>TSuccess, Failure=>TFailure}
 
 import akka.actor.{ActorLogging, Props, Actor}
-import kernel._
+import notebook.kernel._
 
-<<<<<<< HEAD
-import sbt._
-
-import notebook.util.{CustomResolvers, Deps, Match}
-import notebook.front._
-import notebook.front.widgets._
-
-sealed trait CalcRequest
-case class ExecuteRequest(counter: Int, code: String) extends CalcRequest
-case class CompletionRequest(line: String, cursorPosition: Int) extends CalcRequest
-case class ObjectInfoRequest(objName: String, position:Int) extends CalcRequest
-case object InterruptRequest extends CalcRequest
-
-sealed trait CalcResponse
-case class StreamResponse(data: String, name: String) extends CalcResponse
-case class ExecuteResponse(html: String) extends CalcResponse
-case class ErrorResponse(message: String, incomplete: Boolean) extends CalcResponse
-
-// CY: With high probability, the matchedText field is the segment of the input line that could
-// be sensibly replaced with (any of) the candidate.
-// i.e.
-//
-// input: "abc".inst
-// ^
-// the completions would come back as List("instanceOf") and matchedText => "inst"
-//
-// ...maybe...
-case class CompletionResponse(cursorPosition: Int, candidates: Seq[Match], matchedText: String)
-
-/*
-name
-call_def
-init_definition
-definition
-call_docstring
-init_docstring
-docstring
-*/
-case class ObjectInfoResponse(found: Boolean, name: String, callDef: String, callDocString: String)
-
-=======
 import akka.actor.{Actor, ActorRef, Props}
 import notebook.kernel._
 import notebook.util.{CustomResolvers, Deps, Match}
@@ -58,7 +17,6 @@ import scala.concurrent.duration._
 import scala.collection.immutable.Queue
 import scala.util.{Failure => TFailure, Success => TSuccess}
 
->>>>>>> 4a9dce8... Fixes _Run All_, broken by the introduction of lazy eval of code to allow cancelling jobs
 /**
  * @param initScripts List of scala source strings to be executed during REPL startup.
  * @param customSparkConf Map configuring the notebook (spark configuration).
@@ -168,14 +126,10 @@ class ReplCalculator(
   private val executor = context.actorOf(Props(new Actor {
     implicit val ec = context.dispatcher
 
-<<<<<<< HEAD
-    def eval(b: => String, notify:Boolean=true)(success: => String = "", failure: String=>String=(s:String)=>"Error evaluating " + b + ": "+ s) {
-=======
     private var queue:Queue[(ActorRef, ExecuteRequest)] = Queue.empty
 
     def eval(b: => String, notify: Boolean = true)(success: => String = "",
       failure: String => String = (s: String) => "Error evaluating " + b + ": " + s) {
->>>>>>> 4a9dce8... Fixes _Run All_, broken by the introduction of lazy eval of code to allow cancelling jobs
       repl.evaluate(b)._1 match {
         case Failure(str) =>
           if (notify) {
@@ -193,115 +147,6 @@ class ReplCalculator(
     }
 
     def receive = {
-<<<<<<< HEAD
-      case ExecuteRequest(_, code) =>
-        val result = {
-          val newCode =
-            code match {
-              case resolverRegex(r) =>
-                log.debug("Adding resolver: " + r)
-                val (logR, resolver) = CustomResolvers.fromString(r)
-                resolvers = resolver :: resolvers
-                s""" "Resolver added: $logR!" """
-
-              case repoRegex(r) =>
-                log.debug("Updating local repo: " + r)
-                repo = new File(r.trim)
-                repo.mkdirs
-                s""" "Repo changed to ${repo.getAbsolutePath}!" """
-
-              case dpRegex(cp) =>
-                log.debug("Fetching deps using repos: " + resolvers.mkString(" -- "))
-                eval("""
-                """, false)()
-                val tryDeps = Deps.script(cp, resolvers, repo)
-                eval("""
-                """, false)()
-
-                tryDeps match {
-                  case TSuccess(deps) =>
-                    eval("""
-                      sparkContext.stop()
-                    """)(
-                      "CP reload processed successfully",
-                      (str:String) => "Error in :dp: \n%s".format(str)
-                    )
-                    val (_r, replay) = repl.addCp(deps)
-                    _repl = Some(_r)
-                    preStartLogic()
-                    replay()
-
-                    s"""
-                      |//updating deps
-                      |jars = (${ deps.mkString("List(\"", "\",\"", "\")") } ::: jars.toList).distinct.toArray
-                      |//restarting spark
-                      |reset()
-                      |jars.toList
-                    """.stripMargin
-                  case TFailure(ex) =>
-                    log.error(ex, "Cannot add dependencies")
-                    s""" <p style="color:red">${ex.getMessage}</p> """
-                }
-
-              case cpRegex(cp) =>
-                val jars = cp.trim().split("\n").toList.map(_.trim()).filter(_.size > 0)
-                repl.evaluate("""
-                  sparkContext.stop()
-                """)._1 match {
-                  case Failure(str) =>
-                    log.error("Error in :cp: \n%s".format(str))
-                  case _ =>
-                    log.info("CP reload processed successfully")
-                }
-                val (_r, replay) = repl.addCp(jars)
-                _repl = Some(_r)
-                preStartLogic()
-                replay()
-                s"""
-                  "Classpath CHANGED!"
-                """
-
-              case shRegex(sh) =>
-                val ps = "s\"\"\""+sh.replaceAll("\\s*\\|\\s*", "\" #\\| \"").replaceAll("\\s*&&\\s*", "\" #&& \"")+"\"\"\""
-
-                s"""
-                | import sys.process._
-                | <pre>{$ps !!}</pre>
-                """.stripMargin.trim
-
-              case sqlRegex(n, sql) =>
-                log.debug(s"Received sql code: [$n] $sql")
-                val qs = "\"\"\""
-                //if (!sqlGen.parts.isEmpty) {
-                  val name = Option(n).map(nm => s"@transient val $nm = ").getOrElse ("")
-                  val c = s"""
-                    import notebook.front.widgets.Sql
-                    import notebook.front.widgets.Sql._
-                    ${name}new Sql(sqlContext, s${qs}${sql}${qs})
-                  """
-                  c
-              case _ => code
-            }
-          val start = System.currentTimeMillis
-          val thisSender = sender
-          val result = scala.concurrent.Future {
-            val result = repl.evaluate(newCode, msg => thisSender ! StreamResponse(msg, "stdout"))
-            val d = toCoarsest(Duration(System.currentTimeMillis - start, MILLISECONDS))
-            (d, result._1)
-          }
-          result
-        }
-
-        val thisSender = sender
-        result foreach {
-          case (timeToEval, Success(result))     => thisSender ! ExecuteResponse(result.toString + s"\n <div class='pull-right text-info'><small>$timeToEval</small></div>")
-          case (timeToEval, Failure(stackTrace)) => thisSender ! ErrorResponse(stackTrace, false)
-          case (timeToEval, kernel.Incomplete)   => thisSender ! ErrorResponse("Incomplete (hint: check the parenthesis)", true)
-        }
-      case InterruptRequest =>
-        val thisSender = sender
-        repl.evaluate("sparkContext.cancelAllJobs()", msg => thisSender ! StreamResponse(msg, "stdout"))
-=======
       case "process-next" =>
         log.debug(s"Processing next asked, queue is ${queue.size} length now")
         if (queue.nonEmpty) { //queue could be empty if InterruptRequest was asked!
@@ -334,7 +179,6 @@ class ReplCalculator(
             thisSender ! StreamResponse(msg, "stdout")
           }
         )
->>>>>>> 4a9dce8... Fixes _Run All_, broken by the introduction of lazy eval of code to allow cancelling jobs
     }
 
     def execute(sender:ActorRef, er:ExecuteRequest):Unit = {
