@@ -10,7 +10,7 @@ name := "spark-notebook"
 
 scalaVersion := defaultScalaVersion
 
-version in ThisBuild <<= (scalaVersion, sparkVersion, hadoopVersion, withHive) { (sc, sv, hv, h) => s"0.5.1-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "") }
+version in ThisBuild <<= (scalaVersion, sparkVersion, hadoopVersion, withHive) { (sc, sv, hv, h) => s"0.5.2-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "") }
 
 maintainer := "Andy Petrella" //Docker
 
