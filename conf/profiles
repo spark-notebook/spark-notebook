@@ -1,0 +1,66 @@
+{
+  "local" : {
+    "id" : "local",
+    "name" : "Local",
+    "template" : {
+      "customLocalRepo" : null,
+      "customRepos" : null,
+      "customDeps" : null,
+      "customImports" : null,
+      "customSparkConf" : {
+        "spark.app.name" : "Notebook",
+        "spark.master" : "local[8]",
+        "spark.executor.memory" : "1G"
+      }
+    }
+  },
+  "standalone" : {
+    "id" : "standalone",
+    "name" : "Standalone",
+    "template" : {
+      "customLocalRepo" : null,
+      "customRepos" : null,
+      "customDeps" : null,
+      "customImports" : null,
+      "customSparkConf" : {
+        "spark.app.name" : "Notebook",
+        "spark.master" : "spark://<home>:<port>",
+        "spark.executor.memory" : "5G"
+      }
+    }
+  },
+  "mesos" : {
+    "id" : "mesos",
+    "name" : "Mesos",
+    "template" : {
+      "customLocalRepo" : null,
+      "customRepos" : null,
+      "customDeps" : null,
+      "customImports" : null,
+      "customSparkConf" : {
+        "spark.app.name" : "Notebook",
+        "spark.master" : "mesos://<master>:<port>",
+        "spark.executor.memory" : "512m",
+        "spark.executor.uri" : "hdfs://<spark>.tgz",
+        "spark.driver.host" : "<host>",
+        "spark.local.dir" : "<path>"
+      }
+    }
+  },
+  "yarn" : {
+      "id" : "yarn-client",
+      "name" : "YARN-Client",
+      "template" : {
+        "customLocalRepo" : null,
+        "customRepos" : null,
+        "customDeps" : null,
+        "customImports" : null,
+        "customSparkConf" : {
+          "spark.app.name" : "Notebook",
+          "spark.master" : "yarn-client",
+          "spark.executor.memory" : "1G",
+          "spark.yarn.jar" : "hdfs:///user/spark/spark-assembly.jar"
+        }
+      }
+   }
+}

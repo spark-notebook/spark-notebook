@@ -9,3 +9,10 @@
 project/target/
 target/
 logs/
+Time+Serie+Demo.snb
+server/src/main/scala/BreezeAndbokehTest.scala
+conf/notebooks/Untitled*
+notebooks/Untitled*
+adam.log
+notebooks/parleys
+notebooks/virdata

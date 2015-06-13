@@ -1,1 +1,0 @@
-http://code.jquery.com/ui/1.10.1/jquery-ui.js

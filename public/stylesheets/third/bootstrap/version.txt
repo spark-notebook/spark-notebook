@@ -1,0 +1,12 @@
+Downloaded by RH 2012-10-15.  Version 2.1.1.
+
+Excludes:
+  Normalize and reset
+  Body type and links
+  Headings, body, etc
+  Code and pre
+  Labels and badges
+  Forms
+Custom settings:
+  @sansFontFamily: 'Whitney Book', 'Helvetica Neue', Helvetica, sans-serif
+  @monoFontFamily: Menlo, Monaco, Consolas, 'Courier New', monospace
