@@ -26,7 +26,7 @@ object Dependencies {
     ExclusionRule("junit"),
     ExclusionRule("org.apache.commons", "commons-math3")
     )
-  val defaultSparkVersion = sys.props.getOrElse("spark.version", "1.3.1")
+  val defaultSparkVersion = sys.props.getOrElse("spark.version", "1.4.0")
 
   def sparkCore(v: String) = "org.apache.spark" %% "spark-core" % v excludeAll(
     ExclusionRule("org.apache.hadoop"),
