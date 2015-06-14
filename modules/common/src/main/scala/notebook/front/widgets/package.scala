@@ -1,13 +1,13 @@
 package notebook.front
 
-import xml.{NodeSeq, UnprefixedAttribute, Null}
+import scala.util.Random
+import scala.xml.{NodeSeq, UnprefixedAttribute, Null}
 import play.api.libs.json._
-import notebook._
+import play.api.libs.json.Json.JsValueWrapper
+import play.api.libs.json.Json.JsValueWrapper
+import org.apache.spark.sql.{DataFrame, Row}
 import notebook._
 import JsonCodec._
-import scala.util.Random
-import play.api.libs.json.Json.JsValueWrapper
-import play.api.libs.json.Json.JsValueWrapper
 
 /**
  * This package contains primitive widgets that can be used in the child environment.
@@ -254,6 +254,10 @@ package object widgets {
     val headers = Reflector.toFieldNameArray(any)
     val values  = Reflector.toFieldValueArray(any)
   }
+  case class DFPoint(row:Row, df:DataFrame) extends MagicRenderPoint {
+    val headers = df.columns.toSeq
+    val values  = row.toSeq
+  }
 
   implicit def fromMapToPoint(m:Map[_ , _]):Seq[MagicRenderPoint] = m.toSeq.map(e => MapPoint(e._1, e._2))
   implicit def fromArrayToPoint(x:Array[_]):Seq[MagicRenderPoint] = fromSeqToPoint(x.toSeq)
@@ -263,8 +267,6 @@ package object widgets {
       case _        => x.map(i => AnyPoint(i))
     }
 
-    val firstPoint = points.head
-
     val encoded = points.zipWithIndex.map { case (point, index) => point.values match {
       case List(o)    if isNumber(o)  =>  ChartPoint(index, o)
       case List(a, b)                 =>  ChartPoint(a, b)
@@ -273,9 +275,25 @@ package object widgets {
     encoded
   } else Nil
 
+  def fromDFToPoint(df:DataFrame, maxPoints:Int):Seq[MagicRenderPoint] = {
+    val rows = df.take(maxPoints)
+    if (rows.nonEmpty) {
+      val points = df.schema.toList.head match {
+        case _:org.apache.spark.sql.types.StringType => rows.map(i => StringPoint(i.asInstanceOf[String]))
+        case _                                       => rows.map(i => DFPoint(i, df))
+      }
 
-  case class Tabs[T](ts:Seq[T], pages:Seq[(String, Chart[T])]=Nil) extends JsWorld[Seq[(String, Any)], Seq[(String, Any)]] {
-    val points:Seq[MagicRenderPoint] = ts
+      val encoded = points.zipWithIndex.map { case (point, index) => point.values match {
+        case List(o)    if isNumber(o)  =>  ChartPoint(index, o)
+        case List(a, b)                 =>  ChartPoint(a, b)
+        case _                          =>  point
+      }}
+      encoded
+    } else Nil
+  }
+
+  case class Tabs[T](originalList:Either[Seq[T], DataFrame], pages:Seq[(String, Chart[T])]=Nil, maxPoints:Int=25) extends JsWorld[Seq[(String, Any)], Seq[(String, Any)]] {
+    val points:Seq[MagicRenderPoint] = originalList.fold(_.take(maxPoints), df => fromDFToPoint(df, maxPoints))
 
     implicit val singleToO = identity[Seq[(String, Any)]] _
 
@@ -316,9 +334,9 @@ package object widgets {
   }
 
   trait Chart[T] extends JsWorld[Seq[(String, Any)], Seq[(String, Any)]] {
-    def ts:Seq[T]
+    def originalList:Either[Seq[T], DataFrame]
     def maxPoints:Int
-    lazy val points:Seq[MagicRenderPoint] = ts.take(maxPoints)
+    lazy val points:Seq[MagicRenderPoint] = originalList.fold(_.take(maxPoints), df => fromDFToPoint(df, maxPoints))
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)]
     lazy val data:Seq[Seq[(String, Any)]] = points.map(mToSeq)
     def sizes:(Int, Int)=(600, 400)
@@ -339,7 +357,7 @@ package object widgets {
     lazy val numOfFields = firstElem.numOfFields
   }
 
-  case class ScatterChart[T](ts:Seq[T], fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[T] {
+  case class ScatterChart[T](originalList:Either[Seq[T], DataFrame], fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[T] {
     val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
 
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
@@ -350,7 +368,7 @@ package object widgets {
     override val scripts = List(Script("magic/scatterChart", Json.obj("x" → f1.toString, "y" → f2.toString, "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class LineChart[T](ts:Seq[T], fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[T] {
+  case class LineChart[T](originalList:Either[Seq[T], DataFrame], fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[T] {
     val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
 
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
@@ -361,7 +379,7 @@ package object widgets {
     override val scripts = List(Script("magic/lineChart", Json.obj("x" → f1.toString, "y" → f2.toString, "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class BarChart[T](ts:Seq[T], fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[T] {
+  case class BarChart[T](originalList:Either[Seq[T], DataFrame], fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[T] {
     val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
 
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
@@ -372,7 +390,7 @@ package object widgets {
     override val scripts = List(Script("magic/barChart", Json.obj("x" → f1.toString, "y" → f2.toString, "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class PieChart[T](ts:Seq[T], fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[T] {
+  case class PieChart[T](originalList:Either[Seq[T], DataFrame], fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[T] {
     val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
 
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
@@ -383,25 +401,24 @@ package object widgets {
     override val scripts = List(Script("magic/pieChart", Json.obj("series" → f1.toString, "p" → f2.toString, "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class DiyChart[T](ts:Seq[T], js:String = "function(data, headers, chart) { console.log({'data': data, 'headers': headers, 'chart': chart}); }", override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[T] {
+  case class DiyChart[T](originalList:Either[Seq[T], DataFrame], js:String = "function(data, headers, chart) { console.log({'data': data, 'headers': headers, 'chart': chart}); }", override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[T] {
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
 
     override val scripts = List(Script("magic/diyChart", Json.obj("js" → s"var js = $js;", "headers" → headers, "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class TableChart[T](vs:Seq[T], showUpTo:Int=25, filterCol:Option[Seq[String]]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[T] {
-    override val ts = vs.take(showUpTo)
+  case class TableChart[T](originalList:Either[Seq[T], DataFrame], filterCol:Option[Seq[String]]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[T] {
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
       t.data.toSeq.filter{case (k, v) => filterCol.getOrElse(headers).contains(k)}
     }
     val h:Seq[String] = filterCol.getOrElse(headers)
-    override val scripts = List(Script("magic/tableChart", Json.obj("headers" → h, "nrow" → vs.size, "shown" → showUpTo, "width" → sizes._1, "height" → sizes._2)))
+    override val scripts = List(Script("magic/tableChart", Json.obj("headers" → h, "nrow" → originalList.fold(_.size, _.count()), "shown" → points.size, "width" → sizes._1, "height" → sizes._2)))
   }
 
-  def tabs[T](ts:Seq[T], pages:Seq[(String, Chart[T])]) = Tabs(ts, pages)
+  def tabs[T](originalList:Either[Seq[T], DataFrame], pages:Seq[(String, Chart[T])]) = Tabs(originalList, pages)
 
-  def pairs[T](ts:Seq[T]) = {
-    val data:Seq[MagicRenderPoint] = ts
+  def pairs[T](originalList:Either[Seq[T], DataFrame], maxPoints:Int=25) = {
+    val data:Seq[MagicRenderPoint] = originalList.fold(_.take(maxPoints), df => fromDFToPoint(df, maxPoints))
     val firstElem = data.head
     val headers = firstElem.headers
     lazy val dataMap = firstElem.data
@@ -412,11 +429,11 @@ package object widgets {
     } yield {
       val (f1, f2)  = (dataMap(r), dataMap(c))
       if (isNumber(f1) && isNumber(f2)) {
-        ScatterChart(ts, Some((r, c)), (600/headers.size, 400/headers.size))
+        ScatterChart(originalList, Some((r, c)), (600/headers.size, 400/headers.size),maxPoints=maxPoints)
       } else if (isNumber(f2)) {
-        BarChart(ts, Some((r, c)), (600/headers.size, 400/headers.size))
+        BarChart(originalList, Some((r, c)), (600/headers.size, 400/headers.size),maxPoints=maxPoints)
       } else {
-        TableChart(ts, 5, Some(List(r, c)), (600/headers.size, 400/headers.size))
+        TableChart(originalList, Some(List(r, c)), (600/headers.size, 400/headers.size),maxPoints=5)
       }
     }
 
@@ -439,8 +456,8 @@ package object widgets {
     }</tbody></table>
   }
 
-  def display[T](ts: Seq[T], fields:Option[(String, String)]=None):Widget = {
-    val data:Seq[MagicRenderPoint] = ts
+  def display[T](originalList:Either[Seq[T], DataFrame], fields:Option[(String, String)]=None, maxPoints:Int=25):Widget = {
+    val data:Seq[MagicRenderPoint] = originalList.fold(_.take(maxPoints), df => fromDFToPoint(df, maxPoints))
     val firstElem = data.head
     val headers = firstElem.headers
     val members = firstElem.values
@@ -449,18 +466,18 @@ package object widgets {
     val numOfFields = firstElem.numOfFields
     val exploded = 25 * numOfFields
 
-    val tbl = Some("table" → TableChart(ts))
+    val tbl = Some("table" → TableChart(originalList, maxPoints=maxPoints))
 
     if(numOfFields == 2 || fields.isDefined){
       val (f1, f2)  = fields.map{ case (f1, f2) => (dataMap(f1), dataMap(f2)) }
                             .getOrElse((members(0), members(1)))
 
-      val scatter:Option[(String, Chart[T])] = if (isNumber(f1) && isNumber(f2)) { Some("dot-circle-o" → ScatterChart(ts, fields)) } else None
-      val line:Option[(String, Chart[T])]    = if (isNumber(f1) && isNumber(f2)) { Some("line-chart" → LineChart(ts, fields)) } else None
-      val bar :Option[(String, Chart[T])]    = if (isNumber(f2)) { Some("bar-chart" → BarChart(ts, fields)) } else None
-      val pie :Option[(String, Chart[T])]    = if ((!isNumber(f1)) || firstElem.isInstanceOf[MapPoint]) { Some("pie-chart" → PieChart(ts, fields)) } else None
+      val scatter:Option[(String, Chart[T])] = if (isNumber(f1) && isNumber(f2)) { Some("dot-circle-o" → ScatterChart(originalList, fields,maxPoints=maxPoints)) } else None
+      val line:Option[(String, Chart[T])]    = if (isNumber(f1) && isNumber(f2)) { Some("line-chart" → LineChart(originalList, fields,maxPoints=maxPoints)) } else None
+      val bar :Option[(String, Chart[T])]    = if (isNumber(f2)) { Some("bar-chart" → BarChart(originalList, fields,maxPoints=maxPoints)) } else None
+      val pie :Option[(String, Chart[T])]    = if ((!isNumber(f1)) || firstElem.isInstanceOf[MapPoint]) { Some("pie-chart" → PieChart(originalList, fields,maxPoints=maxPoints)) } else None
       val allTabs:Seq[Option[(String, Chart[T])]] = tbl :: scatter :: line :: bar :: pie :: Nil
-      tabs(ts, allTabs.collect{ case Some(t) => t})
+      tabs(originalList, allTabs.collect{ case Some(t) => t})
     } else {
       val main =
         widgets.containerFluid(List(

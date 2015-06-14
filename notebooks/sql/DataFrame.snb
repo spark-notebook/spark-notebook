@@ -1,0 +1,181 @@
+{
+  "metadata" : {
+    "name" : "DataFrame",
+    "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customSparkConf" : null
+  },
+  "cells" : [ {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# DataFrame rendering"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Setup the DataFrame context (sql) "
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)\nimport sqlContext.implicits._",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "sqlContext: org.apache.spark.sql.SQLContext = org.apache.spark.sql.SQLContext@6b7cc370\nimport sqlContext.implicits._\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 1
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Create a custom type (`Person`) "
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "case class Person(name: String, age: Int)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "defined class Person\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 2
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Create some abstract data"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val data = Seq.fill(100) {\n  val name = \"p\"+scala.util.Random.nextInt(10) // with duplicates, for fun\n  val age = 20+scala.util.Random.nextInt(10) //with diff ages ö_Ô\n  Person(name, age)\n}",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "data: Seq[Person] = List(Person(p7,23), Person(p3,23), Person(p2,20), Person(p8,25), Person(p3,21), Person(p5,28), Person(p3,25), Person(p9,27), Person(p9,28), Person(p8,24), Person(p4,29), Person(p1,20), Person(p4,26), Person(p5,24), Person(p7,23), Person(p8,28), Person(p7,26), Person(p1,24), Person(p8,20), Person(p5,27), Person(p8,27), Person(p7,22), Person(p9,20), Person(p9,28), Person(p1,21), Person(p4,28), Person(p9,20), Person(p8,24), Person(p8,20), Person(p3,23), Person(p4,23), Person(p2,22), Person(p6,29), Person(p2,22), Person(p7,29), Person(p1,26), Person(p2,20), Person(p0,20), Person(p3,27), Person(p9,20), Person(p9,21), Person(p1,22), Person(p4,20), Person(p2,24), Person(p6,29), Person(p1,22), Person(p7,26), Person(p6,21), Person(p3,20), Person(p1,28), Person(p4,27), Person(..."
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 10
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Put the abstract data in Spark as DataFrame"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val people = sparkContext.parallelize(data).toDF()\npeople.registerTempTable(\"people\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Render the DataFrame using default parameters"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "people",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res10: org.apache.spark.sql.DataFrame = [name: string, age: int]\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anona7f98c12d840a7296395d6a40828f155&quot;,&quot;dataInit&quot;:[{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p2&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:25},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:21},{&quot;name&quot;:&quot;p5&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:25},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:27},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:24},{&quot;name&quot;:&quot;p4&quot;,&quot;age&quot;:29},{&quot;name&quot;:&quot;p1&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p4&quot;,&quot;age&quot;:26},{&quot;name&quot;:&quot;p5&quot;,&quot;age&quot;:24},{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:26},{&quot;name&quot;:&quot;p1&quot;,&quot;age&quot;:24},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p5&quot;,&quot;age&quot;:27},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:27},{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:22},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p1&quot;,&quot;age&quot;:21}],&quot;genId&quot;:&quot;298117371&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tabs'], \n      function(playground, _magictabs) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictabs,\n    \"o\": {}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <ul class=\"nav nav-tabs\" id=\"ul298117371\"><li>\n              <a href=\"#tab298117371-0\"><i class=\"fa fa-table\"/></a>\n            </li><li>\n              <a href=\"#tab298117371-1\"><i class=\"fa fa-bar-chart\"/></a>\n            </li><li>\n              <a href=\"#tab298117371-2\"><i class=\"fa fa-pie-chart\"/></a>\n            </li></ul>\n\n        <div class=\"tab-content\" id=\"tab298117371\"><div class=\"tab-pane\" id=\"tab298117371-0\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon4cfd29699770f70e0230d63828ec29d7&quot;,&quot;dataInit&quot;:[{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p2&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:25},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:21},{&quot;name&quot;:&quot;p5&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:25},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:27},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:24},{&quot;name&quot;:&quot;p4&quot;,&quot;age&quot;:29},{&quot;name&quot;:&quot;p1&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p4&quot;,&quot;age&quot;:26},{&quot;name&quot;:&quot;p5&quot;,&quot;age&quot;:24},{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:26},{&quot;name&quot;:&quot;p1&quot;,&quot;age&quot;:24},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p5&quot;,&quot;age&quot;:27},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:27},{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:22},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p1&quot;,&quot;age&quot;:21}],&quot;genId&quot;:&quot;1558275995&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tableChart'], \n      function(playground, _magictableChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictableChart,\n    \"o\": {\"headers\":[\"name\",\"age\"],\"nrow\":100,\"shown\":25,\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab298117371-1\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anonc7dad97fbde8ed74121c620ab3b79a3b&quot;,&quot;dataInit&quot;:[{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p2&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:25},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:21},{&quot;name&quot;:&quot;p5&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:25},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:27},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:24},{&quot;name&quot;:&quot;p4&quot;,&quot;age&quot;:29},{&quot;name&quot;:&quot;p1&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p4&quot;,&quot;age&quot;:26},{&quot;name&quot;:&quot;p5&quot;,&quot;age&quot;:24},{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:26},{&quot;name&quot;:&quot;p1&quot;,&quot;age&quot;:24},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p5&quot;,&quot;age&quot;:27},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:27},{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:22},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p1&quot;,&quot;age&quot;:21}],&quot;genId&quot;:&quot;1616231623&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/barChart'], \n      function(playground, _magicbarChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magicbarChart,\n    \"o\": {\"x\":\"name\",\"y\":\"age\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab298117371-2\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon121e2bb5749a1b671c8c6e7a9be666f6&quot;,&quot;dataInit&quot;:[{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p2&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:25},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:21},{&quot;name&quot;:&quot;p5&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:25},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:27},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:24},{&quot;name&quot;:&quot;p4&quot;,&quot;age&quot;:29},{&quot;name&quot;:&quot;p1&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p4&quot;,&quot;age&quot;:26},{&quot;name&quot;:&quot;p5&quot;,&quot;age&quot;:24},{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:26},{&quot;name&quot;:&quot;p1&quot;,&quot;age&quot;:24},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p5&quot;,&quot;age&quot;:27},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:27},{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:22},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p1&quot;,&quot;age&quot;:21}],&quot;genId&quot;:&quot;1380692674&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/pieChart'], \n      function(playground, _magicpieChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magicpieChart,\n    \"o\": {\"series\":\"name\",\"p\":\"age\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div></div>\n      </div></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 11
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Render the DataFrame, but only 10 points"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "widgets.display(Right(people), maxPoints=10)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res13: notebook.front.Widget = <Tabs widget>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon5440ca4c8e17116b14afc069a1f5a8d5&quot;,&quot;dataInit&quot;:[{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p2&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:25},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:21},{&quot;name&quot;:&quot;p5&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:25},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:27},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:24},{&quot;name&quot;:&quot;p4&quot;,&quot;age&quot;:29},{&quot;name&quot;:&quot;p1&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p4&quot;,&quot;age&quot;:26},{&quot;name&quot;:&quot;p5&quot;,&quot;age&quot;:24},{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:26},{&quot;name&quot;:&quot;p1&quot;,&quot;age&quot;:24},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p5&quot;,&quot;age&quot;:27},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:27},{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:22},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p1&quot;,&quot;age&quot;:21}],&quot;genId&quot;:&quot;672959259&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tabs'], \n      function(playground, _magictabs) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictabs,\n    \"o\": {}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <ul class=\"nav nav-tabs\" id=\"ul672959259\"><li>\n              <a href=\"#tab672959259-0\"><i class=\"fa fa-table\"/></a>\n            </li><li>\n              <a href=\"#tab672959259-1\"><i class=\"fa fa-bar-chart\"/></a>\n            </li><li>\n              <a href=\"#tab672959259-2\"><i class=\"fa fa-pie-chart\"/></a>\n            </li></ul>\n\n        <div class=\"tab-content\" id=\"tab672959259\"><div class=\"tab-pane\" id=\"tab672959259-0\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon68190f143a6e75c871079199f35ffe54&quot;,&quot;dataInit&quot;:[{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p2&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:25},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:21},{&quot;name&quot;:&quot;p5&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:25},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:27},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:24}],&quot;genId&quot;:&quot;429699344&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tableChart'], \n      function(playground, _magictableChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictableChart,\n    \"o\": {\"headers\":[\"name\",\"age\"],\"nrow\":100,\"shown\":10,\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab672959259-1\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anone5b0fe0e1be1bf88f7d3a68ce229e586&quot;,&quot;dataInit&quot;:[{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p2&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:25},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:21},{&quot;name&quot;:&quot;p5&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:25},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:27},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:24}],&quot;genId&quot;:&quot;206432125&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/barChart'], \n      function(playground, _magicbarChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magicbarChart,\n    \"o\": {\"x\":\"name\",\"y\":\"age\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div><div class=\"tab-pane\" id=\"tab672959259-2\">\n            <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon5090842b40ddeb7435e8d4b944cb9d2b&quot;,&quot;dataInit&quot;:[{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p2&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:25},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:21},{&quot;name&quot;:&quot;p5&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:25},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:27},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:24}],&quot;genId&quot;:&quot;1404593043&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/pieChart'], \n      function(playground, _magicpieChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magicpieChart,\n    \"o\": {\"series\":\"name\",\"p\":\"age\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>\n            </div></div>\n      </div></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 14
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Render the DataFrame in a Bar plot, but only 40 points"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "widgets.BarChart(Right(people), Some((\"name\", \"age\")), maxPoints=40)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res16: notebook.front.widgets.BarChart[Nothing] = <BarChart widget>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anona1c9b716949568e969266277e56b84ad&quot;,&quot;dataInit&quot;:[{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p2&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:25},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:21},{&quot;name&quot;:&quot;p5&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:25},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:27},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:24},{&quot;name&quot;:&quot;p4&quot;,&quot;age&quot;:29},{&quot;name&quot;:&quot;p1&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p4&quot;,&quot;age&quot;:26},{&quot;name&quot;:&quot;p5&quot;,&quot;age&quot;:24},{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:26},{&quot;name&quot;:&quot;p1&quot;,&quot;age&quot;:24},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p5&quot;,&quot;age&quot;:27},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:27},{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:22},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p1&quot;,&quot;age&quot;:21},{&quot;name&quot;:&quot;p4&quot;,&quot;age&quot;:28},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:24},{&quot;name&quot;:&quot;p8&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p4&quot;,&quot;age&quot;:23},{&quot;name&quot;:&quot;p2&quot;,&quot;age&quot;:22},{&quot;name&quot;:&quot;p6&quot;,&quot;age&quot;:29},{&quot;name&quot;:&quot;p2&quot;,&quot;age&quot;:22},{&quot;name&quot;:&quot;p7&quot;,&quot;age&quot;:29},{&quot;name&quot;:&quot;p1&quot;,&quot;age&quot;:26},{&quot;name&quot;:&quot;p2&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p0&quot;,&quot;age&quot;:20},{&quot;name&quot;:&quot;p3&quot;,&quot;age&quot;:27},{&quot;name&quot;:&quot;p9&quot;,&quot;age&quot;:20}],&quot;genId&quot;:&quot;1312944922&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/barChart'], \n      function(playground, _magicbarChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magicbarChart,\n    \"o\": {\"x\":\"name\",\"y\":\"age\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 17
+    } ]
+  } ],
+  "nbformat" : 4
+}

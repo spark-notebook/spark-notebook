@@ -2,6 +2,7 @@ package notebook.front
 
 import scala.runtime.BoxedUnit
 import scala.xml.{NodeBuffer, NodeSeq, Text}
+import org.apache.spark.sql.DataFrame
 
 /**
  * Typeclass for rendering objects of a specific type. Implement one of these and import it
@@ -53,21 +54,28 @@ trait LowPriorityRenderers {
     def render(x: Map[_, _]) = if (x.isEmpty) {
       widgets.text("")
     } else {
-      display(x)
+      display(Left(x.toSeq))
     }
   }
 
   implicit object seqAsTable extends Renderer[Seq[_]] {
     def render(x: Seq[_]) = x match {
       case Nil => widgets.layout(0, Seq(widgets.text("")))
-      case _ => display(x)
+      case _ => display(Left(x))
     }
   }
 
   implicit object arrayAsTable extends Renderer[Array[_]] {
     def render(x: Array[_]) = x match {
       case x if x.isEmpty => widgets.layout(0, Seq(widgets.text("")))
-      case _ => display(x)
+      case _ => display(Left(x.toSeq))
+    }
+  }
+
+  implicit object dataFrameAsTable extends Renderer[DataFrame] {
+    def render(x: DataFrame) = x.take(1) match {
+      case x if x.isEmpty => widgets.layout(0, Seq(widgets.text("")))
+      case _ => display(Right(x))
     }
   }
 
