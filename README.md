@@ -3,8 +3,7 @@ Spark Notebook
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/andypetrella/spark-notebook?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-
-*Fork of the amazing [scala-notebook](https://github.com/Bridgewater/scala-notebook), yet focusing on Massive Dataset Analysis using [Apache Spark](http://spark.apache.org).*
+*Originally forked from the amazing [scala-notebook](https://github.com/Bridgewater/scala-notebook), almost entirely refactored for Massive Dataset Analysis using [Apache Spark](http://spark.apache.org).*
 
 <!-- MarkdownTOC depth=6 autolink=true bracket=round -->
 
@@ -13,14 +12,15 @@ Spark Notebook
   - [Mailing list](#mailing-list)
     - [Spark Notebook Dev](#spark-notebook-dev)
     - [Spark Notebook User](#spark-notebook-user)
-  - [Launch](#launch)
-    - [Using a release](#using-a-release)
-      - [Requirements](#requirements)
-      - [Preferred/Simplest way](#preferredsimplest-way)
-      - [Hard ways](#hard-ways)
-        - [ZIP/TGZ](#ziptgz)
-        - [Docker](#docker)
-          - [boot2docker (Mac OS X)](#boot2docker-mac-os-x)
+- [In the wild](#in-the-wild)
+- [Launch](#launch)
+  - [Using a release](#using-a-release)
+    - [Requirements](#requirements)
+    - [Preferred/Simplest way](#preferredsimplest-way)
+    - [Hard ways](#hard-ways)
+      - [ZIP/TGZ](#ziptgz)
+      - [Docker](#docker)
+        - [boot2docker (Mac OS X)](#boot2docker-mac-os-x)
         - [DEB](#deb)
     - [From the sources](#from-the-sources)
       - [Procedure](#procedure)
@@ -31,7 +31,7 @@ Spark Notebook
           - [Docker](#docker-1)
           - [Mesos in Docker](#mesos-in-docker)
         - [Using unreleased Spark version](#using-unreleased-spark-version)
-  - [Use](#use)
+- [Use](#use)
 - [Features](#features)
   - [Configure the environment](#configure-the-environment)
     - [Using the Metadata](#using-the-metadata)
@@ -79,13 +79,15 @@ Spark Notebook
 <!-- /MarkdownTOC -->
 
 
-Description
------------
+# Description
+
 The main intent of this tool is to create [reproducible analysis](http://simplystatistics.org/2014/06/06/the-real-reason-reproducible-research-is-important/) using Scala, Apache Spark and more.
 
 This is achieved through an interactive web-based editor that can combine Scala code, SQL queries, Markup or even JavaScript in a collaborative manner.
 
 The usage of Spark comes out of the box, and is simply enabled by the implicit variable named `sparkContext`.
+
+You should also check the website, [http://spark-notebook.io](http://spark-notebook.io).
 
 ### Discussions
 C'mon on [gitter](https://gitter.im/andypetrella/spark-notebook?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)!
@@ -105,8 +107,16 @@ The [spark-notebook-user](https://groups.google.com/forum/?hl=fr#!forum/spark-no
 
 Email: [spark-notebook-user@googlegroups.com](mailto:spark-notebook-user@googlegroups.com).
 
-Launch
-------
+
+# In the wild
+
+|                 Name                  |                                        Logo                                              |                     URL                     |              Description                  |
+|---------------------------------------|------------------------------------------------------------------------------------------|---------------------------------------------|-------------------------------------------|
+|            Data Fellas                | ![Data Fellas](http://www.data-fellas.guru/assets/images/logo-wired-small.png)           | [website](http://www.data-fellas.guru)      | Mad Data Science and Scalable Computing   |
+
+
+# Launch
+
 ### Using a release
 
 Long story short, there are several ways to start the spark notebook quickly (even from scratch):
@@ -251,8 +261,8 @@ While using the repository from SBT, you can use any version of Apache Spark you
 * there is a folder in `modules/spark/src/main/scala-2.1X` that points to the base of the required version (excl. the classifier SNAPHOST or RC): `spark-1.4`
 
 
-Use
----
+# Use
+
 Before the first launch, it may be necessary to add some settings to `conf/application.conf`. 
 
 > **Warn:** When using a distribution, this `conf/application.conf` is already present in the installed package.
@@ -857,6 +867,7 @@ After having unpacked the spark notebook distro, create the `public/images` fold
 By default the project name is set to `Spark Notebook`, but you might want to clearly show your own business name in the title.
 
 This can be configured in the `application.conf` file by updating the `manager.name` property to whatever you like.
+
 
 # TIPS AND TROUBLESHOOTING
 
