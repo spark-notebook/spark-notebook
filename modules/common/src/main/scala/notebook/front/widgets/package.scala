@@ -278,9 +278,9 @@ package object widgets {
   def fromDFToPoint(df:DataFrame, maxPoints:Int):Seq[MagicRenderPoint] = {
     val rows = df.take(maxPoints)
     if (rows.nonEmpty) {
-      val points = df.schema.toList.head match {
-        case _:org.apache.spark.sql.types.StringType => rows.map(i => StringPoint(i.asInstanceOf[String]))
-        case _                                       => rows.map(i => DFPoint(i, df))
+      val points = df.schema.toList match {
+        case List(x) if x.isInstanceOf[org.apache.spark.sql.types.StringType] => rows.map(i => StringPoint(i.asInstanceOf[String]))
+        case _                                                                => rows.map(i => DFPoint(i, df))
       }
 
       val encoded = points.zipWithIndex.map { case (point, index) => point.values match {
