@@ -35,7 +35,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "1.d to 10.d by 1.d",
+    "source" : "1d to 10d by 1d",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -157,7 +157,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "widgets.display(list, Some((\"a\", \"b\")))",
+    "source" : "import widgets.magic.Implicits.SeqToPoints\nwidgets.display(list, Some((\"a\", \"b\")))",
     "outputs" : [ ]
   }, {
     "metadata" : { },

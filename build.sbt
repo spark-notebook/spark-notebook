@@ -183,7 +183,12 @@ lazy val common = Project(id = "common", base = file("modules/common"))
       bokeh,
       wisp
     ), // ++ customJacksonScala
-    unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
+    unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value),
+    unmanagedSourceDirectories in Compile +=
+      (sourceDirectory in Compile).value / ((sparkVersion.value.takeWhile(_ != '-').split("\\.").toList match {
+        case "1"::x::_ if x.toInt < 3 => "pre-df"
+        case x                        => "post-df"
+      }))
   )
   .settings(sharedSettings: _*)
   .settings(sparkSettings: _*)
