@@ -18,6 +18,8 @@ enablePlugins(UniversalPlugin)
 
 enablePlugins(DockerPlugin)
 
+import com.typesafe.sbt.SbtNativePackager.autoImport.NativePackagerHelper._
+
 dockerExposedPorts in Docker := Seq(9000, 9443) //Docker
 
 dockerRepository := Some("andypetrella") //Docker
@@ -102,6 +104,10 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).ena
     .dependsOn(tachyon, subprocess, observable, common, spark, kernel)
     .settings(
       sharedSettings:_*
+    )
+    .settings(
+      mappings in Universal ++= directory("notebooks"),
+      mappings in Docker ++= directory("notebooks")
     )
     .settings(
       includeFilter in (Assets, LessKeys.less) := "*.less"
