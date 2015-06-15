@@ -185,9 +185,9 @@ lazy val common = Project(id = "common", base = file("modules/common"))
     ), // ++ customJacksonScala
     unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value),
     unmanagedSourceDirectories in Compile +=
-      (sourceDirectory in Compile).value / ((sparkVersion.value.takeWhile(_ != '-').split(".").toList match {
+      (sourceDirectory in Compile).value / ((sparkVersion.value.takeWhile(_ != '-').split("\\.").toList match {
         case "1"::x::_ if x.toInt < 3 => "pre-df"
-        case _                        => "post-df"
+        case x                        => "post-df"
       }))
   )
   .settings(sharedSettings: _*)
