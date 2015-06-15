@@ -1,6 +1,11 @@
 import java.io.{File, FileReader, BufferedReader}
 
-import notebook._, front._, widgets._, third.d3._
+import notebook._
+import notebook.front._
+import notebook.front.widgets._
+import notebook.front.third.d3._
+import notebook.front.widgets.magic._
+import notebook.front.widgets.magic.Implicits._
 import notebook.JsonCodec._
 import notebook.util._
 
