@@ -2,7 +2,6 @@ package notebook.front
 
 import scala.runtime.BoxedUnit
 import scala.xml.{NodeBuffer, NodeSeq, Text}
-import org.apache.spark.sql.DataFrame
 
 /**
  * Typeclass for rendering objects of a specific type. Implement one of these and import it

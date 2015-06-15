@@ -52,6 +52,10 @@ object Implicits extends ExtraMagicImplicits {
       } else Nil
     def count(x:Seq[T]) = x.size.toLong
   }
+  implicit def ListToPoints[T] = new ToPoints[List[T]] {
+    def apply(x:List[T], max:Int):Seq[MagicRenderPoint] = SeqToPoints(x.take(max), max)
+    def count(x:List[T]) = x.size.toLong
+  }
   implicit def ArrayToPoints[T] = new ToPoints[Array[T]] {
     def apply(x:Array[T], max:Int):Seq[MagicRenderPoint] = SeqToPoints(x.take(max).toSeq, max)
     def count(x:Array[T]) = x.size.toLong
