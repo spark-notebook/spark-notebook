@@ -16,7 +16,7 @@ class WidgetRenderer[-A](toWidget: A => Widget) extends Renderer[A] {
   def render(value: A) = toWidget(value).toHtml
 }
 
-object Renderer extends LowPriorityRenderers {
+object Renderer extends LowPriorityRenderers with ExtraLowPriorityRenderers {
 
   implicit object htmlAsItself extends Renderer[NodeSeq] {
     def render(value: NodeSeq) = value
@@ -52,30 +52,23 @@ trait LowPriorityRenderers {
 
   implicit object mapAsTable extends Renderer[Map[_, _]] {
     def render(x: Map[_, _]) = if (x.isEmpty) {
-      widgets.text("")
+      widgets.text("empty map")
     } else {
-      display(Left(x.toSeq))
+      display(x.toSeq)
     }
   }
 
   implicit object seqAsTable extends Renderer[Seq[_]] {
     def render(x: Seq[_]) = x match {
-      case Nil => widgets.layout(0, Seq(widgets.text("")))
-      case _ => display(Left(x))
+      case Nil => widgets.layout(0, Seq(widgets.text("empty seq")))
+      case _ => display(x)
     }
   }
 
   implicit object arrayAsTable extends Renderer[Array[_]] {
     def render(x: Array[_]) = x match {
-      case x if x.isEmpty => widgets.layout(0, Seq(widgets.text("")))
-      case _ => display(Left(x.toSeq))
-    }
-  }
-
-  implicit object dataFrameAsTable extends Renderer[DataFrame] {
-    def render(x: DataFrame) = x.take(1) match {
-      case x if x.isEmpty => widgets.layout(0, Seq(widgets.text("")))
-      case _ => display(Right(x))
+      case x if x.isEmpty => widgets.layout(0, Seq(widgets.text("empty array")))
+      case _ => display(x.toSeq)
     }
   }
 
