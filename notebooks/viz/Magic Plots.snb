@@ -157,7 +157,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "import widgets.magic.Implicits.SeqToPoints\nwidgets.display(list, Some((\"a\", \"b\")))",
+    "source" : "widgets.display(list, Some((\"a\", \"b\")))",
     "outputs" : [ ]
   }, {
     "metadata" : { },
