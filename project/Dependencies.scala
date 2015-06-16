@@ -74,7 +74,8 @@ object Dependencies {
   def hadoopClient(
     v: String) = "org.apache.hadoop" % "hadoop-client" % v excludeAll(
     ExclusionRule("org.apache.commons", "commons-exec"),
-    ExclusionRule("commons-codec", "commons-codec")
+    ExclusionRule("commons-codec", "commons-codec"),
+    ExclusionRule("com.google.guava", "guava")
     )
 
   val defaultJets3tVersion = sys.props.getOrElse("jets3t.version", "0.7.1")
@@ -96,7 +97,7 @@ object Dependencies {
   val commonsHttp = "org.apache.httpcomponents" % "httpclient" % "4.3.4" excludeAll ExclusionRule("com.google.guava")
   val commonsExec = "org.apache.commons" % "commons-exec" % "1.3" force()
   val commonsCodec = "commons-codec" % "commons-codec" % "1.10" force()
-  val guava = "com.google.guava" % "guava" % "18.0" force()
+  val guava = "com.google.guava" % "guava" % "14.0.1" force()
   val slf4jLog4j = "org.slf4j" % "slf4j-log4j12" % "1.7.7"
   val log4j = "log4j" % "log4j" % "1.2.17"
 
