@@ -18,6 +18,7 @@ import scala.util.control.NonFatal
 import scala.xml.{NodeSeq, Text}
 
 class Repl(val compilerOpts: List[String], val jars: List[String] = Nil) {
+  val LOG = org.slf4j.LoggerFactory.getLogger(classOf[Repl])
 
   def this() = this(Nil)
 
@@ -221,7 +222,10 @@ class Repl(val compilerOpts: List[String], val jars: List[String] = Nil) {
                 }
                 iws(o)
               } catch {
-                case e: Throwable => <span style="color:red;">Ooops, exception in the cell: {e.getMessage} </span>
+                case e =>
+                  e.printStackTrace
+                  LOG.error("Ooops, exception in the cell", e)
+                  <span style="color:red;">Ooops, exception in the cell: {e.getMessage}</span>
               }
             } else {
               // a line like println(...) is technically a val, but returns null for some reason
