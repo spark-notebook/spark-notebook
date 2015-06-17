@@ -300,7 +300,7 @@ class ReplCalculator(
           log.debug(s"Received sql code: [$n] $sql")
           val qs = "\"\"\""
           val name = Option(n).map(nm => s"@transient val $nm = ").getOrElse ("")
-          (`text/plain`,
+          (`text/html`,
             s"""
             import notebook.front.widgets.Sql
             import notebook.front.widgets.Sql._
