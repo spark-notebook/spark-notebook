@@ -38,7 +38,10 @@ case class NotebookConfig(config: Configuration) {
 
   val serverResources = config.getStringList("resources").map(_.asScala).getOrElse(Nil).map(new File(_))
 
-  val tachyonInfo = TachyonInfo(config.getString("tachyon.url"), config.getString("tachyon.baseDir").getOrElse("/share"))
+  val tachyonInfo = config.getBoolean("tachyon.enabled").filter(identity).map { _ =>
+    TachyonInfo(config.getString("tachyon.url"), config.getString("tachyon.baseDir").getOrElse("/share"))
+  }
+
   val maxBytesInFlight = config.underlying.getBytes("maxBytesInFlight").toInt
 
   object kernel {
