@@ -5,3 +5,42 @@ mainly to be overridden in profile/static/custom/custom.css
 
 This will always be an empty file in IPython
 */
+@media print {
+  #notebook_name {
+    display: block;
+    font-size: 30px
+  }
+
+  #site {
+    overflow: visible;
+  }
+  #notebook-tachyon-container {
+    display: none;
+  }
+
+  .output_stream {
+    display: none;
+  }
+  .output_collapsed {
+    display: none;
+  }
+
+  div.output_prompt {
+    visibility: hidden;
+  }
+
+  div.input_prompt {
+    visibility: hidden;
+  }
+
+  div.input_area {
+    border: 1px white solid;
+  }
+  .CodeMirror {
+    background: #FFF;
+  }
+
+  .print:last-child {
+    page-break-after: auto;
+  }
+}
