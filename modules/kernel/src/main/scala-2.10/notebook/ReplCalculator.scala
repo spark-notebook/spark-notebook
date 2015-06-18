@@ -49,7 +49,7 @@ class ReplCalculator(
   private val javascriptContext = outputTypesRegex("javascript", `application/javascript`)
 
   private val cpRegex = "(?s)^:cp\\s*(.+)\\s*$".r
-  private val dpRegex = "(?s)^:dp\\s*(.+)\\s*$".r
+  private val dpRegex = "(?s)^:(l?)dp\\s*(.+)\\s*$".r
   private val sqlRegex = "(?s)^:sql(?:\\[([a-zA-Z0-9][a-zA-Z0-9]*)\\])?\\s*(.+)\\s*$".r
   private val shRegex = "(?s)^:sh\\s*(.+)\\s*$".r
 
@@ -210,8 +210,8 @@ class ReplCalculator(
           repo.mkdirs
           (`text/plain`, s""" "Repo changed to ${repo.getAbsolutePath}!" """)
 
-        case dpRegex(cp) =>
-          log.debug("Fetching deps using repos: " + resolvers.mkString(" -- "))
+        case dpRegex(local, cp) =>
+          log.debug(s"Fetching ${if(local == "l") "locally" else ""} deps using repos: " + resolvers.mkString(" -- "))
           val tryDeps = Deps.script(cp, resolvers, repo)
 
           tryDeps match {
@@ -223,11 +223,15 @@ class ReplCalculator(
               _repl = Some(_r)
               preStartLogic()
               replay()
-
+              val newJarList = if (local == "l") {
+                  "Nil"
+                } else {
+                  deps.mkString("List(\"", "\",\"", "\")")
+                }
               (`text/html`,
                 s"""
                    |//updating deps
-                   |jars = (${deps.mkString("List(\"", "\",\"", "\")")} ::: jars.toList).distinct.toArray
+                   |jars = ($newJarList ::: jars.toList).distinct.toArray
                    |//restarting spark
                    |reset()
                    |jars.toList
