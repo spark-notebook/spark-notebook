@@ -11,18 +11,23 @@ import utils.{Const, AppUtils}
 import scala.concurrent.Future
 
 object TachyonProxy extends Controller {
-  lazy val tachyonUrl = AppUtils.config.tachyonInfo.url
-  lazy val shareDir = AppUtils.config.tachyonInfo.baseDir
-  lazy val tachyonClient = new notebook.share.Client(tachyonUrl)
+  lazy val tachyonUrl = AppUtils.config.tachyonInfo.flatMap(_.url)
+  lazy val shareDir = AppUtils.config.tachyonInfo.map(_.baseDir).getOrElse("/share")
+  lazy val tachyonClient = AppUtils.config.tachyonInfo.map(_ => new notebook.share.Client(tachyonUrl))
 
   import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 
   def ls(p: String = shareDir) = Action.async {
-    Future {
-      val path = URLDecoder.decode(p, UTF_8)
-      val list = tachyonClient.list(path)
-      Ok(Json.toJson(list))
+    tachyonClient match {
+      case None =>
+        Future.successful(BadRequest("Tachyon disabled"))
+      case Some(client) =>
+        Future {
+          val path = URLDecoder.decode(p, UTF_8)
+          val list = client.list(path)
+          Ok(Json.toJson(list))
+        }
     }
   }
 

@@ -49,26 +49,21 @@ trait LowPriorityRenderers {
 
   import widgets._
 
+  def renderSeq(x: Seq[_], t:String) = x match {
+    case Nil => widgets.text("empty " + t)
+    case _   => display(x)
+  }
+
   implicit object mapAsTable extends Renderer[Map[_, _]] {
-    def render(x: Map[_, _]) = if (x.isEmpty) {
-      widgets.text("empty map")
-    } else {
-      display(x.toSeq)
-    }
+    def render(x: Map[_, _]) = renderSeq(x.toSeq, "map")
   }
 
   implicit object seqAsTable extends Renderer[Seq[_]] {
-    def render(x: Seq[_]) = x match {
-      case Nil => widgets.layout(0, Seq(widgets.text("empty seq")))
-      case _ => display(x)
-    }
+    def render(x: Seq[_]) = renderSeq(x, "seq")
   }
 
   implicit object arrayAsTable extends Renderer[Array[_]] {
-    def render(x: Array[_]) = x match {
-      case x if x.isEmpty => widgets.layout(0, Seq(widgets.text("empty array")))
-      case _ => display(x.toSeq)
-    }
+    def render(x: Array[_]) = renderSeq(x.toSeq, "array")
   }
 
 }
