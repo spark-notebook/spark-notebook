@@ -218,6 +218,7 @@ package object widgets {
 
   def toJson(obj: Any): JsValueWrapper = {
     obj match {
+      case null => JsNull
       case v: Int => JsNumber(v)
       case v: Float => JsNumber(v)
       case v: Double => JsNumber(v)
