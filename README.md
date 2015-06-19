@@ -113,7 +113,7 @@ Email: [spark-notebook-user@googlegroups.com](mailto:spark-notebook-user@googleg
 |                 Name                  |                                        Logo                                              |                     URL                     |              Description                  |
 |---------------------------------------|------------------------------------------------------------------------------------------|---------------------------------------------|-------------------------------------------|
 |            Data Fellas                | ![Data Fellas](http://www.data-fellas.guru/assets/images/logo-wired-small.png)           | [website](http://www.data-fellas.guru)      | Mad Data Science and Scalable Computing   |
-
+|            Agile Lab                | ![Agile Lab](http://www.agilelab.it/wp-content/uploads/2015/02/logo1.png)           | [website](http://www.agilelab.it)      | The only Italian Spark Certified systems integrator  |
 
 # Launch
 
