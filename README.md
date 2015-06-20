@@ -110,10 +110,12 @@ Email: [spark-notebook-user@googlegroups.com](mailto:spark-notebook-user@googleg
 
 # In the wild
 
-|                 Name                  |                                        Logo                                              |                     URL                     |              Description                  |
-|---------------------------------------|------------------------------------------------------------------------------------------|---------------------------------------------|-------------------------------------------|
-|            Data Fellas                | ![Data Fellas](http://www.data-fellas.guru/assets/images/logo-wired-small.png)           | [website](http://www.data-fellas.guru)      | Mad Data Science and Scalable Computing   |
-|            Agile Lab                | ![Agile Lab](http://www.agilelab.it/wp-content/uploads/2015/02/logo1.png)           | [website](http://www.agilelab.it)      | The only Italian Spark Certified systems integrator  |
+|                 Name                  |                                        Logo                                              |                     URL                     |              Description                            |
+|---------------------------------------|------------------------------------------------------------------------------------------|---------------------------------------------|-----------------------------------------------------|
+|            Data Fellas                | ![Data Fellas](http://www.data-fellas.guru/assets/images/logo-wired-small.png)           | [website](http://www.data-fellas.guru)      | Mad Data Science and Scalable Computing             |
+|            Agile Lab                  | ![Agile Lab](http://www.agilelab.it/wp-content/uploads/2015/02/logo1.png)                | [website](http://www.agilelab.it)           | The only Italian Spark Certified systems integrator |
+|            CloudPhysics               | ![CloudPhysics](https://www.cloudphysics.com/static/uploads/2014/06/3color_bug_lg.png)   | [website](http://www.cloudphysics.com)      | DATA-DRIVEN INSIGHTS FOR SMARTER IT                 | 
+
 
 # Launch
 
