@@ -273,7 +273,6 @@ package object widgets {
 
 
   abstract class Chart[C:ToPoints] extends JsWorld[Seq[(String, Any)], Seq[(String, Any)]] {
-    //def originalData:Either[Seq[T], DataFrame]
     def originalData:C
     def maxPoints:Int
     def toPoints = implicitly[ToPoints[C]]
@@ -340,6 +339,15 @@ package object widgets {
     }
 
     override val scripts = List(Script("magic/pieChart", Json.obj("series" → f1.toString, "p" → f2.toString, "width" → sizes._1, "height" → sizes._2)))
+  }
+
+  case class GraphChart[C:ToPoints](originalData:C, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25, charge:Int= -30, linkDistance:Int=20, linkStrength:Double=1.0) extends Chart[C] {
+    def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
+
+
+    val opts = Json.obj("headers" → headers, "width" → sizes._1, "height" → sizes._2, "charge" → charge, "linkDistance" → linkDistance, "linkStrength" → linkStrength)
+
+    override val scripts = List(Script("magic/graphChart", opts))
   }
 
   case class DiyChart[C:ToPoints](originalData:C, js:String = "function(data, headers, chart) { console.log({'data': data, 'headers': headers, 'chart': chart}); }", override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {
