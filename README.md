@@ -269,8 +269,8 @@ MapR has a custom set of Hadoop jars that must be used.  To build using these ja
 * Add the [MapR Maven repository](http://doc.mapr.com/display/MapR/Maven+Artifacts+for+MapR) as an sbt
 [proxy repository](http://www.scala-sbt.org/0.13/docs/Proxy-Repositories.html)
 * Build Spark Notebook using the MapR Hadoop jars by setting the `hadoop-version` property to the MapR-specific version.
-See the MapR Maven Repository link above for the specific versions to use.  For example, to build Spark Notebook with the MapR
-Hadoop jars and Hive and Parquet support:
+See the MapR Maven Repository link above for the specific versions to use.  For example, to build Spark Notebook with
+the MapR Hadoop jars and Hive and Parquet support for Spark 1.3.1:
 ```
 sbt -Dspark.version=1.3.1 -Dhadoop.version=2.5.1-mapr-1503 -Dwith.hive=true -Dwith.parquet=true clean dist
 ```
@@ -287,13 +287,20 @@ declare -r app_classpath="${HADOOP_CONF_DIR}:<long list of jars>:
 /opt/mapr/lib/commons-configuration-1.6.jar:$/opt/mapr/lib/hadoop-auth-2.5.1.jar:/opt/mapr/lib/maprfs-4.1.0-mapr.jar"
 ```
 
-Finally, the `java.security.auth.login.config` property needs to be added to `manager.kernel.vmArgs` in Spark Notebook's `conf/application.conf`:
+The `java.security.auth.login.config` property needs to be added to `manager.kernel.vmArgs` in Spark Notebook's
+`conf/application.conf`:
 ```
 manager {
   kernel {
-    vmArgs=["-Djava.security.auth.login.config=/opt/mapr/conf/mapr.login.conf"]
+    vmArgs = ["-Djava.security.auth.login.config=/opt/mapr/conf/mapr.login.conf"]
 ```
 Otherwise you will get an error `No login modules configured for hadoop_simple`.
+
+Finally, set the `HADOOP_CONF_DIR` environment variable to your MapR Hadoop `conf` directory when running the
+`spark-notebook` script:
+```
+HADOOP_CONF_DIR=/opt/mapr/hadoop/hadoop-2.5.1/etc/hadoop ./spark-notebook
+```
 
 # Use
 
