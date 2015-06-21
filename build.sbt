@@ -34,11 +34,12 @@ dockerBaseImage := "dockerfile/java:openjdk-7-jdk"
 
 dockerCommands ++= Seq(
   Cmd("USER", "root"),
-  ExecCmd("RUN", "apt-key adv --keyserver keyserver.ubuntu.com --recv E56151BF"),
-  ExecCmd("RUN", "echo \\\"deb http://repos.mesosphere.io/ubuntu trusty main\\\" | tee /etc/apt/sources.list.d/mesosphere.list"),
-  ExecCmd("RUN", "apt-get -y update --fix-missing"),
-  ExecCmd("RUN", s"apt-get -y install mesos=$mesosVersion-1.0.ubuntu1404"), //ubuntu 14.04 is base for java:latest → https://github.com/dockerfile/ubuntu/blob/master/Dockerfile
+  Cmd("RUN", "apt-key adv --keyserver keyserver.ubuntu.com --recv E56151BF"),
+  Cmd("RUN", "echo \"deb http://repos.mesosphere.io/ubuntu trusty main\" | tee /etc/apt/sources.list.d/mesosphere.list"),
+  Cmd("RUN", "/usr/bin/apt-get -y update --fix-missing"),
+  Cmd("RUN", s"/usr/bin/apt-get -y install mesos=$mesosVersion-1.0.ubuntu1404"), //ubuntu 14.04 is base for java:latest → https://github.com/dockerfile/ubuntu/blob/master/Dockerfile
   Cmd("ENV", s"MESOS_JAVA_NATIVE_LIBRARY /usr/local/lib/libmesos-$mesosVersion.so"),
+  Cmd("ENV", s"MESOS_LOG_DIR /var/log/mesos"),
   Cmd("USER", (daemonUser in Docker).value)
 )
 
