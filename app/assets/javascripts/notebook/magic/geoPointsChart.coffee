@@ -16,7 +16,9 @@ define([
     bounds = new L.latLngBounds(points[0])
     _.each(points, (p) -> bounds.extend(p))
 
-    map = L.map(mapId)
+    map = L.map(mapId, {
+      crs:L.CRS.EPSG4326
+    })
 
     OpenStreetMap_Mapnik = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
