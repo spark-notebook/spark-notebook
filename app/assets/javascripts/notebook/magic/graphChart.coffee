@@ -8,7 +8,7 @@ define([
     w = options.width||600
     h = options.height||400
 
-    svg = d3.select(container).append("svg:svg").attr("width", w+"px").attr("height", h+"px").attr("id", "line"+@genId)
+    svg = d3.select(container).append("svg:svg").attr("width", w+"px").attr("height", h+"px").attr("id", "graph"+@genId)
 
 
     #if we want goup field (int 1..20)
@@ -79,6 +79,6 @@ define([
     )
 
     dataO.subscribe( (newData) =>
-      console.dir("graph update todo")
+      console.warn("graph update todo")
     )
 )

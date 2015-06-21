@@ -341,6 +341,30 @@ package object widgets {
     override val scripts = List(Script("magic/pieChart", Json.obj("series" → f1.toString, "p" → f2.toString, "width" → sizes._1, "height" → sizes._2)))
   }
 
+  case class GeoPointsChart[C:ToPoints](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25, latLonFields:Option[(String, String)]=None, rField:Option[String]=None, colorField:Option[String]=None) extends Chart[C] {
+    val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
+
+    val latLong = latLonFields.getOrElse((f1, f2))
+
+    def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
+      val stripedData = t.data.toSeq.filter{case (k, v) => !fields.isDefined || f1 == k || f2 == k }
+      stripedData
+    }
+
+    override val scripts =
+      List(Script("magic/geoPointsChart",
+        Json.obj(
+                  "fields" → List(f1.toString, f2.toString),
+                  "lat" → latLong._1, "lon" → latLong._2,
+                  "width" → sizes._1, "height" → sizes._2,
+                  "rField" → rField, "colorField" → colorField
+                  /*, "proj" → proj, "baseMap" → baseMap*/
+                )
+        ++ rField.map(r => Json.obj("r" → r)).getOrElse(Json.obj())
+        ++ colorField.map(color => Json.obj("color" → color)).getOrElse(Json.obj())
+      ))
+  }
+
   case class GraphChart[C:ToPoints](originalData:C, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25, charge:Int= -30, linkDistance:Int=20, linkStrength:Double=1.0) extends Chart[C] {
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
 
