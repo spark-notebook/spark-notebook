@@ -276,15 +276,17 @@ sbt -Dspark.version=1.3.1 -Dhadoop.version=2.5.1-mapr-1503 -Dwith.hive=true -Dwi
 ```
 
 ##### Running with MapR
-A few extra jars need to be added to the app classpath:
+A few extra jars need to be added to the notebook classpath using the `EXTRA_CLASSPATH` environment variable:
 * `commons-configuration`
 * `hadoop-auth`
 * `maprfs`
 
-Then add them to the classpath in the `spark-notebook` script.  For example:
+In addition, set the `HADOOP_CONF_DIR` environment variable to your MapR Hadoop `conf` directory.
+For example:
 ```
-declare -r app_classpath="${HADOOP_CONF_DIR}:<long list of jars>:
-/opt/mapr/lib/commons-configuration-1.6.jar:$/opt/mapr/lib/hadoop-auth-2.5.1.jar:/opt/mapr/lib/maprfs-4.1.0-mapr.jar"
+HADOOP_CONF_DIR=/opt/mapr/hadoop/hadoop-2.5.1/etc/hadoop \
+EXTRA_CLASSPATH=/opt/mapr/lib/commons-configuration-1.6.jar:/opt/mapr/lib/hadoop-auth-2.5.1.jar:/opt/mapr/lib/maprfs-4.1.0-mapr.jar \
+./spark-notebook
 ```
 
 The `java.security.auth.login.config` property needs to be added to `manager.kernel.vmArgs` in Spark Notebook's
@@ -295,12 +297,6 @@ manager {
     vmArgs = ["-Djava.security.auth.login.config=/opt/mapr/conf/mapr.login.conf"]
 ```
 Otherwise you will get an error `No login modules configured for hadoop_simple`.
-
-Finally, set the `HADOOP_CONF_DIR` environment variable to your MapR Hadoop `conf` directory when running the
-`spark-notebook` script:
-```
-HADOOP_CONF_DIR=/opt/mapr/hadoop/hadoop-2.5.1/etc/hadoop ./spark-notebook
-```
 
 # Use
 
@@ -783,9 +779,10 @@ The results will be:
 
 
 ## Update _Notebook_ `ClassPath`
+
 Keeping your notebook runtime updated with the libraries you need in the classpath is usually cumbersome as it requires updating the server configuration in the SBT definition and restarting the system. Which is pretty sad because it requires a restart, rebuild and is not contextual to the notebook!
 
-Hence, a dedicated context has been added to the block, `:cp` which allows us to add specifiy __local paths__ to jars that will be part of the classpath.
+Hence, a dedicated context has been added to the block, `:cp` which allows us to add specify __local paths__ to jars that will be part of the classpath.
 
 ```
 :cp /home/noootsab/.m2/repository/joda-time/joda-time/2.4/joda-time-2.4.jar
@@ -818,6 +815,14 @@ Or even
 Here is what it'll look like in the notebook:
 
 ![Simple Classpath](https://raw.github.com/andypetrella/spark-notebook/master/images/simple-cp.png)
+
+### Classes required to connect to the cluster
+
+For some Hadoop distributions extra classes are needed to connect to the cluster. In situations like this use the
+`EXTRA_CLASSPATH` environment variable when starting the notebook server.  For example:
+```
+HADOOP_CONF_DIR=/opt/mapr/hadoop/hadoop-2.5.1/etc/hadoop EXTRA_CLASSPATH=<extra MapR jars> ./spark-notebook
+```
 
 ## Update __Spark__ dependencies (`spark.jars`)
 So you use Spark, hence you know that it's not enough to have the jars locally added to the Driver's classpath.
