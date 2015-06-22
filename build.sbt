@@ -88,7 +88,7 @@ val ClasspathPattern = "declare -r app_classpath=\"(.*)\"\n".r
 
 bashScriptDefines := bashScriptDefines.value.map {
   case ClasspathPattern(classpath) =>
-    "declare -r app_classpath=\"${HADOOP_CONF_DIR}:" + classpath + "\"\n"
+    "declare -r app_classpath=\"${HADOOP_CONF_DIR}:${EXTRA_CLASSPATH}:" + classpath + "\"\n"
   case _@entry => entry
 }
 
