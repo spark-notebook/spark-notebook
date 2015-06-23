@@ -262,19 +262,56 @@ While using the repository from SBT, you can use any version of Apache Spark you
 * you run the sbt command using the wanted version `sbt -Dspark.version=1.4.0-SNAPSHOT`
 * there is a folder in `modules/spark/src/main/scala-2.1X` that points to the base of the required version (excl. the classifier SNAPHOST or RC): `spark-1.4`
 
+#### Building for specific distributions
+
+##### MapR
+
+##### Building for MapR
+MapR has a custom set of Hadoop jars that must be used.  To build using these jars:
+* Add the [MapR Maven repository](http://doc.mapr.com/display/MapR/Maven+Artifacts+for+MapR) as an sbt
+[proxy repository](http://www.scala-sbt.org/0.13/docs/Proxy-Repositories.html)
+* Build Spark Notebook using the MapR Hadoop jars by setting the `hadoop-version` property to the MapR-specific version.
+See the MapR Maven Repository link above for the specific versions to use.  For example, to build Spark Notebook with
+the MapR Hadoop jars and Hive and Parquet support for Spark 1.3.1:
+```
+sbt -Dspark.version=1.3.1 -Dhadoop.version=2.5.1-mapr-1503 -Dwith.hive=true -Dwith.parquet=true clean dist
+```
+
+##### Running with MapR
+A few extra jars need to be added to the notebook classpath using the `EXTRA_CLASSPATH` environment variable:
+* `commons-configuration`
+* `hadoop-auth`
+* `maprfs`
+
+In addition, set the `HADOOP_CONF_DIR` environment variable to your MapR Hadoop `conf` directory.
+For example:
+```
+HADOOP_CONF_DIR=/opt/mapr/hadoop/hadoop-2.5.1/etc/hadoop \
+EXTRA_CLASSPATH=/opt/mapr/lib/commons-configuration-1.6.jar:/opt/mapr/lib/hadoop-auth-2.5.1.jar:/opt/mapr/lib/maprfs-4.1.0-mapr.jar \
+./spark-notebook
+```
+
+The `java.security.auth.login.config` property needs to be added to `manager.kernel.vmArgs` in Spark Notebook's
+`conf/application.conf`:
+```
+manager {
+  kernel {
+    vmArgs = ["-Djava.security.auth.login.config=/opt/mapr/conf/mapr.login.conf"]
+```
+Otherwise you will get an error `No login modules configured for hadoop_simple`.
 
 # Use
 
-Before the first launch, it may be necessary to add some settings to `conf/application.conf`. 
+Before the first launch, it may be necessary to add some settings to `conf/application.conf`.
 
 > **Warn:** When using a distribution, this `conf/application.conf` is already present in the installed package.
-> 
+>
 > However, it won't be taken into account until you include it into you launch environment. To do so, you have to > create a `conf/application.ini` file with the following content:
 > ```
 > -Dconfig.file=./conf/application.conf
 > ```
 > This allows you to have several environment that can be switched via this `ini` file
-> 
+>
 > A **less** cleaner way would be to launch the script like this: `./bin/spark-notebook -Dconfig.file=./conf/application.conf`
 
 In particular `manager.kernel.vmArgs` can be used to set environment variables for the driver (e.g. `-Dhdp.version=$HDP-Version` if you want to run spark-notebook on a **Hortonworks** cluster). These are the settings that you would commonly pass via `spark.driver.extraJavaOptions`.
@@ -340,32 +377,32 @@ Additional repositories may be added.  While the context `:remote-repo` is avail
 Adding dependencies in the classpath **and** in the spark context can be done, this way (see also `:dp`).
 
 ```json
-    "customDeps"      : [ 
+    "customDeps"      : [
       "med-at-scale        %  ga4gh-model-java  % 0.1.0-SNAPSHOT",
       "org.apache.avro     %  avro-ipc          % 1.7.6",
       "- org.mortbay.jetty %  org.eclipse.jetty % _"
-    ] 
+    ]
 ```
 
 Alternatively, we can also use Maven coordinates:
 
 ```json
-    "customDeps"      : [ 
+    "customDeps"      : [
       "med-at-scale:ga4gh-model-java:0.1.0-SNAPSHOT",
       "org.apache.avro:avro-ipc:1.7.6",
       "- org.mortbay.jetty:org.eclipse.jetty:_"
-    ] 
+    ]
 ```
 
 #### Add Spark Packages
 
 Spark Notebook supports the new Spark package repository at [spark-packages.org](http://spark-packages.org).  Include a package in
-your notebook by adding its coordinates to the preconfiguration: 
+your notebook by adding its coordinates to the preconfiguration:
 
 ```json
-    "customDeps"      : [ 
+    "customDeps"      : [
       "com.databricks:spark-avro_2.10:1.0.0"
-    ] 
+    ]
 ```
 
 #### Default import statements
@@ -557,7 +594,7 @@ Then all `SparkContext` will automatically have the tachyon configuration pointi
 ### ... Embedded local (default)
 If no configuration is set under `manager.tachyon` conf key in the `application.conf` file (see above).
 
-An embed Tachyon local cluster will be started for you automatically. 
+An embed Tachyon local cluster will be started for you automatically.
 
 Hence, if you wanna use this feature a bit, we'd recommend to increase the memory allocated to the spark-notebook server:
 ```
@@ -744,9 +781,10 @@ The results will be:
 
 
 ## Update _Notebook_ `ClassPath`
+
 Keeping your notebook runtime updated with the libraries you need in the classpath is usually cumbersome as it requires updating the server configuration in the SBT definition and restarting the system. Which is pretty sad because it requires a restart, rebuild and is not contextual to the notebook!
 
-Hence, a dedicated context has been added to the block, `:cp` which allows us to add specifiy __local paths__ to jars that will be part of the classpath.
+Hence, a dedicated context has been added to the block, `:cp` which allows us to add specify __local paths__ to jars that will be part of the classpath.
 
 ```
 :cp /home/noootsab/.m2/repository/joda-time/joda-time/2.4/joda-time-2.4.jar
@@ -779,6 +817,14 @@ Or even
 Here is what it'll look like in the notebook:
 
 ![Simple Classpath](https://raw.github.com/andypetrella/spark-notebook/master/images/simple-cp.png)
+
+### Classes required to connect to the cluster
+
+For some Hadoop distributions extra classes are needed to connect to the cluster. In situations like this use the
+`EXTRA_CLASSPATH` environment variable when starting the notebook server.  For example:
+```
+HADOOP_CONF_DIR=/opt/mapr/hadoop/hadoop-2.5.1/etc/hadoop EXTRA_CLASSPATH=<extra MapR jars> ./spark-notebook
+```
 
 ## Update __Spark__ dependencies (`spark.jars`)
 So you use Spark, hence you know that it's not enough to have the jars locally added to the Driver's classpath.
@@ -863,7 +909,7 @@ The logo is a proprietary of the Data Fellas company (BE), but it's not mandator
 
 However, you can still change it to put your own, this is easily achieved when running a distro.
 
-After having unpacked the spark notebook distro, create the `public/images` folder and put your `logo.png` file in. 
+After having unpacked the spark notebook distro, create the `public/images` folder and put your `logo.png` file in.
 
 ## Project Name
 By default the project name is set to `Spark Notebook`, but you might want to clearly show your own business name in the title.
