@@ -1,0 +1,160 @@
+{
+  "metadata" : {
+    "name" : "test",
+    "user_save_timestamp" : "2014-12-03T22:12:58.863Z",
+    "auto_save_timestamp" : "2014-12-03T22:10:42.476Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : [ "com.datastax.spark % spark-cassandra-connector-java_2.10 % 1.3.0-M1" ],
+    "customImports" : [ "import java.util.UUID", "import scala.util._", "import org.apache.spark.SparkContext._", "import com.datastax.spark.connector._" ],
+    "customSparkConf" : {
+      "spark.cassandra.connection.host" : "172.17.0.2"
+    }
+  },
+  "cells" : [ {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# Cassandra setup"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "First we pull the docker instance"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "```\ndocker pull cassandra:2.1\ndocker run --name test-snb -d cassandra:2.1\n```"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Then we connect to it using `cqlsh`"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "```\ndocker run -it --link test-snb:cassandra --rm cassandra cqlsh cassandra\n```"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Now we fetch the IP of this running instance of cassandra"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "```\ndocker inspect test-snb | jq '.[0].NetworkSettings.IPAddress'\n```"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "This IP needs to be used in this notebook metadata, in the custom spark conf: \n```\n\"spark.cassandra.connection.host\": \"172.17.0.2\"\n```"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "In `cqlsh`, let's create both the keyspace and the table"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "```\nCREATE KEYSPACE urls\n   WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 3 };\n```"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "```\nCREATE TABLE urls_meta (\n  url_id uuid,\n  b64url text,\n  insert_time timestamp,\n  label text,\n  source text,\n  PRIMARY KEY (url_id)\n);\n```"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "We can insert one row."
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "```\ninsert INTO urls.urls_meta (url_id, b64url, insert_time , label, source ) VALUES ( 01234567-0123-0123-0123-0123456789ab, 'test64', '2011-02-03 04:05+0000', 'lable-test', 'test-source') ;\n```"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Spark Config"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "sparkContext.getConf.toDebugString",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### What's in the table:"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "markdown",
+    "source" : "We use the plain vanilla way of loading the data. Everything works"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val urls = sparkContext.cassandraTable(\"urls\", \"urls_meta\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "urls.take(1)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "urls.take(1)(0).columnNames",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Problems"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Let's create the case class in a separate cell:"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "**note** I changed the name of the column `uuid` to match cassandra `urlid`"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "case class URL(url_id: java.util.UUID, b64url: String, insert_time: java.util.Date, source: String)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "This worked in this case, using local cassandra (not cluster) and local spark (no cluster):"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val urls = sparkContext.cassandraTable[URL](\"urls\", \"urls_meta\")\nurls.take(10)",
+    "outputs" : [ ]
+  } ],
+  "nbformat" : 4
+}
