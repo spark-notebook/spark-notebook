@@ -17,7 +17,7 @@ define([
     _.each(points, (p) -> bounds.extend(p))
 
     map = L.map(mapId, {
-      crs:L.CRS.EPSG4326
+      crs:L.CRS.EPSG3857 # OSM stores in epsg4326, but serves in 3857 -_-
     })
 
     OpenStreetMap_Mapnik = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
