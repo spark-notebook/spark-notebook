@@ -22,7 +22,7 @@
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "## Lat long points"
+    "source" : "## Lat long points (EPSG3758)"
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -34,7 +34,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val points = Seq((51.31, 0.71), (51.31, 0.72), (51.31, 0.73))",
+    "source" : "val points = Seq((51.31, 0.71), (51.31, 0.72), (51.31, 0.73), (51.507222, -0.1275))",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -48,6 +48,15 @@
     },
     "cell_type" : "code",
     "source" : "widgets.GeoPointsChart(points)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -78,7 +87,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "widgets.GeoPointsChart(colored, latLonFields=Some((\"_1\", \"_2\")), rField=Some(\"_3\"), colorField=Some(\"_4\"))",
@@ -109,7 +118,7 @@
       "trusted" : true,
       "input_collapsed" : false,
       "output_stream_collapsed" : true,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "val groups = Map(\"female\" → \"red\", \"male\" → \"blue\")\nval data =  List.fill(100) {\n              val lat = scala.util.Random.nextDouble * 160 - 90\n              val lon = scala.util.Random.nextDouble * 340 - 180\n              val value = scala.util.Random.nextInt(10)\n              val group = scala.util.Random.shuffle(groups).head._2\n              GeoData(lat, lon, value, group)\n            }\nwidgets.TableChart(data, maxPoints=3)",
@@ -126,7 +135,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "widgets.GeoPointsChart(data, latLonFields=Some((\"lat\", \"lon\")), rField=Some(\"value\"), colorField=Some(\"group\"))",
@@ -139,7 +148,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "widgets.GeoPointsChart(\n  data, latLonFields=Some((\"lat\", \"lon\")), rField=Some(\"value\"), colorField=Some(\"group\"),\n  maxPoints=100,\n  sizes=(800, 600)\n)",
