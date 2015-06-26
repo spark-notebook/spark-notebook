@@ -284,6 +284,14 @@ package object widgets {
     def applyOn(newData:C) = apply {
       val pts:Seq[MagicRenderPoint] = toPoints(newData, maxPoints)
       val d = pts map mToSeq
+      this.apply(d)
+      d
+    }
+
+    def addAndApply(otherData:C) = apply {
+      val pts:Seq[MagicRenderPoint] = points ++ toPoints(otherData, maxPoints)
+      val d = pts map mToSeq
+      this.apply(d)
       d
     }
 
@@ -341,7 +349,15 @@ package object widgets {
     override val scripts = List(Script("magic/pieChart", Json.obj("series" → f1.toString, "p" → f2.toString, "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class GeoPointsChart[C:ToPoints](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25, latLonFields:Option[(String, String)]=None, rField:Option[String]=None, colorField:Option[String]=None) extends Chart[C] {
+  case class GeoPointsChart[C:ToPoints](
+    originalData:C,
+    fields:Option[(String, String)]=None,
+    override val sizes:(Int, Int)=(600, 400),
+    maxPoints:Int = 25,
+    latLonFields:Option[(String, String)]=None,
+    rField:Option[String]=None,
+    colorField:Option[String]=None) extends Chart[C] {
+
     val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
 
     val latLong = latLonFields.getOrElse((f1, f2))
