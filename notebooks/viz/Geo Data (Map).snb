@@ -47,16 +47,33 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "widgets.GeoPointsChart(points)",
+    "source" : "val w = widgets.GeoPointsChart(points)",
     "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Add Paris"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "",
+    "source" : "w.addAndApply(Seq((48.85, 2.34)))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Keep Liège"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "w.applyOn(Seq((50.65, 5.57)))",
     "outputs" : [ ]
   }, {
     "metadata" : { },

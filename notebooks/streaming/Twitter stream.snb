@@ -30,6 +30,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
@@ -42,10 +43,11 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : ":dp org.apache.spark % spark-streaming_2.10 % 1.2.1\norg.apache.spark % spark-streaming-twitter_2.10 % 1.2.1\n- org.apache.spark % spark-core_2.10 % _\n- org.apache.hadoop % _ % _",
+    "source" : ":dp org.apache.spark % spark-streaming_2.10 % 1.4.0\norg.apache.spark % spark-streaming-twitter_2.10 % 1.4.0\n- org.apache.spark % spark-core_2.10 % _\n- org.apache.hadoop % _ % _",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -58,6 +60,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
@@ -74,6 +77,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
@@ -90,6 +94,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
@@ -102,10 +107,11 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val stream = TwitterUtils.createStream(ssc, None, filters)",
+    "source" : "val twitterStream = TwitterUtils.createStream(ssc, None, filters)",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -118,10 +124,11 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : true
     },
     "cell_type" : "code",
-    "source" : "import StreamingContext._\nval hashTags = stream.flatMap(status => status.getText.split(\" \").filter(_.startsWith(\"#\")))\n\nval topCounts60 = hashTags.map((_, 1)).reduceByKeyAndWindow(_ + _, Seconds(60))\n                          .map{case (topic, count) => (count, topic)}\n                          .transform(_.sortByKey(false))",
+    "source" : "import StreamingContext._\nval hashTags = twitterStream.flatMap(status => status.getText.split(\" \").filter(_.startsWith(\"#\")))\n\nval topCounts60 = hashTags.map((_, 1)).reduceByKeyAndWindow(_ + _, Seconds(60))\n                          .map{case (topic, count) => (count, topic)}\n                          .transform(_.sortByKey(false))",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -130,10 +137,12 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
+      "output_stream_collapsed" : true,
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val result = ul(10)\n",
+    "source" : "val result = ul(10)",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -142,10 +151,34 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "// Print popular hashtags\ntopCounts60.foreachRDD(rdd => {\n  val topList = rdd.take(10).toList\n  val r = topList.map{case (count, tag) => s\"$tag: $count\"}\n  result(r)\n})\n",
+    "source" : "// Print popular hashtags\ntopCounts60.foreachRDD(rdd => {\n  val topList = rdd.take(10).toList\n  val r = topList.map{case (count, tag) => s\"$tag: $count\"}\n  result(r)\n})",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Show the Geolocations"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val geo = widgets.GeoPointsChart(Seq((0d,0d, \"init\")))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "output_stream_collapsed" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "twitterStream .window(Seconds(60), Seconds(6))  \n              . filter{ s => \n                s.getGeoLocation() != null && \n                s.getGeoLocation().getLatitude() != null && \n                s.getGeoLocation().getLongitude() != null\n              }\n              .map(s => (s.getGeoLocation().getLatitude(), s.getGeoLocation().getLongitude(), s.getText()))\n              .foreachRDD{rdd => \n                geo.applyOn(rdd.take(100))\n              }",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -158,6 +191,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
@@ -170,6 +204,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
