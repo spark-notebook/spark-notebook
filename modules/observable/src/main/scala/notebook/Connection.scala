@@ -40,6 +40,10 @@ object Connection {
   def just[T](v: T) = new ConcreteConnection[T](Observable.just(v), new NoopObserver[T]())
 
   def fromObserver[T](f: T => Unit) = new ConcreteConnection(Observable.noop, Observer(f))
+
+  def fromObservable[T](observable: Observable[T]) = new ConcreteConnection(observable, new NoopObserver[T]())
+
+
 }
 
 class MappingConnection[A, B](innerConn: Connection[A], codec: Codec[A, B]) extends Connection[B] {
