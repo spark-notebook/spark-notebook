@@ -5,6 +5,7 @@ import notebook.front.{DataConnector, SingleConnector,Widget}
 import org.apache.spark.FutureAction
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
+import play.Routes
 import play.api.libs.json._
 
 /**
@@ -68,8 +69,6 @@ trait DataFrameView {
 
 class DataFrameWidget(
   override val data: DataFrame,
-  width: Int = 600,
-  height: Int = 400,
   extension: String
 )
   extends Widget with DataFrameView {
@@ -77,18 +76,17 @@ class DataFrameWidget(
   private val js = List("dataframe", extension).map(
     x => s"'../javascripts/notebook/$x'").mkString("[", ",", "]")
   private val call = {
+    // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }
+    // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)
     s"""
       function(dataframe, extension) {
-        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }
-        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)
-
         dataframe.call(data, this, extension);
       }
     """
   }
-  
+
   lazy val toHtml =
-    <div>
+    <div class="df-canvas">
       {scopedScript(
       s"req($js, $call);",
       Json.obj(
@@ -98,22 +96,15 @@ class DataFrameWidget(
         "dfSchema" -> Json.parse(data.schema.json)
       )
       )}
-        <table class="dataframe" width={width.toString} height={height.toString}>
-        </table>
-        <form role="form" id="{htmlId}">
-          <button class="btn btn-default" data-bind="click: prevPartition">Prev</button>
-          <button class="btn btn-default" data-bind="click: nextPartition">Next</button>
-        </form>
-      </div>
+      <link rel="stylesheet" href="/assets/stylesheets/ipython/css/dataframe.css" type="text/css" />
+    </div>
 }
 
 object DataFrameWidget {
 
   def table(
-    data: DataFrame,
-    width: Int = 600,
-    height: Int = 400
+    data: DataFrame
   ): DataFrameWidget = {
-    new DataFrameWidget(data, width, height, "consoleDir")
+    new DataFrameWidget(data, "consoleDir")
   }
 }
