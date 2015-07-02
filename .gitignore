@@ -1,6 +1,7 @@
 .idea/
 .idea_modules/
 .project
+*.iml
 .settings
 .classpath
 .ensime
