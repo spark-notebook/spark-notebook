@@ -1,0 +1,175 @@
+{
+  "metadata" : {
+    "name" : "Geo Data (Map)",
+    "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customSparkConf" : null
+  },
+  "cells" : [ {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# Geo Data "
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Lat long points (EPSG3758)"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "We can create implicit `latLon` points with a simple sequence of tuples"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val points = Seq((51.31, 0.71), (51.31, 0.72), (51.31, 0.73), (51.507222, -0.1275))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "So that calling `widgets.GeoPointsChart` on them will place markers on the map"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val w = widgets.GeoPointsChart(points)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Add Paris"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "w.addAndApply(Seq((48.85, 2.34)))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Keep Liège"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "w.applyOn(Seq((50.65, 5.57)))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Give geo data a group and a value"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "It's common to have geo data assigned some group but also a value, these generally result into a radius on the map and a group color"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "We can create such dataset using 4-uples"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val colored = Seq((51.31, 0.71, 20, \"red\"), (51.31, 0.72, 10, \"blue\"), (51.31, 0.73, 100, \"yellow\"))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "So we need to tell `GeoPointsChart` which fields to use for what"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "widgets.GeoPointsChart(colored, latLonFields=Some((\"_1\", \"_2\")), rField=Some(\"_3\"), colorField=Some(\"_4\"))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Use your types"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "You can of course use your own type to represent your data in a more convenient manner..."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "case class GeoData(lat:Double, lon:Double, value:Int, group:String)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Let's generate some abstract data"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "output_stream_collapsed" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val groups = Map(\"female\" → \"red\", \"male\" → \"blue\")\nval data =  List.fill(100) {\n              val lat = scala.util.Random.nextDouble * 160 - 90\n              val lon = scala.util.Random.nextDouble * 340 - 180\n              val value = scala.util.Random.nextInt(10)\n              val group = scala.util.Random.shuffle(groups).head._2\n              GeoData(lat, lon, value, group)\n            }\nwidgets.TableChart(data, maxPoints=3)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "And map the fields onto the graphics aesthetics"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "__Note:__ by default, as for the other Chart, only the 25 first items will be rendered"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "widgets.GeoPointsChart(data, latLonFields=Some((\"lat\", \"lon\")), rField=Some(\"value\"), colorField=Some(\"group\"))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Let's add all points by specifying the `maxPoints` and extend the plotting area a bit using `sizes` "
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "widgets.GeoPointsChart(\n  data, latLonFields=Some((\"lat\", \"lon\")), rField=Some(\"value\"), colorField=Some(\"group\"),\n  maxPoints=100,\n  sizes=(800, 600)\n)",
+    "outputs" : [ ]
+  } ],
+  "nbformat" : 4
+}

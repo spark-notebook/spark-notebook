@@ -52,15 +52,6 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "//define sql context\nval sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)\n",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
     "source" : "//define sql context\nval sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)\n\n// import implicits to convert an RDD to a SchemaRDD.\nimport sqlContext.implicits",
     "outputs" : [ ]
   }, {
@@ -74,7 +65,16 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "//prepare some sql materials\n/**\n *    COPIED FROM  http://spark.apache.org/docs/latest/sql-programming-guide.html\n **/\n// Create an RDD\nval people = sparkContext.makeRDD(Array(\n\t\"Sandrine,33\",\n\t\"Noah,4\",\n\t\"Noootsab,32\"\n))\n\n// The schema is encoded in a string\nval schemaString = \"name age\"\n\n// Import Spark SQL data types and Row.\nimport org.apache.spark.sql.Row\nimport org.apache.spark.sql.types.{StructType,StructField,StringType};\n\n// Generate the schema based on the string of schema\nval schema =\n  StructType(\n    schemaString.split(\" \").map(fieldName => StructField(fieldName, StringType, true)))\n\n// Convert records of the RDD (people) to Rows.\nval rowRDD = people.map(_.split(\",\")).map(p => Row(p(0), p(1).trim))\n\n// Apply the schema to the RDD.\nval peopleSchemaRDD = sqlContext.applySchema(rowRDD, schema)\n\n// Register the SchemaRDD as a table.\npeopleSchemaRDD.toDF.registerTempTable(\"people\")\n\n// SQL statements can be run by using the sql methods provided by sqlContext.\nval results = sqlContext.sql(\"SELECT name FROM people\")\n\n// The results of SQL queries are SchemaRDDs and support all the normal RDD operations.\n// The columns of a row in the result can be accessed by ordinal.\nul(results.map(t => \"Name: \" + t(0)).collect())",
+    "source" : "def yo(d:String) = {\n  import java.util.Calendar._\n  val sd = new java.text.SimpleDateFormat(\"yyyy-MM-dd HH:mm:ss\")\n  val c = getInstance\n  val t = c.getTime\n  val y = c.get(YEAR)\n  val b = sd.parse(d)\n  c.setTime(b)\n  val by = c.get(YEAR)\n  c.set(YEAR, y)\n  val o = y - by - (if (c.getTime.before(t)) 0 else 1)\n  o\n}",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "//prepare some sql materials\n/**\n *    COPIED FROM  http://spark.apache.org/docs/latest/sql-programming-guide.html\n **/\n// Create an RDD\nval people = sparkContext.makeRDD(Array(\n  s\"\"\"Sandrine,${yo(\"1981-08-24 00:00:00\")}\"\"\",\n  s\"\"\"Noah,${yo(\"2010-04-24 00:00:00\")}\"\"\",\n  s\"\"\"Livio,${yo(\"2015-05-05 00:00:00\")}\"\"\",\n  s\"\"\"Noootsab,${yo(\"2010-10-17 00:00:00\")}\"\"\"\n))\n\n// The schema is encoded in a string\nval schemaString = \"name age\"\n\n// Import Spark SQL data types and Row.\nimport org.apache.spark.sql.Row\nimport org.apache.spark.sql.types.{StructType,StructField,StringType};\n\n// Generate the schema based on the string of schema\nval schema =\n  StructType(\n    schemaString.split(\" \").map(fieldName => StructField(fieldName, StringType, true)))\n\n// Convert records of the RDD (people) to Rows.\nval rowRDD = people.map(_.split(\",\")).map(p => Row(p(0), p(1).trim))\n\n// Apply the schema to the RDD.\nval peopleSchemaRDD = sqlContext.applySchema(rowRDD, schema)\n\n// Register the SchemaRDD as a table.\npeopleSchemaRDD.toDF.registerTempTable(\"people\")\n\n// SQL statements can be run by using the sql methods provided by sqlContext.\nval results = sqlContext.sql(\"SELECT name FROM people\")\n\n// The results of SQL queries are SchemaRDDs and support all the normal RDD operations.\n// The columns of a row in the result can be accessed by ordinal.\nul(results.map(t => \"Name: \" + t(0)).collect())",
     "outputs" : [ ]
   }, {
     "metadata" : { },

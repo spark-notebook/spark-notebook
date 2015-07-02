@@ -67,22 +67,38 @@ define([
     };
 
     MenuBar.prototype._nbconvert = function (format, download) {
-        download = download || false;
-        var notebook_path = this.notebook.notebook_path;
-        var url = utils.url_join_encode(
-            this.base_url,
-            'nbconvert',
-            format,
-            notebook_path
-        ) + "?download=" + download.toString();
+        if (format == 'pdf') {
+            console.warn("Since backend PDF rendering is not yet there, this hack is just using the browser's print()")
+            var inputToo = confirm("Do you want to print the input boxes too?");
+            if (!inputToo) {
+                $(".input:visible").addClass("show-me-back").hide();
+            }
+            $("#site").prepend($("<h1 class='text-center print-artifact'></h1>").text($("#notebook_name").text()));
+            $(".output_result:empty").parents(".output_wrapper:visible").addClass("show-me-back").hide();
+            $(".output:hidden").parents(".output_wrapper:visible").addClass("show-me-back").hide();
 
-        var w = window.open();
-        if (this.notebook.dirty) {
-            this.notebook.save_notebook().then(function() {
-                w.location = url;
-            });
+            print();
+
+            $(".print-artifact").remove();
+            $(".show-me-back").show();
         } else {
-            w.location = url;
+            download = download || false;
+            var notebook_path = this.notebook.notebook_path;
+            var url = utils.url_join_encode(
+                this.base_url,
+                'nbconvert',
+                format,
+                notebook_path
+            ) + "?download=" + download.toString();
+
+            var w = window.open();
+            if (this.notebook.dirty) {
+                this.notebook.save_notebook().then(function() {
+                    w.location = url;
+                });
+            } else {
+                w.location = url;
+            }
         }
     };
 
@@ -130,6 +146,12 @@ define([
             that._nbconvert('rst', true);
         });
 
+        // catches CTRL+P to use _nbconvert to PDF instead
+        $(document).bind("keyup keydown", function(e){
+            if(e.ctrlKey && e.keyCode == 80){
+                that._nbconvert('pdf', true);
+            }
+        });
         this.element.find('#download_pdf').click(function () {
             that._nbconvert('pdf', true);
         });

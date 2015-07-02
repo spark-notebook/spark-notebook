@@ -9735,12 +9735,12 @@ div.output_unrecognized a:hover {
   margin-top: 1em;
 }
 .rendered_html img {
-  display: block;
+  /*display: block;*/
   margin-left: auto;
   margin-right: auto;
 }
 .rendered_html * + img {
-  margin-top: 1em;
+  /*margin-top: 1em;*/
 }
 div.text_cell {
   /* Old browsers */
