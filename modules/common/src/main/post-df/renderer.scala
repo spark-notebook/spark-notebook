@@ -1,16 +1,15 @@
 package notebook.front
 
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{SQLContext, DataFrame}
+
+import scala.reflect.runtime.universe.TypeTag
 
 trait ExtraLowPriorityRenderers {
 
   import widgets._
 
   implicit object dataFrameAsTable extends Renderer[DataFrame] {
-    def render(x: DataFrame) = x.take(1) match {
-      case x if x.isEmpty => widgets.layout(0, Seq(widgets.text("empty data frame")))
-      case _ => display(x)
-    }
+    def render(x: DataFrame) = new DataFrameWidget(x, "consoleDir")
   }
-
 }

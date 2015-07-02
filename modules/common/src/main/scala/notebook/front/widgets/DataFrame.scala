@@ -1,10 +1,11 @@
 package notebook.front.widgets
 
+import scala.reflect.runtime.universe.TypeTag
 import notebook._
 import notebook.front.{DataConnector, SingleConnector,Widget}
 import org.apache.spark.FutureAction
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.{SQLContext, DataFrame}
 import play.Routes
 import play.api.libs.json._
 
@@ -106,5 +107,11 @@ object DataFrameWidget {
     data: DataFrame
   ): DataFrameWidget = {
     new DataFrameWidget(data, "consoleDir")
+  }
+
+  def table[A <: Product : TypeTag](rdd: RDD[A]): DataFrameWidget = {
+    val sqlContext = new SQLContext(rdd.sparkContext)
+    import sqlContext.implicits._
+    table(rdd.toDF())
   }
 }
