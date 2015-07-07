@@ -122,7 +122,8 @@ define(function (require) {
     var data = JSON.stringify({
       ext: options.ext,
       type: options.type,
-      custom: options.custom
+      custom: options.custom,
+      name: options.name||undefined
     });
 
     var settings = {
