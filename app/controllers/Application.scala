@@ -317,11 +317,11 @@ object Application extends Controller {
     custom orElse copyFrom
   }
 
-  def newDirectory(path: String) = {
-    Logger.info("New dir:" + path)
+  def newDirectory(path: String, name:String) = {
+    Logger.info("New dir: " + path)
     val base = new File(config.notebooksDir, path)
-    val parent = base.getParentFile
-    val newDir = new File(parent, "dir")
+    val parent = base
+    val newDir = new File(parent, name)
     newDir.mkdirs()
     Try(Ok(Json.obj("path" → newDir.getAbsolutePath.drop(parent.getAbsolutePath.length))))
   }
@@ -342,7 +342,7 @@ object Application extends Controller {
 
     tryJson.flatMap { json =>
       (json \ "type").as[String] match {
-        case "directory" => newDirectory(path)
+        case "directory" => newDirectory(path, (json \ "name").as[String])
         case "notebook" => newNotebook(path, tryJson)
         case "file" => newFile(path)
       }
