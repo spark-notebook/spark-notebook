@@ -1,5 +1,7 @@
 package notebook.front
 
+import org.apache.spark.sql.DataFrame
+
 import scala.util.Random
 import scala.xml.{NodeSeq, UnprefixedAttribute, Null}
 import play.api.libs.json._
@@ -476,6 +478,10 @@ package object widgets {
         ))
       main
     }
+  }
+
+  def display(data:DataFrame):Widget = {
+    DataFrameWidget.table(data)
   }
 
   def isNumber(obj: Any) = obj.isInstanceOf[Int] || obj.isInstanceOf[Float] || obj.isInstanceOf[Double] || obj.isInstanceOf[Long]
