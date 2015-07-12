@@ -35,6 +35,9 @@ define([
 
     # configure table
     dt = d3.select(canvas)
+      .append "div"
+      .attr
+        class: "df-table-panel"
       .append("table")
       .attr
         class: "df-table"
