@@ -82,7 +82,8 @@ define([
                 that.load_sessions();
             });
             $('#new-folder').click(function(e) {
-                that.contents.new_untitled(that.notebook_path || '', {type: 'directory'})
+                var name = prompt("Directory name:");
+                that.contents.new_untitled(that.notebook_path || '', {type: 'directory', name: name})
                 .then(function(){
                     that.load_list();
                 });
