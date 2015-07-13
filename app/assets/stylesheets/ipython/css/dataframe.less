@@ -1,0 +1,58 @@
+
+
+.df-canvas {
+    max-width: 100%;
+    min-width: 300px;
+    display: inline-block;
+    margin-bottom: 5px;
+    .df-cmd-panel {
+        text-align: right;
+
+        a {
+            text-decoration: none;
+        }
+        input {
+            height: 22px;
+            margin: 0px 5px 0px 5px;
+            width: 30px;
+
+        }
+    }
+
+    .df-table-panel {
+        overflow-x: auto;
+    }
+
+    table.df-table {
+        min-width: 300px;
+        margin-top: 5px;
+        td, th {
+            font-size: 1em;
+            border: 1px solid #cfcfcf;
+            padding: 3px 7px 2px 7px;
+        }
+
+        th {
+            background: #EEE;
+            text-align: left;
+            padding-top: 5px;
+            padding-bottom: 4px;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #f7f7f7;
+        }
+
+        col.integer, col.float, col.double {
+            width: 100px;
+        }
+
+        td.integer, td.float, td.double {
+            text-align: right;
+        }
+    }
+
+    table.disabled {
+        opacity: 0.5;
+    }
+}
