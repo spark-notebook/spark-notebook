@@ -2,6 +2,9 @@ package notebook
 
 import rx.lang.scala.{Observable => RxObservable, Observer => RxObserver, _}
 
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
 /**
  * Author: Ken
  * An observer trait, which is unfortunately lacking in rx.Subscription
@@ -37,4 +40,6 @@ object Observable {
   def noop[T]: Observable[T] = new WrappedObservable[T](RxObservable.never)
 
   def just[T](x: T): Observable[T] = new WrappedObservable[T](RxObservable.just(x))
+
+  def from[T](f: Future[T]): Observable[T] = new WrappedObservable(RxObservable.from(f))
 }
