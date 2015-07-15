@@ -54,8 +54,11 @@ object NBSerializer {
     tpe match {
       case "execute_result" => scalaExecuteResultFormat.reads(js)
       case "stout" => scalaOutputFormat.reads(js)
-      case "pyerr" => scalaErrorFormat.reads(js)
+      case "pyerr" | "error" => scalaErrorFormat.reads(js)
       case "stream" => scalaStreamFormat.reads(js)
+      case x =>
+        Logger.error("Cannot read this output_type: " + x)
+        throw new IllegalStateException("Cannot read this output_type: " + x)
     }
   }
   implicit val outputWrites: Writes[Output] = Writes { (o: Output) =>
@@ -179,6 +182,9 @@ object NBSerializer {
       case "markdown" => markdownCellFormat.reads(js)
       case "raw" => rawCellFormat.reads(js)
       case "heading" => headingCellFormat.reads(js)
+      case x =>
+        Logger.error("Cannot read this cell_type: " + x)
+        throw new IllegalStateException("Cannot read this cell_type: " + x)
     }
   }
   implicit val cellWrites: Writes[Cell] = Writes { (c: Cell) =>
