@@ -74,7 +74,7 @@ class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out) {
       !intp.reporter.hasErrors
     }
     import scala.concurrent.duration._
-    Await.ready(globalFuture, 10 seconds)
+    Await.ready(globalFuture, 1 minute)
     //printWelcome()
     //initializeSpark()
     loadFiles(settings)
