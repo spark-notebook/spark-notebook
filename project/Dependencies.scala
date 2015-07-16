@@ -21,12 +21,20 @@ object Dependencies {
   val akkaRemote = "org.spark-project.akka" %% "akka-remote" % akkaVersion
   val akkaSlf4j = "org.spark-project.akka" %% "akka-slf4j" % akkaVersion
 
-  val defaultScalaVersion = sys.props.getOrElse("scala.version", "2.10.4")
+  val scala_2_1X = "2\\.1([0-9])\\.[0-9]+".r
+  val spark_1_X = "1\\.([0-9]+)\\.([0-9]+)".r
+  val defaultSparkVersion = sys.props.getOrElse("spark.version", "1.4.1")
+  val defaultScalaVersion = sys.props.getOrElse("scala.version", "2.10.4") match {
+    case x@scala_2_1X("0") => x
+    case x@scala_2_1X("1") => defaultSparkVersion match {
+      case spark_1_X("4", "1") => "2.11.6"
+      case spark_1_X(_, _) => x
+    }
+  }
   val breeze = "org.scalanlp" %% "breeze" % "0.10" excludeAll(
     ExclusionRule("junit"),
     ExclusionRule("org.apache.commons", "commons-math3")
     )
-  val defaultSparkVersion = sys.props.getOrElse("spark.version", "1.4.0")
 
   def sparkCore(v: String) = "org.apache.spark" %% "spark-core" % v excludeAll(
     ExclusionRule("org.apache.hadoop"),
@@ -128,7 +136,7 @@ object Dependencies {
   val bokeh = "io.continuum.bokeh" %% "bokeh" % "0.2"
   val wisp = "com.quantifind" %% "wisp" % "0.0.2" excludeAll ExclusionRule("com.google.guava")
   // wisp deps on jackson-module-scala_2.10 v2.4 → guava v15
-  // but spark 1.2 → guava 14.0.1
+  // but spark → guava 14.0.1
   val customJacksonScala = Seq(
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.3" force() excludeAll ExclusionRule("com.google.guava"),
     "com.fasterxml.jackson.core" % "jackson-annotations" % "2.3.3" force() excludeAll ExclusionRule("com.google.guava"),
