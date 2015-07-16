@@ -27,6 +27,8 @@ define([
     L.control.mousePosition().addTo(map) if L.control.mousePosition
 
     updatePoints = (data) =>
+      if _.isEmpty(data)
+        return
       points = _.map(data, (o) -> new L.LatLng(o[options.lat], o[options.lon]))
       bounds = new L.latLngBounds(points[0])
       _.each(points, (p) -> bounds.extend(p))
