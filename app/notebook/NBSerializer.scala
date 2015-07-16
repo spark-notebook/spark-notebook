@@ -35,14 +35,22 @@ object NBSerializer {
 
   implicit val scalaExecuteResultFormat = Json.format[ScalaExecuteResult]
 
-  case class ScalaError(
+  case class PyError(
     name: String,
     output_type: String,
     prompt_number: Int,
     traceback: String
   ) extends Output
 
+  implicit val pyErrorFormat = Json.format[PyError]
+
+  case class ScalaError(
+    ename: String,
+    output_type: String,
+    traceback: List[String]
+  ) extends Output
   implicit val scalaErrorFormat = Json.format[ScalaError]
+
 
   case class ScalaStream(name: String, output_type: String, text: String) extends Output
 
@@ -54,7 +62,8 @@ object NBSerializer {
     tpe match {
       case "execute_result" => scalaExecuteResultFormat.reads(js)
       case "stout" => scalaOutputFormat.reads(js)
-      case "pyerr" | "error" => scalaErrorFormat.reads(js)
+      case "pyerr"  => pyErrorFormat.reads(js)
+      case "error" => scalaErrorFormat.reads(js)
       case "stream" => scalaStreamFormat.reads(js)
       case x =>
         Logger.error("Cannot read this output_type: " + x)
