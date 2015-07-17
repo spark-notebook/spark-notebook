@@ -58,6 +58,12 @@ object Shared {
     }
   )
 
+  val yarnWebProxy: Seq[Def.Setting[_]] = Seq(
+    libraryDependencies <++= (hadoopVersion) { (hv) =>
+      if (!hv.startsWith("1")) List(yarnProxy(hv)) else Nil
+    }
+  )
+
   lazy val sparkSettings: Seq[Def.Setting[_]] = Seq(
     libraryDependencies <++= (sparkVersion, hadoopVersion, jets3tVersion) { (sv, hv, jv) =>
       val jets3tVersion = sys.props.get("jets3t.version") match {
@@ -71,13 +77,12 @@ object Shared {
         sparkYarn(sv),
         sparkSQL(sv),
         hadoopClient(hv),
-        yarnProxy(hv),
         jets3tVersion,
         commonsCodec
       )
       libs
     }
-  ) ++ repl ++ hive
+  ) ++ repl ++ hive ++ yarnWebProxy
 
   lazy val tachyonSettings: Seq[Def.Setting[_]] = {
     def tachyonVersion(
