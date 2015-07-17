@@ -71,6 +71,7 @@ object Shared {
         sparkYarn(sv),
         sparkSQL(sv),
         hadoopClient(hv),
+        yarnProxy(hv),
         jets3tVersion,
         commonsCodec
       )
