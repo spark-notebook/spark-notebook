@@ -86,6 +86,13 @@ object Dependencies {
     ExclusionRule("com.google.guava", "guava")
     )
 
+  def yarnProxy(
+     v: String) = "org.apache.hadoop" % "hadoop-yarn-server-web-proxy" % v excludeAll(
+    ExclusionRule("org.apache.commons", "commons-exec"),
+    ExclusionRule("commons-codec", "commons-codec"),
+    ExclusionRule("com.google.guava", "guava")
+    )
+
   val defaultJets3tVersion = sys.props.getOrElse("jets3t.version", "0.7.1")
 
   def jets3t(jv: Option[String],
