@@ -412,15 +412,15 @@ The port `9000` being already taken by Hadoop (hdfs), you'll need to run it on a
 Hence, the final launch is something like this:
 
 ```
-HADOOP_CONF_DIR=/home/hadoop/conf:/home/hadoop/hive/conf
-EXTRA_CLASSPATH=/home/hadoop/spark/conf:/home/hadoop/conf:/home/hadoop/spark/classpath/emr/*:/home/hadoop/spark/classpath/emrfs/*:/home/hadoop/share/hadoop/common/lib/*:/home/hadoop/share/hadoop/common/lib/hadoop-lzo.jar
+export HADOOP_CONF_DIR=/home/hadoop/conf
+export EXTRA_CLASSPATH=/home/hadoop/share/hadoop/common/lib/hadoop-lzo.jar:/home/hadoop/hive/conf
 ./bin/spark-notebook -Dconfig.file=./conf/application.conf -Dhttp.port=8989
 ```
 
 **NOTE**: it's better to run the notebook in a `nohup` for instance, so that the shell is released and you can quit your ssh connection.
 ```
-HADOOP_CONF_DIR=/home/hadoop/conf:/home/hadoop/hive/conf
-EXTRA_CLASSPATH=/home/hadoop/spark/conf:/home/hadoop/conf:/home/hadoop/spark/classpath/emr/*:/home/hadoop/spark/classpath/emrfs/*:/home/hadoop/share/hadoop/common/lib/*:/home/hadoop/share/hadoop/common/lib/hadoop-lzo.jar
+export HADOOP_CONF_DIR=/home/hadoop/conf
+export EXTRA_CLASSPATH=/home/hadoop/share/hadoop/common/lib/hadoop-lzo.jar:/home/hadoop/hive/conf
 nohup ./bin/spark-notebook -Dconfig.file=./conf/application.conf -Dhttp.port=8989 > nohup.log &
 ```
 
