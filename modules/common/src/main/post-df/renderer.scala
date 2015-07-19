@@ -10,6 +10,6 @@ trait ExtraLowPriorityRenderers {
   import widgets._
 
   implicit object dataFrameAsTable extends Renderer[DataFrame] {
-    def render(x: DataFrame) = new DataFrameWidget(x, "consoleDir")
+    def render(x: DataFrame) = new DataFrameWidget(x, 25, "consoleDir")
   }
 }

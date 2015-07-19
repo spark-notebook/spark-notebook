@@ -1,13 +1,15 @@
 package notebook.front.widgets
 
+import scala.concurrent.{Future, ExecutionContext}
 import scala.reflect.runtime.universe.TypeTag
-import notebook._
-import notebook.front.{DataConnector, SingleConnector,Widget}
-import org.apache.spark.FutureAction
+
+//import org.apache.spark.FutureAction
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SQLContext, DataFrame}
-import play.Routes
 import play.api.libs.json._
+
+import notebook._
+import notebook.front.{DataConnector, SingleConnector,Widget}
 
 /**
  * An abstract view of a dataframe.
@@ -16,7 +18,8 @@ import play.api.libs.json._
  * may inherit this trait to provide a specific rendering.
  */
 trait DataFrameView {
-  val data: DataFrame
+  def data: DataFrame
+  def pageSize:Int
 
   /* paging support */
   val partitionIndexConnector = new SingleConnector[Int]() {
@@ -24,7 +27,7 @@ trait DataFrameView {
   }
 
   partitionIndexConnector.currentData --> Connection.fromObserver(index => {
-    if(partitions.indices contains index) {
+    if (index < pages) {
       select(index)
     }
   })
@@ -34,42 +37,28 @@ trait DataFrameView {
     override implicit def singleCodec: Codec[JsValue, JsValue] = JsonCodec.idCodec
   }
 
-  lazy val partitions: Array[org.apache.spark.Partition] = json.partitions
-
-  private lazy val json: RDD[String] = data.toJSON
-
-  private var currentJob: Option[FutureAction[Seq[JsValue]]] = None
+  private lazy val json: RDD[(String, Long)] = data.toJSON.zipWithIndex
+  val count = json.count
+  val pages = (count / pageSize) + (if (count.toDouble / pageSize == count / pageSize) 0 else 1)
 
   private def select(partitionIndex: Int): Unit = {
-
-    if(!(partitions.indices contains partitionIndex))
-      throw new IllegalArgumentException(s"index $partitionIndex out of range ${partitions.indices}")
-
-    val sc = data.sqlContext.sparkContext
-
-    synchronized {
-      // cancel the active job if any
-      currentJob match {
-        case Some(job) => if(!job.isCompleted) job.cancel()
-        case None =>
-      }
-
-      // schedule a Spark job to collect the given partition
-      var result: Seq[JsValue] = null
-      val job = sc.submitJob[String, Array[String], Seq[JsValue]](
-        json, _.toArray, Seq(partitionIndex),
-        (index, data) => result = data.map { row:String => Json.parse(row)},
-        result)
-      currentJob = Some(job)
-
-      // connect to the job results (which are emitted asynchronously)
-      dataConnector.currentData <-- Connection.fromObservable(Observable.from(job))
+    val ps = pageSize
+    //import ExecutionContext.Implicits.global
+    val job = Future.successful {
+      json.filter{ case (k,i) => i >= (partitionIndex*ps) }
+          .take(ps)
+          .map(_._1)
+          .map(Json.parse)
+          .toSeq
     }
+    // connect to the job results (which are emitted asynchronously)
+    dataConnector.currentData <-- Connection.fromObservable(Observable.from(job))
   }
 }
 
 class DataFrameWidget(
   override val data: DataFrame,
+  override val pageSize: Int = 25,
   extension: String
 )
   extends Widget with DataFrameView {
@@ -93,7 +82,7 @@ class DataFrameWidget(
       Json.obj(
         "dataId" -> dataConnector.dataConnection.id,
         "partitionIndexId" -> partitionIndexConnector.dataConnection.id,
-        "numPartitions" -> partitions.length,
+        "numPartitions" -> pages,
         "dfSchema" -> Json.parse(data.schema.json)
       )
       )}
@@ -104,14 +93,18 @@ class DataFrameWidget(
 object DataFrameWidget {
 
   def table(
-    data: DataFrame
+    data: DataFrame,
+    pageSize: Int
   ): DataFrameWidget = {
-    new DataFrameWidget(data, "consoleDir")
+    new DataFrameWidget(data, pageSize, "consoleDir")
   }
 
-  def table[A <: Product : TypeTag](rdd: RDD[A]): DataFrameWidget = {
+  def table[A <: Product : TypeTag](
+    rdd: RDD[A],
+    pageSize: Int
+  ): DataFrameWidget = {
     val sqlContext = new SQLContext(rdd.sparkContext)
     import sqlContext.implicits._
-    table(rdd.toDF())
+    table(rdd.toDF(), pageSize)
   }
 }
