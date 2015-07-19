@@ -37,7 +37,7 @@ trait DataFrameView {
     override implicit def singleCodec: Codec[JsValue, JsValue] = JsonCodec.idCodec
   }
 
-  private lazy val json: RDD[(String, Long)] = data.toJSON.zipWithIndex
+  private lazy val json: RDD[(String, Long)] = data.toJSON.zipWithIndex.cache
   val count = json.count
   val pages = (count / pageSize) + (if (count.toDouble / pageSize == count / pageSize) 0 else 1)
 
