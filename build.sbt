@@ -133,6 +133,9 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).ena
   .dependsOn(tachyon, subprocess, observable, common, spark, kernel)
   .settings(sharedSettings: _*)
   .settings(
+    bashScriptExtraDefines <+= (version, scalaBinaryVersion, scalaVersion, sparkVersion, hadoopVersion, withHive, withParquet) map { (v, sbv, sv, pv, hv, wh, wp) =>
+      """export ADD_JARS="${lib_dir}/$(ls ${lib_dir} | grep common.common | head)""""
+    },
     mappings in Universal ++= directory("notebooks"),
     mappings in Docker ++= directory("notebooks")
   )

@@ -42,17 +42,22 @@ trait DataFrameView {
   val pages = (count / pageSize) + (if (count.toDouble / pageSize == count / pageSize) 0 else 1)
 
   private def select(partitionIndex: Int): Unit = {
-    val ps = pageSize
-    //import ExecutionContext.Implicits.global
-    val job = Future.successful {
-      json.filter{ case (k,i) => i >= (partitionIndex*ps) }
-          .take(ps)
-          .map(_._1)
-          .map(Json.parse)
-          .toSeq
+    val scope = new java.io.Serializable {
+      val pi = partitionIndex
+      val ps = pageSize
+      val skipper = (ki:(String, Long)) => ki._2 >= (pi*ps)
+      val _1 = (ki:(String, Long)) => ki._1
+      //import ExecutionContext.Implicits.global
+      val job = Future.successful {
+        json.filter(skipper)
+            .take(ps)
+            .map(_1)
+            .map(Json.parse)
+            .toSeq
+      }
     }
     // connect to the job results (which are emitted asynchronously)
-    dataConnector.currentData <-- Connection.fromObservable(Observable.from(job))
+    dataConnector.currentData <-- Connection.fromObservable(Observable.from(scope.job))
   }
 }
 
