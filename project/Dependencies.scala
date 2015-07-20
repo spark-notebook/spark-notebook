@@ -103,7 +103,7 @@ object Dependencies {
         case _ => defaultJets3tVersion
       }
     }
-    "net.java.dev.jets3t" % "jets3t" % v force()
+    "net.java.dev.jets3t" % "jets3t" % v force() excludeAll ExclusionRule()
   }
 
   val commonsIO = "org.apache.commons" % "commons-io" % "1.3.2"
