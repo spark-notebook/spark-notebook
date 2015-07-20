@@ -231,10 +231,10 @@ class ReplCalculator(
               (`text/html`,
                 s"""
                    |//updating deps
-                   |jars = ($newJarList ::: jars.toList).distinct.toArray
+                   |globalScope.jars = ($newJarList ::: globalScope.jars.toList).distinct.toArray
                    |//restarting spark
                    |reset()
-                   |jars.toList
+                   |globalScope.jars.toList
                  """.stripMargin
               )
             case TFailure(ex) =>
@@ -258,10 +258,10 @@ class ReplCalculator(
           (`text/html`,
             s"""
               |//updating deps
-              |jars = (${ jars.mkString("List(\"", "\",\"", "\")") } ::: jars.toList).distinct.toArray
+              |globalScope.jars = (${ jars.mkString("List(\"", "\",\"", "\")") } ::: globalScope.jars.toList).distinct.toArray
               |//restarting spark
               |reset()
-              |jars.toList
+              |globalScope.jars.toList
             """.stripMargin
           )
 
