@@ -21,7 +21,7 @@ import org.apache.commons.lang3.SystemUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, FileUtil, Path}
 import org.apache.log4j.PropertyConfigurator
-import org.eclipse.jetty.util.MultiException
+
 import org.json4s._
 
 import org.apache.spark._

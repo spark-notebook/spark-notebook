@@ -16,68 +16,197 @@
     "customSparkConf" : null
   },
   "cells" : [ {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# Some WISP plot examples"
+  }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "import notebook.front.third.wisp._",
     "outputs" : [ ]
   }, {
-    "metadata" : {
-      "trusted" : true,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "Plot(Seq(SummarySeries((1 to 10) zip (10 to 100 by 10), \"line\")))",
-    "outputs" : [ ]
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Plot list of pairs"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Generate two list of data"
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "Plot(Seq(SummarySeries((1 to 10) zip (10 to 100 by 10), \"bar\")))",
+    "source" : "val twoDatasets =  Seq(\n  (1 to 10) zip (10 to 100 by 10), \n  (1 to 10) zip ((10 to 100 by 10) reverse)\n)\n()",
     "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Create the **representation** for the plotting system using WISP"
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "Plot(Seq(SummarySeries((1 to 10) zip (10 to 100 by 10), \"column\")))",
+    "source" : "def plotRepresentations(plotType:String, second:Option[String]=None) = Seq(\n  Pairs((1 to 10) zip (10 to 100 by 10), plotType), \n  Pairs((1 to 10) zip ((10 to 100 by 10) reverse), second.getOrElse(plotType))\n)\n()",
     "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### A line"
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "import com.quantifind.charts.highcharts.Axis\n\nPlot(Seq(SummarySeries((0 to 9) zip (10 to 100 by 10), \"area\")),\n     xCat = Some(Seq(\"a\", \"b\", \"c\", \"d\", \"e\", \"f\", \"g\", \"h\", \"i\", \"j\"))\n)",
+    "source" : "Plot(plotRepresentations(\"line\"))",
     "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### A Bar plot"
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "Plot(Seq(SummarySeries((1 to 10) zip (10 to 100 by 10), \"pie\")))",
+    "source" : "Plot(plotRepresentations(\"bar\"))",
     "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "#### A regular stack bar with some categories  (labels)"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "We add a label list for **each** series."
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val p = Plot(Seq(SummarySeries((1 to 10) zip (10 to 100 by 10), \"pie\")))",
+    "source" : "import com.quantifind.charts.highcharts.Axis\n\nPlot(plotRepresentations(\"column\"),\n    xCat = Seq(\n      Seq(\"\", \"a\", \"b\", \"c\", \"d\", \"e\", \"f\", \"g\", \"h\", \"i\", \"j\"),\n      Seq(\"\", \"k\", \"l\", \"m\", \"n\", \"o\", \"p\", \"q\", \"r\", \"s\", \"t\")\n    )\n)",
     "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### An area"
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "import scala.concurrent.ExecutionContext.Implicits.global\nimport scala.concurrent.Future\nFuture {\n  Thread.sleep(3*1000)\n  p(Seq(SummarySeries((10 to 100) zip scala.util.Random.shuffle[Int, Seq]((100 to 1000 by 100).toSeq), \"pie\")))\n}",
+    "source" : "Plot(Seq(Pairs((0 to 9) zip (10 to 100 by 10), \"area\")))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### A pie"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "Plot(Seq(Pairs((1 to 10) zip (10 to 100 by 10), \"pie\")))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### A pie (the others too) is also reactive → a future can update it"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val p = Plot(Seq(Pairs((1 to 10) zip (10 to 100 by 10), \"pie\")))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Wait for it..."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import scala.concurrent.ExecutionContext.Implicits.global\nimport scala.concurrent.Future\nFuture {\n  Thread.sleep(3*1000)\n  p(Seq(Pairs((10 to 100) zip scala.util.Random.shuffle[Int, Seq]((100 to 1000 by 100).toSeq), \"pie\")))\n}",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### A BoxPlot"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "This will use a specific type `com.quantifind.charts.highcharts.BoxplotData` that will define the _letter values_."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "/*\npakage com.quantifind.charts.highcharts\ncase class BoxplotData[T: Numeric](\n                                  x: Option[Any], // TODO x type\n                                  low: T,\n                                  q1: T,\n                                  median: T,\n                                  q3: T,\n                                  high: T\n                                )\n*/\nval p = Plot(Seq(\n  Box((1d to 10d by 0.5), (i:Double) => com.quantifind.charts.highcharts.BoxplotData(None, 0.5, 0.75, i, i+3, 2*i))\n))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Use Highchart directly"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "**Note**: Using the `PlotH` constructor → mind the **H**."
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Create an Histogram"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "PlotH(com.quantifind.charts.highcharts.Histogram.histogram(Seq((\"0-10\", 2), (\"10-20\", 10), (\"20-30\", 5))))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Create multiple timeseries"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Plotting 2 timeseries in the same frame range, but second axis is shifted;\n\nAlso the Chart.Zoom with only act in the X direction."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import com.quantifind.charts.highcharts._\nimport com.quantifind.charts.highcharts.Highchart._\nval now = System.currentTimeMillis\nval ts1 = List.tabulate(60)(s => (now+s*1000, scala.util.Random.nextDouble * 10))\nval ts2 = List.tabulate(60)(s => (60*1000+now+s*1000, 5 + scala.util.Random.nextDouble * 10))\nPlotH(Highchart(Seq(\n                  Pairs(ts1, \"line\").series,\n                  Pairs(ts2, \"line\").series\n                ), \n                chart = Chart(zoomType = Zoom.x), \n                xAxis = Some(\n                  Array(\n                    Axis(labels = Some(AxisLabel(rotation = Some(-45))), \n                         dateTimeLabelFormats = Some(DateTimeFormats()),\n                         axisType=Some(AxisType.datetime)\n                        ),\n                    Axis(labels = Some(AxisLabel(rotation = Some(45))), \n                         dateTimeLabelFormats = Some(DateTimeFormats()),\n                         axisType=Some(AxisType.datetime)\n                        )\n                  )\n                ), \n                yAxis = None\n               ),\n      sizes=(800, 550)\n)",
     "outputs" : [ ]
   } ],
   "nbformat" : 4

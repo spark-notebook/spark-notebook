@@ -30,6 +30,16 @@ object Shared {
     libraryDependencies += guava
   )
 
+  val wispSettings: Seq[Def.Setting[_]] = Seq(
+    libraryDependencies += wispDepSumac,
+    unmanagedJars in Compile ++= (
+      if (scalaVersion.value.startsWith("2.10"))
+        Seq((baseDirectory in "sparkNotebook").value / "temp" / "wisp_2.10-0.0.5.jar")
+      else
+        Seq((baseDirectory in "sparkNotebook").value / "temp" / "wisp_2.11-0.0.5.jar")
+    )
+  )
+
   val repl: Seq[Def.Setting[_]] = {
     val lib = libraryDependencies <++= (sparkVersion, hadoopVersion, jets3tVersion) {
       (sv, hv, jv) => if (sv != "1.2.0") Seq(sparkRepl(sv)) else Seq.empty
