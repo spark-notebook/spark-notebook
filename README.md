@@ -82,6 +82,7 @@ Spark Notebook
     - [Add `remote-repo`](#add-remote-repo)
       - [`remote-repo` with authentication](#remote-repo-with-authentication)
     - [Download and add dependencies](#download-and-add-dependencies)
+      - [Local only variant `:ldp`](#local-only-variant-ldp)
 - [CUSTOMIZE](#customize)
   - [Logo](#logo)
   - [Project Name](#project-name)
@@ -968,7 +969,7 @@ Some repos (on S3 for instance) require authentication, for this you can add the
 
 
 ### Download and add dependencies
-So to add dependencies based on the context that has been set using the above contexts can be done using `:dp`.
+Adding dependencies based on the context that has been set using the above contexts (repos, ...) can be done using `:dp`.
 
 ```
 :dp
@@ -990,7 +991,6 @@ The jars will be fetched in a temporary repository (that can be hardcoded using 
 
 Then they'll be added to the Spark's jars property, before restarting the context.
 
-
 For example, if you want to use [ADAM](https://github.com/bigdatagenomics/adam), all you need to do is:
 ```
 :dp org.bdgenomics.adam % adam-apis % 0.16.0
@@ -1003,6 +1003,9 @@ For example, if you want to use [ADAM](https://github.com/bigdatagenomics/adam),
 In live, you can check the notebook named `Update classpath and Spark's jars`, which looks like this:
 
 ![Spark Jars](https://raw.github.com/andypetrella/spark-notebook/master/images/spark-jars.png)
+
+#### Local only variant `:ldp`
+However, if you only want to update the local path, and not the `spark.jars` configuration (to prevent them to be sent over the cluster), you can simply use: `:ldp` instead.
 
 # CUSTOMIZE
 There are two ways you can customize your spark notebook.
