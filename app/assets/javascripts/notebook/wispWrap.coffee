@@ -3,7 +3,8 @@ define([
   'observable'
   'knockout'
   'highcharts'
-], ($, Observable, ko, highcharts) ->
+  'highchartsMore'
+], ($, Observable, ko, highcharts, hmore) ->
   (dataO, container, options) ->
     options = options || {}
     w = options.width || "400px"
