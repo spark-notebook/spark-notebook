@@ -131,6 +131,7 @@ Email: [spark-notebook-user@googlegroups.com](mailto:spark-notebook-user@googleg
 |            CloudPhysics               | ![CloudPhysics](https://www.cloudphysics.com/static/uploads/2014/06/3color_bug_lg.png)   | [website](http://www.cloudphysics.com)      | DATA-DRIVEN INSIGHTS FOR SMARTER IT                 | 
 | Aliyun | ![Alibaba - Aliyun ECS](http://gtms02.alicdn.com/tps/i2/T1J0xIFMteXXX4dCTl-220-72.png) | [product](http://market.aliyun.com/products/56014009/jxsc000194.html?spm=5176.900004.4.1.WGc3Ei) | Spark runtime environment on ECS and management tool of Spark Cluster running on Aliyun ECS  |
 | EMBL European Bioinformatics Institute | ![EMBL - EBI](http://www.ebi.ac.uk/miriam/static/main/img/EBI_logo.png) | [website](http://www.ebi.ac.uk/) | EMBL-EBI provides freely available data from life science experiments, performs basic research in computational biology and offers an extensive user training programme, supporting researchers in academia and industry.  |
+| Metail | ![Metail](http://metail.wpengine.com/wp-content/uploads/2013/11/Metail_Logo1.png) | [website](http://metail.com/) | The best body shape and garment fit company in the world. To create and empower everyone’s online body identity.|
 
 
 # Launch
