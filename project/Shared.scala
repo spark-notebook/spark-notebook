@@ -75,11 +75,13 @@ object Shared {
   )
 
   lazy val sparkSettings: Seq[Def.Setting[_]] = Seq(
-    libraryDependencies <++= (sparkVersion, hadoopVersion, jets3tVersion) { (sv, hv, jv) =>
+    libraryDependencies <++= (scalaVersion, sparkVersion, hadoopVersion, jets3tVersion) { (v, sv, hv, jv) =>
       val jets3tVersion = sys.props.get("jets3t.version") match {
         case Some(jv) => jets3t(Some(jv), None)
         case _ => jets3t(None, Some(hv))
       }
+
+      val jettyVersion = "8.1.14.v20131031"
 
       val libs = Seq(
         breeze,
@@ -89,7 +91,23 @@ object Shared {
         hadoopClient(hv),
         jets3tVersion,
         commonsCodec
-      )
+      ) ++
+          (
+            if (!v.startsWith("2.10")) {
+              // in 2.11
+              //Boot.scala → HttpServer → eclipse
+              // eclipse → provided boohooo :'-(
+              Seq(
+                "org.eclipse.jetty" % "jetty-http"         % jettyVersion,
+                "org.eclipse.jetty" % "jetty-continuation" % jettyVersion,
+                "org.eclipse.jetty" % "jetty-servlet"      % jettyVersion,
+                "org.eclipse.jetty" % "jetty-util"         % jettyVersion,
+                "org.eclipse.jetty" % "jetty-security"     % jettyVersion,
+                "org.eclipse.jetty" % "jetty-plus"         % jettyVersion,
+                "org.eclipse.jetty" % "jetty-server"       % jettyVersion
+              )
+            } else Nil
+          )
       libs
     }
   ) ++ repl ++ hive ++ yarnWebProxy
