@@ -43,7 +43,7 @@ dockerCommands ++= Seq(
   Cmd("USER", (daemonUser in Docker).value)
 )
 
-dockerExposedVolumes ++= Seq("/opt/docker/notebooks", "/opt/docker/logs")
+dockerExposedVolumes ++= Seq("/opt/docker", "/opt/docker/notebooks", "/opt/docker/logs")
 
 dockerExposedPorts ++= Seq(9000, 9443) //Docker
 
