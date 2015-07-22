@@ -319,6 +319,7 @@ object Application extends Controller {
       (x \ k) match {
         case j: JsUndefined => Failure(new IllegalArgumentException("No " + k))
         case JsNull => init.map(x => Success(x)).getOrElse(Failure(new IllegalStateException("Got JsNull ")))
+        case j: JsLookupResult if j.toOption.isEmpty => Success(init)
         case o if m.runtimeClass == o.getClass => Success(o.asInstanceOf[T])
         case x => Failure(new IllegalArgumentException("Bad type: " + x))
       }

@@ -56,9 +56,9 @@ class WebSocketKernelActor(
       val content = json \ "content"
       val channel = json \ "channel"
 
-      msgType match {
+      msgType.get match {
         case JsString("kernel_info_request") =>
-          ws.send(header, session_id, "info", "shell",
+          ws.send(header.get, session_id, "info", "shell",
             Json.obj(
               "language_info" -> Json.obj(
                 "name" → "scala",
@@ -71,18 +71,18 @@ class WebSocketKernelActor(
         case JsString("interrupt_request") =>
           calcService.calcActor ! InterruptCalculator
         case JsString("execute_request") =>
-          val JsString(code) = content \ "code"
+          val JsString(code) = (content \ "code").get
           val execCounter = executionCounter.incrementAndGet()
-          calcService.calcActor ! SessionRequest(header, session, ExecuteRequest(execCounter, code))
+          calcService.calcActor ! SessionRequest(header.get, session.get, ExecuteRequest(execCounter, code))
         case JsString("complete_request") =>
-          val JsString(line) = content \ "code"
-          val JsNumber(cursorPos) = content \ "cursor_pos"
-          calcService.calcActor ! SessionRequest(header, session, CompletionRequest(line, cursorPos.toInt))
+          val JsString(line) = (content \ "code").get
+          val JsNumber(cursorPos) = (content \ "cursor_pos").get
+          calcService.calcActor ! SessionRequest(header.get, session.get, CompletionRequest(line, cursorPos.toInt))
         case JsString("inspect_request") =>
-          val JsString(code) = content \ "code"
-          val JsNumber(position) = content \ "cursor_pos"
-          val JsNumber(detailLevel) = content \ "detail_level" //0,1,2,3
-          calcService.calcActor ! SessionRequest(header, session, ObjectInfoRequest(code, position.toInt))
+          val JsString(code) = (content \ "code").get
+          val JsNumber(position) = (content \ "cursor_pos").get
+          val JsNumber(detailLevel) = (content \ "detail_level").get //0,1,2,3
+          calcService.calcActor ! SessionRequest(header.get, session.get, ObjectInfoRequest(code, position.toInt))
         case x => log.warning("Unrecognized websocket message: " + json)
       }
   }
