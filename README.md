@@ -112,7 +112,7 @@ There are two different mailing lists, each aiming to specific discussions:
 
 #### Spark Notebook Dev
 
-Then [spark-notebook-dev](https://groups.google.com/forum/?hl=fr#!forum/spark-notebook-dev) mailing list for all threads regarding implementation, architecture, features and what not related to fix or enhance the project.
+The [spark-notebook-dev](https://groups.google.com/forum/?hl=fr#!forum/spark-notebook-dev) mailing list for all threads regarding implementation, architecture, features and what not related to fix or enhance the project.
 
 Email: [spark-notebook-dev@googlegroups.com](mailto:spark-notebook-dev@googlegroups.com).
 
