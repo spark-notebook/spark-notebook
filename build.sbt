@@ -9,7 +9,7 @@ name := "spark-notebook"
 scalaVersion := defaultScalaVersion
 
 version in ThisBuild <<= (scalaVersion, sparkVersion, hadoopVersion, withHive, withParquet) { (sc, sv, hv, h, p) =>
-  s"0.6.1-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "") + (if (p) "-with-parquet" else "")
+  s"0.6.0-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "") + (if (p) "-with-parquet" else "")
 }
 
 maintainer := "Andy Petrella" //Docker
@@ -39,8 +39,7 @@ dockerCommands ++= Seq(
   Cmd("RUN", "/usr/bin/apt-get -y update --fix-missing"),
   Cmd("RUN", s"/usr/bin/apt-get -y install mesos=$mesosVersion-1.0.ubuntu1404"), //ubuntu 14.04 is base for java:latest → https://github.com/dockerfile/ubuntu/blob/master/Dockerfile
   Cmd("ENV", s"MESOS_JAVA_NATIVE_LIBRARY /usr/local/lib/libmesos-$mesosVersion.so"),
-  Cmd("ENV", s"MESOS_LOG_DIR /var/log/mesos"),
-  Cmd("USER", (daemonUser in Docker).value)
+  Cmd("ENV", s"MESOS_LOG_DIR /var/log/mesos")
 )
 
 dockerExposedVolumes ++= Seq("/opt/docker/notebooks", "/opt/docker/logs")
