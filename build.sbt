@@ -42,7 +42,7 @@ dockerCommands ++= Seq(
   Cmd("ENV", s"MESOS_LOG_DIR /var/log/mesos")
 )
 
-dockerExposedVolumes ++= Seq("/opt/docker/notebooks", "/opt/docker/logs")
+dockerExposedVolumes ++= Seq("/opt/docker", "/opt/docker/notebooks", "/opt/docker/logs")
 
 dockerExposedPorts ++= Seq(9000, 9443) //Docker
 
