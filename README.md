@@ -703,13 +703,13 @@ An embed Tachyon local cluster will be started for you automatically.
 
 Hence, if you wanna use this feature a bit, we'd recommend to increase the memory allocated to the spark-notebook server:
 ```
-sbt -J-Xms1024m -J-Xms5000m run
+sbt -J-Xms1024m -J-Xmx5000m run
 ```
 
 Or when using a distro.
 
 ```
-./bin/spark-notebook -J-Xms1024m -J-Xms5000m 
+./bin/spark-notebook -J-Xms1024m -J-Xmx5000m 
 ```
 
 ### Check using the UI
