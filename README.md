@@ -13,6 +13,9 @@ Spark Notebook
     - [Spark Notebook Dev](#spark-notebook-dev)
     - [Spark Notebook User](#spark-notebook-user)
 - [In the wild](#in-the-wild)
+  - [Testimonials](#testimonials)
+    - [Skymind - The Deeplearning4j](#skymind---the-deeplearning4j)
+  - [Adopters](#adopters)
 - [Launch](#launch)
   - [Using a release](#using-a-release)
     - [Requirements](#requirements)
@@ -130,6 +133,12 @@ Email: [spark-notebook-user@googlegroups.com](mailto:spark-notebook-user@googleg
 
 
 # In the wild
+## Testimonials
+### Skymind - The [Deeplearning4j](http://Deeplearning4j.org)
+
+> Spark Notebook gives us a clean, useful way to mix code and prose when we demo and explain our tech to customers. The Spark ecosystem needed this.
+
+## Adopters
 
 |                 Name                  |                                        Logo                                              |                     URL                     |              Description                            |
 |---------------------------------------|------------------------------------------------------------------------------------------|---------------------------------------------|-----------------------------------------------------|
@@ -140,6 +149,7 @@ Email: [spark-notebook-user@googlegroups.com](mailto:spark-notebook-user@googleg
 | EMBL European Bioinformatics Institute | ![EMBL - EBI](http://www.ebi.ac.uk/miriam/static/main/img/EBI_logo.png) | [website](http://www.ebi.ac.uk/) | EMBL-EBI provides freely available data from life science experiments, performs basic research in computational biology and offers an extensive user training programme, supporting researchers in academia and industry.  |
 | Metail | ![Metail](http://metail.wpengine.com/wp-content/uploads/2013/11/Metail_Logo1.png) | [website](http://metail.com/) | The best body shape and garment fit company in the world. To create and empower everyone’s online body identity.|
 | kt NexR | ![kt NexR](http://ktnexr.com/images/main/kt_h_logo.jpg) | [website](http://ktnexr.com)| the kt NexR is one of the leading BigData company in the Korea from 2007. |
+| Skymind | ![Skymind](http://skymind.io/wp-content/uploads/2015/02/logo.png) | [website](http://www.skymind.io)| At Skymind, we’re tackling some of the most advanced problems in data analysis and machine intelligence. We offer start-of-the-art, flexible, scalable deep learning for industry.. |
 
 # Launch
 
