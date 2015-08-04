@@ -59,9 +59,9 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config: Config,
 
   def vmArgs: List[String] = if (config.hasPath("vmArgs")) config.getStringList("vmArgs").toList else Nil
 
-  def classPath: IndexedSeq[String] = defaultClassPath
+  def classPath: IndexedSeq[String] = if (config.hasPath("classpath")) config.getStringList("classpath").toList else Nil
 
-  def classPathString = classPath.mkString(File.pathSeparator)
+  def classPathString = (defaultClassPath ++ classPath).mkString(File.pathSeparator)
 
   def jvmArgs = {
     val builder = IndexedSeq.newBuilder[String]
