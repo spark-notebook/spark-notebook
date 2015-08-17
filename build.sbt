@@ -61,7 +61,6 @@ javaOptions in ThisBuild ++= Seq("-Xmx512M", "-XX:MaxPermSize=128M")
 
 resolvers in ThisBuild ++= Seq(
   Resolver.mavenLocal,
-  Resolver.typesafeRepo("releases"),
   Resolver.sonatypeRepo("releases"),
   Resolver.typesafeIvyRepo("releases"),
   Resolver.typesafeIvyRepo("snapshots"),
@@ -118,7 +117,8 @@ libraryDependencies ++= List(
   //scala stuffs
   "org.scala-lang" % "scala-library" % defaultScalaVersion,
   "org.scala-lang" % "scala-reflect" % defaultScalaVersion,
-  "org.scala-lang" % "scala-compiler" % defaultScalaVersion
+  "org.scala-lang" % "scala-compiler" % defaultScalaVersion,
+  ammonite
 )
 
 //for aether
@@ -187,10 +187,10 @@ lazy val common = Project(id = "common", base = file("modules/common"))
     ), // ++ customJacksonScala
     unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value),
     unmanagedSourceDirectories in Compile +=
-      (sourceDirectory in Compile).value / ((sparkVersion.value.takeWhile(_ != '-').split("\\.").toList match {
+      (sourceDirectory in Compile).value / (sparkVersion.value.takeWhile(_ != '-').split("\\.").toList match {
         case "1"::x::_ if x.toInt < 3 => "pre-df"
         case x                        => "post-df"
-      }))
+      })
   )
   .settings(
     wispSettings
