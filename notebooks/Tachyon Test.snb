@@ -131,7 +131,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val rdd = sparkContext.textFile(dataFile).cache",
+    "source" : "val rdd = sparkContext.textFile(\"file://\" + dataFile).cache",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -165,7 +165,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "import org.apache.spark.storage.StorageLevel._\nval rdd2 = sparkContext.textFile(dataFile).persist(OFF_HEAP)",
+    "source" : "import org.apache.spark.storage.StorageLevel._\nval rdd2 = sparkContext.textFile(\"file://\" + dataFile).persist(OFF_HEAP)",
     "outputs" : [ ]
   }, {
     "metadata" : { },
