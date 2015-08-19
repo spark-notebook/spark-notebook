@@ -89,19 +89,17 @@ scalacOptions ++= Seq("-Xmax-classfile-name", "100")
 
 scriptClasspath := Seq("*")
 
+scriptClasspath in batScriptReplacements := Seq("*")
+
+batScriptExtraDefines += {
+  "set \"APP_CLASSPATH=%HADOOP_CONF_DIR%;%EXTRA_CLASSPATH%;%APP_CLASSPATH%\""
+}
+
 val ClasspathPattern = "declare -r app_classpath=\"(.*)\"\n".r
 
 bashScriptDefines := bashScriptDefines.value.map {
   case ClasspathPattern(classpath) =>
-    def ve(s:String) = if (sys.props("os.name").startsWith("Windows")) {
-      s"%$s%"
-    } else {
-      "${"+s+"}"
-    }
-    val hadoopVE = ve("HADOOP_CONF_DIR")
-    val extraCPVE = ve("EXTRA_CLASSPATH")
-    val sep = java.io.File.pathSeparator
-    s"""declare -r app_classpath="${hadoopVE}${sep}${extraCPVE}${sep}${classpath}"\n"""
+    s"""declare -r app_classpath="$${HADOOP_CONF_DIR}:$${EXTRA_CLASSPATH}:${classpath}"\n"""
   case _@entry => entry
 }
 
