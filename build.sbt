@@ -18,7 +18,10 @@ enablePlugins(UniversalPlugin)
 
 enablePlugins(DockerPlugin)
 
+net.virtualvoid.sbt.graph.Plugin.graphSettings
+
 import com.typesafe.sbt.SbtNativePackager.autoImport.NativePackagerHelper._
+
 import com.typesafe.sbt.packager.docker._
 
 // java image based on ubuntu trusty rather than debian jessie (to use mesosphere distros)
