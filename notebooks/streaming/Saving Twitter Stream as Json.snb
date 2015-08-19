@@ -35,18 +35,7 @@
     },
     "cell_type" : "code",
     "source" : ":local-repo /tmp/repo",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res2: String = Repo changed to /tmp/repo!\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/plain" : "Repo changed to /tmp/repo!"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 1
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -59,18 +48,7 @@
     },
     "cell_type" : "code",
     "source" : ":dp org.apache.spark % spark-streaming_2.10 % 1.4.0\norg.apache.spark % spark-streaming-twitter_2.10 % 1.4.0\ncom.google.code.gson % gson % 2.3\n- org.apache.spark % spark-core_2.10 % _\n- org.apache.hadoop % _ % _",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "jars: Array[String] = [Ljava.lang.String;@3bb3900f\nres5: List[String] = List(/tmp/repo/cache/com.google.code.gson/gson/jars/gson-2.3.jar, /home/noootsab/.m2/repository/org/scala-lang/scala-library/2.10.4/scala-library-2.10.4.jar, /home/noootsab/.m2/repository/org/spark-project/spark/unused/1.0.0/unused-1.0.0.jar, /home/noootsab/.m2/repository/org/twitter4j/twitter4j-core/3.0.3/twitter4j-core-3.0.3.jar, /home/noootsab/.m2/repository/org/apache/spark/spark-streaming-twitter_2.10/1.4.0/spark-streaming-twitter_2.10-1.4.0.jar, /home/noootsab/.m2/repository/org/apache/spark/spark-streaming_2.10/1.4.0/spark-streaming_2.10-1.4.0.jar, /home/noootsab/.m2/repository/org/twitter4j/twitter4j-stream/3.0.3/twitter4j-stream-3.0.3.jar)\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<div class=\"container-fluid\"><div><div class=\"col-md-12\"><div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anonb1a5128e73728207c3a694d52438d387&quot;,&quot;dataInit&quot;:[{&quot;string value&quot;:&quot;/tmp/repo/cache/com.google.code.gson/gson/jars/gson-2.3.jar&quot;},{&quot;string value&quot;:&quot;/home/noootsab/.m2/repository/org/scala-lang/scala-library/2.10.4/scala-library-2.10.4.jar&quot;},{&quot;string value&quot;:&quot;/home/noootsab/.m2/repository/org/spark-project/spark/unused/1.0.0/unused-1.0.0.jar&quot;},{&quot;string value&quot;:&quot;/home/noootsab/.m2/repository/org/twitter4j/twitter4j-core/3.0.3/twitter4j-core-3.0.3.jar&quot;},{&quot;string value&quot;:&quot;/home/noootsab/.m2/repository/org/apache/spark/spark-streaming-twitter_2.10/1.4.0/spark-streaming-twitter_2.10-1.4.0.jar&quot;},{&quot;string value&quot;:&quot;/home/noootsab/.m2/repository/org/apache/spark/spark-streaming_2.10/1.4.0/spark-streaming_2.10-1.4.0.jar&quot;},{&quot;string value&quot;:&quot;/home/noootsab/.m2/repository/org/twitter4j/twitter4j-stream/3.0.3/twitter4j-stream-3.0.3.jar&quot;}],&quot;genId&quot;:&quot;1129330278&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tableChart'], \n      function(playground, _magictableChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictableChart,\n    \"o\": {\"headers\":[\"string value\"],\"nrow\":7,\"shown\":7,\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div></div></div></div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 2
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -87,18 +65,7 @@
     },
     "cell_type" : "code",
     "source" : "def $(s:String) = sys.env(s)\nSystem.setProperty(\"twitter4j.oauth.consumerKey\", $(\"TWITTER_CONSUMER_KEY\"))\nSystem.setProperty(\"twitter4j.oauth.consumerSecret\", $(\"TWITTER_CONSUMER_SECRET\"))\nSystem.setProperty(\"twitter4j.oauth.accessToken\", $(\"TWITTER_ACCESS_TOKEN\"))\nSystem.setProperty(\"twitter4j.oauth.accessTokenSecret\", $(\"TWITTER_ACCESS_TOKEN_SECRET\"))\n\"twitter settings done!\"",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "$: (s: String)String\nres6: String = twitter settings done!\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "twitter settings done!"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 3
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -115,18 +82,7 @@
     },
     "cell_type" : "code",
     "source" : "import org.apache.spark.streaming.{Minutes, StreamingContext}\nimport org.apache.spark.SparkContext._\nimport org.apache.spark.streaming.twitter._\n\nval ssc = new StreamingContext(sparkContext, Minutes(10))",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "import org.apache.spark.streaming.{Minutes, StreamingContext}\nimport org.apache.spark.SparkContext._\nimport org.apache.spark.streaming.twitter._\nssc: org.apache.spark.streaming.StreamingContext = org.apache.spark.streaming.StreamingContext@362634e2\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "org.apache.spark.streaming.StreamingContext@362634e2"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 5
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -143,18 +99,7 @@
     },
     "cell_type" : "code",
     "source" : "val filters = Array(\"spark\", \"scala\", \"music\", \"machinelearning\", \"sparknotebook\", \"apachespark\", \"docker\",\n                    \"apachemesos\")",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "filters: Array[String] = Array(spark, scala, music, machinelearning, sparknotebook, apachespark, docker, apachemesos)\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<div class=\"container-fluid\"><div><div class=\"col-md-12\"><div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anonb82dcf7b55aa5972e69a9a4890a9e091&quot;,&quot;dataInit&quot;:[{&quot;string value&quot;:&quot;spark&quot;},{&quot;string value&quot;:&quot;scala&quot;},{&quot;string value&quot;:&quot;music&quot;},{&quot;string value&quot;:&quot;machinelearning&quot;},{&quot;string value&quot;:&quot;sparknotebook&quot;},{&quot;string value&quot;:&quot;apachespark&quot;},{&quot;string value&quot;:&quot;docker&quot;},{&quot;string value&quot;:&quot;apachemesos&quot;}],&quot;genId&quot;:&quot;2145434765&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tableChart'], \n      function(playground, _magictableChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictableChart,\n    \"o\": {\"headers\":[\"string value\"],\"nrow\":8,\"shown\":8,\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div></div></div></div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 6
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -167,18 +112,7 @@
     },
     "cell_type" : "code",
     "source" : "val twitterStream = TwitterUtils.createStream(ssc, None, filters)",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "twitterStream: org.apache.spark.streaming.dstream.ReceiverInputDStream[twitter4j.Status] = org.apache.spark.streaming.twitter.TwitterInputDStream@6dff3b0c\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "org.apache.spark.streaming.twitter.TwitterInputDStream@6dff3b0c"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 9
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -195,18 +129,7 @@
     },
     "cell_type" : "code",
     "source" : "val partitionsEachInterval = 10 // 10 files per time max",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "partitionsEachInterval: Int = 10\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "10"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 7
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -219,14 +142,7 @@
     },
     "cell_type" : "code",
     "source" : "twitterStream\n  .foreachRDD((rdd, time) => {\n    val count = rdd.count()\n    if (count > 0) {\n      val outputRDD = rdd.repartition(partitionsEachInterval)\n      outputRDD.mapPartitions{ it =>\n        val gson = new com.google.gson.Gson()\n        it.map(gson.toJson(_))\n      }.saveAsTextFile(\"/tmp/twitter-stream-json/tweets_\" + time.milliseconds.toString)\n    }\n  })",
-    "outputs" : [ {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 10
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -243,14 +159,7 @@
     },
     "cell_type" : "code",
     "source" : "ssc.start()",
-    "outputs" : [ {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 34
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -263,14 +172,7 @@
     },
     "cell_type" : "code",
     "source" : "// commented to all 'run all' :-D\nssc.stop(false)",
-    "outputs" : [ {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 35
-    } ]
+    "outputs" : [ ]
   } ],
   "nbformat" : 4
 }
