@@ -71,8 +71,7 @@ object Application extends Controller {
     |      "resources": {},
     |      "spec" : {
     |        "language": "scala",
-    |        "display_name": "Scala [${notebook.BuildInfo.scalaVersion}] Spark [${notebook.BuildInfo.xSparkVersion}] Hadoop [${notebook.BuildInfo.xHadoopVersion}] ${if (notebook.BuildInfo.xWithHive) " {Hive ✓}" else ""}",
-    |
+    |        "display_name": "Scala [${notebook.BuildInfo.scalaVersion}] Spark [${notebook.BuildInfo.xSparkVersion}] Hadoop [${notebook.BuildInfo.xHadoopVersion}] ${if (notebook.BuildInfo.xWithHive) " {Hive ✓}" else ""} ${if (notebook.BuildInfo.xWithParquet) " {Parquet ✓}" else ""}",
     |        "language_info": {
     |          "name" : "scala",
     |          "file_extension" : "scala",
@@ -105,7 +104,7 @@ object Application extends Controller {
       val kernel = new Kernel(config.kernel.config.underlying, kernelSystem, kId, notebookPath)
       KernelManager.add(kId, kernel)
 
-      val r = Reads.map[String]
+      val r = Reads.map[JsValue]
 
       // Load the notebook → get the metadata
       val md: Option[Metadata] = for {
@@ -127,7 +126,15 @@ object Application extends Controller {
         c <- m.customSparkConf
         _ = Logger.info("customSparkConf >> " + c)
         map <- r.reads(c).asOpt
-      } yield map
+      } yield map.map {
+        case (k, a@JsArray(v))   => k → a.toString
+        case (k, JsBoolean(v))   => k → v.toString
+        case (k, JsNull)         => k → "null"
+        case (k, JsNumber(v))    => k → v.toString
+        case (k, o@JsObject(v))  => k → o.toString
+        case (k, JsString(v))    => k → v
+        case (k, v:JsUndefined)  => k → s"Undefined: ${v.error}"
+      }
 
       val service = new CalcWebSocketService(kernelSystem,
         md.map(_.name).getOrElse("Spark Notebook"),
