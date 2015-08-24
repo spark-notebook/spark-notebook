@@ -451,6 +451,10 @@ object Application extends Controller {
     try {
       val (newname, newpath) = nbm.rename(path, notebook)
 
+      KernelManager.atPath(path).foreach { case (_, kernel) =>
+        kernel.moveNotebook(newpath)
+      }
+
       Ok(Json.obj(
         "type" → "notebook",
         "name" → newname,

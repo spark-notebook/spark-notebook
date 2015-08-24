@@ -16,8 +16,15 @@ import scala.concurrent.duration._
  * accomplished by blocking on actor startup
  * to the remote (this is accomplished by blocking on startup waiting for
  */
-class Kernel(config: Config, system: ActorSystem, kernelId: String,
-  val notebookPath: Option[String] = None) {
+class Kernel(config: Config, system: ActorSystem, kernelId: String, notebookPath_ : Option[String] = None) {
+  private[this] var _notebookPath = notebookPath_
+
+  def notebookPath = _notebookPath
+
+  def moveNotebook(to:String) {
+    _notebookPath = Some(to)
+  }
+
   implicit val executor = system.dispatcher
 
   val router = system.actorOf(Props(new ExecutionManager))
