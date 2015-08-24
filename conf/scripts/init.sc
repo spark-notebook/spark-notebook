@@ -23,7 +23,7 @@ import org.apache.spark.rdd._
   @transient val addedJars: Array[String] = {
     val envJars = sys.env.get("ADD_JARS")
     val propJars = sys.props.get("spark.jars").flatMap { p => if (p == "") None else Some(p) }
-    val jars = propJars.orElse(envJars).getOrElse("")
+    val jars = List(propJars, envJars).collect{case Some(j) => j}.mkString(",")
     notebook.Utils.resolveURIs(jars).split(",").filter(_.nonEmpty)
   }
 
@@ -32,7 +32,7 @@ import org.apache.spark.rdd._
 
   @transient var conf = new SparkConf().setAll(_5C4L4_N0T3800K_5P4RK_C0NF.toList)
 
-  @transient var jars = (addedJars ++ CustomJars ++ conf.get("spark.jars", ":").split(":")).distinct
+  @transient var jars = (addedJars ++ CustomJars ++ conf.get("spark.jars", ",").split(",")).distinct
 
   @transient var sparkContext:SparkContext = _
 

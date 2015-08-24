@@ -60,7 +60,15 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config: Config,
 
   def vmArgs: List[String] = if (config.hasPath("vmArgs")) config.getStringList("vmArgs").toList else Nil
 
-  def classPath: IndexedSeq[String] = defaultClassPath
+  def classPathEnv =  Array(
+                        sys.env.get("HADOOP_CONF_DIR").getOrElse(""),
+                        sys.env.get("EXTRA_CLASSPATH").getOrElse("")
+                      )
+
+  def classPath: IndexedSeq[String] =
+    if (config.hasPath("classpath")) config.getStringList("classpath").toList.toVector else Vector.empty[String]
+
+  def classPathString = (defaultClassPath ++ classPath ++ classPathEnv).mkString(File.pathSeparator)
 
   def jvmArgs = {
     val builder = IndexedSeq.newBuilder[String]
@@ -110,10 +118,7 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config: Config,
     Future {
       log.info("Spawning %s".format(cmd.toString))
       // use environment because classpaths can be longer here than as a command line arg
-      val classpath = classPath ++ Array(
-        sys.env.get("HADOOP_CONF_DIR").getOrElse(""),
-        sys.env.get("EXTRA_CLASSPATH").getOrElse(""))
-      val environment = System.getenv + ("CLASSPATH" -> classpath.mkString(File.pathSeparator))
+      val environment = System.getenv + ("CLASSPATH" -> classPathString)
       val exec = new KillableExecutor
 
       val completion = Promise[Int]()
@@ -169,7 +174,7 @@ object BetterFork {
         } else {
           acc ++ (cl.asInstanceOf[URLClassLoader].getURLs map { u =>
             val f = new File(u.getFile)
-            URLDecoder.decode(f.getParent, "UTF8")
+            URLDecoder.decode(f.getAbsolutePath, "UTF8")
           })
         }
         urls(cl.getParent, us)
@@ -179,7 +184,6 @@ object BetterFork {
     }
     val loader = Play.current.classloader
     val gurls = urls(loader).distinct.filter(!_.contains("logback-classic"))
-     .map(_ + "/*")//.filter(!_.contains("sbt/"))
     gurls
   }
 

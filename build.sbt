@@ -18,7 +18,10 @@ enablePlugins(UniversalPlugin)
 
 enablePlugins(DockerPlugin)
 
+net.virtualvoid.sbt.graph.Plugin.graphSettings
+
 import com.typesafe.sbt.SbtNativePackager.autoImport.NativePackagerHelper._
+
 import com.typesafe.sbt.packager.docker._
 
 // java image based on ubuntu trusty rather than debian jessie (to use mesosphere distros)
@@ -84,15 +87,21 @@ scalacOptions += "-deprecation"
 
 scalacOptions ++= Seq("-Xmax-classfile-name", "100")
 
+scriptClasspath := Seq("*")
+
+scriptClasspath in batScriptReplacements := Seq("*")
+
+batScriptExtraDefines += {
+  "set \"APP_CLASSPATH=%HADOOP_CONF_DIR%;%EXTRA_CLASSPATH%;%APP_CLASSPATH%\""
+}
+
 val ClasspathPattern = "declare -r app_classpath=\"(.*)\"\n".r
 
 bashScriptDefines := bashScriptDefines.value.map {
   case ClasspathPattern(classpath) =>
-    "declare -r app_classpath=\"${HADOOP_CONF_DIR}:${EXTRA_CLASSPATH}:" + classpath + "\"\n"
+    s"""declare -r app_classpath="$${HADOOP_CONF_DIR}:$${EXTRA_CLASSPATH}:${classpath}"\n"""
   case _@entry => entry
 }
-
-//scriptClasspath += "${HADOOP_CONF_DIR}"
 
 dependencyOverrides += "log4j" % "log4j" % "1.2.16"
 
@@ -133,7 +142,7 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).ena
   .settings(sharedSettings: _*)
   .settings(
     bashScriptExtraDefines <+= (version, scalaBinaryVersion, scalaVersion, sparkVersion, hadoopVersion, withHive, withParquet) map { (v, sbv, sv, pv, hv, wh, wp) =>
-      """export ADD_JARS="${lib_dir}/$(ls ${lib_dir} | grep common.common | head)""""
+      """export ADD_JARS="${ADD_JARS},${lib_dir}/$(ls ${lib_dir} | grep common.common | head)""""
     },
     mappings in Universal ++= directory("notebooks"),
     mappings in Docker ++= directory("notebooks")

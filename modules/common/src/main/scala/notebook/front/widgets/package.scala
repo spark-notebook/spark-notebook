@@ -324,6 +324,7 @@ package object widgets {
       stripedData
     }
 
+
     override val scripts = List(Script("magic/lineChart", Json.obj("x" → f1.toString, "y" → f2.toString, "width" → sizes._1, "height" → sizes._2)))
   }
 
