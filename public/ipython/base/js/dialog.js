@@ -209,6 +209,15 @@ define(function(require) {
     var div = elt("div");
     var ul = elt("ul");
     var li = elt("li");
+    var lis = function(ls, us) {
+        var list = us || ul();
+        _.each(ls, function(i) {
+            var l = li();
+            l.append(i);
+            list.append(l);
+        });
+        return list;
+    };
     var a = elt("a");
     var form = elt("form");
     var label = elt("label");
@@ -317,6 +326,20 @@ define(function(require) {
 
         addPane("conf_remotes", "Libraries Repos", function(page) {
             var remotes = div();
+            var info = div();
+            var reposInfo = p();
+            reposInfo.append(
+                "This is equivalent to the context `:remote-repo` in a notebook, and thus can take one of the following forms, for examples:"
+            )
+            var remoteRepoForms=lis([
+                "my-repo % default % file:///path-to/ivy2 % ivy",
+                "my-repo % default % http:///link-to/ivy2 % ivy",
+                "a-mvn % default % http://link-to/repository % mvn",
+                "on-s3 % default % s3://my-maven/repository % mvn % (\"$AWS_KEY\", \"$AWS_SECRET\")"
+            ]);
+            info.append(reposInfo);
+            info.append(remoteRepoForms);
+            remotes.append(info);
             remotes.append(
                 form()  .attr("data-bind", "submit:addRemote")
                         .append("Add remote")
