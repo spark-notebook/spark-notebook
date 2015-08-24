@@ -56,7 +56,12 @@ class ReplCalculator(
   private val shRegex = "(?s)^:sh\\s*(.+)\\s*$".r
 
   private def remoreRepo(r:String):(String, RemoteRepository) = {
-    val id::tpe::url::rest = r.split("%").toList
+    val id::tpe::url::remaining = r.split("%").toList
+    val rest = remaining.map(_.trim) match {
+      case Nil => remaining
+      case "mvn"::r => r //skip the flavor → always maven in 2.11
+      case xs => xs
+    }
     val (username, password):(Option[String],Option[String]) = rest.headOption.map { auth =>
       auth match {
         case authRegex(usernamePassword)   =>

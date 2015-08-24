@@ -57,12 +57,21 @@ class ReplCalculator(
   // except that the local ivy repo isn't included
   var resolvers: List[Resolver] = {
     val mavenLocal = Resolver.mavenLocal
+    val defaultLocal = Resolver.defaultLocal
+    val local = {
+      val pats = List(
+        sys.props("user.home") + "/.ivy2/" + "/local/" + Resolver.localBasePattern,
+        sys.props("user.home") + "/.ivy2/" + "/cache/" + Resolver.localBasePattern
+      )
+      FileRepository("snb-local", Resolver.defaultFileConfiguration, Patterns(pats, pats, false))
+    }
+    val defaultShared = Resolver.defaultShared
     val mavenReleases = sbt.DefaultMavenRepository
     val typesafeReleases = Resolver.typesafeIvyRepo("releases")
     val jCenterReleases = Resolver.jcenterRepo
     val sonatypeReleases = Resolver.sonatypeRepo("releases")
     val spReleases = new MavenRepository("spark-packages", "http://dl.bintray.com/spark-packages/maven/")
-    val defaults = mavenLocal :: mavenReleases :: spReleases :: typesafeReleases :: jCenterReleases :: sonatypeReleases :: Nil
+    val defaults = defaultLocal :: local :: mavenLocal :: defaultShared :: mavenReleases :: spReleases :: typesafeReleases :: jCenterReleases :: sonatypeReleases :: Nil
     customRepos.getOrElse(List.empty[String]).map(CustomResolvers.fromString).map(_._2) ::: defaults
   }
 
