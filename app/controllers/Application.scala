@@ -414,7 +414,7 @@ object Application extends Controller {
 
   def terminateKernel(kernelId: String) = Action { request =>
     closeKernel(kernelId)
-    Ok(s"Kernel $kernelId closed!")
+    Ok(s"""{"$kernelId": "closed"}""")
   }
 
   def restartKernel(kernelId: String) = Action { request =>
