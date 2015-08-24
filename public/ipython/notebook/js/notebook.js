@@ -403,6 +403,7 @@ define([
             md: this.metadata,
             callback: function (md) {
                 that.metadata = md;
+                that.save_notebook();
             },
             name: 'Notebook',
             notebook: this,
