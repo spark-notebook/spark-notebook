@@ -69,6 +69,7 @@ Spark Notebook
       - [Import (download) dependencies](#import-download-dependencies)
       - [Add Spark Packages](#add-spark-packages)
       - [Default import statements](#default-import-statements)
+      - [Add JVM arguments](#add-jvm-arguments)
       - [Spark Conf](#spark-conf)
       - [Example](#example)
         - [YARN](#yarn)
@@ -684,6 +685,17 @@ Some package, classes, types, functions and so forth could be automatically impo
     "customImports"   : "import scala.util.Random\n",
 ```
 
+#### Add JVM arguments
+
+Each notebook is actually running in a different JVM, hence you can add some parameters (like memory tuning and so on) like this:
+
+```json
+    "customArgs"   : [
+      "-Dtest=ok",
+      "-Dyarn.resourcemanager.am.max-attempts=1"
+    ],
+```
+
 #### Spark Conf
 
 Apache Spark needs some configuration to access clusters, tune the memory and [many others](http://spark.apache.org/docs/latest/configuration.html).
@@ -711,6 +723,7 @@ For this configuration to be shareable, and you don't want to use the `reset` fu
     ],
     "customDeps"      : "med-at-scale        %  ga4gh-model-java % 0.1.0-SNAPSHOT\norg.apache.avro     %  avro-ipc         % 1.7.6\n- org.mortbay.jetty % org.eclipse.jetty % _",
     "customImports"   : "import scala.util.Random\n",
+    "customArgs"   : [ "-Dtest=ok", "-Dyarn.resourcemanager.am.max-attempts=1" ],
     "customSparkConf" : {
       "spark.app.name": "Notebook",
       "spark.master": "local[8]",
@@ -735,6 +748,7 @@ For this configuration to be shareable, and you don't want to use the `reset` fu
       "customRepos" : [ ],
       "customDeps" : [ ],
       "customImports" : [ ],
+      "customArgs" : [ ],
       "customSparkConf" : {
         "spark.app.name" : "Notebook",
         "spark.master" : "yarn-client",
@@ -755,6 +769,7 @@ For this configuration to be shareable, and you don't want to use the `reset` fu
         "customRepos" : null,
         "customDeps" : null,
         "customImports" : null,
+        "customArgs" : [ "-Dyarn.resourcemanager.am.max-attempts=1" ],
         "customSparkConf" : {
           "spark.app.name" : "Notebook",
           "spark.master" : "yarn-client",

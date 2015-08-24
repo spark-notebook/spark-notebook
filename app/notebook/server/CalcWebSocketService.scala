@@ -20,6 +20,7 @@ class CalcWebSocketService(
   customRepos: Option[List[String]],
   customDeps: Option[List[String]],
   customImports: Option[List[String]],
+  customArgs: Option[List[String]],
   customSparkConf: Option[Map[String, String]],
   initScripts: List[(String, String)],
   compilerArgs: List[String],
@@ -58,6 +59,7 @@ class CalcWebSocketService(
       val kCustomRepos = customRepos
       val kCustomDeps = customDeps
       val kCustomImports = customImports
+      val kCustomArgs = customArgs
 
       val tachyon = tachyonInfo.map { info =>
         Map(
@@ -78,6 +80,7 @@ class CalcWebSocketService(
           kCustomRepos,
           kCustomDeps,
           kCustomImports,
+          kCustomArgs,
           kCustomSparkConf,
           kInitScripts,
           kCompilerArgs)

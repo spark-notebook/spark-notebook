@@ -101,8 +101,6 @@ object Application extends Controller {
       val kId = kernelId.getOrElse(UUID.randomUUID.toString)
       val compilerArgs = config.kernel.compilerArgs.toList
       val initScripts = config.kernel.initScripts.toList
-      val kernel = new Kernel(config.kernel.config.underlying, kernelSystem, kId, notebookPath)
-      KernelManager.add(kId, kernel)
 
       val r = Reads.map[JsValue]
 
@@ -121,6 +119,8 @@ object Application extends Controller {
 
       val customImports: Option[List[String]] = md.flatMap(_.customImports)
 
+      val customArgs: Option[List[String]] = md.flatMap(_.customArgs)
+
       val customSparkConf: Option[Map[String, String]] = for {
         m <- md
         c <- m.customSparkConf
@@ -136,12 +136,20 @@ object Application extends Controller {
         case (k, v:JsUndefined)  => k → s"Undefined: ${v.error}"
       }
 
+      val kernel = new Kernel(config.kernel.config.underlying,
+                              kernelSystem,
+                              kId,
+                              notebookPath,
+                              customArgs)
+      KernelManager.add(kId, kernel)
+
       val service = new CalcWebSocketService(kernelSystem,
         md.map(_.name).getOrElse("Spark Notebook"),
         customLocalRepo,
         customRepos,
         customDeps,
         customImports,
+        customArgs,
         customSparkConf,
         initScripts,
         compilerArgs,
@@ -278,6 +286,7 @@ object Application extends Controller {
     val customRepos = Try((custom \ "customRepos").as[List[String]]).toOption.filterNot(_.isEmpty)
     val customDeps = Try((custom \ "customDeps").as[List[String]]).toOption.filterNot(_.isEmpty)
     val customImports = Try((custom \ "customImports").as[List[String]]).toOption.filterNot(_.isEmpty)
+    val customArgs = Try((custom \ "customArgs").as[List[String]]).toOption.filterNot(_.isEmpty)
 
     val customMetadata = (for {
       j <- Try(custom \ "customSparkConf") if j.isInstanceOf[JsObject]
@@ -289,6 +298,7 @@ object Application extends Controller {
       customRepos orElse config.repos,
       customDeps orElse config.deps,
       customImports orElse config.imports,
+      customArgs orElse config.args,
       customMetadata orElse config.sparkConf)
     Try(Redirect(routes.Application.contents("notebook", fpath)))
   }

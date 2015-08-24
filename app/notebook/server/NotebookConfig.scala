@@ -25,6 +25,7 @@ case class NotebookConfig(config: Configuration) {
   val repos = custom.flatMap(_.getStringList("repos")).map(_.asScala.toList)
   val deps = custom.flatMap(_.getStringList("deps")).map(_.asScala.toList)
   val imports = custom.flatMap(_.getStringList("imports")).map(_.asScala.toList)
+  val args = custom.flatMap(_.getStringList("args")).map(_.asScala.toList)
   val sparkConf = custom.flatMap(_.getConfig("sparkConf")).map { c =>
     JsObject(c.entrySet.map { case (k, v) => (k, JsString(v.unwrapped().toString)) }.toSeq)
   }
