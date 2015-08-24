@@ -142,6 +142,7 @@ object NBSerializer {
     customRepos: Option[List[String]] = None,
     customDeps: Option[List[String]] = None,
     customImports: Option[List[String]] = None,
+    customArgs: Option[List[String]] = None,
     customSparkConf: Option[JsObject] = None
   )
 
@@ -157,6 +158,7 @@ object NBSerializer {
         (JsPath \ "customRepos").readNullable[List[String]] and
         (JsPath \ "customDeps").readNullable[List[String]] and
         (JsPath \ "customImports").readNullable[List[String]] and
+        (JsPath \ "customArgs").readNullable[List[String]] and
         (JsPath \ "customSparkConf").readNullable[JsObject]
       )(Metadata.apply _)
 
@@ -177,6 +179,7 @@ object NBSerializer {
           "customRepos" → m.customRepos,
           "customDeps" → m.customDeps,
           "customImports" → m.customImports,
+          "customArgs" → m.customArgs,
           "customSparkConf" → m.customSparkConf
         )
       }
