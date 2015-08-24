@@ -7,6 +7,8 @@ define([
   var TachyonModel = function() {
     var self = this;
 
+    this.opened = ko.observable(true);
+
     this.size = ko.observable(200);
 
     this.width = ko.computed(function() {
@@ -23,6 +25,10 @@ define([
 
     this.reload = function() {
       self.list(self.current());
+    };
+
+    this.close = function() {
+      self.opened(false);
     };
 
     this.list = function(info) {
