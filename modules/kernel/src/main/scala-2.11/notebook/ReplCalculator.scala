@@ -29,6 +29,7 @@ class ReplCalculator(
   customRepos:Option[List[String]],
   customDeps:Option[List[String]],
   customImports:Option[List[String]],
+  customArgs:Option[List[String]],
   customSparkConf:Option[Map[String, String]],
   initScripts: List[(String, String)],
   compilerArgs: List[String]

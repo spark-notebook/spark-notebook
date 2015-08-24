@@ -51,6 +51,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
     customRepos: Option[List[String]] = None,
     customDeps: Option[List[String]] = None,
     customImports: Option[List[String]] = None,
+    customArgs: Option[List[String]] = None,
     customSparkConf: Option[JsObject] = None) = {
     val sep = if (path.last == '/') "" else "/"
     val fpath = incrementFileName(path + sep + "Untitled")
@@ -60,6 +61,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
         customRepos = customRepos,
         customDeps = customDeps,
         customImports = customImports,
+        customArgs = customArgs,
         customSparkConf = customSparkConf)),
       Some(Nil),
       None,

@@ -33,7 +33,7 @@ trait ForkableProcess {
  * I am so sick of this being a thing that gets implemented everywhere. Let's abstract.
  */
 class BetterFork[A <: ForkableProcess : reflect.ClassTag](config: Config,
-  executionContext: ExecutionContext) {
+  executionContext: ExecutionContext, customArgs:Option[List[String]]) {
   private implicit val ec = executionContext
 
   import BetterFork._
@@ -83,6 +83,8 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config: Config,
     }
 
     builder ++= vmArgs
+
+    customArgs.foreach(as => builder ++= as)
 
     builder.result()
   }

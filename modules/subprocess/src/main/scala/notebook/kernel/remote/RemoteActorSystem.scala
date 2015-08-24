@@ -98,17 +98,12 @@ object RemoteActorSystem {
   val nextId = new AtomicInteger(1)
 
   def spawn(config: Config, system: ActorSystem, configFile: String, kernelId: String,
-    notebookPath: Option[String]): Future[RemoteActorSystem] = {
-    //val cookiePath = AkkaConfigUtils.requiredCookie(system.settings.config) match {
-    //  case Some(cookie) =>
-    //    val cookieFile = new File(".", ".akka-cookie")
-    //    FileUtils.writeStringToFile(cookieFile, cookie)
-    //    cookieFile.getAbsolutePath
-    //  case _ => ""
-    //}cookiePath
+    notebookPath: Option[String], customArgs:Option[List[String]]): Future[RemoteActorSystem] = {
     val cookiePath = ""
-    new BetterFork[RemoteActorProcess](config, system.dispatcher).execute(kernelId, notebookPath.getOrElse("no-path"), configFile, cookiePath) map {
-      new RemoteActorSystem(system, _)
-    }
+    new BetterFork[RemoteActorProcess](config, system.dispatcher, customArgs)
+      .execute(kernelId, notebookPath.getOrElse("no-path"), configFile, cookiePath)
+      .map {
+        new RemoteActorSystem(system, _)
+      }
   }
 }
