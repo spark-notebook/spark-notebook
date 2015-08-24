@@ -79,6 +79,7 @@ define([
           customRepos: null,
           customDeps: null,
           customImports: null,
+          customArgs: null,
           customSparkConf: null
         }
       },
@@ -209,6 +210,8 @@ define([
     "none");
 
     var imports_col = showItemListAndPopup ("imports", "Imports", that.data.template.customImports, function(item) { return item.trim().replace(new RegExp("import"), "").trim()});
+
+    var args_col = showItemListAndPopup ("args", "VM Args", that.data.template.customArgs, function(item) { return item.trim()});
 
     var sparkConf = _.chain(that.data.template.customSparkConf).pairs().map(function(item) { return item[0] + " → " + item[1]; }).value();
     var spark_conf_repo_col = showItemListAndPopup("spark_conf", "Spark Conf", sparkConf, _.identity, "disc", 2);

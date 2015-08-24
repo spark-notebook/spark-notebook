@@ -29,6 +29,7 @@ class ReplCalculator(
   customRepos:Option[List[String]],
   customDeps:Option[List[String]],
   customImports:Option[List[String]],
+  customArgs:Option[List[String]],
   customSparkConf:Option[Map[String, String]],
   initScripts: List[(String, String)],
   compilerArgs: List[String]
@@ -56,7 +57,12 @@ class ReplCalculator(
   private val shRegex = "(?s)^:sh\\s*(.+)\\s*$".r
 
   private def remoreRepo(r:String):(String, RemoteRepository) = {
-    val id::tpe::url::rest = r.split("%").toList
+    val id::tpe::url::remaining = r.split("%").toList
+    val rest = remaining.map(_.trim) match {
+      case Nil => remaining
+      case "mvn"::r => r //skip the flavor → always maven in 2.11
+      case xs => xs
+    }
     val (username, password):(Option[String],Option[String]) = rest.headOption.map { auth =>
       auth match {
         case authRegex(usernamePassword)   =>
@@ -253,12 +259,12 @@ class ReplCalculator(
                   deps.mkString("List(\"", "\",\"", "\")")
                 }
               (`text/html`,
-              s"""
-                 |//updating deps
-                 |jars = ($newJarList ::: jars.toList).distinct.toArray
-                 |//restarting spark
-                 |reset()
-                 |jars.toList
+                s"""
+                   |//updating deps
+                   |globalScope.jars = ($newJarList ::: globalScope.jars.toList).distinct.toArray
+                   |//restarting spark
+                   |reset()
+                   |globalScope.jars.toList
                  """.stripMargin
               )
             case TFailure(ex) =>
@@ -284,10 +290,10 @@ class ReplCalculator(
           (`text/html`,
             s"""
               |//updating deps
-              |jars = (${ jars.mkString("List(\"", "\",\"", "\")") } ::: jars.toList).distinct.toArray
+              |globalScope.jars = (${ jars.mkString("List(\"", "\",\"", "\")") } ::: globalScope.jars.toList).distinct.toArray
               |//restarting spark
               |reset()
-              |jars.toList
+              |globalScope.jars.toList
             """.stripMargin
           )
 

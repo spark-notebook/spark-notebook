@@ -82,6 +82,7 @@ class ProcessFork[A: reflect.ClassTag] {
 
     // use environment because classpaths can be longer here than as a command line arg
     val environment = System.getenv + ("CLASSPATH" -> (
+      sys.env.get("YARN_CONF_DIR").map(_ + ":").getOrElse("") +
       sys.env.get("HADOOP_CONF_DIR").map(_ + ":").getOrElse("") +
       sys.env.get("EXTRA_CLASSPATH").map(_ + ":").getOrElse("") +
       classPathString))

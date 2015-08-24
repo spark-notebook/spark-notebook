@@ -302,9 +302,12 @@
           <div id="notebook"></div>
 
           @if(utils.AppUtils.config.tachyonInfo.isDefined) {
-              <div id="notebook-tachyon-container" class="pull-right" data-bind="style: { width: tachyon.width() }" style="top: 0px; position: absolute; right: 0px; background-color: #74AFAD; color: #ECECEA">
+              <div id="notebook-tachyon-container" class="pull-right" data-bind="style: { width: tachyon.width() }, visible: tachyon.opened()" style="top: 0px; position: absolute; right: 0px; background-color: #74AFAD; color: #ECECEA">
                 <div style="height:22px; ">
                   <strong>Tachyon</strong>
+                  <button type="button" class="btn btn-xs pull-right" style="background-color: #558C89" data-bind="click: tachyon.close">
+                    <i class="fa fa-close"></i>
+                  </button>
                   <button type="button" class="btn btn-xs pull-right" style="background-color: #558C89" data-bind="click: tachyon.reload">
                     <i class="fa fa-refresh"></i>
                   </button>
