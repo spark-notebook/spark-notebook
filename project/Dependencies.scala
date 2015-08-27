@@ -16,10 +16,13 @@ object Dependencies {
   val rxScala = "io.reactivex" %% "rxscala" % "0.22.0"
   val scalaZ = "org.scalaz" %% "scalaz-core" % "7.0.6"
 
-  val akkaVersion = "2.3.4-spark"
-  val akka = "org.spark-project.akka" %% "akka-actor" % akkaVersion
-  val akkaRemote = "org.spark-project.akka" %% "akka-remote" % akkaVersion
-  val akkaSlf4j = "org.spark-project.akka" %% "akka-slf4j" % akkaVersion
+  val defaultHadoopVersion = sys.props.getOrElse("hadoop.version", "2.2.0")
+
+  val akkaGroup = if (defaultHadoopVersion.startsWith("1")) "org.spark-project.akka" else "com.typesafe.akka"
+  val akkaVersion = if (defaultHadoopVersion.startsWith("1")) "2.3.4-spark" else "2.3.11"
+  val akka = akkaGroup %% "akka-actor" % akkaVersion
+  val akkaRemote = akkaGroup %% "akka-remote" % akkaVersion
+  val akkaSlf4j = akkaGroup %% "akka-slf4j" % akkaVersion
 
   val scala_2_1X = "2\\.1([0-9])\\.[0-9]+".r
   val spark_1_X = "1\\.([0-9]+)\\.([0-9]+)".r
@@ -76,8 +79,6 @@ object Dependencies {
   def sparkSQL(v: String) = "org.apache.spark" %% "spark-sql" % v excludeAll(
     ExclusionRule("org.apache.hadoop")
   ) excludeAll(parquetList:_*)
-
-  val defaultHadoopVersion = sys.props.getOrElse("hadoop.version", "1.0.4")
 
   def hadoopClient(v: String) = "org.apache.hadoop" % "hadoop-client" % v excludeAll(
     ExclusionRule("org.apache.commons", "commons-exec"),
