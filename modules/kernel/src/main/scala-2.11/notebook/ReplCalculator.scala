@@ -330,12 +330,12 @@ class ReplCalculator(
 
         case markdownContext._1(content)    =>
           val ctx = markdownContext._2
-          val c = content.toString.replaceAll("\"", "\\\\\\\"")
+          val c = content.toString.replaceAll("\\\"", "\"")
           (ctx, " s\"\"\""+c+"\"\"\" ")
 
         case latexContext._1(content)       =>
           val ctx = latexContext._2
-          val c = content.toString.replaceAll("\"", "\\\\\\\"")
+          val c = content.toString.replaceAll("\\\"", "\"")
           (ctx, " s\"\"\""+c+"\"\"\" ")
 
         case svgContext._1(content)         =>
