@@ -60,18 +60,7 @@
     },
     "cell_type" : "code",
     "source" : "sparkContext.getConf.toDebugString",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res2: String = \nspark.app.id=local-1440638317493\nspark.app.name=Tachyon Test\nspark.driver.host=192.168.1.144\nspark.driver.port=54503\nspark.executor.id=driver\nspark.externalBlockStore.baseDir=/share\nspark.externalBlockStore.folderName=spark-2f600e88-0ad6-4cf8-b60a-438bfdbd33c7\nspark.externalBlockStore.url=tachyon://172.17.42.1:36586\nspark.fileserver.uri=http://192.168.1.144:54338\nspark.jars=\nspark.master=local[*]\nspark.repl.class.uri=http://192.168.1.144:34986\nspark.tachyonStore.baseDir=/share\nspark.tachyonStore.url=tachyon://172.17.42.1:36586\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "spark.app.id=local-1440638317493\nspark.app.name=Tachyon Test\nspark.driver.host=192.168.1.144\nspark.driver.port=54503\nspark.executor.id=driver\nspark.externalBlockStore.baseDir=/share\nspark.externalBlockStore.folderName=spark-2f600e88-0ad6-4cf8-b60a-438bfdbd33c7\nspark.externalBlockStore.url=tachyon://172.17.42.1:36586\nspark.fileserver.uri=http://192.168.1.144:54338\nspark.jars=\nspark.master=local[*]\nspark.repl.class.uri=http://192.168.1.144:34986\nspark.tachyonStore.baseDir=/share\nspark.tachyonStore.url=tachyon://172.17.42.1:36586"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 1
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -92,18 +81,7 @@
     },
     "cell_type" : "code",
     "source" : "val dataUrl = \"https://s3-eu-west-1.amazonaws.com/spark-notebook-data/closes.csv\"\nval dataLocalDowloadPath = \"/tmp/closes.csv\"",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "dataUrl: String = https://s3-eu-west-1.amazonaws.com/spark-notebook-data/closes.csv\ndataLocalDowloadPath: String = /tmp/closes.csv\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "/tmp/closes.csv"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 2
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -125,18 +103,7 @@
     },
     "cell_type" : "code",
     "source" : "val dataFile = dataLocalDowloadPath",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "dataFile: String = /tmp/closes.csv\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "/tmp/closes.csv"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 3
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -149,18 +116,7 @@
     },
     "cell_type" : "code",
     "source" : ":sh wc -l $dataFile",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "warning: there were 1 feature warning(s); re-run with -feature for details\nimport sys.process._\nres3: String = \n\"8655036 /tmp/closes.csv\n\"\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/plain" : "8655036 /tmp/closes.csv\n"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 4
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -177,18 +133,7 @@
     },
     "cell_type" : "code",
     "source" : "val rdd = sparkContext.textFile(\"file://\" + dataFile).cache",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "rdd: org.apache.spark.rdd.RDD[String] = MapPartitionsRDD[1] at textFile at <console>:54\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "MapPartitionsRDD[1] at textFile at &lt;console&gt;:54"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 5
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -201,18 +146,7 @@
     },
     "cell_type" : "code",
     "source" : "rdd.flatMap(_.filter(_ == '0')).map(_.toString.toInt).sum",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res4: Double = 0.0\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "0.0"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 6
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -233,18 +167,7 @@
     },
     "cell_type" : "code",
     "source" : "import org.apache.spark.storage.StorageLevel._\nval rdd2 = sparkContext.textFile(\"file://\" + dataFile).persist(OFF_HEAP)",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "import org.apache.spark.storage.StorageLevel._\nrdd2: org.apache.spark.rdd.RDD[String] = MapPartitionsRDD[6] at textFile at <console>:55\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "MapPartitionsRDD[6] at textFile at &lt;console&gt;:55"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 7
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -257,18 +180,7 @@
     },
     "cell_type" : "code",
     "source" : "rdd2.flatMap(_.filter(_ == '0')).map(_.toString.toInt).sum",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res5: Double = 0.0\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "0.0"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 8
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -285,18 +197,7 @@
     },
     "cell_type" : "code",
     "source" : "import tachyon.client.TachyonFS\nval tachyonUrl = sparkContext.getConf.get(\"spark.externalBlockStore.url\")\nval shareDir = sparkContext.getConf.get(\"spark.externalBlockStore.baseDir\")\nval tachyonClient = TachyonFS.get(tachyonUrl)",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "<console>:56: warning: method get in object TachyonFS is deprecated: see corresponding Javadoc for more information.\n       val tachyonClient = TachyonFS.get(tachyonUrl)\n                                     ^\nimport tachyon.client.TachyonFS\ntachyonUrl: String = tachyon://172.17.42.1:36586\nshareDir: String = /share\ntachyonClient: tachyon.client.TachyonFS = tachyon://172.17.42.1/172.17.42.1:36586\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "tachyon://172.17.42.1/172.17.42.1:36586"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 9
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -309,18 +210,7 @@
     },
     "cell_type" : "code",
     "source" : "import scala.collection.JavaConverters._\nval shared = tachyonClient.listStatus(new tachyon.TachyonURI(shareDir)).asScala.map(_.getPath)",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "import scala.collection.JavaConverters._\nshared: scala.collection.mutable.Buffer[String] = ArrayBuffer(/share/spark-2f600e88-0ad6-4cf8-b60a-438bfdbd33c7)\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<div class=\"container-fluid\"><div><div class=\"col-md-12\"><div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon33896b020183b771f6a6b2c9fc71ff9f&quot;,&quot;dataInit&quot;:[{&quot;string value&quot;:&quot;/share/spark-2f600e88-0ad6-4cf8-b60a-438bfdbd33c7&quot;}],&quot;genId&quot;:&quot;1902780383&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tableChart'], \n      function(playground, _magictableChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictableChart,\n    \"o\": {\"headers\":[\"string value\"],\"nrow\":1,\"shown\":1,\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div></div></div></div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 10
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -329,18 +219,7 @@
     },
     "cell_type" : "code",
     "source" : "val currentCache = shared(0)",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "currentCache: String = /share/spark-ffb1e292-8ef3-480b-9b08-c795736ddf04\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "/share/spark-ffb1e292-8ef3-480b-9b08-c795736ddf04"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 9
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -353,18 +232,7 @@
     },
     "cell_type" : "code",
     "source" : "val currentFiles = tachyonClient.listStatus(new tachyon.TachyonURI(currentCache+\"/driver\")).asScala.map(_.getPath)",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "currentFiles: scala.collection.mutable.Buffer[String] = ArrayBuffer(/share/spark-ffb1e292-8ef3-480b-9b08-c795736ddf04/driver/spark-tachyon-20150827021746-6d0f)\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<div class=\"container-fluid\"><div><div class=\"col-md-12\"><div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anonfb12216b9bbb4e92ec4ad6f7b607756a&quot;,&quot;dataInit&quot;:[{&quot;string value&quot;:&quot;/share/spark-ffb1e292-8ef3-480b-9b08-c795736ddf04/driver/spark-tachyon-20150827021746-6d0f&quot;}],&quot;genId&quot;:&quot;1599447085&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tableChart'], \n      function(playground, _magictableChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictableChart,\n    \"o\": {\"headers\":[\"string value\"],\"nrow\":1,\"shown\":1,\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    </div></div></div></div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 10
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
