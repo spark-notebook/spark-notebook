@@ -66,7 +66,11 @@ class CalcWebSocketService(
           "spark.tachyonStore.url" → info.url.getOrElse(
             "tachyon://" + notebook.share.Tachyon.host + ":" + notebook.share.Tachyon.port
           ),
-          "spark.tachyonStore.baseDir" → info.baseDir
+          "spark.externalBlockStore.url" → info.url.getOrElse(
+            "tachyon://" + notebook.share.Tachyon.host + ":" + notebook.share.Tachyon.port
+          ),
+          "spark.tachyonStore.baseDir" → info.baseDir,
+          "spark.externalBlockStore.baseDir" → info.baseDir
         )
       }.getOrElse(Map.empty[String, String])
       val kCustomSparkConf = customSparkConf.map(_ ++ tachyon).orElse(Some(tachyon))
