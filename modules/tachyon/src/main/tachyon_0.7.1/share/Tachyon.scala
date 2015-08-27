@@ -2,7 +2,10 @@ package notebook.share
 
 import java.io.File
 
+import scala.collection.JavaConverters._
+
 import tachyon.client.TachyonFS
+import tachyon.Constants
 import tachyon.master.LocalTachyonCluster
 
 object Tachyon {
@@ -17,18 +20,21 @@ object Tachyon {
   val WorkerCapacityBytes = 1024 * 1024 * 1024
 
   //The minimum number of bytes that will be requested from a client to a worker at a time
-  val UserQuotaUnitBytes = 1000
+  val UserQuotaUnitBytes = 1 * Constants.GB
 
   //Maximum number of columns allowed in RawTable, must be set on the client and server side
   val MaxColumns = 257
+
+  //USER_DEFAULT_BLOCK_SIZE_BYTE
+  val UserBlockSize = Constants.GB
 
   lazy val home = Option(new File("./tachyon"))
     .filter(_.exists)
     .orElse(Option(new File("../tachyon")))
     .filter(_.exists)
     .getOrElse(throw new IllegalStateException(
-    "Arg tachyon home has to be handled specifically... :-/ → current cwd is " + new File(".").getAbsolutePath
-  ))
+      "Arg tachyon home has to be handled specifically... :-/ → current cwd is " + new File(".").getAbsolutePath
+    ))
     .getAbsolutePath
 
 
@@ -36,14 +42,15 @@ object Tachyon {
     //println("TACHYON HOME IS: " + home)
     //System.setProperty("tachyon.home", home);
 
-    System.setProperty("tachyon.user.quota.unit.bytes", UserQuotaUnitBytes.toString);
+    //System.setProperty("tachyon.user.quota.unit.bytes", UserQuotaUnitBytes.toString);
     System.setProperty("tachyon.max.columns", MaxColumns.toString);
 
-    val sLocalTachyonCluster = new LocalTachyonCluster(WorkerCapacityBytes);
+    val sLocalTachyonCluster = new LocalTachyonCluster(WorkerCapacityBytes, UserQuotaUnitBytes, UserBlockSize)
 
     sLocalTachyonCluster
   }
 
+  lazy val masterConf = sLocalTachyonCluster.getMasterTachyonConf
   lazy val host = sLocalTachyonCluster.getMasterHostname
   lazy val port = sLocalTachyonCluster.getMasterPort
 
@@ -56,24 +63,13 @@ object Tachyon {
                |*******************************************
                |********** STARTING TACHYON  **************
                |*******************************************
-               | """.stripMargin.trim)
+               |""".stripMargin.trim)
     sLocalTachyonCluster.start();
     println(s"Tachyon running on http://$host:$port")
-    println("<<< Some properties >>>")
-    println(" →) tachyon.home                                   " + System.getProperty("tachyon.home"))
-    println(" →) tachyon.master.hostname                        " + System.getProperty("tachyon.master.hostname"))
-    println(" →) tachyon.master.journal.folder                  " + System.getProperty("tachyon.master.journal.folder"))
-    println(" →) tachyon.master.port                            " + System.getProperty("tachyon.master.port"))
-    println(" →) tachyon.master.web.port                        " + System.getProperty("tachyon.master.web.port"))
-    println(" →) tachyon.worker.port                            " + System.getProperty("tachyon.worker.port"))
-    println(" →) tachyon.worker.data.port                       " + System.getProperty("tachyon.worker.data.port"))
-    println(" →) tachyon.worker.data.folder                     " + System.getProperty("tachyon.worker.data.folder"))
-    println(" →) tachyon.worker.memory.size                     " + System.getProperty("tachyon.worker.memory.size"))
-    println(" →) tachyon.worker.to.master.heartbeat.interval.ms " + System.getProperty("tachyon.worker.to.master.heartbeat.interval.ms"))
-    println(" →) tachyon.underfs.address                        " + System.getProperty("tachyon.underfs.address"))
-    println(" →) tachyon.user.remote.read.buffer.size.byte      " + System.getProperty("tachyon.user.remote.read.buffer.size.byte"))
-    println(" →) tachyon.user.quota.unit.bytes                  " + System.getProperty("tachyon.user.quota.unit.bytes"))
-    println(" →) tachyon.max.columns                            " + System.getProperty("tachyon.max.columns"))
+    println("<<< Tachyon Conf >>>")
+    val m = masterConf.toMap.asScala
+    val kM = m.keys.maxBy(_.size).size
+    println(masterConf.toMap.asScala.filterKeys(_.startsWith("tachyon")).toList.sortBy(_._1).map{case (k,v) => s"-) ${k.padTo(kM, " ").mkString("")}: $v"}.mkString("\n"))
     sLocalTachyonCluster
   }
 
