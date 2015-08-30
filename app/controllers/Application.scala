@@ -71,8 +71,7 @@ object Application extends Controller {
     |      "resources": {},
     |      "spec" : {
     |        "language": "scala",
-    |        "display_name": "Scala [${notebook.BuildInfo.scalaVersion}] Spark [${notebook.BuildInfo.xSparkVersion}] Hadoop [${notebook.BuildInfo.xHadoopVersion}] ${if (notebook.BuildInfo.xWithHive) " {Hive ✓}" else ""}",
-    |
+    |        "display_name": "Scala [${notebook.BuildInfo.scalaVersion}] Spark [${notebook.BuildInfo.xSparkVersion}] Hadoop [${notebook.BuildInfo.xHadoopVersion}] ${if (notebook.BuildInfo.xWithHive) " {Hive ✓}" else ""} ${if (notebook.BuildInfo.xWithParquet) " {Parquet ✓}" else ""}",
     |        "language_info": {
     |          "name" : "scala",
     |          "file_extension" : "scala",
@@ -102,10 +101,8 @@ object Application extends Controller {
       val kId = kernelId.getOrElse(UUID.randomUUID.toString)
       val compilerArgs = config.kernel.compilerArgs.toList
       val initScripts = config.kernel.initScripts.toList
-      val kernel = new Kernel(config.kernel.config.underlying, kernelSystem, kId, notebookPath)
-      KernelManager.add(kId, kernel)
 
-      val r = Reads.map[String]
+      val r = Reads.map[JsValue]
 
       // Load the notebook → get the metadata
       val md: Option[Metadata] = for {
@@ -122,12 +119,29 @@ object Application extends Controller {
 
       val customImports: Option[List[String]] = md.flatMap(_.customImports)
 
+      val customArgs: Option[List[String]] = md.flatMap(_.customArgs)
+
       val customSparkConf: Option[Map[String, String]] = for {
         m <- md
         c <- m.customSparkConf
         _ = Logger.info("customSparkConf >> " + c)
         map <- r.reads(c).asOpt
-      } yield map
+      } yield map.map {
+        case (k, a@JsArray(v))   => k → a.toString
+        case (k, JsBoolean(v))   => k → v.toString
+        case (k, JsNull)         => k → "null"
+        case (k, JsNumber(v))    => k → v.toString
+        case (k, o@JsObject(v))  => k → o.toString
+        case (k, JsString(v))    => k → v
+        case (k, v:JsUndefined)  => k → s"Undefined: ${v.error}"
+      }
+
+      val kernel = new Kernel(config.kernel.config.underlying,
+                              kernelSystem,
+                              kId,
+                              notebookPath,
+                              customArgs)
+      KernelManager.add(kId, kernel)
 
       val service = new CalcWebSocketService(kernelSystem,
         md.map(_.name).getOrElse("Spark Notebook"),
@@ -135,6 +149,7 @@ object Application extends Controller {
         customRepos,
         customDeps,
         customImports,
+        customArgs,
         customSparkConf,
         initScripts,
         compilerArgs,
@@ -271,6 +286,7 @@ object Application extends Controller {
     val customRepos = Try((custom \ "customRepos").as[List[String]]).toOption.filterNot(_.isEmpty)
     val customDeps = Try((custom \ "customDeps").as[List[String]]).toOption.filterNot(_.isEmpty)
     val customImports = Try((custom \ "customImports").as[List[String]]).toOption.filterNot(_.isEmpty)
+    val customArgs = Try((custom \ "customArgs").as[List[String]]).toOption.filterNot(_.isEmpty)
 
     val customMetadata = (for {
       j <- Try(custom \ "customSparkConf") if j.isInstanceOf[JsObject]
@@ -282,6 +298,7 @@ object Application extends Controller {
       customRepos orElse config.repos,
       customDeps orElse config.deps,
       customImports orElse config.imports,
+      customArgs orElse config.args,
       customMetadata orElse config.sparkConf)
     Try(Redirect(routes.Application.contents("notebook", fpath)))
   }
@@ -407,7 +424,7 @@ object Application extends Controller {
 
   def terminateKernel(kernelId: String) = Action { request =>
     closeKernel(kernelId)
-    Ok(s"Kernel $kernelId closed!")
+    Ok(s"""{"$kernelId": "closed"}""")
   }
 
   def restartKernel(kernelId: String) = Action { request =>
@@ -443,6 +460,10 @@ object Application extends Controller {
     Logger.info("RENAME → " + path + " to " + notebook)
     try {
       val (newname, newpath) = nbm.rename(path, notebook)
+
+      KernelManager.atPath(path).foreach { case (_, kernel) =>
+        kernel.moveNotebook(newpath)
+      }
 
       Ok(Json.obj(
         "type" → "notebook",
