@@ -20,9 +20,10 @@ import scala.util.{Failure => TFailure, Success => TSuccess}
 class ReplCalculator(
   notebookName:String,
   customLocalRepo: Option[String],
-  customRepos: Option[List[String]], // List("mvn", "my-mvn % repo")
+  customRepos: Option[List[String]],
   customDeps: Option[List[String]],
   customImports: Option[List[String]],
+  customArgs: Option[List[String]],
   customSparkConf: Option[Map[String, String]],
   _initScripts: List[(String, String)],
   compilerArgs: List[String]
@@ -57,12 +58,21 @@ class ReplCalculator(
   // except that the local ivy repo isn't included
   var resolvers: List[Resolver] = {
     val mavenLocal = Resolver.mavenLocal
+    val defaultLocal = Resolver.defaultLocal
+    val local = {
+      val pats = List(
+        sys.props("user.home") + "/.ivy2/" + "/local/" + Resolver.localBasePattern,
+        sys.props("user.home") + "/.ivy2/" + "/cache/" + Resolver.localBasePattern
+      )
+      FileRepository("snb-local", Resolver.defaultFileConfiguration, Patterns(pats, pats, false))
+    }
+    val defaultShared = Resolver.defaultShared
     val mavenReleases = sbt.DefaultMavenRepository
     val typesafeReleases = Resolver.typesafeIvyRepo("releases")
     val jCenterReleases = Resolver.jcenterRepo
     val sonatypeReleases = Resolver.sonatypeRepo("releases")
     val spReleases = new MavenRepository("spark-packages", "http://dl.bintray.com/spark-packages/maven/")
-    val defaults = mavenLocal :: mavenReleases :: spReleases :: typesafeReleases :: jCenterReleases :: sonatypeReleases :: Nil
+    val defaults = defaultLocal :: local :: mavenLocal :: defaultShared :: mavenReleases :: spReleases :: typesafeReleases :: jCenterReleases :: sonatypeReleases :: Nil
     customRepos.getOrElse(List.empty[String]).map(CustomResolvers.fromString).map(_._2) ::: defaults
   }
 
@@ -297,12 +307,12 @@ class ReplCalculator(
 
         case markdownContext._1(content) =>
           val ctx = markdownContext._2
-          val c = content.toString.replaceAll("\"", "\\\\\\\"")
+          val c = content.toString.replaceAll("\\\"", "\"")
           (ctx, " s\"\"\"" + c + "\"\"\" ")
 
         case latexContext._1(content) =>
           val ctx = latexContext._2
-          val c = content.toString.replaceAll("\"", "\\\\\\\"")
+          val c = content.toString.replaceAll("\\\"", "\"")
           (ctx, " s\"\"\"" + c + "\"\"\" ")
 
         case svgContext._1(content) =>

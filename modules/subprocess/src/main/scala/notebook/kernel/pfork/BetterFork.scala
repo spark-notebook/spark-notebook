@@ -34,7 +34,7 @@ trait ForkableProcess {
  * I am so sick of this being a thing that gets implemented everywhere. Let's abstract.
  */
 class BetterFork[A <: ForkableProcess : reflect.ClassTag](config: Config,
-  executionContext: ExecutionContext) {
+  executionContext: ExecutionContext, customArgs:Option[List[String]]) {
   private implicit val ec = executionContext
 
   import BetterFork._
@@ -61,9 +61,10 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config: Config,
   def vmArgs: List[String] = if (config.hasPath("vmArgs")) config.getStringList("vmArgs").toList else Nil
 
   def classPathEnv =  Array(
-                        sys.env.get("HADOOP_CONF_DIR").getOrElse(""),
-                        sys.env.get("EXTRA_CLASSPATH").getOrElse("")
-                      )
+                        sys.env.get("YARN_CONF_DIR")
+                        sys.env.get("HADOOP_CONF_DIR"),
+                        sys.env.get("EXTRA_CLASSPATH")
+                      ).collect { case Some(x) => x }
 
   def classPath: IndexedSeq[String] =
     if (config.hasPath("classpath")) config.getStringList("classpath").toList.toVector else Vector.empty[String]
@@ -90,6 +91,8 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config: Config,
     }
 
     builder ++= vmArgs
+
+    customArgs.foreach(as => builder ++= as)
 
     builder.result()
   }
