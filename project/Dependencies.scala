@@ -83,12 +83,14 @@ object Dependencies {
   def hadoopClient(v: String) = "org.apache.hadoop" % "hadoop-client" % v excludeAll(
     ExclusionRule("org.apache.commons", "commons-exec"),
     ExclusionRule("commons-codec", "commons-codec"),
+    ExclusionRule("javax.servlet", "servlet-api"),
     ExclusionRule("com.google.guava", "guava")
   )
 
   def yarnProxy(v: String) = "org.apache.hadoop" % "hadoop-yarn-server-web-proxy" % v excludeAll(
       ExclusionRule("org.apache.commons", "commons-exec"),
       ExclusionRule("commons-codec", "commons-codec"),
+      ExclusionRule("javax.servlet", "servlet-api"),
       ExclusionRule("com.google.guava", "guava")
   )
 
