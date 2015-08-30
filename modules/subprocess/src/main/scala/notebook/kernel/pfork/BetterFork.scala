@@ -61,7 +61,7 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config: Config,
   def vmArgs: List[String] = if (config.hasPath("vmArgs")) config.getStringList("vmArgs").toList else Nil
 
   def classPathEnv =  Array(
-                        sys.env.get("YARN_CONF_DIR")
+                        sys.env.get("YARN_CONF_DIR"),
                         sys.env.get("HADOOP_CONF_DIR"),
                         sys.env.get("EXTRA_CLASSPATH")
                       ).collect { case Some(x) => x }
