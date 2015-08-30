@@ -87,12 +87,20 @@ scalacOptions += "-deprecation"
 
 scalacOptions ++= Seq("-Xmax-classfile-name", "100")
 
+scriptClasspath := Seq("*")
+
+scriptClasspath in batScriptReplacements := Seq("*")
+
+batScriptExtraDefines += {
+  "set \"APP_CLASSPATH=%YARN_CONF_DIR%;%HADOOP_CONF_DIR%;%EXTRA_CLASSPATH%;%APP_CLASSPATH%\""
+}
+
 val ClasspathPattern = "declare -r app_classpath=\"(.*)\"\n".r
 
 bashScriptDefines := bashScriptDefines.value.map {
   case ClasspathPattern(classpath) =>
-    "declare -r app_classpath=\"${YARN_CONF_DIR}:${HADOOP_CONF_DIR}:${EXTRA_CLASSPATH}:" + classpath + "\"\n"
-  case _@entry => entry
+    s"""declare -r app_classpath="$${YARN_CONF_DIR}:$${HADOOP_CONF_DIR}:$${EXTRA_CLASSPATH}:${classpath}"\n"""
+  case entry => entry
 }
 
 dependencyOverrides += "log4j" % "log4j" % "1.2.16"

@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import com.typesafe.config.Config
 import org.apache.commons.exec._
+import org.apache.commons.exec.util.StringUtils
 import org.apache.log4j.PropertyConfigurator
 import org.slf4j.LoggerFactory
 import play.api.{Logger, Play}
@@ -59,9 +60,16 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config: Config,
 
   def vmArgs: List[String] = if (config.hasPath("vmArgs")) config.getStringList("vmArgs").toList else Nil
 
-  def classPath: IndexedSeq[String] = if (config.hasPath("classpath")) config.getStringList("classpath").toList.toVector else Vector.empty[String]
+  def classPathEnv =  Array(
+                        sys.env.get("YARN_CONF_DIR")
+                        sys.env.get("HADOOP_CONF_DIR"),
+                        sys.env.get("EXTRA_CLASSPATH")
+                      ).collect { case Some(x) => x }
 
-  def classPathString = (defaultClassPath ++ classPath).mkString(File.pathSeparator)
+  def classPath: IndexedSeq[String] =
+    if (config.hasPath("classpath")) config.getStringList("classpath").toList.toVector else Vector.empty[String]
+
+  def classPathString = (defaultClassPath ++ classPath ++ classPathEnv).mkString(File.pathSeparator)
 
   def jvmArgs = {
     val builder = IndexedSeq.newBuilder[String]
@@ -112,13 +120,8 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config: Config,
 
     Future {
       log.info("Spawning %s".format(cmd.toString))
-
       // use environment because classpaths can be longer here than as a command line arg
-      val environment = System.getenv + ("CLASSPATH" -> (
-        sys.env.get("YARN_CONF_DIR").map(_ + ":").getOrElse("") +
-        sys.env.get("HADOOP_CONF_DIR").map(_ + ":").getOrElse("") +
-        sys.env.get("EXTRA_CLASSPATH").map(_ + ":").getOrElse("") +
-        classPathString))
+      val environment = System.getenv + ("CLASSPATH" -> classPathString)
       val exec = new KillableExecutor
 
       val completion = Promise[Int]()
@@ -129,6 +132,7 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config: Config,
         Logger.info(s"In working directory $workingDirectory")
 
         def onProcessFailed(e: ExecuteException) {
+          Logger.error(e.getMessage)
           e.printStackTrace()
         }
 
@@ -182,7 +186,7 @@ object BetterFork {
       }
     }
     val loader = Play.current.classloader
-    val gurls = urls(loader).distinct.filter(!_.contains("logback-classic")) //.filter(!_.contains("sbt/"))
+    val gurls = urls(loader).distinct.filter(!_.contains("logback-classic"))
     gurls
   }
 
