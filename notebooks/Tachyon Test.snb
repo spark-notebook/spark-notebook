@@ -13,6 +13,7 @@
     "customRepos" : null,
     "customDeps" : null,
     "customImports" : null,
+    "customArgs" : null,
     "customSparkConf" : null
   },
   "cells" : [ {
@@ -192,10 +193,10 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "import tachyon.client.TachyonFS\nval tachyonUrl = sparkContext.getConf.get(\"spark.tachyonStore.url\")\nval shareDir = sparkContext.getConf.get(\"spark.tachyonStore.baseDir\")\nval tachyonClient = TachyonFS.get(tachyonUrl)",
+    "source" : "import tachyon.client.TachyonFS\nval tachyonUrl = sparkContext.getConf.get(\"spark.externalBlockStore.url\")\nval shareDir = sparkContext.getConf.get(\"spark.externalBlockStore.baseDir\")\nval tachyonClient = TachyonFS.get(tachyonUrl)",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -205,19 +206,19 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "import scala.collection.JavaConverters._\nval shared = tachyonClient.ls(shareDir, false).asScala",
+    "source" : "import scala.collection.JavaConverters._\nval shared = tachyonClient.listStatus(new tachyon.TachyonURI(shareDir)).asScala.map(_.getPath)",
     "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val currentCache = shared(1)",
+    "source" : "val currentCache = shared(0)",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -227,10 +228,10 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val currentFiles = tachyonClient.ls(currentCache + \"/<driver>\", false).asScala",
+    "source" : "val currentFiles = tachyonClient.listStatus(new tachyon.TachyonURI(currentCache+\"/driver\")).asScala.map(_.getPath)",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -243,7 +244,7 @@
       "collapsed" : true
     },
     "cell_type" : "code",
-    "source" : "val thisRdd = currentFiles(1)\nval whatsInCurrentThisRdd = tachyonClient.ls(thisRdd, true).asScala.map(_.drop(thisRdd.length))",
+    "source" : "val thisRdd = currentFiles(0)\nval whatsInCurrentThisRdd = tachyonClient.listStatus(new tachyon.TachyonURI(thisRdd)).asScala.map(_.getPath)",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -281,7 +282,7 @@
       "collapsed" : true
     },
     "cell_type" : "code",
-    "source" : "//  tachyonRdd.take(1).head",
+    "source" : "//  tachyonThisFileRdd.take(1).head",
     "outputs" : [ ]
   }, {
     "metadata" : { },
