@@ -24,7 +24,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : ":dp com.cra.figaro % figaro_2.10 % 2.2.2.0\n- com.typesafe.akka % akka-actor_2.10 % _",
@@ -33,10 +33,6 @@
     "metadata" : { },
     "cell_type" : "markdown",
     "source" : "# Prerequesites"
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "Put the following snippet right **after** the `types` definition in `InputBox.scala` (hence **before** `import notebook.front.widgets.types._`)\n```scala\nobject extraTypes {\n  implicit def SliderType[T](min:T, max:T, step:T)(implicit num: Numeric[T]) = new types.InputType[T] {\n    val tpe = \"range\"\n    override val extra = Map(\"min\" → min.toString, \"max\" → max.toString, \"step\" → step.toString)\n  }\n}\n```"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -51,6 +47,10 @@
     "cell_type" : "markdown",
     "source" : "# Sinus"
   }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "First we override the number input type for `Int` (default to `<input type=\"number\">`) with an input type `range` using the `SliderType` from `5` to `15` by `2`."
+  }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
@@ -60,14 +60,9 @@
     "source" : "implicit val ITI:types.InputType[Int] = SliderType[Int](5, 15, 2)\nval si = new InputBox(5, \"slider\")",
     "outputs" : [ ]
   }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "def e(k:Int) = (-math.Pi to math.Pi by 0.1).toList map (x => math.sin(k*x))\n\nval plot = widgets.LineChart(e(1), fields=Some((\"X\", \"Y\")), maxPoints=100)",
-    "outputs" : [ ]
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Then we define the function to create a sine curve using a scaling factor `k`: \n\n$\\sin(k*x)$"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -75,30 +70,70 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "si.currentData --> Connection.fromObserver{ i: Int =>\n                                          val s = e(i) \n                                          plot.applyOn(s)\n                                       }",
+    "source" : "def sin(k:Int) = (-math.Pi to math.Pi by 0.1).toList map (x => math.sin(k*x))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Let's plot that in a regular `LineChart`"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val plot = widgets.LineChart(sin(1), fields=Some((\"X\", \"Y\")), maxPoints=100)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Now the **reactive** part, in order to adapt `k` we will use the slider and see the effect on the sine wave.\n\nTo do this, we ask the **events** in the slider (`si`) to be published into a dedicated **`Observer`** that will create a new sine wave using `k` and then ask the plot to update using `plot.applyOn` with the new data."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "si.currentData --> Connection.fromObserver{k: Int =>\n                                            val s = sin(k) \n                                            plot.applyOn(s)\n                                          }",
     "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
     "source" : "# Beta"
   }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "implicit val ITI2:types.InputType[Int] = SliderType[Int](1, 1000, 1)\nval alpha = new InputBox(0, \"alpha\")\nval beta = new InputBox(0, \"beta\")\nalpha ++ beta",
-    "outputs" : [ ]
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "We can also show what's the density of the $\\beta$ distribution using its two parameters:\n* $\\alpha$ ~ the count of successes\n* $\\beta$ ~ the count of failures"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
+      "output_stream_collapsed" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "implicit val ITI:types.InputType[Int] = SliderType[Int](1, 1000, 1)\nval alpha = new InputBox(0, \"alpha\")\nval beta = new InputBox(0, \"beta\")\nalpha ++ beta",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Now, we can create the $\\beta$ density function to generate the plot."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "output_stream_collapsed" : true,
       "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "def e(a:Int, b:Int) = {\n  val d = com.cra.figaro.library.atomic.continuous.Beta(a, b)\n  val s = (0d to 1d by 0.01).toList\n  s map (x => (x, d.density(x)))\n}\nvar a = 1\nvar b = 1\nval plot = widgets.LineChart(e(a, b), fields=Some((\"X\", \"Y\")), maxPoints=100)",
     "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "And finally, we simply update the value depending if we update $\\alpha$ or $\\beta$ (note that we could have merge the streams...)"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -107,15 +142,6 @@
     },
     "cell_type" : "code",
     "source" : "alpha.currentData --> Connection.fromObserver{ i: Int =>\n                                          a = i\n                                          val s = e(a, b) \n                                          plot.applyOn(s)\n                                       }\nbeta.currentData --> Connection.fromObserver{ i: Int =>\n                                          b = i\n                                          val s = e(a, b) \n                                          plot.applyOn(s)\n                                       }",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : true
-    },
-    "cell_type" : "code",
-    "source" : "",
     "outputs" : [ ]
   } ],
   "nbformat" : 4
