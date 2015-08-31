@@ -47,11 +47,15 @@ object Dependencies {
   def sparkYarn(v: String) = if (v == "1.2.0") {
     "org.apache.spark" %% "spark-yarn" % (v + "-adatao") excludeAll(
       ExclusionRule("org.apache.hadoop"),
+      ExclusionRule("javax.servlet", "servlet-api"),
+      ExclusionRule("org.mortbay.jetty", "servlet-api"),
       ExclusionRule("org.apache.ivy", "ivy")
       )
   } else {
     "org.apache.spark" %% "spark-yarn" % v excludeAll(
       ExclusionRule("org.apache.hadoop"),
+      ExclusionRule("javax.servlet", "servlet-api"),
+      ExclusionRule("org.mortbay.jetty", "servlet-api"),
       ExclusionRule("org.apache.ivy", "ivy")
       )
   }
@@ -70,7 +74,9 @@ object Dependencies {
 
   def sparkHive(v: String) = "org.apache.spark" %% "spark-hive" % v excludeAll(
     ExclusionRule("org.apache.hadoop"),
-    ExclusionRule("org.apache.ivy", "ivy")
+    ExclusionRule("org.apache.ivy", "ivy"),
+    ExclusionRule("javax.servlet", "servlet-api"),
+    ExclusionRule("org.mortbay.jetty", "servlet-api")
   ) excludeAll(parquetList:_*)
 
   def sparkRepl(
