@@ -1,0 +1,122 @@
+{
+  "metadata" : {
+    "name" : "Slider Fun",
+    "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customArgs" : null,
+    "customSparkConf" : null
+  },
+  "cells" : [ {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# Warm Up"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : ":dp com.cra.figaro % figaro_2.10 % 2.2.2.0\n- com.typesafe.akka % akka-actor_2.10 % _",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# Prerequesites"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Put the following snippet right **after** the `types` definition in `InputBox.scala` (hence **before** `import notebook.front.widgets.types._`)\n```scala\nobject extraTypes {\n  implicit def SliderType[T](min:T, max:T, step:T)(implicit num: Numeric[T]) = new types.InputType[T] {\n    val tpe = \"range\"\n    override val extra = Map(\"min\" → min.toString, \"max\" → max.toString, \"step\" → step.toString)\n  }\n}\n```"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import extraTypes._",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# Sinus"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "implicit val ITI:types.InputType[Int] = SliderType[Int](5, 15, 2)\nval si = new InputBox(5, \"slider\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "def e(k:Int) = (-math.Pi to math.Pi by 0.1).toList map (x => math.sin(k*x))\n\nval plot = widgets.LineChart(e(1), fields=Some((\"X\", \"Y\")), maxPoints=100)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "si.currentData --> Connection.fromObserver{ i: Int =>\n                                          val s = e(i) \n                                          plot.applyOn(s)\n                                       }",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# Beta"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "implicit val ITI2:types.InputType[Int] = SliderType[Int](1, 1000, 1)\nval alpha = new InputBox(0, \"alpha\")\nval beta = new InputBox(0, \"beta\")\nalpha ++ beta",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "def e(a:Int, b:Int) = {\n  val d = com.cra.figaro.library.atomic.continuous.Beta(a, b)\n  val s = (0d to 1d by 0.01).toList\n  s map (x => (x, d.density(x)))\n}\nvar a = 1\nvar b = 1\nval plot = widgets.LineChart(e(a, b), fields=Some((\"X\", \"Y\")), maxPoints=100)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "alpha.currentData --> Connection.fromObserver{ i: Int =>\n                                          a = i\n                                          val s = e(a, b) \n                                          plot.applyOn(s)\n                                       }\nbeta.currentData --> Connection.fromObserver{ i: Int =>\n                                          b = i\n                                          val s = e(a, b) \n                                          plot.applyOn(s)\n                                       }",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "",
+    "outputs" : [ ]
+  } ],
+  "nbformat" : 4
+}
