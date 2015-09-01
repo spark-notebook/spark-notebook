@@ -37,12 +37,12 @@ object Dependencies {
   val breeze = "org.scalanlp" %% "breeze" % "0.10" excludeAll(
     ExclusionRule("junit"),
     ExclusionRule("org.apache.commons", "commons-math3")
-    )
+  )
 
   def sparkCore(v: String) = "org.apache.spark" %% "spark-core" % v excludeAll(
     ExclusionRule("org.apache.hadoop"),
     ExclusionRule("org.apache.ivy", "ivy")
-    )
+  )
 
   def sparkYarn(v: String) = if (v == "1.2.0") {
     "org.apache.spark" %% "spark-yarn" % (v + "-adatao") excludeAll(
@@ -50,14 +50,14 @@ object Dependencies {
       ExclusionRule("javax.servlet", "servlet-api"),
       ExclusionRule("org.mortbay.jetty", "servlet-api"),
       ExclusionRule("org.apache.ivy", "ivy")
-      )
+    )
   } else {
     "org.apache.spark" %% "spark-yarn" % v excludeAll(
       ExclusionRule("org.apache.hadoop"),
       ExclusionRule("javax.servlet", "servlet-api"),
       ExclusionRule("org.mortbay.jetty", "servlet-api"),
       ExclusionRule("org.apache.ivy", "ivy")
-      )
+    )
   }
 
   val defaultWithHive = sys.props.getOrElse("with.hive", "false").toBoolean
@@ -76,7 +76,8 @@ object Dependencies {
     ExclusionRule("org.apache.hadoop"),
     ExclusionRule("org.apache.ivy", "ivy"),
     ExclusionRule("javax.servlet", "servlet-api"),
-    ExclusionRule("org.mortbay.jetty", "servlet-api")
+    ExclusionRule("org.mortbay.jetty", "servlet-api"),
+    ExclusionRule("com.twitter", "parquet-hadoop-bundle")
   ) excludeAll(parquetList:_*)
 
   def sparkRepl(
