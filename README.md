@@ -160,7 +160,7 @@ Email: [spark-notebook-user@googlegroups.com](mailto:spark-notebook-user@googleg
 | Skymind | ![Skymind](http://skymind.io/wp-content/uploads/2015/02/logo.png) | [website](http://www.skymind.io)| At Skymind, we’re tackling some of the most advanced problems in data analysis and machine intelligence. We offer start-of-the-art, flexible, scalable deep learning for industry. |
 | Amino | ![Amino](https://amino.com/static/img/amino-logo-300x75.png) | [website](http://www.Amino.com)| A new way to get the facts about your health care choices. |
 | Vinted | ![Vinted](http://engineering.vinted.com/brandbook/images/logos/vinted.svg) | [website](http://www.vinted.com/)| Online marketplace and a social network focused on young women’s lifestyle. |
-
+| Vingle | ![Vingle](https://s3.amazonaws.com/vingle-assets/Vingle_Wordmark_Red.png) | [website](https://www.vingle.net)| Vingle is the community where you can meet someone like you. |
 
 # Launch
 
