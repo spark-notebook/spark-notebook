@@ -100,11 +100,11 @@ class CalcWebSocketService(
         spawnCalculator()
 
       case Register(ws: WebSockWrapper) =>
-        Logger.info(s"Registering web-socket ($ws) in service ${this} (current cout is ${wss.size})")
+        Logger.info(s"Registering web-socket ($ws) in service ${this} (current count is ${wss.size})")
         wss = ws :: wss
 
       case Unregister(ws: WebSockWrapper) =>
-        Logger.info(s"UN-registering web-socket ($ws) in service ${this} (current cout is ${wss.size})")
+        Logger.info(s"UN-registering web-socket ($ws) in service ${this} (current count is ${wss.size})")
         wss = wss.filterNot(_ == ws)
 
       case InterruptCalculator =>
