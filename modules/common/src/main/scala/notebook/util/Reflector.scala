@@ -23,11 +23,19 @@ object Reflector {
     toObjArray(obj).map(_._2)
   }
 
+  val tupleWeirdNames = "^(_[0-9]+)\\$mc.\\$sp$".r
+  def extractName(s: ru.Symbol) = {
+    s.name.toString.trim match {
+      case tupleWeirdNames(name) => name
+      case x => x
+    }
+  }
+
   def toObjArray(obj: Any) = {
     val fields = objToTerms(obj)
     fields._1.map { f =>
       try{
-        Some(f.name.toString.trim -> fields._2.reflectField(f.asTerm).get)
+        Some(extractName(f) -> fields._2.reflectField(f.asTerm).get)
       } catch {
         case x =>
           LOG.warn(s"Cannot reflect field ${f.name}")
