@@ -27,7 +27,7 @@
       "collapsed" : true
     },
     "cell_type" : "code",
-    "source" : ":dp com.cra.figaro % figaro_2.10 % 2.2.2.0\n- com.typesafe.akka % akka-actor_2.10 % _",
+    "source" : ":dp com.cra.figaro % figaro_2.10 % 2.2.2.0\n- com.typesafe.akka % akka-actor_2.10 % _\n- xerces % xercesImpl % _\n- xml-apis % xml-apis % _",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -37,7 +37,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "import extraTypes._",
@@ -54,7 +54,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "implicit val ITI:types.InputType[Int] = SliderType[Int](5, 15, 2)\nval si = new InputBox(5, \"slider\")",
@@ -67,7 +67,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "def sin(k:Int) = (-math.Pi to math.Pi by 0.1).toList map (x => math.sin(k*x))",
@@ -80,10 +80,10 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
-    "source" : "val plot = widgets.LineChart(sin(1), fields=Some((\"X\", \"Y\")), maxPoints=100)",
+    "source" : "val plot = widgets.LineChart(sin(1), fields=Some((\"_1\", \"_2\")), maxPoints=100)",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -93,7 +93,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "si.currentData --> Connection.fromObserver{k: Int =>\n                                            val s = sin(k) \n                                            plot.applyOn(s)\n                                          }",
@@ -124,11 +124,10 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "output_stream_collapsed" : true,
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "def e(a:Int, b:Int) = {\n  val d = com.cra.figaro.library.atomic.continuous.Beta(a, b)\n  val s = (0d to 1d by 0.01).toList\n  s map (x => (x, d.density(x)))\n}\nvar a = 1\nvar b = 1\nval plot = widgets.LineChart(e(a, b), fields=Some((\"X\", \"Y\")), maxPoints=100)",
+    "source" : "def e(a:Int, b:Int) = {\n  val d = com.cra.figaro.library.atomic.continuous.Beta(a, b)\n  val s = (0d to 1d by 0.01).toList\n  s map (x => (x, d.density(x)))\n}\nvar a = 1\nvar b = 1\nval betaPlot = widgets.LineChart(e(1, 1), fields=Some((\"_1\", \"_2\")))",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -141,7 +140,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "alpha.currentData --> Connection.fromObserver{ i: Int =>\n                                          a = i\n                                          val s = e(a, b) \n                                          plot.applyOn(s)\n                                       }\nbeta.currentData --> Connection.fromObserver{ i: Int =>\n                                          b = i\n                                          val s = e(a, b) \n                                          plot.applyOn(s)\n                                       }",
+    "source" : "alpha.currentData --> Connection.fromObserver{ i: Int =>\n                                          a = i\n                                          val s = e(a, b) \n                                          betaPlot.applyOn(s)\n                                       }\nbeta.currentData --> Connection.fromObserver{ i: Int =>\n                                          b = i\n                                          val s = e(a, b) \n                                          betaPlot.applyOn(s)\n                                       }",
     "outputs" : [ ]
   } ],
   "nbformat" : 4
