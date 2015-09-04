@@ -16,18 +16,18 @@ trait MagicRenderPoint { me =>
     override val data = me.data ++ m.data
   }
 }
-case class ChartPoint(x: Any, y: Any) extends MagicRenderPoint {
-  val X = "X"
-  val Y = "Y"
-  val headers = Seq(X, Y)
-  def values  = Seq(x, y)
-}
-case class MapPoint(key: Any, value: Any) extends MagicRenderPoint {
-  val Key = "Key"
-  val Value = "Value"
-  val headers = Seq(Key, Value)
-  val values =  Seq(key, value)
-}
+//case class ChartPoint(x: Any, y: Any) extends MagicRenderPoint {
+//  val X = "_1"
+//  val Y = "_2"
+//  val headers = Seq(X, Y)
+//  def values  = Seq(x, y)
+//}
+//case class MapPoint(key: Any, value: Any) extends MagicRenderPoint {
+//  val Key = "_1"
+//  val Value = "_2"
+//  val headers = Seq(Key, Value)
+//  val values =  Seq(key, value)
+//}
 case class StringPoint(string:String, headers:Seq[String]=Seq("string value")) extends MagicRenderPoint {
   val values  = Seq(string)
 }
@@ -78,8 +78,9 @@ object Implicits extends ExtraMagicImplicits {
     def count(x:C):Long
   }
   implicit def SeqToPoints[T] = new ToPoints[Seq[T]] {
-    def apply(x:Seq[T], max:Int):Seq[MagicRenderPoint] =
-      if (!x.isEmpty) {
+    def apply(_x:Seq[T], max:Int):Seq[MagicRenderPoint] =
+      if (!_x.isEmpty) {
+        val x = _x.take(max)
         val points:Seq[MagicRenderPoint] = x.head match {
           case _:String   => x.map(i => StringPoint(i.asInstanceOf[String]))
           case _:Graph[_] => x.map(_.asInstanceOf[Graph[_]].toPoint)
@@ -90,8 +91,7 @@ object Implicits extends ExtraMagicImplicits {
                         points
                       } else {
                         points.zipWithIndex.map { case (point, index) => point.values match {
-                          case List(o)    if isNumber(o)  =>  ChartPoint(index, o)
-                          case List(a, b)                 =>  ChartPoint(a, b)
+                          case List(o)    if isNumber(o)  =>  AnyPoint((index, o))
                           case _                          =>  point
                         }}
                       }
@@ -108,7 +108,7 @@ object Implicits extends ExtraMagicImplicits {
     def count(x:Array[T]) = x.size.toLong
   }
   implicit def MapToPoints[K,V] = new ToPoints[Map[K,V]] {
-    def apply(x:Map[K,V], max:Int):Seq[MagicRenderPoint] = x.toSeq.map(e => MapPoint(e._1, e._2))
+    def apply(x:Map[K,V], max:Int):Seq[MagicRenderPoint] = SeqToPoints(x.take(max).toSeq, max)//x.toSeq.map(e => MapPoint(e._1, e._2))
     def count(x:Map[K,V]) = x.size.toLong
   }
 }

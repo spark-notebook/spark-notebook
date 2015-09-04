@@ -313,7 +313,10 @@ package object widgets {
       stripedData
     }
 
-    override val scripts = List(Script("magic/scatterChart", Json.obj("x" → f1.toString, "y" → f2.toString, "width" → sizes._1, "height" → sizes._2)))
+    override val scripts = List(Script( "magic/scatterChart",
+                                        Json.obj( "x" → f1.toString, "y" → f2.toString,
+                                                  "nrow" → toPoints.count(originalData), "shown" → points.size,
+                                                  "width" → sizes._1, "height" → sizes._2)))
   }
 
   case class LineChart[C:ToPoints](originalData:C, fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {
@@ -325,7 +328,10 @@ package object widgets {
     }
 
 
-    override val scripts = List(Script("magic/lineChart", Json.obj("x" → f1.toString, "y" → f2.toString, "width" → sizes._1, "height" → sizes._2)))
+    override val scripts = List(Script( "magic/lineChart",
+                                        Json.obj( "x" → f1.toString, "y" → f2.toString,
+                                                  "nrow" → toPoints.count(originalData), "shown" → points.size,
+                                                  "width" → sizes._1, "height" → sizes._2)))
   }
 
   case class BarChart[C:ToPoints](originalData:C, fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {
@@ -336,7 +342,10 @@ package object widgets {
       stripedData
     }
 
-    override val scripts = List(Script("magic/barChart", Json.obj("x" → f1.toString, "y" → f2.toString, "width" → sizes._1, "height" → sizes._2)))
+    override val scripts = List(Script( "magic/barChart",
+                                        Json.obj( "x" → f1.toString, "y" → f2.toString,
+                                                  "nrow" → toPoints.count(originalData), "shown" → points.size,
+                                                  "width" → sizes._1, "height" → sizes._2)))
   }
 
   case class PieChart[C:ToPoints](originalData:C, fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {
@@ -347,7 +356,10 @@ package object widgets {
       stripedData
     }
 
-    override val scripts = List(Script("magic/pieChart", Json.obj("series" → f1.toString, "p" → f2.toString, "width" → sizes._1, "height" → sizes._2)))
+    override val scripts = List(Script( "magic/pieChart",
+                                        Json.obj("series" → f1.toString, "p" → f2.toString,
+                                                  "nrow" → toPoints.count(originalData), "shown" → points.size,
+                                                  "width" → sizes._1, "height" → sizes._2)))
   }
 
   case class GeoPointsChart[C:ToPoints](
@@ -374,6 +386,7 @@ package object widgets {
                   "fields" → List(f1.toString, f2.toString),
                   "lat" → latLong._1, "lon" → latLong._2,
                   "width" → sizes._1, "height" → sizes._2,
+                  "nrow" → toPoints.count(originalData), "shown" → points.size,
                   "rField" → rField, "colorField" → colorField
                   /*, "proj" → proj, "baseMap" → baseMap*/
                 )
@@ -386,7 +399,10 @@ package object widgets {
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
 
 
-    val opts = Json.obj("headers" → headers, "width" → sizes._1, "height" → sizes._2, "charge" → charge, "linkDistance" → linkDistance, "linkStrength" → linkStrength)
+    val opts = Json.obj("headers" → headers, "width" → sizes._1,
+                        "height" → sizes._2, "charge" → charge, "linkDistance" → linkDistance,
+                        "nrow" → toPoints.count(originalData), "shown" → points.size,
+                        "linkStrength" → linkStrength)
 
     override val scripts = List(Script("magic/graphChart", opts))
   }
@@ -394,7 +410,10 @@ package object widgets {
   case class DiyChart[C:ToPoints](originalData:C, js:String = "function(data, headers, chart) { console.log({'data': data, 'headers': headers, 'chart': chart}); }", override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
 
-    override val scripts = List(Script("magic/diyChart", Json.obj("js" → s"var js = $js;", "headers" → headers, "width" → sizes._1, "height" → sizes._2)))
+    override val scripts = List(Script( "magic/diyChart",
+                                        Json.obj( "js" → s"var js = $js;", "headers" → headers,
+                                                  "nrow" → toPoints.count(originalData), "shown" → points.size,
+                                                  "width" → sizes._1, "height" → sizes._2)))
   }
 
   case class TableChart[C:ToPoints](originalData:C, filterCol:Option[Seq[String]]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {
@@ -402,7 +421,10 @@ package object widgets {
       t.data.toSeq.filter{case (k, v) => filterCol.getOrElse(headers).contains(k)}
     }
     val h:Seq[String] = filterCol.getOrElse(headers)
-    override val scripts = List(Script("magic/tableChart", Json.obj("headers" → h, "nrow" → toPoints.count(originalData), "shown" → points.size, "width" → sizes._1, "height" → sizes._2)))
+    override val scripts = List(Script( "magic/tableChart",
+                                        Json.obj( "headers" → h,
+                                                  "nrow" → toPoints.count(originalData), "shown" → points.size,
+                                                  "width" → sizes._1, "height" → sizes._2)))
   }
 
   def tabs[C:ToPoints](originalData:C, pages:Seq[(String, Chart[C])]) = Tabs(originalData, pages)
@@ -465,7 +487,7 @@ package object widgets {
       val scatter:Option[(String, Chart[C])] = if (isNumber(f1) && isNumber(f2)) { Some("dot-circle-o" → ScatterChart(originalData, fields,maxPoints=maxPoints)) } else None
       val line:Option[(String, Chart[C])]    = if (isNumber(f1) && isNumber(f2)) { Some("line-chart" → LineChart(originalData, fields,maxPoints=maxPoints)) } else None
       val bar :Option[(String, Chart[C])]    = if (isNumber(f2)) { Some("bar-chart" → BarChart(originalData, fields,maxPoints=maxPoints)) } else None
-      val pie :Option[(String, Chart[C])]    = if ((!isNumber(f1)) || firstElem.isInstanceOf[MapPoint]) { Some("pie-chart" → PieChart(originalData, fields,maxPoints=maxPoints)) } else None
+      val pie :Option[(String, Chart[C])]    = if (!isNumber(f1)) { Some("pie-chart" → PieChart(originalData, fields,maxPoints=maxPoints)) } else None
       val allTabs:Seq[Option[(String, Chart[C])]] = tbl :: scatter :: line :: bar :: pie :: Nil
       tabs(originalData, allTabs.collect{ case Some(t) => t})
     } else {

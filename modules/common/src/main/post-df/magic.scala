@@ -21,8 +21,7 @@ trait ExtraMagicImplicits {
         }
 
         val encoded = points.zipWithIndex.map { case (point, index) => point.values match {
-          case List(o)    if isNumber(o)  =>  ChartPoint(index, o)
-          case List(a, b)                 =>  ChartPoint(a, b)
+          case List(o)    if isNumber(o)  =>  AnyPoint((index, o))
           case _                          =>  point
         }}
         encoded
