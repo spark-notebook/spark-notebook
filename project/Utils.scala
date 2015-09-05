@@ -2,6 +2,7 @@ import sbt._
 
 object ConsoleHelpers {
   val cleanAllOutputs = """
+    ammonite.repl.Repl.run("")
     def cleanAllOutputs = {
       import java.io.File
       import notebook._, server._, util._

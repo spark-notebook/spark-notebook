@@ -166,4 +166,6 @@ object Dependencies {
     "com.fasterxml.jackson.module" % "jackson-module-jsonSchema" % "2.3.3" force() excludeAll ExclusionRule("com.google.guava"),
     "com.fasterxml.jackson.datatype" % "jackson-datatype-joda" % "2.3.3" force() excludeAll ExclusionRule("com.google.guava")
   )
+
+  val ammonite = "com.lihaoyi" % "ammonite-repl" % "0.4.5" cross CrossVersion.full
 }
