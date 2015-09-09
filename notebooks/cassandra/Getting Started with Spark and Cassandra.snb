@@ -13,6 +13,7 @@
     "customRepos" : null,
     "customDeps" : null,
     "customImports" : null,
+    "customArgs" : null,
     "customSparkConf" : null
   },
   "cells" : [ {
@@ -30,7 +31,7 @@
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "_To download our dependencies, we must first setup a local directory as our temporary dependency repository. This is a Spark-Notebook specific requirement._"
+    "source" : "_To download our dependencies, we can first setup a local directory as our temporary dependency repository. This is a Spark-Notebook specific requirement._"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -64,7 +65,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val cassandraHost = <FILL ME>",
+    "source" : "val cassandraHost = <cassandra-host>",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -79,6 +80,10 @@
     "cell_type" : "code",
     "source" : "reset(\"Getting Stated with Spark and Cassandra Notebook\", lastChanges = (c:SparkConf) => {\n  c.set(\"spark.cassandra.connection.host\", cassandraHost)\n})",
     "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "> **Remark**\n> \n> The four previous cells wouldn't have been required if the notebook's metadata is used\n> \n> That is, if you open in the menu: `Edit > Edit Notebook Metadata`, you can update the custom parameters this way:\n> ```json\n> \"customLocalRepo\": \"/tmp/repo\",\n> \"customdeps\": [\n>   \"com.datastax.spark % spark-cassandra-connector_2.10 % 1.4.0-M3\"\n> ],\n> \"customSparkConf\" : {\n>   \"spark.cassandra.connection.host\": <cassandra-host>\n> }\n> ```"
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -270,15 +275,6 @@
     },
     "cell_type" : "code",
     "source" : "rdd.count",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : true
-    },
-    "cell_type" : "code",
-    "source" : "",
     "outputs" : [ ]
   } ],
   "nbformat" : 4
