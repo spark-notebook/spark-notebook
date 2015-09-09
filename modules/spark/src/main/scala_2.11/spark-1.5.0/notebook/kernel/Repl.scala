@@ -15,7 +15,8 @@ import tools.nsc.interpreter._
 import tools.nsc.interpreter.Completion.{Candidates, ScalaCompleter}
 import tools.nsc.interpreter.Results.{Incomplete => ReplIncomplete, Success => ReplSuccess, Error}
 
-import jline.console.completer.{ArgumentCompleter, Completer}
+import _root_.jline.console.completer.{ArgumentCompleter, Completer}
+import scala.tools.nsc.interpreter.jline.JLineDelimiter
 
 import notebook.front.Widget
 import notebook.util.Match
@@ -52,11 +53,11 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
   private lazy val stdoutBytes = new MyOutputStream
   private lazy val stdout = new PrintWriter(stdoutBytes)
 
-  private var loop:HackSparkILoop = _
+  private var loop:org.apache.spark.repl.HackSparkILoop = _
 
   var classServerUri:Option[String] = None
 
-  val interp:scala.tools.nsc.interpreter.SparkIMain = {
+  val interp = {
     val settings = new Settings
 
     settings.embeddedDefaults[Repl]
@@ -102,7 +103,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     // debug the classpath → settings.Ylogcp.value = true
 
     //val i = new HackIMain(settings, stdout)
-    loop = new HackSparkILoop(stdout)
+    loop = new org.apache.spark.repl.HackSparkILoop(stdout)
 
     jars.foreach { jar =>
       import scala.tools.nsc.util.ClassPath
@@ -111,16 +112,13 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     }
 
     loop.process(settings)
-    val i = loop.intp
-    ////i.initializeSynchronous()
-    //classServerUri = Some(i.classServer.uri)
     classServerUri = Some(loop.classServer.uri)
-    i.asInstanceOf[scala.tools.nsc.interpreter.SparkIMain]
+    loop.intp
   }
 
   private lazy val completion = {
-    //new JLineCompletion(interp)
-    new SparkJLineCompletion(interp)
+    new JLineCompletion(interp)
+    //new SparkJLineCompletion(interp)
   }
 
   private def scalaToJline(tc: ScalaCompleter): Completer = new Completer {
@@ -196,13 +194,15 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
                   request.fullPath(lastHandler.definesTerm.get.toString),
                   request.importsTrailer
                 )
+                LOG.debug(renderObjectCode)
             if (line.compile(renderObjectCode)) {
               try {
                 val renderedClass2 = Class.forName(
                   line.pathTo("$rendered")+"$", true, interp.classLoader
                 )
+                def getModule(c:Class[_]) = c.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get()
 
-                val o = renderedClass2.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get()
+                val o = getModule(renderedClass2)
 
                 def iws(o:Any):NodeSeq = {
                   val iw = o.getClass.getMethods.find(_.getName == "$iw")
@@ -220,7 +220,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
                 }
                 iws(o)
               } catch {
-                case e =>
+                case e: Throwable =>
                   e.printStackTrace
                   LOG.error("Ooops, exception in the cell", e)
                   <span style="color:red;">Ooops, exception in the cell: {e.getMessage}</span>
@@ -228,7 +228,12 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
             } else {
               // a line like println(...) is technically a val, but returns null for some reason
               // so wrap it in an option in case that happens...
-              Option(line.call("$result")) map { result => Text(try { result.toString } catch { case e => "Fail to `toString` the result: " + e.getMessage }) } getOrElse NodeSeq.Empty
+              Option(line.call("$result")).map { result =>
+                Text(
+                  try { result.toString }
+                  catch { case e: Throwable => "Fail to `toString` the result: " + e.getMessage }
+                )
+              }.getOrElse(NodeSeq.Empty)
             }
           } else {
             NodeSeq.Empty
