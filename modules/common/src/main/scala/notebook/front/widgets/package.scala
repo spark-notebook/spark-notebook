@@ -31,7 +31,7 @@ package object widgets {
 
   def text(value: Connection[String], style: Connection[String] = Connection.just("")) = {
     val _currentValue = JSBus.createConnection
-    val stringCodec:Codec[JsValue, String] = formatToCodec(implicitly[Format[String]])
+    val stringCodec:Codec[JsValue, String] = formatToCodec(None)(implicitly[Format[String]])
     val currentValue = _currentValue biMap stringCodec
     currentValue <-- value
 
@@ -99,7 +99,7 @@ package object widgets {
   }
 
   def out = new SingleConnectedWidget[String] {
-    implicit val codec:Codec[JsValue, String] = formatToCodec(Format.of[String])
+    implicit val codec:Codec[JsValue, String] = formatToCodec(None)(Format.of[String])
 
     lazy val toHtml = <p data-bind="text: value">{
       scopedScript(

@@ -191,7 +191,7 @@ case class DateInput(name: String) extends TypedInput[java.util.Date] {
 }
 
 case class IntInput(name: String) extends TypedInput[Int] {
-  implicit val codec: Codec[JsValue, Int] = JsonCodec.formatToCodec {
+  implicit val codec: Codec[JsValue, Int] = JsonCodec.formatToCodec(None){
     val r = Reads.of[Int] orElse Reads.of[String].map(_.toInt)
     val w = Writes.of[Int].transform { x =>
       val JsNumber(n) = x
