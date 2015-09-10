@@ -305,6 +305,18 @@ package object widgets {
     lazy val numOfFields = firstElem.numOfFields
   }
 
+  case class PivotChart[C:ToPoints](
+    originalData:C,
+    override val sizes:(Int, Int)=(600, 400),
+    maxPoints:Int = 25,
+    derivedAttributes:JsObject
+  ) extends Chart[C] {
+      def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
+
+
+      override val scripts = List(Script( "magic/pivotChart", Json.obj("width" → sizes._1, "height" → sizes._2, "derivedAttributes" → derivedAttributes)))
+  }
+
   case class ScatterChart[C:ToPoints](originalData:C, fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {
     val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
 
