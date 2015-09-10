@@ -205,13 +205,11 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
                 val o = getModule(renderedClass2)
 
                 def iws(o:Any):NodeSeq = {
-                  val iw = o.getClass.getMethods.find(_.getName == "$iw")
-                  val o2 = iw map { m =>
-                    m.invoke(o)
-                  }
+                  val tryClass = o.getClass.getName+"$iw$"
+                  val o2 = Try{o.getClass.getClassLoader.loadClass(tryClass)}.toOption
                   o2 match {
                     case Some(o3) =>
-                      iws(o3)
+                      iws(getModule(o3))
                     case None =>
                       val r = o.getClass.getDeclaredMethod("rendered").invoke(o)
                       val h = r.asInstanceOf[Widget].toHtml

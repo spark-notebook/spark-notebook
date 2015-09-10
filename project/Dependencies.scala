@@ -26,7 +26,7 @@ object Dependencies {
 
   val scala_2_1X = "2\\.1([0-9])\\.[0-9]+".r
   val spark_1_X = "1\\.([0-9]+)\\.([0-9]+)".r
-  val defaultSparkVersion = sys.props.getOrElse("spark.version", "1.4.1")
+  val defaultSparkVersion = sys.props.getOrElse("spark.version", "1.5.0")
   val defaultScalaVersion = sys.props.getOrElse("scala.version", "2.10.4") match {
     case x@scala_2_1X("0") => x
     case x@scala_2_1X("1") => defaultSparkVersion match {
