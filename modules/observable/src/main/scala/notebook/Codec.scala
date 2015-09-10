@@ -64,68 +64,6 @@ object JsonCodec {
       case JsNumber(i) => i.toInt
     }
   }
-  /*implicit val bools = new Codec[JsValue, Boolean] {
-    def decode(t: Boolean):JsValue = JBool(t)
-    def encode(v: JsValue):Boolean = v match {
-      case JString(s)  => s.toBoolean
-      case JBool(b)    => b
-      case x           => x.extract[Boolean]
-    }
-  }
-  implicit val gints = new Codec[JsValue, Int] {
-    def decode(t: Int):JsValue = JInt(t)
-    def encode(v: JsValue):Int = v match {
-      case JString(s) => s.toInt
-      case JInt(i)    => i.toInt
-      case x          => x.extract[Int]
-    }
-  }
-  implicit val longs = new Codec[JsValue, Long] {
-    def decode(t: Long):JsValue = JInt(t)
-    def encode(v: JsValue):Long = v match {
-      case JString(s) => s.toLong
-      case JInt(i)    => i.toLong
-      case x          => x.extract[Long]
-    }
-  }
-  implicit val doubles = new Codec[JsValue, Double] {
-    def decode(t: Double) = JDouble(t)
-    def encode(v: JsValue):Double = v match {
-      case JString(s)  => s.toDouble
-      case JDouble(d)  => d
-      case JDecimal(d) => d.toDouble
-      case x           => x.extract[Double]
-    }
-
-  }
-  implicit val floats = new Codec[JsValue, Float] {
-    def decode(t: Float):JsValue = JDecimal(t)
-    def encode(v: JsValue):Float = v match {
-      case JString(s)  => s.toFloat
-      case JDouble(d)   => d.toFloat
-      case JDecimal(d) => d.toFloat
-      case x           => x.extract[Float]
-    }
-  }
-  implicit val chars = new Codec[JsValue, Char] {
-    def decode(t: Char):JsValue = JString(t.toString)
-    def encode(v: JsValue):Char = v match {
-      case JString(s) => s.head
-      case x          => x.extract[Char]
-    }
-  }
-  implicit val strings = new Codec[JsValue, String] {
-    def decode(t: String):JsValue = JString(t)
-    def encode(v: JsValue):String = v.extract[String]
-  }
-  implicit def defaultDates(implicit d:java.text.DateFormat) = new Codec[JsValue, java.util.Date] {
-    def decode(t: java.util.Date):JsValue = JInt(t.getTime)
-    def encode(v: JsValue):java.util.Date = v match {
-      case JString(s) => Try(s.toLong).toOption.map(x => new java.util.Date(x)).getOrElse(d.parse(s))
-      case JInt(i)    => new java.util.Date(i.toLong)
-      case x          => new java.util.Date(v.extract[Long])
-    }
-  }*/
 
   implicit val pair = new Codec[JsValue, (Double, Double)] {
     def decode(t: (Double, Double)): JsValue = Json.arr(t._1, t._2)

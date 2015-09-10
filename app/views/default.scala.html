@@ -12,6 +12,8 @@
 
         <link rel="stylesheet" href="@routes.Assets.at("ipython/components/jquery-ui/themes/smoothness/jquery-ui.min.css")" type="text/css" />
 
+        <link rel="stylesheet" href="http://nicolas.kruchten.com/pivottable/dist/pivot.css" type="text/css" />
+
         @stylesheet
         @*<link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/bootstrap/css/bootstrap.min.css")" type="text/css" />*@
         <link rel="stylesheet" href="@routes.Assets.at("ipython/custom/custom.css")" type="text/css" />
@@ -24,7 +26,7 @@
         paths: {
           nbextensions : '/nbextensions',
           kernelspecs : '/kernelspecs',
-          underscore : 'components/underscore/underscore-min',
+          underscore : '@routes.Assets.at("javascripts/third/underscore-min")',
           backbone : 'components/backbone/backbone-min',
           jquery: 'components/jquery/jquery.min',
           bootstrap: 'components/bootstrap/js/bootstrap.min',
@@ -41,8 +43,12 @@
 
           knockout: '@routes.Assets.at("javascripts/third/knockout")',
           'knockout-bootstrap': '@routes.Assets.at("javascripts/third/knockout-bootstrap.min")',
+          c3: '@routes.Assets.at("javascripts/third/c3.min")',
           d3: '@routes.Assets.at("javascripts/third/d3")',
           dimple: '@routes.Assets.at("javascripts/third/dimple.v2.1.2")',
+          pivot: '@routes.Assets.at("javascripts/third/pivot")',
+          pivotD3: '@routes.Assets.at("javascripts/third/d3_renderers")',
+          pivotC3: '@routes.Assets.at("javascripts/third/c3_renderers")',
           rickshaw: '@routes.Assets.at("javascripts/third/rickshaw/rickshaw")',
           wizard: '@routes.Assets.at("javascripts/third/jquery/js/jquery.bootstrap.wizard.min")',
           observable: '@routes.Assets.at("javascripts/notebook/observable")',
