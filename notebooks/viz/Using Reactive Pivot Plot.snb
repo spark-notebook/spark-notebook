@@ -1,0 +1,119 @@
+{
+  "metadata" : {
+    "name" : "Using Reactive Pivot Plot",
+    "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customArgs" : null,
+    "customSparkConf" : null
+  },
+  "cells" : [ {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# Any Reactive Scala data can be easily explored using a Reactive Pivot Plot"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Library: PivotTable"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "These examples are using the AMAZING _PivotTable_ javascript library. Check it out here:\n\n[http://nicolas.kruchten.com/pivottable](http://nicolas.kruchten.com/pivottable)"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Demo"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Here is the model we'll use for the example"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "case class Data(province:String, party:String, age:Int, name:String, gender:String)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Let's generate some synthetic data."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "import scala.util.Random._\nval provinces = List(\"Namur\", \"Liège\", \"Bruxelles\")\nval parties = List(\"Wallo\", \"15 Aout\", \"Fete Nationale\")\nval genders = List(\"Male\", \"Female\") \n\ndef pick(list:List[String]):String = shuffle(list).head\n\ndef gl(n:Int) = List.fill(n)(Data(pick(provinces), \n                             pick(parties), \n                             nextInt(60)+20, \n                             s\"nextString(5), nextString(5)\", \n                             pick(genders))\n                       )\nval l = gl(2000)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "We can directly use the `PivotChart` widget to explore our mutli-dimensional dataset.\n\n> **Note**: We can add some derivated attributes in Javascript (rather than updating the model for that).\n> \n> More info about these derived attributes can be found [here](https://github.com/nicolaskruchten/pivottable/wiki/Aggregators)\n\n> **Warn**: don't forget to specify how many points/items you like to be considered for the analysis!\n> \n> For instance, here we use up to 2000 points from the original dataset"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val pivot = widgets.PivotChart(l, maxPoints=2000, sizes=(750, 600), derivedAttributes=play.api.libs.json.Json.obj(\n  \"Age Bin\" → \"\"\"derivers.bin(\"age\", 10)\"\"\",\n  \"Gender Imbalance\" → \"\"\"|\n              |function(mp) {\n              |  return mp[\"gender\"] == \"Male\" ? -1 : 1;\n              |}\n              |\"\"\".stripMargin\n))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Reactivity"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Like any other widgets, the pivot table is reactive, hence the `pivot` variable can be updated live with some new data."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val otherData = gl(20)\npivot.applyOn(otherData)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "This data can of course come **live**."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import scala.concurrent._\nimport ExecutionContext.Implicits.global\nvar data = otherData\nvar stop = false\ndef f:Future[Unit] = Future {\n  Thread.sleep(5000)\n  val newData = gl(10)\n  data = data ::: newData\n  pivot.addAndApply(data)\n  if (!stop) f\n}",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "**WARN**: this is stopping the dummy generator above.... if you uncomment the second line of course"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "println(\"stop that → uncomment below\")\n//stop=true",
+    "outputs" : [ ]
+  } ],
+  "nbformat" : 4
+}

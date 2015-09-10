@@ -15,36 +15,36 @@ define([
 
       derivers = $.pivotUtilities.derivers;
       renderers = $.extend($.pivotUtilities.renderers, $.pivotUtilities.c3_renderers)
-
-      window.c3 = c3
-
-      $(container).pivotUI(@dataInit, {
-        renderers: renderers,
-        derivedAttributes: _.mapObject(options.derivedAttributes,
+      derivedAttributes = _.mapObject(options.derivedAttributes,
                                   (val, key) ->
                                     eval("var _f_ = " + val)
                                     _f_
                                 )
-            # {
-            #    "Age Bin": derivers.bin("Age", 10),
-            #    "Gender Imbalance": function(mp) {
-            #        return mp["Gender"] == "Male" ? 1 : -1;
-            #    }
-            # },
-        onRefresh: (options) -> $(".pvtUi path.c3-shape.c3-line").css("fill", "transparent"),
-        rendererOptions: {
-          c3: {
-            size: {
-              width: w*0.85
-            }
-          }
-        }
-      })
+      refresh = (options) ->
+        $(".pvtUi path.c3-shape.c3-line").css("fill", "transparent")
+        $(".pvtUi").css("width", "100%")
+      rendererOptions = {
+                          c3: {
+                            size: {
+                              height: h
+                              width: w
+                            }
+                          }
+                        }
+      window.c3 = c3
+
+
+      plotThat = (data) =>
+        $(container).pivotUI(data, {
+          renderers: renderers
+          derivedAttributes: derivedAttributes
+          onRefresh: refresh
+          rendererOptions: rendererOptions
+        })
 
       dataO.subscribe( (newData) =>
-        container.pivotUI(newData, {
-          renderers: renderers
-        })
+        plotThat(newData)
       )
+      plotThat(@dataInit)
     )
 )
