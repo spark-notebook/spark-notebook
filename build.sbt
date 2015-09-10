@@ -87,7 +87,7 @@ scalacOptions += "-deprecation"
 
 scalacOptions ++= Seq("-Xmax-classfile-name", "100")
 
-scriptClasspath := Seq("*")
+//scriptClasspath := Seq("*")
 
 scriptClasspath in batScriptReplacements := Seq("*")
 
