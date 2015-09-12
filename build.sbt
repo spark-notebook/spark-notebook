@@ -8,8 +8,10 @@ name := "spark-notebook"
 
 scalaVersion := defaultScalaVersion
 
+val SparkNotebookSimpleVersion = "0.6.2-SNAPSHOT"
+
 version in ThisBuild <<= (scalaVersion, sparkVersion, hadoopVersion, withHive, withParquet) { (sc, sv, hv, h, p) =>
-  s"0.6.1-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "") + (if (p) "-with-parquet" else "")
+  s"$SparkNotebookSimpleVersion-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "") + (if (p) "-with-parquet" else "")
 }
 
 maintainer := "Andy Petrella" //Docker
@@ -17,6 +19,12 @@ maintainer := "Andy Petrella" //Docker
 enablePlugins(UniversalPlugin)
 
 enablePlugins(DockerPlugin)
+
+enablePlugins(GitVersioning)
+
+enablePlugins(GitBranchPrompt)
+
+import uk.gov.hmrc.gitstamp.GitStampPlugin._
 
 net.virtualvoid.sbt.graph.Plugin.graphSettings
 
@@ -150,6 +158,13 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).ena
   .settings(includeFilter in(Assets, LessKeys.less) := "*.less")
   .settings(unmanagedSourceDirectories in Compile <<= (scalaSource in Compile)(Seq(_))) //avoid app-2.10 and co to be created
   .settings(initialCommands += ConsoleHelpers.cleanAllOutputs)
+  .settings(
+    git.useGitDescribe := true,
+    git.baseVersion := SparkNotebookSimpleVersion
+  )
+  .settings(
+    gitStampSettings: _*
+  )
 
 lazy val subprocess = project.in(file("modules/subprocess"))
   .settings(libraryDependencies ++= playDeps)
@@ -209,7 +224,22 @@ lazy val common = Project(id = "common", base = file("modules/common"))
   .settings(buildInfoSettings: _*)
   .settings(
     sourceGenerators in Compile <+= buildInfo,
-    buildInfoKeys := Seq[BuildInfoKey](version, scalaVersion, sparkVersion, hadoopVersion, withHive, withParquet, jets3tVersion, jlineDef, sbtVersion),
+    buildInfoKeys :=  Seq[BuildInfoKey](
+                        "sparkNotebookVersion" → SparkNotebookSimpleVersion,
+                        scalaVersion,
+                        sparkVersion,
+                        hadoopVersion,
+                        withHive,
+                        withParquet,
+                        jets3tVersion,
+                        jlineDef,
+                        sbtVersion,
+                        git.formattedShaVersion,
+                        BuildInfoKey.action("buildTime") {
+                          val formatter = new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy")
+                          formatter.format(new java.util.Date(System.currentTimeMillis))
+                        }
+                      ),
     buildInfoPackage := "notebook"
   )
 
