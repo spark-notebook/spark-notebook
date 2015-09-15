@@ -113,23 +113,48 @@ object Shared {
   ) ++ repl ++ hive ++ yarnWebProxy
 
   lazy val tachyonSettings: Seq[Def.Setting[_]] = {
-    def tachyonVersion(
-      sv: String) = sv.takeWhile(_ != '-' /*get rid of -SNAPSHOT, -RC or whatever*/).split("\\.").toList.map(_.toInt) match {
-      case List(1, y, z) if y <= 3 => "0.5.0"
-      case List(1, y, z) => "0.6.4"
-      case _ => throw new IllegalArgumentException("Bad spark version for tachyon: " + sv)
+    def tachyonVersion(sv: String) =
+      sv.takeWhile(_ != '-' /*get rid of -SNAPSHOT, -RC or whatever*/)
+        .split("\\.")
+        .toList
+        .map(_.toInt) match {
+          case List(1, y, z) if y <= 3 => "0.5.0"
+          case List(1, 4, z) => "0.6.4"
+          case List(1, y, z) => "0.7.1"
+          case _ => throw new IllegalArgumentException("Bad spark version for tachyon: " + sv)
+        }
+
+    val exludes = Seq(
+      ExclusionRule("org.jboss.netty", "netty"),
+      ExclusionRule("org.apache.hadoop",  "hadoop-client"),
+      ExclusionRule("org.apache.curator", "curator-recipes"),
+      ExclusionRule("org.tachyonproject", "tachyon-underfs-glusterfs"),
+      ExclusionRule("org.tachyonproject", "tachyon-underfs-s3")
+    )
+
+    val deps = sparkVersion { sv =>
+      tachyonVersion(sv) match {
+        case x@"0.7.1"           =>
+          Seq(
+          "org.tachyonproject" % "tachyon-common" % x excludeAll(exludes:_*),
+          "org.tachyonproject" % "tachyon-client" % x excludeAll(exludes:_*),
+          "org.tachyonproject" % "tachyon-servers" % x excludeAll(exludes:_*),
+          "org.tachyonproject" % "tachyon-minicluster" % x excludeAll(exludes:_*)
+        )
+        case x =>
+          Seq(
+          "org.tachyonproject" % "tachyon" % tachyonVersion(sv) excludeAll(exludes:_*),
+          "org.tachyonproject" % "tachyon-client" % tachyonVersion(sv) excludeAll(exludes:_*),
+          "org.tachyonproject" % "tachyon" % tachyonVersion(sv) classifier "tests" excludeAll(exludes:_*)
+        )
+      }
     }
 
     Seq(
       unmanagedSourceDirectories in Compile <+= (sparkVersion, sourceDirectory in Compile) {
         (sv, sd) => sd / ("tachyon_" + tachyonVersion(sv))
       },
-      libraryDependencies <++= sparkVersion { sv => Seq(
-        "org.tachyonproject" % "tachyon" % tachyonVersion(sv) excludeAll ExclusionRule("org.jboss.netty", "netty"),
-        "org.tachyonproject" % "tachyon-client" % tachyonVersion(sv) excludeAll ExclusionRule("org.jboss.netty", "netty"),
-        "org.tachyonproject" % "tachyon" % tachyonVersion(sv) classifier "tests" excludeAll ExclusionRule("org.jboss.netty", "netty")
-      )
-      }
+      libraryDependencies <++= deps
     )
   }
 }

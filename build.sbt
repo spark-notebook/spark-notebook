@@ -9,7 +9,7 @@ name := "spark-notebook"
 scalaVersion := defaultScalaVersion
 
 version in ThisBuild <<= (scalaVersion, sparkVersion, hadoopVersion, withHive, withParquet) { (sc, sv, hv, h, p) =>
-  s"0.6.1-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "") + (if (p) "-with-parquet" else "")
+  s"0.6.2-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "") + (if (p) "-with-parquet" else "")
 }
 
 maintainer := "Andy Petrella" //Docker
@@ -71,8 +71,8 @@ resolvers in ThisBuild ++= Seq(
   "cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos",
   // docker
   "softprops-maven" at "http://dl.bintray.com/content/softprops/maven",
-  //spark 1.{n+1}.{m+1}
-  "Apache Spark Prerelease" at "https://repository.apache.org/content/repositories/orgapachespark-1092/"
+  //spark cutting edge
+  "spark 1.5.0-rc2" at "https://repository.apache.org/content/repositories/orgapachespark-1141"
 )
 
 EclipseKeys.skipParents in ThisBuild := false
@@ -87,20 +87,20 @@ scalacOptions += "-deprecation"
 
 scalacOptions ++= Seq("-Xmax-classfile-name", "100")
 
-scriptClasspath := Seq("*")
+//scriptClasspath := Seq("*")
 
 scriptClasspath in batScriptReplacements := Seq("*")
 
 batScriptExtraDefines += {
-  "set \"APP_CLASSPATH=%HADOOP_CONF_DIR%;%EXTRA_CLASSPATH%;%APP_CLASSPATH%\""
+  "set \"APP_CLASSPATH=%YARN_CONF_DIR%;%HADOOP_CONF_DIR%;%EXTRA_CLASSPATH%;%APP_CLASSPATH%\""
 }
 
 val ClasspathPattern = "declare -r app_classpath=\"(.*)\"\n".r
 
 bashScriptDefines := bashScriptDefines.value.map {
   case ClasspathPattern(classpath) =>
-    s"""declare -r app_classpath="$${HADOOP_CONF_DIR}:$${EXTRA_CLASSPATH}:${classpath}"\n"""
-  case _@entry => entry
+    s"""declare -r app_classpath="$${YARN_CONF_DIR}:$${HADOOP_CONF_DIR}:$${EXTRA_CLASSPATH}:${classpath}"\n"""
+  case entry => entry
 }
 
 dependencyOverrides += "log4j" % "log4j" % "1.2.16"
@@ -209,7 +209,7 @@ lazy val common = Project(id = "common", base = file("modules/common"))
   .settings(buildInfoSettings: _*)
   .settings(
     sourceGenerators in Compile <+= buildInfo,
-    buildInfoKeys := Seq[BuildInfoKey](version, scalaVersion, sparkVersion, hadoopVersion, withHive, jets3tVersion, jlineDef, sbtVersion),
+    buildInfoKeys := Seq[BuildInfoKey](version, scalaVersion, sparkVersion, hadoopVersion, withHive, withParquet, jets3tVersion, jlineDef, sbtVersion),
     buildInfoPackage := "notebook"
   )
 

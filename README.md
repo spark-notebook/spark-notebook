@@ -69,6 +69,7 @@ Spark Notebook
       - [Import (download) dependencies](#import-download-dependencies)
       - [Add Spark Packages](#add-spark-packages)
       - [Default import statements](#default-import-statements)
+      - [Add JVM arguments](#add-jvm-arguments)
       - [Spark Conf](#spark-conf)
       - [Example](#example)
         - [YARN](#yarn)
@@ -93,7 +94,7 @@ Spark Notebook
     - [Dynamic update of data and plot using Scala's `Future`](#dynamic-update-of-data-and-plot-using-scalas-future)
   - [Update _Notebook_ `ClassPath`](#update-_notebook_-classpath)
     - [Classes required to connect to the cluster](#classes-required-to-connect-to-the-cluster)
-  - [Update __Spark__ dependencies (`spark.jars`)](#update-__spark__-dependencies-sparkjars)
+  - [Update Spark dependencies (`spark.jars`)](#update-spark-dependencies-sparkjars)
     - [Set `local-repo`](#set-local-repo)
     - [Add `remote-repo`](#add-remote-repo)
       - [`remote-repo` with authentication](#remote-repo-with-authentication)
@@ -151,7 +152,7 @@ Email: [spark-notebook-user@googlegroups.com](mailto:spark-notebook-user@googleg
 |---------------------------------------|------------------------------------------------------------------------------------------|---------------------------------------------|-----------------------------------------------------|
 |            Data Fellas                | ![Data Fellas](http://www.data-fellas.guru/assets/images/logo-wired-small.png)           | [website](http://www.data-fellas.guru)      | Mad Data Science and Scalable Computing             |
 |            Agile Lab                  | ![Agile Lab](http://www.agilelab.it/wp-content/uploads/2015/02/logo1.png)                | [website](http://www.agilelab.it)           | The only Italian Spark Certified systems integrator |
-|            CloudPhysics               | ![CloudPhysics](https://www.cloudphysics.com/static/uploads/2014/06/3color_bug_lg.png)   | [website](http://www.cloudphysics.com)      | DATA-DRIVEN INSIGHTS FOR SMARTER IT                 | 
+|            CloudPhysics               | ![CloudPhysics](https://www.cloudphysics.com/static/uploads/2014/06/3color_bug_lg.png)   | [website](http://www.cloudphysics.com)      | DATA-DRIVEN INSIGHTS FOR SMARTER IT                 |
 | Aliyun | ![Alibaba - Aliyun ECS](http://gtms02.alicdn.com/tps/i2/T1J0xIFMteXXX4dCTl-220-72.png) | [product](http://market.aliyun.com/products/56014009/jxsc000194.html?spm=5176.900004.4.1.WGc3Ei) | Spark runtime environment on ECS and management tool of Spark Cluster running on Aliyun ECS  |
 | EMBL European Bioinformatics Institute | ![EMBL - EBI](http://www.ebi.ac.uk/miriam/static/main/img/EBI_logo.png) | [website](http://www.ebi.ac.uk/) | EMBL-EBI provides freely available data from life science experiments, performs basic research in computational biology and offers an extensive user training programme, supporting researchers in academia and industry.  |
 | Metail | ![Metail](http://metail.wpengine.com/wp-content/uploads/2013/11/Metail_Logo1.png) | [website](http://metail.com/) | The best body shape and garment fit company in the world. To create and empower everyone’s online body identity.|
@@ -159,7 +160,7 @@ Email: [spark-notebook-user@googlegroups.com](mailto:spark-notebook-user@googleg
 | Skymind | ![Skymind](http://skymind.io/wp-content/uploads/2015/02/logo.png) | [website](http://www.skymind.io)| At Skymind, we’re tackling some of the most advanced problems in data analysis and machine intelligence. We offer start-of-the-art, flexible, scalable deep learning for industry. |
 | Amino | ![Amino](https://amino.com/static/img/amino-logo-300x75.png) | [website](http://www.Amino.com)| A new way to get the facts about your health care choices. |
 | Vinted | ![Vinted](http://engineering.vinted.com/brandbook/images/logos/vinted.svg) | [website](http://www.vinted.com/)| Online marketplace and a social network focused on young women’s lifestyle. |
-
+| Vingle | ![Vingle](https://s3.amazonaws.com/vingle-assets/Vingle_Wordmark_Red.png) | [website](https://www.vingle.net)| Vingle is the community where you can meet someone like you. |
 
 # Launch
 
@@ -383,7 +384,7 @@ You can on Amazon EMR launch Spark Clusters from this [page](https://console.aws
 
 ### Version 3.x
 
-#### Environment 
+#### Environment
 At the writing time, the created clusters has this environmnent:
 
 * Yarn as the cluster manager
@@ -427,7 +428,7 @@ Edit the `conf/application.conf` file and add this configuration under the manag
   }
 ```
 
-> **IMPORTANT:** `<MASTER LOCAL PRIVATE IP>` has to be replaced by the private IP of your master node! 
+> **IMPORTANT:** `<MASTER LOCAL PRIVATE IP>` has to be replaced by the private IP of your master node!
 
 _Note_: the spark assembly is referred locally in `spark.yarn.jar`, you can also put it `HDFS` yourself and refer its path on hdfs.
 
@@ -455,7 +456,7 @@ screen  -m -d -S "snb" bash -c 'export HADOOP_CONF_DIR=/home/hadoop/conf && expo
 
 **Interesting page to check:** [differences with version 3](http://docs.aws.amazon.com/ElasticMapReduce/latest/ReleaseGuide/emr-release-differences.html).
 
-#### Environment 
+#### Environment
 At the writing time, the created clusters has this environmnent:
 
 * Yarn as the cluster manager
@@ -487,9 +488,9 @@ Edit the `conf/application.conf` file and add this configuration under the manag
     sparkConf {
       spark.local.dir="/mnt/spark,/mnt1/spark"
       spark.driver.log.level=INFO
-            
+
       spark.driver.extraClassPath=":/usr/lib/hadoop/*:/usr/lib/hadoop/../hadoop-hdfs/*:/usr/lib/hadoop/../hadoop-mapreduce/*:/usr/lib/hadoop/../hadoop-yarn/*:/usr/lib/hadoop/../hadoop-lzo/lib/*:/usr/share/aws/emr/emrfs/conf:/usr/share/aws/emr/emrfs/lib/*:/usr/share/aws/emr/emrfs/auxlib/*"
-      
+
       spark.executor.extraClassPath=":/usr/lib/hadoop/*:/usr/lib/hadoop/../hadoop-hdfs/*:/usr/lib/hadoop/../hadoop-mapreduce/*:/usr/lib/hadoop/../hadoop-yarn/*:/usr/lib/hadoop/../hadoop-lzo/lib/*:/usr/share/aws/emr/emrfs/conf:/usr/share/aws/emr/emrfs/lib/*:/usr/share/aws/emr/emrfs/auxlib/*"
 
       spark.driver.extraJavaOptions="-Dspark.driver.log.level=INFO -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=70 -XX:MaxHeapFreeRatio=70 -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=512M"
@@ -506,13 +507,13 @@ Edit the `conf/application.conf` file and add this configuration under the manag
       spark.yarn.jar="/usr/lib/spark/lib/spark-assembly-1.4.1-hadoop2.6.0-amzn-0.jar"
 
       spark.master="yarn-client"
-      
+
       spark.shuffle.service.enabled=true
     }
   }
 ```
 
-> **IMPORTANT:** `<MASTER LOCAL PRIVATE IP>` has to be replaced by the private IP of your master node! 
+> **IMPORTANT:** `<MASTER LOCAL PRIVATE IP>` has to be replaced by the private IP of your master node!
 
 _Note_: the spark assembly is referred locally in `spark.yarn.jar`, you can also put it `HDFS` yourself and refer its path on hdfs.
 
@@ -592,7 +593,7 @@ dcos package install spark-notebook
 That's it.
 
 #### Access
-The Spark Notebook will be started on the public slave of the mesos cluster on the port `8899`. This should allow you to access it using the public DNS that the DCOS installation provides you at the end of the installation. 
+The Spark Notebook will be started on the public slave of the mesos cluster on the port `8899`. This should allow you to access it using the public DNS that the DCOS installation provides you at the end of the installation.
 
 But there are still some problem with this DNS, hence the easiest way to open the notebook is to use the public DNS reported in you ec2 interface, so go there and look for the node having a security group public, we'll use its DNS name (`<public-dns>`).
 
@@ -684,6 +685,17 @@ Some package, classes, types, functions and so forth could be automatically impo
     "customImports"   : "import scala.util.Random\n",
 ```
 
+#### Add JVM arguments
+
+Each notebook is actually running in a different JVM, hence you can add some parameters (like memory tuning and so on) like this:
+
+```json
+    "customArgs"   : [
+      "-Dtest=ok",
+      "-Dyarn.resourcemanager.am.max-attempts=1"
+    ],
+```
+
 #### Spark Conf
 
 Apache Spark needs some configuration to access clusters, tune the memory and [many others](http://spark.apache.org/docs/latest/configuration.html).
@@ -711,6 +723,7 @@ For this configuration to be shareable, and you don't want to use the `reset` fu
     ],
     "customDeps"      : "med-at-scale        %  ga4gh-model-java % 0.1.0-SNAPSHOT\norg.apache.avro     %  avro-ipc         % 1.7.6\n- org.mortbay.jetty % org.eclipse.jetty % _",
     "customImports"   : "import scala.util.Random\n",
+    "customArgs"   : [ "-Dtest=ok", "-Dyarn.resourcemanager.am.max-attempts=1" ],
     "customSparkConf" : {
       "spark.app.name": "Notebook",
       "spark.master": "local[8]",
@@ -735,6 +748,7 @@ For this configuration to be shareable, and you don't want to use the `reset` fu
       "customRepos" : [ ],
       "customDeps" : [ ],
       "customImports" : [ ],
+      "customArgs" : [ ],
       "customSparkConf" : {
         "spark.app.name" : "Notebook",
         "spark.master" : "yarn-client",
@@ -755,6 +769,7 @@ For this configuration to be shareable, and you don't want to use the `reset` fu
         "customRepos" : null,
         "customDeps" : null,
         "customImports" : null,
+        "customArgs" : [ "-Dyarn.resourcemanager.am.max-attempts=1" ],
         "customSparkConf" : {
           "spark.app.name" : "Notebook",
           "spark.master" : "yarn-client",
@@ -875,7 +890,7 @@ sbt -J-Xms1024m -J-Xmx5000m run
 Or when using a distro.
 
 ```
-./bin/spark-notebook -J-Xms1024m -J-Xmx5000m 
+./bin/spark-notebook -J-Xms1024m -J-Xmx5000m
 ```
 
 ### Check using the UI
@@ -1097,7 +1112,7 @@ For some Hadoop distributions extra classes are needed to connect to the cluster
 HADOOP_CONF_DIR=/opt/mapr/hadoop/hadoop-2.5.1/etc/hadoop EXTRA_CLASSPATH=<extra MapR jars> ./spark-notebook
 ```
 
-## Update __Spark__ dependencies (`spark.jars`)
+## Update Spark dependencies (`spark.jars`)
 So you use Spark, hence you know that it's not enough to have the jars locally added to the Driver's classpath.
 
 Indeed, workers needs to have them in their classpath. One option would be to update the list of jars (`spark.jars` property) provided to the `SparkConf` using the `reset` function.

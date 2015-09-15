@@ -6,7 +6,7 @@ import java.util.Date
 import org.slf4j.LoggerFactory
 import play.api.libs.json._
 
-import scala.util.Try
+import scala.util.{Try, Success, Failure}
 
 trait Codec[A, B] {
   def encode(x: A): B
@@ -17,25 +17,31 @@ trait Codec[A, B] {
 object JsonCodec {
   val log = LoggerFactory.getLogger(getClass)
 
-  implicit def formatToCodec[A](implicit f: Format[A]): Codec[JsValue, A] = new Codec[JsValue, A] {
+  implicit def formatToCodec[A](stringFallback:Option[String=>A]=None)(implicit f: Format[A]): Codec[JsValue, A] = new Codec[JsValue, A] {
+    val stringFallbackRead = stringFallback map (f => Reads.of[String] map f)
+    val reader = stringFallbackRead match {
+        case Some(r) => f orElse r
+        case None    => f
+      }
+
     def decode(a: A): JsValue = f.writes(a)
 
-    def encode(v: JsValue): A = f.reads(v) match {
+    def encode(v: JsValue): A = reader.reads(v) match {
       case s: JsSuccess[A] => s.get
       case e: JsError => throw new RuntimeException("Errors: " + JsError.toFlatJson(e).toString())
     }
   }
 
   //implicit val ints:Codec[JsValue, Int] = formatToCodec(Format.of[Int])
-  implicit val longs: Codec[JsValue, Long] = formatToCodec(Format.of[Long])
-  implicit val doubles: Codec[JsValue, Double] = formatToCodec(Format.of[Double])
-  implicit val floats: Codec[JsValue, Float] = formatToCodec(Format.of[Float])
-  implicit val strings: Codec[JsValue, String] = formatToCodec(Format.of[String])
-  implicit val chars: Codec[JsValue, Char] = formatToCodec(Format(
+  implicit val longs: Codec[JsValue, Long] = formatToCodec(Some((_:String).toLong))(Format.of[Long])
+  implicit val doubles: Codec[JsValue, Double] =  formatToCodec(Some((_:String).toDouble))(Format.of[Double])
+  implicit val floats: Codec[JsValue, Float] = formatToCodec(Some((_:String).toFloat))(Format.of[Float])
+  implicit val strings: Codec[JsValue, String] = formatToCodec(Some(identity[String] _))(Format.of[String])
+  implicit val chars: Codec[JsValue, Char] = formatToCodec(Some((_:String).head))(Format(
     Reads.of[String].map(_.head),
     Writes((c: Char) => JsString(c.toString))
   ))
-  implicit val bools: Codec[JsValue, Boolean] = formatToCodec(Format.of[Boolean])
+  implicit val bools: Codec[JsValue, Boolean] = formatToCodec(Some((_:String).toBoolean))(Format.of[Boolean])
 
   implicit def defaultDates(implicit d: DateFormat): Codec[JsValue, Date] = {
     new Codec[JsValue, Date] {
@@ -58,68 +64,6 @@ object JsonCodec {
       case JsNumber(i) => i.toInt
     }
   }
-  /*implicit val bools = new Codec[JsValue, Boolean] {
-    def decode(t: Boolean):JsValue = JBool(t)
-    def encode(v: JsValue):Boolean = v match {
-      case JString(s)  => s.toBoolean
-      case JBool(b)    => b
-      case x           => x.extract[Boolean]
-    }
-  }
-  implicit val gints = new Codec[JsValue, Int] {
-    def decode(t: Int):JsValue = JInt(t)
-    def encode(v: JsValue):Int = v match {
-      case JString(s) => s.toInt
-      case JInt(i)    => i.toInt
-      case x          => x.extract[Int]
-    }
-  }
-  implicit val longs = new Codec[JsValue, Long] {
-    def decode(t: Long):JsValue = JInt(t)
-    def encode(v: JsValue):Long = v match {
-      case JString(s) => s.toLong
-      case JInt(i)    => i.toLong
-      case x          => x.extract[Long]
-    }
-  }
-  implicit val doubles = new Codec[JsValue, Double] {
-    def decode(t: Double) = JDouble(t)
-    def encode(v: JsValue):Double = v match {
-      case JString(s)  => s.toDouble
-      case JDouble(d)  => d
-      case JDecimal(d) => d.toDouble
-      case x           => x.extract[Double]
-    }
-
-  }
-  implicit val floats = new Codec[JsValue, Float] {
-    def decode(t: Float):JsValue = JDecimal(t)
-    def encode(v: JsValue):Float = v match {
-      case JString(s)  => s.toFloat
-      case JDouble(d)   => d.toFloat
-      case JDecimal(d) => d.toFloat
-      case x           => x.extract[Float]
-    }
-  }
-  implicit val chars = new Codec[JsValue, Char] {
-    def decode(t: Char):JsValue = JString(t.toString)
-    def encode(v: JsValue):Char = v match {
-      case JString(s) => s.head
-      case x          => x.extract[Char]
-    }
-  }
-  implicit val strings = new Codec[JsValue, String] {
-    def decode(t: String):JsValue = JString(t)
-    def encode(v: JsValue):String = v.extract[String]
-  }
-  implicit def defaultDates(implicit d:java.text.DateFormat) = new Codec[JsValue, java.util.Date] {
-    def decode(t: java.util.Date):JsValue = JInt(t.getTime)
-    def encode(v: JsValue):java.util.Date = v match {
-      case JString(s) => Try(s.toLong).toOption.map(x => new java.util.Date(x)).getOrElse(d.parse(s))
-      case JInt(i)    => new java.util.Date(i.toLong)
-      case x          => new java.util.Date(v.extract[Long])
-    }
-  }*/
 
   implicit val pair = new Codec[JsValue, (Double, Double)] {
     def decode(t: (Double, Double)): JsValue = Json.arr(t._1, t._2)

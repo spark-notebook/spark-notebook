@@ -12,7 +12,7 @@ import scala.concurrent.Future
 
 object TachyonProxy extends Controller {
   lazy val tachyonUrl = AppUtils.config.tachyonInfo.flatMap(_.url)
-  lazy val shareDir = AppUtils.config.tachyonInfo.map(_.baseDir).getOrElse("/share")
+  lazy val shareDir = AppUtils.config.tachyonInfo.map(_.baseDir).getOrElse("/tmp_spark_tachyon")
   lazy val tachyonClient = AppUtils.config.tachyonInfo.map(_ => new notebook.share.Client(tachyonUrl))
 
   import play.api.libs.concurrent.Execution.Implicits.defaultContext

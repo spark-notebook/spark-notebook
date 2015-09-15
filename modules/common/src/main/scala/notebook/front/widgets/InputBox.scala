@@ -51,6 +51,13 @@ object types {
 
 }
 
+object extraTypes {
+  implicit def SliderType[T](min:T, max:T, step:T)(implicit num: Numeric[T]) = new types.InputType[T] {
+    val tpe = "range"
+    override val extra = Map("min" → min.toString, "max" → max.toString, "step" → step.toString)
+  }
+}
+
 import notebook.front.widgets.types._
 
 class InputBox[T](initial: T, label: String = "")

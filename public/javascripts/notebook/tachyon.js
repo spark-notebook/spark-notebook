@@ -7,6 +7,8 @@ define([
   var TachyonModel = function() {
     var self = this;
 
+    this.opened = ko.observable(true);
+
     this.size = ko.observable(200);
 
     this.width = ko.computed(function() {
@@ -25,13 +27,22 @@ define([
       self.list(self.current());
     };
 
+    this.close = function() {
+      self.opened(false);
+    };
+
     this.list = function(info) {
       var path = info.path;
       tachyonJsRoutes.controllers.TachyonProxy.ls(path).ajax({
         success: function(data) {
           self.current({ path: path });
           var newData = _.map(data, function(p) { return {path: p};});
-          var dropCurrent = _.drop(newData, 1);
+          var dropCurrent;
+          if (newData[0] == path) {
+            dropCurrent = _.drop(newData, 1);
+          } else {
+            dropCurrent = newData;
+          }
           self.paths(dropCurrent);
         },
         error: function(error){

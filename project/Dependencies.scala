@@ -16,41 +16,50 @@ object Dependencies {
   val rxScala = "io.reactivex" %% "rxscala" % "0.22.0"
   val scalaZ = "org.scalaz" %% "scalaz-core" % "7.0.6"
 
-  val akkaVersion = "2.3.4-spark"
-  val akka = "org.spark-project.akka" %% "akka-actor" % akkaVersion
-  val akkaRemote = "org.spark-project.akka" %% "akka-remote" % akkaVersion
-  val akkaSlf4j = "org.spark-project.akka" %% "akka-slf4j" % akkaVersion
+  val defaultHadoopVersion = sys.props.getOrElse("hadoop.version", "2.2.0")
+
+  val akkaGroup = if (defaultHadoopVersion.startsWith("1")) "org.spark-project.akka" else "com.typesafe.akka"
+  val akkaVersion = if (defaultHadoopVersion.startsWith("1")) "2.3.4-spark" else "2.3.11"
+  val akka = akkaGroup %% "akka-actor" % akkaVersion
+  val akkaRemote = akkaGroup %% "akka-remote" % akkaVersion
+  val akkaSlf4j = akkaGroup %% "akka-slf4j" % akkaVersion
 
   val scala_2_1X = "2\\.1([0-9])\\.[0-9]+".r
   val spark_1_X = "1\\.([0-9]+)\\.([0-9]+)".r
-  val defaultSparkVersion = sys.props.getOrElse("spark.version", "1.4.1")
+  val defaultSparkVersion = sys.props.getOrElse("spark.version", "1.5.0")
   val defaultScalaVersion = sys.props.getOrElse("scala.version", "2.10.4") match {
     case x@scala_2_1X("0") => x
     case x@scala_2_1X("1") => defaultSparkVersion match {
-      case spark_1_X("4", "1") => "2.11.6"
+      case spark_1_X("4", "0") => x
+      case spark_1_X("4", _) => "2.11.6"
+      case spark_1_X("5", _) => "2.11.6"
       case spark_1_X(_, _) => x
     }
   }
   val breeze = "org.scalanlp" %% "breeze" % "0.10" excludeAll(
     ExclusionRule("junit"),
     ExclusionRule("org.apache.commons", "commons-math3")
-    )
+  )
 
   def sparkCore(v: String) = "org.apache.spark" %% "spark-core" % v excludeAll(
     ExclusionRule("org.apache.hadoop"),
     ExclusionRule("org.apache.ivy", "ivy")
-    )
+  )
 
   def sparkYarn(v: String) = if (v == "1.2.0") {
     "org.apache.spark" %% "spark-yarn" % (v + "-adatao") excludeAll(
       ExclusionRule("org.apache.hadoop"),
+      ExclusionRule("javax.servlet", "servlet-api"),
+      ExclusionRule("org.mortbay.jetty", "servlet-api"),
       ExclusionRule("org.apache.ivy", "ivy")
-      )
+    )
   } else {
     "org.apache.spark" %% "spark-yarn" % v excludeAll(
       ExclusionRule("org.apache.hadoop"),
+      ExclusionRule("javax.servlet", "servlet-api"),
+      ExclusionRule("org.mortbay.jetty", "servlet-api"),
       ExclusionRule("org.apache.ivy", "ivy")
-      )
+    )
   }
 
   val defaultWithHive = sys.props.getOrElse("with.hive", "false").toBoolean
@@ -67,7 +76,10 @@ object Dependencies {
 
   def sparkHive(v: String) = "org.apache.spark" %% "spark-hive" % v excludeAll(
     ExclusionRule("org.apache.hadoop"),
-    ExclusionRule("org.apache.ivy", "ivy")
+    ExclusionRule("org.apache.ivy", "ivy"),
+    ExclusionRule("javax.servlet", "servlet-api"),
+    ExclusionRule("org.mortbay.jetty", "servlet-api"),
+    ExclusionRule("com.twitter", "parquet-hadoop-bundle")
   ) excludeAll(parquetList:_*)
 
   def sparkRepl(
@@ -77,17 +89,17 @@ object Dependencies {
     ExclusionRule("org.apache.hadoop")
   ) excludeAll(parquetList:_*)
 
-  val defaultHadoopVersion = sys.props.getOrElse("hadoop.version", "1.0.4")
-
   def hadoopClient(v: String) = "org.apache.hadoop" % "hadoop-client" % v excludeAll(
     ExclusionRule("org.apache.commons", "commons-exec"),
     ExclusionRule("commons-codec", "commons-codec"),
+    ExclusionRule("javax.servlet", "servlet-api"),
     ExclusionRule("com.google.guava", "guava")
   )
 
   def yarnProxy(v: String) = "org.apache.hadoop" % "hadoop-yarn-server-web-proxy" % v excludeAll(
       ExclusionRule("org.apache.commons", "commons-exec"),
       ExclusionRule("commons-codec", "commons-codec"),
+      ExclusionRule("javax.servlet", "servlet-api"),
       ExclusionRule("com.google.guava", "guava")
   )
 

@@ -47,6 +47,12 @@ define(function(require) {
         var dialog = $("<div/>")
             .addClass("modal-dialog")
             .appendTo(modal);
+        if (options.width) {
+            dialog.css("width", options.width);
+        }
+        if (options.height) {
+            dialog.css("height", options.height);
+        }
         var dialog_content = $("<div/>")
             .addClass("modal-content")
             .appendTo(dialog);
@@ -194,7 +200,7 @@ define(function(require) {
                 Cancel: {}
             },
             notebook: options.notebook,
-            keyboard_manager: options.keyboard_manager,
+            keyboard_manager: options.keyboard_manager
         });
 
         modal_obj.on('shown.bs.modal', function(){ editor.refresh(); });
@@ -209,6 +215,15 @@ define(function(require) {
     var div = elt("div");
     var ul = elt("ul");
     var li = elt("li");
+    var lis = function(ls, us) {
+        var list = us || ul();
+        _.each(ls, function(i) {
+            var l = li();
+            l.append(i);
+            list.append(l);
+        });
+        return list;
+    };
     var a = elt("a");
     var form = elt("form");
     var label = elt("label");
@@ -317,6 +332,20 @@ define(function(require) {
 
         addPane("conf_remotes", "Libraries Repos", function(page) {
             var remotes = div();
+            var info = div();
+            var reposInfo = p();
+            reposInfo.append(
+                "This is equivalent to the context `:remote-repo` in a notebook, and thus can take one of the following forms, for examples:"
+            )
+            var remoteRepoForms=lis([
+                "my-repo % default % file:///path-to/ivy2 % ivy",
+                "my-repo % default % http:///link-to/ivy2 % ivy",
+                "a-mvn % default % http://link-to/repository % mvn",
+                "on-s3 % default % s3://my-maven/repository % mvn % (\"$AWS_KEY\", \"$AWS_SECRET\")"
+            ]);
+            info.append(reposInfo);
+            info.append(remoteRepoForms);
+            remotes.append(info);
             remotes.append(
                 form()  .attr("data-bind", "submit:addRemote")
                         .append("Add remote")
@@ -481,6 +510,61 @@ define(function(require) {
             page.append(imports);
         });
 
+        addPane("conf_args", "VM Args", function(page) {
+            var args = div();
+            args.append(
+                form()  .attr("data-bind", "submit:addArg")
+                        .append("Add arg")
+                        .append(
+                            input() .attr("type", "text")
+                                    .css("width", "65%")
+                                    .attr("placeholder", "add a JVM extra property, args, tuning param, ...!")
+                                    .attr("data-bind", 'value: argToAdd, valueUpdate: "afterkeydown"')
+                        )
+                        .append(
+                            button().attr("type", "submit")
+                                    .attr("data-bind", "enable: argToAdd().length>0")
+                                    .text("Add")
+                        )
+            );
+            args.append(p().text("Current args"));
+            args.append(
+                select().attr("multiple", "multiple")
+                        .attr("height", "5")
+                        .css("width", "75%")
+                        .attr("data-bind", "options:allArgs, selectedOptions:selectedArgs")
+            );
+
+            args.append(
+                div().append(
+                        button().attr("data-bind", "click: removeSelectedArgs, enable: selectedArgs().length > 0")
+                                .text("Remove")
+                    )
+            );
+
+            var ConfigurationArgsModel = function () {
+                this.argToAdd = ko.observable("");
+                var currentArgsStripped = _.chain(options.template.customArgs || []).map(function(v) { return v.trim();}).value();
+                this.allArgs = ko.observableArray(currentArgsStripped); // Initial args
+                this.selectedArgs = ko.observableArray([]); // Initial selection
+
+                this.addArg = function () {
+                    if ((this.argToAdd() != "") && (this.allArgs.indexOf(this.argToAdd()) < 0)) // Prevent blanks and duplicates
+                        this.allArgs.push(this.argToAdd());
+                    this.argToAdd(""); // Clear the text box
+                };
+
+                this.removeSelectedArgs = function () {
+                    this.allArgs.removeAll(this.selectedArgs());
+                    this.selectedArgs([]); // Clear selection
+                };
+                pager.data("conf").args = this.allArgs;
+            };
+
+            ko.applyBindings(new ConfigurationArgsModel(), args.get(0));
+            page.append(args);
+        });
+
 
         addPane("conf_spark", "Spark Conf", function(page) {
             var sparkConf = div();
@@ -569,6 +653,7 @@ define(function(require) {
                                 "customRepos" : pager.data("conf").remotes(),
                                 "customDeps" : pager.data("conf").deps(),
                                 "customImports" : pager.data("conf").imports(),
+                                "customArgs" : pager.data("conf").args(),
                                 "customSparkConf" : pager.data("conf").sparkConf
                             }
                         }
@@ -576,7 +661,8 @@ define(function(require) {
                     }
                 },
                 Cancel: {}
-            }
+            },
+            width: "750px"
         });
 
         newClusterWizard.bootstrapWizard({onTabShow: function(tab, navigation, index) {

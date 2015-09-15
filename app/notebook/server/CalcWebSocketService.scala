@@ -20,6 +20,7 @@ class CalcWebSocketService(
   customRepos: Option[List[String]],
   customDeps: Option[List[String]],
   customImports: Option[List[String]],
+  customArgs: Option[List[String]],
   customSparkConf: Option[Map[String, String]],
   initScripts: List[(String, String)],
   compilerArgs: List[String],
@@ -58,13 +59,18 @@ class CalcWebSocketService(
       val kCustomRepos = customRepos
       val kCustomDeps = customDeps
       val kCustomImports = customImports
+      val kCustomArgs = customArgs
 
       val tachyon = tachyonInfo.map { info =>
         Map(
           "spark.tachyonStore.url" → info.url.getOrElse(
             "tachyon://" + notebook.share.Tachyon.host + ":" + notebook.share.Tachyon.port
           ),
-          "spark.tachyonStore.baseDir" → info.baseDir
+          "spark.externalBlockStore.url" → info.url.getOrElse(
+            "tachyon://" + notebook.share.Tachyon.host + ":" + notebook.share.Tachyon.port
+          ),
+          "spark.tachyonStore.baseDir" → info.baseDir,
+          "spark.externalBlockStore.baseDir" → info.baseDir
         )
       }.getOrElse(Map.empty[String, String])
       val kCustomSparkConf = customSparkConf.map(_ ++ tachyon).orElse(Some(tachyon))
@@ -78,6 +84,7 @@ class CalcWebSocketService(
           kCustomRepos,
           kCustomDeps,
           kCustomImports,
+          kCustomArgs,
           kCustomSparkConf,
           kInitScripts,
           kCompilerArgs)
@@ -93,11 +100,11 @@ class CalcWebSocketService(
         spawnCalculator()
 
       case Register(ws: WebSockWrapper) =>
-        Logger.info(s"Registering web-socket ($ws) in service ${this} (current cout is ${wss.size})")
+        Logger.info(s"Registering web-socket ($ws) in service ${this} (current count is ${wss.size})")
         wss = ws :: wss
 
       case Unregister(ws: WebSockWrapper) =>
-        Logger.info(s"UN-registering web-socket ($ws) in service ${this} (current cout is ${wss.size})")
+        Logger.info(s"UN-registering web-socket ($ws) in service ${this} (current count is ${wss.size})")
         wss = wss.filterNot(_ == ws)
 
       case InterruptCalculator =>

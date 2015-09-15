@@ -47,7 +47,7 @@ object Tachyon {
   lazy val host = sLocalTachyonCluster.getMasterHostname
   lazy val port = sLocalTachyonCluster.getMasterPort
 
-  lazy val fs: TachyonFS = sLocalTachyonCluster.getClient
+  lazy val fs: TachyonFS = TachyonFS.get("tachyon://" + host + ":" + port)
 
   lazy val start = {
     sLocalTachyonCluster.start()
