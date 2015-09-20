@@ -4,6 +4,7 @@ import java.io.File
 
 import akka.actor.{Actor, ActorRef, Props}
 import notebook.OutputTypes._
+import notebook.PresentationCompiler
 import notebook.kernel._
 import notebook.util.{CustomResolvers, Deps}
 import sbt._
@@ -110,6 +111,14 @@ class ReplCalculator(
   private def repl: Repl = _repl getOrElse {
     val r = new Repl(compilerArgs, depsJars)
     _repl = Some(r)
+    r
+  }
+
+  private var _presentationCompiler: Option[PresentationCompiler] = None
+
+  private def presentationCompiler: PresentationCompiler = _presentationCompiler getOrElse {
+    val r = new PresentationCompiler()
+    _presentationCompiler = Some(r)
     r
   }
 
@@ -446,7 +455,11 @@ class ReplCalculator(
         case req@ExecuteRequest(_, code) => executor.forward(req)
 
         case CompletionRequest(line, cursorPosition) =>
-          val (matched, candidates) = repl.complete(line, cursorPosition)
+          //val (matched, candidates) = repl.complete(line, cursorPosition)
+          log.info(s"Completion with line='$line' and position=$cursorPosition.")
+          var (matched, candidates) = presentationCompiler.complete(line, cursorPosition)
+          candidates.+("Empty")
+          log.info(s"Completion matched='$matched' and candidates=[${candidates.map(_.matchedValue).mkString(", ")}]")
           sender ! CompletionResponse(cursorPosition, candidates, matched)
 
         case ObjectInfoRequest(code, position) =>
