@@ -455,11 +455,7 @@ class ReplCalculator(
         case req@ExecuteRequest(_, code) => executor.forward(req)
 
         case CompletionRequest(line, cursorPosition) =>
-          //val (matched, candidates) = repl.complete(line, cursorPosition)
-          log.info(s"Completion with line='$line' and position=$cursorPosition.")
-          var (matched, candidates) = presentationCompiler.complete(line, cursorPosition)
-          candidates.+("Empty")
-          log.info(s"Completion matched='$matched' and candidates=[${candidates.map(_.matchedValue).mkString(", ")}]")
+          val (matched, candidates) = presentationCompiler.complete(line, cursorPosition)
           sender ! CompletionResponse(cursorPosition, candidates, matched)
 
         case ObjectInfoRequest(code, position) =>

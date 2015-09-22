@@ -9,8 +9,6 @@ import scala.tools.nsc.interactive.{Global, Response}
 import scala.tools.nsc.reporters.ConsoleReporter
 
 class PresentationCompiler {
-  trait Probe
-
   def ask[T] (op: Response[T] => Unit) : Response[T] = {
     val r = new Response[T]
     op(r)
@@ -20,40 +18,39 @@ class PresentationCompiler {
   val compiler: Global = {
     val target = new VirtualDirectory("", None)
     val s = new Settings() { usejavacp.value = true }
-    s.embeddedDefaults[Probe]
     s.outputDirs.setSingleOutput(target)
-    s.usejavacp.value = true
-    s.dependenciesFile.tryToSet(
-      List(
-        "scala-library.jar",
-        "scala-compiler.jar",
-        "scala-reflect.jar"
-      )
-    )
 
     val reporter = new ConsoleReporter(s)
     val compiler = new Global(s, reporter)
     compiler
   }
 
-  protected val snippetPre = "import scala.collection._;import scala.math._;import scala.language._; object snippet { def main() { "
-  protected val snippedPost = " } }"
+  val snippetPre = "import scala.collection._\nimport scala.math._\nimport scala.language._\n/*<imports>*/\nobject snippet {\ndef main() {\n"
+  val snippedPost = "\n}\n}\n"
 
-  protected def wrapCode(code: String) : String = {
-    val codeWithoutLinebreaks = code.replace("\n", ";")
-    val wrappedCode = s"$snippetPre$codeWithoutLinebreaks$snippedPost"
-    wrappedCode
+  @unchecked
+  def wrapCodeWithMovedImports(code: String) : (String,Int) = {
+    val codeLines = code.split(";|\n")
+    val imports = codeLines.filter(c => c.startsWith("import")).mkString(";")
+    val codeWithoutImports = codeLines.filter(c => !c.startsWith("import")).mkString(";")
+    val snippetPreTemplate = snippetPre.replace("/*<imports>*/", imports)
+    val wrappedCode = s"$snippetPreTemplate$codeWithoutImports$snippedPost"
+    (wrappedCode,snippetPreTemplate.length)
   }
 
-  protected def computeCodeCompletionIndex(code: String, position: Int) : (Int, String) = {
-    val lastPeriodIndex = code.substring(0,position).lastIndexOf('.') + 1
-    val alreadyTypedInCodeCompletionSnippet = code.substring(lastPeriodIndex,position)
-    (lastPeriodIndex, alreadyTypedInCodeCompletionSnippet)
+  def wrapCode(code: String) : (String,Int) = {
+    val wrappedCode = s"$snippetPre$code$snippedPost"
+    (wrappedCode,snippetPre.length)
+  }
+
+  def extractImports(code: String) : String = {
+    val codeLines = code.split(";|\n")
+    codeLines.filter(c => c.startsWith("import")).mkString(";")
   }
 
   case class CompletionInformation(symbol : String, parameters : String, symbolType: String)
 
-  protected def completion(pos: OffsetPosition, filterSnippet: String,
+  def completion(pos: OffsetPosition, filterSnippet: String,
                            op: (OffsetPosition,Response[List[compiler.Member]]) => Unit) : Seq[CompletionInformation] = {
     var result: Seq[CompletionInformation] = null
     val response = ask[List[compiler.Member]](op(pos, _))
@@ -61,7 +58,7 @@ class PresentationCompiler {
       result = compiler.ask( () => {
         response.get(10) match {
           case Some(Left(t)) =>
-            t .filter(m => m.sym.nameString.startsWith(filterSnippet))
+            t .filter(m => m.sym.nameString.contains(filterSnippet) && m.accessible)
               .map( m => CompletionInformation(
                   m.sym.nameString,
                   m.tpe.params.map( p => s"<${p.name.toString}:${p.tpe.toString()}>").mkString(", "),
@@ -85,19 +82,26 @@ class PresentationCompiler {
   }
 
   def complete(code: String, position: Int) : (String, Seq[Match]) = {
-    val wrappedCode = wrapCode(code)
+    val (wrappedCode,positionOffset) = wrapCode(code.substring(0,position))
+    val filter1 = code.substring(0,position).split(";|\n", -1)
+    var filterSnippet = ""
+    //var isScopeCompletion = false
+    if(filter1.nonEmpty) {
+      val filter2 = filter1.last.split("[^a-zA-Z0-9_]+", -1)
+      if(filter2.nonEmpty) {
+        filterSnippet = filter2.last
+      }
+    }
     val source = compiler.newSourceFile(wrappedCode)
     reload(source)
-    val (realPosition, filterSnippet) = computeCodeCompletionIndex(wrappedCode, position + snippetPre.length)
-    val pos = new OffsetPosition(source, realPosition)
-    val matches = completion(pos, filterSnippet,compiler.askTypeCompletion)
-    val exactMatches = matches
-      .filter( m => m.symbol == filterSnippet )
-      .map( m => Match(s"${m.symbol}(${m.parameters})", Map.empty[String,String]))
-    val otherMatches = matches
-      .filter( m => m.symbol != filterSnippet )
-      .map( m => Match(m.symbol, Map.empty[String,String]))
-    val returnMatches = exactMatches.union(otherMatches).distinct
+    val pos = new OffsetPosition(source, position + positionOffset)
+    var matches = completion (pos, filterSnippet, compiler.askTypeCompletion)
+    if(matches.isEmpty) {
+      matches = completion (pos, filterSnippet, compiler.askScopeCompletion)
+    }
+    val returnMatches = matches
+      .map( m => Match(s"${m.symbol}", Map.empty[String,String]))
+      .distinct
     (filterSnippet,returnMatches)
   }
 }
