@@ -99,7 +99,7 @@ class ReplCalculator(
     val deps = Deps.script(customDeps, resolvers, repo).toOption.getOrElse(List.empty[String])
     (deps, ("deps", () => {
       s"""
-         |val CustomJars = ${deps.mkString("Array(\"", "\",\"", "\")")}
+         |val CustomJars = ${deps.mkString("Array(\"", "\",\"", "\")").replace("\\","\\\\")}
       """.stripMargin
     }))
   }.getOrElse((List.empty[String], ("deps", () => "val CustomJars = Array.empty[String]\n")))
