@@ -84,7 +84,6 @@ class PresentationCompiler(dependencies: List[String]) {
       }
     }
     val source = compiler.newSourceFile(wrappedCode)
-    println(wrappedCode)
     reload(source)
     val pos = new OffsetPosition(source, position + positionOffset)
     var matches = completion (pos, compiler.askTypeCompletion)
