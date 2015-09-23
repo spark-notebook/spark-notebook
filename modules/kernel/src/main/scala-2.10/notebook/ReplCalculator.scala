@@ -117,7 +117,7 @@ class ReplCalculator(
   private var _presentationCompiler: Option[PresentationCompiler] = None
 
   private def presentationCompiler: PresentationCompiler = _presentationCompiler getOrElse {
-    val r = new PresentationCompiler()
+    val r = new PresentationCompiler(depsJars)
     _presentationCompiler = Some(r)
     r
   }
@@ -417,10 +417,13 @@ class ReplCalculator(
 
     val allInitScrips: List[(String, () => String)] = dummyScript :: SparkHookScript :: depsScript :: ImportsScripts :: CustomSparkConfFromNotebookMD :: initScripts.map(
       x => (x._1, () => x._2))
+    val pc = new PresentationCompiler(depsJars)
     for ((name, script) <- allInitScrips) {
       log.info(s" INIT SCRIPT: $name")
       eval(script)
+      pc.addScripts(script())
     }
+    _presentationCompiler = Some(pc)
   }
 
   override def preStart() {

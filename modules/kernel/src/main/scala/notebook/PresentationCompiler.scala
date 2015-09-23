@@ -2,13 +2,21 @@ package notebook
 
 import notebook.util.Match
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.internal.util.{SourceFile, OffsetPosition}
 import scala.reflect.io.VirtualDirectory
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interactive.{Global, Response}
 import scala.tools.nsc.reporters.ConsoleReporter
 
-class PresentationCompiler {
+class PresentationCompiler(dependencies: List[String]) {
+
+  val scripts : ArrayBuffer[String] = ArrayBuffer.empty[String]
+
+  def addScripts(code: String) : Unit = {
+    scripts.+=(code)
+  }
+
   def ask[T] (op: Response[T] => Unit) : Response[T] = {
     val r = new Response[T]
     op(r)
@@ -19,51 +27,19 @@ class PresentationCompiler {
     val target = new VirtualDirectory("", None)
     val s = new Settings() { usejavacp.value = true }
     s.outputDirs.setSingleOutput(target)
-
+    dependencies.foreach(s.classpath.append)
+    dependencies.foreach(s.bootclasspath.append)
     val reporter = new ConsoleReporter(s)
     val compiler = new Global(s, reporter)
     compiler
   }
 
-  val snippetObjectImports = Seq(
-    "import java.io.{File, FileReader, BufferedReader}",
-    "import notebook._",
-    "import notebook.front._",
-    "import notebook.front.widgets._",
-    "import notebook.front.third.d3._",
-    "import notebook.front.widgets.magic._",
-    "import notebook.front.widgets.magic.Implicits._",
-    "import notebook.JsonCodec._",
-    "import org.apache.spark.{SparkContext, SparkConf}",
-    "import org.apache.spark.SparkContext._",
-    "import org.apache.spark.rdd._",
-    "import scala.collection._",
-    "import scala.math._",
-    "import scala.language._",
-    "/*<imports>*/"
-  )
-
-  val snippetPre = snippetObjectImports.mkString("\n") + "\nobject snippet {\ndef main() {\n"
-  val snippedPost = "\n}\n}\n"
-
-  @unchecked
-  def wrapCodeWithMovedImports(code: String) : (String,Int) = {
-    val codeLines = code.split(";|\n")
-    val imports = codeLines.filter(c => c.startsWith("import")).mkString(";")
-    val codeWithoutImports = codeLines.filter(c => !c.startsWith("import")).mkString(";")
-    val snippetPreTemplate = snippetPre.replace("/*<imports>*/", imports)
-    val wrappedCode = s"$snippetPreTemplate$codeWithoutImports$snippedPost"
-    (wrappedCode,snippetPreTemplate.length)
-  }
+  def snippetPre() = "\nobject snippet {\n" + scripts.mkString("\n") + "\n"
+  val snippedPost = "\n}\n"
 
   def wrapCode(code: String) : (String,Int) = {
-    val wrappedCode = s"$snippetPre$code$snippedPost"
-    (wrappedCode,snippetPre.length)
-  }
-
-  def extractImports(code: String) : String = {
-    val codeLines = code.split(";|\n")
-    codeLines.filter(c => c.startsWith("import")).mkString(";")
+    val wrappedCode = s"${snippetPre()}$code$snippedPost"
+    (wrappedCode,snippetPre().length)
   }
 
   case class CompletionInformation(symbol : String, parameters : String, symbolType: String)
@@ -108,6 +84,7 @@ class PresentationCompiler {
       }
     }
     val source = compiler.newSourceFile(wrappedCode)
+    println(wrappedCode)
     reload(source)
     val pos = new OffsetPosition(source, position + positionOffset)
     var matches = completion (pos, compiler.askTypeCompletion)
