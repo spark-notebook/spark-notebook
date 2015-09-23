@@ -309,7 +309,7 @@ package object widgets {
     originalData:C,
     override val sizes:(Int, Int)=(600, 400),
     maxPoints:Int = 25,
-    derivedAttributes:JsObject
+    derivedAttributes:JsObject=play.api.libs.json.Json.obj()
   ) extends Chart[C] {
       def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
 
