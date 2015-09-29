@@ -4,9 +4,9 @@
   <!-- stylesheet -->
 
   <script type="text/javascript">
-    window.mathjax_url = "@{if (request.secure) "https" else "http"}://cdn.mathjax.org/mathjax/latest/MathJax.js";
+    window.mathjax_url = this.location.protocol + "//cdn.mathjax.org/mathjax/latest/MathJax.js";
   </script>
-  <script type="text/javascript" src="@{if (request.secure) "https" else "http"}://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML-full&delayStartupUntil=configured" charset="utf-8"></script>
+  <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML-full&delayStartupUntil=configured" charset="utf-8"></script>
 
   <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/bootstrap/css/bootstrap.css")" type="text/css" />
   <link rel="stylesheet" href="@routes.Assets.at("ipython/components/bootstrap-tour/build/css/bootstrap-tour.min.css")" type="text/css" />
