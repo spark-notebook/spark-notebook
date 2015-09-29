@@ -33,6 +33,9 @@ Spark Notebook
         - [Create your distribution](#create-your-distribution)
           - [Docker](#docker-1)
           - [Mesos in Docker](#mesos-in-docker)
+        - [Customizing your build](#customizing-your-build)
+          - [Update main configuration](#update-main-configuration)
+          - [Update Docker configuration](#update-docker-configuration)
         - [Using unreleased Spark version](#using-unreleased-spark-version)
       - [Building for specific distributions](#building-for-specific-distributions)
         - [MapR](#mapr)
@@ -94,6 +97,7 @@ Spark Notebook
     - [Dynamic update of data and plot using Scala's `Future`](#dynamic-update-of-data-and-plot-using-scalas-future)
   - [Update _Notebook_ `ClassPath`](#update-_notebook_-classpath)
     - [Classes required to connect to the cluster](#classes-required-to-connect-to-the-cluster)
+    - [Picked first `Classpath` declaration](#picked-first-classpath-declaration)
   - [Update Spark dependencies (`spark.jars`)](#update-spark-dependencies-sparkjars)
     - [Set `local-repo`](#set-local-repo)
     - [Add `remote-repo`](#add-remote-repo)
@@ -299,6 +303,47 @@ So if you need the mesos version `0.23.0` in your docker image you can publish i
 sbt -Dmesos.version=0.23.0 docker:publishLocal
 ```
 
+##### Customizing your build
+If you want to change some build information like the `name` or the `organization` or even specific to `docker` for your builds. 
+Prefeably you would want to avoid having to change the source code of this project.
+
+You can do this by creating some hidden files being caught by the builder but kept out of git (added to `.gitignore`).
+
+Here are the supported configuration.
+
+###### Update main configuration
+To update main configuration, `name` or `organization` alike, you can create a `.main.build.conf` next to `build.sbt`.
+
+The structure of the file is the following:
+```
+main {
+  name = "YourName"
+  organization = "YourOrganization"
+}
+```
+
+Check `project/MainProperties.scala` for details.
+
+###### Update Docker configuration
+Sometimes you may want to change the Docker image which is the result of the `sbt ... docker:publishLocal` command.
+
+Create a file called `.docker.build.conf` next to `build.sbt`, this file is added to `.gitignore`.  
+The structure of the file is the following:
+```
+docker {
+  maintainer = "Your maintainer details"
+  registry = "your custom registry"
+  baseImage = "your custom base image"
+  commands = [
+    { cmd = USER, arg = root },
+    { cmd = RUN,  arg = "apt-get update -y && apt-get install -y ..." },
+    { cmd = ENV,  arg = "MESOS_JAVA_NATIVE_LIBRARY /usr/lib/libmesos.so" },
+    { cmd = ENV,  arg = "MESOS_LOG_DIR /var/log/mesos" }
+  ]
+}
+```
+
+Check `project/DockerProperties.scala` for details.
 
 ##### Using unreleased Spark version
 While using the repository from SBT, you can use any version of Apache Spark you want (**up to 1.4 atm**), this will require several these things:
@@ -1111,6 +1156,11 @@ For some Hadoop distributions extra classes are needed to connect to the cluster
 ```
 HADOOP_CONF_DIR=/opt/mapr/hadoop/hadoop-2.5.1/etc/hadoop EXTRA_CLASSPATH=<extra MapR jars> ./spark-notebook
 ```
+
+### Picked first `Classpath` declaration
+Whilst `EXTRA_CLASSPATH` is included after `HADOOP` or `YARN` ones, you might still want to add declaration that overrides all.
+
+For that, you can use `CLASSPATH_OVERRIDES` which takes the form of a classpath entry too but will applied first.
 
 ## Update Spark dependencies (`spark.jars`)
 So you use Spark, hence you know that it's not enough to have the jars locally added to the Driver's classpath.

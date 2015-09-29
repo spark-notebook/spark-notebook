@@ -2,9 +2,9 @@ import Dependencies._
 import Shared._
 import sbtbuildinfo.Plugin._
 
-organization := "noootsab"
+organization := MainProperties.organization
 
-name := "spark-notebook"
+name := MainProperties.name
 
 scalaVersion := defaultScalaVersion
 
@@ -14,7 +14,7 @@ version in ThisBuild <<= (scalaVersion, sparkVersion, hadoopVersion, withHive, w
   s"$SparkNotebookSimpleVersion-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "") + (if (p) "-with-parquet" else "")
 }
 
-maintainer := "Andy Petrella" //Docker
+maintainer := DockerProperties.maintainer //Docker
 
 enablePlugins(UniversalPlugin)
 
@@ -32,32 +32,15 @@ import com.typesafe.sbt.SbtNativePackager.autoImport.NativePackagerHelper._
 
 import com.typesafe.sbt.packager.docker._
 
-// java image based on ubuntu trusty rather than debian jessie (to use mesosphere distros)
-// build it like this:
-// ```
-// docker build -t="dockerfile/ubuntu" github.com/dockerfile/ubuntu
-// git clone https://github.com/dockerfile/java.git
-// cd java
-// cd openjdk-7-jdk
-// docker build -t="dockerfile/java:openjdk-7-jdk" .
-// ```
-dockerBaseImage := "dockerfile/java:openjdk-7-jdk"
+dockerBaseImage := DockerProperties.baseImage
 
-dockerCommands ++= Seq(
-  Cmd("USER", "root"),
-  Cmd("RUN", "apt-key adv --keyserver keyserver.ubuntu.com --recv E56151BF"),
-  Cmd("RUN", "echo \"deb http://repos.mesosphere.io/ubuntu trusty main\" | tee /etc/apt/sources.list.d/mesosphere.list"),
-  Cmd("RUN", "/usr/bin/apt-get -y update --fix-missing"),
-  Cmd("RUN", s"/usr/bin/apt-get -y install mesos=$mesosVersion-1.0.ubuntu1404"), //ubuntu 14.04 is base for java:latest → https://github.com/dockerfile/ubuntu/blob/master/Dockerfile
-  Cmd("ENV", s"MESOS_JAVA_NATIVE_LIBRARY /usr/local/lib/libmesos-$mesosVersion.so"),
-  Cmd("ENV", s"MESOS_LOG_DIR /var/log/mesos")
-)
+dockerCommands ++= DockerProperties.commands
 
-dockerExposedVolumes ++= Seq("/opt/docker", "/opt/docker/notebooks", "/opt/docker/logs")
+dockerExposedVolumes ++= DockerProperties.volumes
 
-dockerExposedPorts ++= Seq(9000, 9443) //Docker
+dockerExposedPorts ++= DockerProperties.ports
 
-dockerRepository := Some("andypetrella") //Docker
+dockerRepository := DockerProperties.registry //Docker
 
 packageName in Docker := "spark-notebook"
 
@@ -100,14 +83,14 @@ scalacOptions ++= Seq("-Xmax-classfile-name", "100")
 scriptClasspath in batScriptReplacements := Seq("*")
 
 batScriptExtraDefines += {
-  "set \"APP_CLASSPATH=%YARN_CONF_DIR%;%HADOOP_CONF_DIR%;%EXTRA_CLASSPATH%;%APP_CLASSPATH%\""
+  "set \"APP_CLASSPATH=%CLASSPATH_OVERRIDES%;%YARN_CONF_DIR%;%HADOOP_CONF_DIR%;%EXTRA_CLASSPATH%;%APP_CLASSPATH%\""
 }
 
 val ClasspathPattern = "declare -r app_classpath=\"(.*)\"\n".r
 
 bashScriptDefines := bashScriptDefines.value.map {
   case ClasspathPattern(classpath) =>
-    s"""declare -r app_classpath="$${YARN_CONF_DIR}:$${HADOOP_CONF_DIR}:$${EXTRA_CLASSPATH}:${classpath}"\n"""
+    s"""declare -r app_classpath="$${CLASSPATH_OVERRIDES}:$${YARN_CONF_DIR}:$${HADOOP_CONF_DIR}:$${EXTRA_CLASSPATH}:${classpath}"\n"""
   case entry => entry
 }
 
