@@ -7,6 +7,8 @@
 .ensime
 .ensime_lucene
 .akka-cookie
+.main.build.conf
+.docker.build.conf
 project/target/
 target/
 logs/

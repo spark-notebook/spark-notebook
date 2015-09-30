@@ -9,6 +9,7 @@ import notebook._
 import notebook.JsonCodec._
 import notebook.front.widgets.magic._
 import notebook.front.widgets.magic.Implicits._
+import notebook.front.widgets.magic.SamplerImplicits._
 
 /**
  * This package contains primitive widgets that can be used in the child environment.
@@ -230,14 +231,29 @@ package object widgets {
     }
   }
 
-  case class Tabs[C:ToPoints](originalData:C, pages:Seq[(String, Chart[C])]=Nil, maxPoints:Int=25) extends JsWorld[Seq[(String, Any)], Seq[(String, Any)]] {
-    lazy val points:Seq[MagicRenderPoint] = implicitly[ToPoints[C]].apply(originalData, maxPoints)
+  case class Tabs[C:ToPoints:Sampler](originalData:C, pages:Seq[(String, Chart[C])]=Nil, maxPoints:Int=25) extends JsWorld[Seq[(String, Any)], Seq[(String, Any)]] {
+    import notebook.JSBus._
+
+    def computePoints(max:Int = maxPoints) = implicitly[ToPoints[C]].apply(originalData, max)(implicitly[Sampler[C]])
+
+    lazy val points:Seq[MagicRenderPoint] = computePoints()
 
     implicit val singleToO = identity[Seq[(String, Any)]] _
 
     implicit val singleCodec = jsStringAnyCodec
 
-    override val data:Seq[Seq[(String, Any)]] = points.map(_.data.toSeq)
+    def computeData(pts:Seq[MagicRenderPoint] = points) = pts.map(_.data.toSeq)
+    override val data:Seq[Seq[(String, Any)]] = computeData()
+
+    val maxPointsBox = new InputBox[Int](maxPoints, "Max Points")
+
+    maxPointsBox.currentData --> Connection.fromObserver { max:Int =>
+      pages foreach { case (s, w) =>
+        // following doesn't work because DOM don't get prg change event
+        //   w.maxPointsBox.currentData <-- Connection.just(max)
+        w.newMax(max)
+      }
+    }
 
     override val scripts = List(
       Script("magic/tabs", Json.obj())
@@ -251,46 +267,76 @@ package object widgets {
     }
 
     override val content = Some {
-      <div >
-        <ul class="nav nav-tabs" id={ "ul"+id }>{
-          pages.zipWithIndex map { p: ((String, Widget), Int) =>
-            <li>
-              <a href={ "#tab"+id+"-"+p._2 }><i class={ "fa fa-"+p._1._1} /></a>
-            </li>
-          }
-        }</ul>
+      <div>
+        {
+          maxPointsBox.toHtml
+        }
+        <div >
+          <ul class="nav nav-tabs" id={ "ul"+id }>{
+            pages.zipWithIndex map { p: ((String, Widget), Int) =>
+              <li>
+                <a href={ "#tab"+id+"-"+p._2 }><i class={ "fa fa-"+p._1._1} /></a>
+              </li>
+            }
+          }</ul>
 
-        <div class="tab-content" id={ "tab"+id }>{
-          pages.zipWithIndex map { p: ((String, Widget), Int) =>
-            <div class="tab-pane" id={ "tab"+id+"-"+p._2 }>
-            { p._1._2 }
-            </div>
-          }
-        }</div>
+          <div class="tab-content" id={ "tab"+id }>{
+            pages.zipWithIndex map { p: ((String, Widget), Int) =>
+              <div class="tab-pane" id={ "tab"+id+"-"+p._2 }>
+              { p._1._2 }
+              </div>
+            }
+          }</div>
+        </div>
       </div>
     }
   }
 
+  abstract class Chart[C:ToPoints:Sampler] extends JsWorld[Seq[(String, Any)], Seq[(String, Any)]] {
+    import notebook.JSBus._
 
-  abstract class Chart[C:ToPoints] extends JsWorld[Seq[(String, Any)], Seq[(String, Any)]] {
     def originalData:C
     def maxPoints:Int
+
     def toPoints = implicitly[ToPoints[C]]
     lazy val points:Seq[MagicRenderPoint] = toPoints(originalData, maxPoints)
+
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)]
-    lazy val data:Seq[Seq[(String, Any)]] = points.map(mToSeq)
+    def computeData(pts:Seq[MagicRenderPoint] = points) = pts.map(mToSeq)
+    lazy val data:Seq[Seq[(String, Any)]] = computeData(points)
+
+    val maxPointsBox = new InputBox[Int](maxPoints, "Max Points")
     def sizes:(Int, Int)=(600, 400)
 
+    @volatile var currentC = originalData
+    @volatile var currentPoints = points
+    @volatile var currentMax = maxPoints
+
+    maxPointsBox.currentData --> Connection.fromObserver { max:Int =>
+      currentMax = max
+      applyOn(currentC)
+    }
+
+    def newMax(max:Int) = {
+      //update javascript box
+      maxPointsBox.currentData <-- Connection.just(max)
+      //update state
+      currentMax = max
+      applyOn(currentC)
+    }
+
     def applyOn(newData:C) = apply {
-      val pts:Seq[MagicRenderPoint] = toPoints(newData, maxPoints)
-      val d = pts map mToSeq
+      currentC = newData
+      currentPoints = toPoints(newData, currentMax)
+      val d = currentPoints map mToSeq
       this.apply(d)
       d
     }
 
     def addAndApply(otherData:C) = apply {
-      val pts:Seq[MagicRenderPoint] = points ++ toPoints(otherData, maxPoints)
-      val d = pts map mToSeq
+      currentC = toPoints.append(currentC, otherData)
+      currentPoints = currentPoints ++ toPoints(otherData, currentMax)
+      val d =  currentPoints map mToSeq
       this.apply(d)
       d
     }
@@ -303,21 +349,31 @@ package object widgets {
     lazy val members = firstElem.values
     lazy val dataMap = firstElem.data
     lazy val numOfFields = firstElem.numOfFields
+
+    val extendedContent:Option[scala.xml.Elem] = None
+
+    override val content = Some {
+      val container = <div>
+        {
+          maxPointsBox.toHtml
+        }
+      </div>
+      extendedContent.map(c => container.copy(child = container.child ++ c)).getOrElse(container)
+    }
   }
 
-  case class PivotChart[C:ToPoints](
+  case class PivotChart[C:ToPoints:Sampler](
     originalData:C,
     override val sizes:(Int, Int)=(600, 400),
     maxPoints:Int = 25,
     derivedAttributes:JsObject=play.api.libs.json.Json.obj()
   ) extends Chart[C] {
-      def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
+    def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
 
-
-      override val scripts = List(Script( "magic/pivotChart", Json.obj("width" → sizes._1, "height" → sizes._2, "derivedAttributes" → derivedAttributes)))
+    override val scripts = List(Script( "magic/pivotChart", Json.obj("width" → sizes._1, "height" → sizes._2, "derivedAttributes" → derivedAttributes)))
   }
 
-  case class ScatterChart[C:ToPoints](originalData:C, fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {
+  case class ScatterChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {
     val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
 
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
@@ -331,7 +387,7 @@ package object widgets {
                                                   "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class LineChart[C:ToPoints](originalData:C, fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {
+  case class LineChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {
     val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
 
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
@@ -346,7 +402,7 @@ package object widgets {
                                                   "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class BarChart[C:ToPoints](originalData:C, fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {
+  case class BarChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {
     val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
 
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
@@ -360,7 +416,7 @@ package object widgets {
                                                   "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class PieChart[C:ToPoints](originalData:C, fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {
+  case class PieChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {
     val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
 
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
@@ -374,28 +430,31 @@ package object widgets {
                                                   "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class GeoPointsChart[C:ToPoints](
+  case class GeoPointsChart[C:ToPoints:Sampler](
     originalData:C,
-    fields:Option[(String, String)]=None,
     override val sizes:(Int, Int)=(600, 400),
     maxPoints:Int = 25,
     latLonFields:Option[(String, String)]=None,
     rField:Option[String]=None,
     colorField:Option[String]=None) extends Chart[C] {
 
-    val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
+    //val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
 
-    val latLong = latLonFields.getOrElse((f1, f2))
+    val latLong = latLonFields.getOrElse((headers(0), headers(1)))
 
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
-      val stripedData = t.data.toSeq.filter{case (k, v) => !fields.isDefined || f1 == k || f2 == k }
+      val stripedData = t.data.toSeq.filter { case (k, v) =>
+                                              k == latLong._1 ||
+                                              k == latLong._2 ||
+                                              Some(k) == rField ||
+                                              Some(k) == colorField
+                                            }
       stripedData
     }
 
     override val scripts =
       List(Script("magic/geoPointsChart",
         Json.obj(
-                  "fields" → List(f1.toString, f2.toString),
                   "lat" → latLong._1, "lon" → latLong._2,
                   "width" → sizes._1, "height" → sizes._2,
                   "nrow" → toPoints.count(originalData), "shown" → points.size,
@@ -407,7 +466,7 @@ package object widgets {
       ))
   }
 
-  case class GraphChart[C:ToPoints](originalData:C, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25, charge:Int= -30, linkDistance:Int=20, linkStrength:Double=1.0) extends Chart[C] {
+  case class GraphChart[C:ToPoints:Sampler](originalData:C, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25, charge:Int= -30, linkDistance:Int=20, linkStrength:Double=1.0) extends Chart[C] {
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
 
 
@@ -419,7 +478,7 @@ package object widgets {
     override val scripts = List(Script("magic/graphChart", opts))
   }
 
-  case class DiyChart[C:ToPoints](originalData:C, js:String = "function(data, headers, chart) { console.log({'data': data, 'headers': headers, 'chart': chart}); }", override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {
+  case class DiyChart[C:ToPoints:Sampler](originalData:C, js:String = "function(data, headers, chart) { console.log({'data': data, 'headers': headers, 'chart': chart}); }", override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
 
     override val scripts = List(Script( "magic/diyChart",
@@ -428,7 +487,7 @@ package object widgets {
                                                   "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class TableChart[C:ToPoints](originalData:C, filterCol:Option[Seq[String]]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {
+  case class TableChart[C:ToPoints:Sampler](originalData:C, filterCol:Option[Seq[String]]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
       t.data.toSeq.filter{case (k, v) => filterCol.getOrElse(headers).contains(k)}
     }
@@ -439,9 +498,9 @@ package object widgets {
                                                   "width" → sizes._1, "height" → sizes._2)))
   }
 
-  def tabs[C:ToPoints](originalData:C, pages:Seq[(String, Chart[C])]) = Tabs(originalData, pages)
+  def tabs[C:ToPoints:Sampler](originalData:C, pages:Seq[(String, Chart[C])]) = Tabs(originalData, pages)
 
-  def pairs[C:ToPoints](originalData:C, maxPoints:Int=25) = {
+  def pairs[C:ToPoints:Sampler](originalData:C, maxPoints:Int=25) = {
     val data:Seq[MagicRenderPoint] = implicitly[ToPoints[C]].apply(originalData, maxPoints)
     val firstElem = data.head
     val headers = firstElem.headers
@@ -480,7 +539,7 @@ package object widgets {
     }</tbody></table>
   }
 
-  def display[C:ToPoints](originalData:C, fields:Option[(String, String)]=None, maxPoints:Int=25):Widget = {
+  def display[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, maxPoints:Int=25):Widget = {
     val data:Seq[MagicRenderPoint] = implicitly[ToPoints[C]].apply(originalData, maxPoints)
     val firstElem = data.head
     val headers = firstElem.headers

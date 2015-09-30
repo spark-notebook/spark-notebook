@@ -17,19 +17,21 @@ define([
             .text( (d) ->
               d + " items"
             )
-    count .selectAll("span .shown")
-          .data([options.shown])
-          .enter()
-          .append("span")
-          .attr("class", "shown")
-          .attr("style", "color: red")
+    displayShown = (c) =>
+      shown = count.selectAll("span.shown")
+                    .data([c])
+      shown.remove()
+      shown.enter()
+            .append("span")
+            .attr("class", "shown")
+            .attr("style", "color: red")
             .text( (d) ->
-              console.log("d is " + d)
               if options.nrow > d
-                " (Out of " + options.nrow + " items, only the " +  d + " first items are shown)"
+                "(showing " +  d + ")"
               else
                 ""
             )
+    displayShown(options.shown)
 
     svg = d3.select(container).append("svg:svg").attr("width", w+"px").attr("height", h+"px").attr("id", "pie"+@genId)
     chart = new dimple.chart(svg, @dataInit)
@@ -41,6 +43,7 @@ define([
     chart.draw()
 
     dataO.subscribe( (newData) =>
+      displayShown(newData.length)
       chart.data = newData
       chart.draw(1000)
     )

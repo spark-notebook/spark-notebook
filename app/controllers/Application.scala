@@ -374,11 +374,10 @@ object Application extends Controller {
       case x if x.endsWith("/") => x + "ws"
       case x => x + "/ws"
     }
-    val prefix = if (request.secure) "wss" else "ws"
     def ws_url(path: Option[String] = None) = {
       s"""
          |window.notebookWsUrl = function() {
-         |return '$prefix:/'+window.location.host+'$wsPath${path.map(x => "/" + x).getOrElse("")}'
+         |return ((window.location.protocol=='https:') ? 'wss' : 'ws')+'://'+window.location.host+'$wsPath${path.map(x => "/" + x).getOrElse("")}'
          |};
       """.stripMargin.replaceAll("\n", " ")
     }
