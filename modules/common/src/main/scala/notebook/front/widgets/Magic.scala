@@ -76,6 +76,7 @@ object Implicits extends ExtraMagicImplicits {
   trait ToPoints[C] {
     def apply(c:C, max:Int):Seq[MagicRenderPoint]
     def count(x:C):Long
+    def append(x:C, y:C):C
   }
   implicit def SeqToPoints[T] = new ToPoints[Seq[T]] {
     def apply(_x:Seq[T], max:Int):Seq[MagicRenderPoint] =
@@ -98,17 +99,21 @@ object Implicits extends ExtraMagicImplicits {
         encoded
       } else Nil
     def count(x:Seq[T]) = x.size.toLong
+    def append(x:Seq[T], y:Seq[T]) = x ++ y
   }
   implicit def ListToPoints[T] = new ToPoints[List[T]] {
     def apply(x:List[T], max:Int):Seq[MagicRenderPoint] = SeqToPoints(x.take(max), max)
     def count(x:List[T]) = x.size.toLong
+    def append(x:List[T], y:List[T]) = x ::: y
   }
-  implicit def ArrayToPoints[T] = new ToPoints[Array[T]] {
+  implicit def ArrayToPoints[T:scala.reflect.ClassTag] = new ToPoints[Array[T]] {
     def apply(x:Array[T], max:Int):Seq[MagicRenderPoint] = SeqToPoints(x.take(max).toSeq, max)
     def count(x:Array[T]) = x.size.toLong
+    def append(x:Array[T], y:Array[T]) = (x ++ y).toArray
   }
   implicit def MapToPoints[K,V] = new ToPoints[Map[K,V]] {
     def apply(x:Map[K,V], max:Int):Seq[MagicRenderPoint] = SeqToPoints(x.take(max).toSeq, max)//x.toSeq.map(e => MapPoint(e._1, e._2))
     def count(x:Map[K,V]) = x.size.toLong
+    def append(x:Map[K,V], y:Map[K,V]) = x ++ y
   }
 }

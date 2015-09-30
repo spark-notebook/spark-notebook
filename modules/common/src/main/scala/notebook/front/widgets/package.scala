@@ -231,13 +231,28 @@ package object widgets {
   }
 
   case class Tabs[C:ToPoints](originalData:C, pages:Seq[(String, Chart[C])]=Nil, maxPoints:Int=25) extends JsWorld[Seq[(String, Any)], Seq[(String, Any)]] {
-    lazy val points:Seq[MagicRenderPoint] = implicitly[ToPoints[C]].apply(originalData, maxPoints)
+    import notebook.JSBus._
+
+    def computePoints(max:Int = maxPoints) = implicitly[ToPoints[C]].apply(originalData, max)
+
+    lazy val points:Seq[MagicRenderPoint] = computePoints()
 
     implicit val singleToO = identity[Seq[(String, Any)]] _
 
     implicit val singleCodec = jsStringAnyCodec
 
-    override val data:Seq[Seq[(String, Any)]] = points.map(_.data.toSeq)
+    def computeData(pts:Seq[MagicRenderPoint] = points) = pts.map(_.data.toSeq)
+    override val data:Seq[Seq[(String, Any)]] = computeData()
+
+    val maxPointsBox = new InputBox[Int](maxPoints, "Max Points")
+
+    maxPointsBox.currentData --> Connection.fromObserver { max:Int =>
+      pages foreach { case (s, w) =>
+        // following doesn't work because DOM don't get prg change event
+        //   w.maxPointsBox.currentData <-- Connection.just(max)
+        w.newMax(max)
+      }
+    }
 
     override val scripts = List(
       Script("magic/tabs", Json.obj())
@@ -251,46 +266,77 @@ package object widgets {
     }
 
     override val content = Some {
-      <div >
-        <ul class="nav nav-tabs" id={ "ul"+id }>{
-          pages.zipWithIndex map { p: ((String, Widget), Int) =>
-            <li>
-              <a href={ "#tab"+id+"-"+p._2 }><i class={ "fa fa-"+p._1._1} /></a>
-            </li>
-          }
-        }</ul>
+      <div>
+        {
+          maxPointsBox.toHtml
+        }
+        <div >
+          <ul class="nav nav-tabs" id={ "ul"+id }>{
+            pages.zipWithIndex map { p: ((String, Widget), Int) =>
+              <li>
+                <a href={ "#tab"+id+"-"+p._2 }><i class={ "fa fa-"+p._1._1} /></a>
+              </li>
+            }
+          }</ul>
 
-        <div class="tab-content" id={ "tab"+id }>{
-          pages.zipWithIndex map { p: ((String, Widget), Int) =>
-            <div class="tab-pane" id={ "tab"+id+"-"+p._2 }>
-            { p._1._2 }
-            </div>
-          }
-        }</div>
+          <div class="tab-content" id={ "tab"+id }>{
+            pages.zipWithIndex map { p: ((String, Widget), Int) =>
+              <div class="tab-pane" id={ "tab"+id+"-"+p._2 }>
+              { p._1._2 }
+              </div>
+            }
+          }</div>
+        </div>
       </div>
     }
   }
 
 
   abstract class Chart[C:ToPoints] extends JsWorld[Seq[(String, Any)], Seq[(String, Any)]] {
+    import notebook.JSBus._
+
     def originalData:C
     def maxPoints:Int
+
     def toPoints = implicitly[ToPoints[C]]
     lazy val points:Seq[MagicRenderPoint] = toPoints(originalData, maxPoints)
+
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)]
-    lazy val data:Seq[Seq[(String, Any)]] = points.map(mToSeq)
+    def computeData(pts:Seq[MagicRenderPoint] = points) = pts.map(mToSeq)
+    lazy val data:Seq[Seq[(String, Any)]] = computeData(points)
+
+    val maxPointsBox = new InputBox[Int](maxPoints, "Max Points")
     def sizes:(Int, Int)=(600, 400)
 
+    @volatile var currentC = originalData
+    @volatile var currentPoints = points
+    @volatile var currentMax = maxPoints
+
+    maxPointsBox.currentData --> Connection.fromObserver { max:Int =>
+      currentMax = max
+      applyOn(currentC)
+    }
+
+    def newMax(max:Int) = {
+      //update javascript box
+      maxPointsBox.currentData <-- Connection.just(max)
+      //update state
+      currentMax = max
+      applyOn(currentC)
+    }
+
     def applyOn(newData:C) = apply {
-      val pts:Seq[MagicRenderPoint] = toPoints(newData, maxPoints)
-      val d = pts map mToSeq
+      currentC = newData
+      currentPoints = toPoints(newData, currentMax)
+      val d = currentPoints map mToSeq
       this.apply(d)
       d
     }
 
     def addAndApply(otherData:C) = apply {
-      val pts:Seq[MagicRenderPoint] = points ++ toPoints(otherData, maxPoints)
-      val d = pts map mToSeq
+      currentC = toPoints.append(currentC, otherData)
+      currentPoints = currentPoints ++ toPoints(otherData, currentMax)
+      val d =  currentPoints map mToSeq
       this.apply(d)
       d
     }
@@ -303,6 +349,17 @@ package object widgets {
     lazy val members = firstElem.values
     lazy val dataMap = firstElem.data
     lazy val numOfFields = firstElem.numOfFields
+
+    val extendedContent:Option[scala.xml.Elem] = None
+
+    override val content = Some {
+      val container = <div>
+        {
+          maxPointsBox.toHtml
+        }
+      </div>
+      extendedContent.map(c => container.copy(child = container.child ++ c)).getOrElse(container)
+    }
   }
 
   case class PivotChart[C:ToPoints](
@@ -311,10 +368,9 @@ package object widgets {
     maxPoints:Int = 25,
     derivedAttributes:JsObject=play.api.libs.json.Json.obj()
   ) extends Chart[C] {
-      def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
+    def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
 
-
-      override val scripts = List(Script( "magic/pivotChart", Json.obj("width" → sizes._1, "height" → sizes._2, "derivedAttributes" → derivedAttributes)))
+    override val scripts = List(Script( "magic/pivotChart", Json.obj("width" → sizes._1, "height" → sizes._2, "derivedAttributes" → derivedAttributes)))
   }
 
   case class ScatterChart[C:ToPoints](originalData:C, fields:Option[(String, String)], override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {

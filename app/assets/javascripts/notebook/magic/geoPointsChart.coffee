@@ -19,19 +19,22 @@ define([
             .text( (d) ->
               d + " items"
             )
-    count .selectAll("span .shown")
-          .data([options.shown])
-          .enter()
-          .append("span")
-          .attr("class", "shown")
-          .attr("style", "color: red")
+    displayShown = (c) =>
+      shown = count.selectAll("span.shown")
+                    .data([c])
+      shown.remove()
+      shown.enter()
+            .append("span")
+            .attr("class", "shown")
+            .attr("style", "color: red")
             .text( (d) ->
-              console.log("d is " + d)
               if options.nrow > d
-                " (Out of " + options.nrow + " items, only the " +  d + " first items are shown)"
+                "(showing " +  d + ")"
               else
                 ""
             )
+    displayShown(options.shown)
+
 
     mapId = "map"+@genId
     mapDiv = $(container).append("div").css("width", w+"px").css("height", h+"px").attr("id", mapId)
@@ -82,6 +85,7 @@ define([
     updatePoints(@dataInit)
 
     dataO.subscribe( (newData) =>
+      displayShown(newData.length)
       _.each(map._layers, (l) ->
         map.removeLayer(l) if l instanceof L.Marker
       )

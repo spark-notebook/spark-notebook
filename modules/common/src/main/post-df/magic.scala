@@ -28,5 +28,6 @@ trait ExtraMagicImplicits {
       } else Nil
     }
     def count(x:DataFrame) = x.count()
+    def append(x:DataFrame, y:DataFrame) = x unionAll y
   }
 }

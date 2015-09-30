@@ -69,20 +69,27 @@ class InputBox[T](initial: T, label: String = "")
     val ll = <label for={id}>
       {label}
     </label>
-    val in = <input id={id} type={t.tpe} name={id} data-bind="textInput: value, fireChange: true">
+    val in = <input id={id} type={t.tpe} name={id} data-bind="textInput: value, fireChange: true, valueUpdate: 'input'">
       {scopedScript(
-        """req( ['observable', 'knockout'],
-                            function (Observable, ko) {
-                              //console.log("-----------")
-                              //console.dir(this);
-                              //console.dir(valueId);
-                              var obs = Observable.makeObservable(valueId);
-                              ko.applyBindings({
-                                value: obs
-                              }, this);
-                              obs(valueInit);
-                            }
-                          )""",
+        """|req(
+           | ['observable', 'knockout'],
+           | function (Observable, ko) {
+           |   //console.log("-----------")
+           |   //console.dir(this);
+           |   //console.dir(valueId);
+           |   var obs = Observable.makeObservable(valueId)
+           |                       .extend({ rateLimit: { //throttle
+           |                                   timeout: 500,
+           |                                   method: "notifyWhenChangesStop"
+           |                                 }
+           |                               }
+           |                       );
+           |   ko.applyBindings({
+           |     value: obs
+           |   }, this);
+           |   obs(valueInit);
+           | }
+           |)""".stripMargin,
         Json.obj("valueId" -> dataConnection.id, "valueInit" → codec.decode(initial)),
         Some("#" + id)
       )}

@@ -14,6 +14,8 @@ trait JsWorld[I, O] extends Widget with IODataConnector[I, O] {
 
   def content: Option[scala.xml.Elem] = None
 
+  def thisJsExtension: JsObject = Json.obj()
+
   val id = Math.abs(scala.util.Random.nextInt()).toString
 
   lazy val json = JsonCodec.tSeq[O].decode(toO(data))
@@ -45,7 +47,7 @@ trait JsWorld[I, O] extends Widget with IODataConnector[I, O] {
           "dataId" -> dataConnection.id,
           "dataInit" -> json,
           "genId" → id
-        )
+        ) ++ thisJsExtension
       )}
     </div>
     content.map(c => container.copy(child = container.child ++ c)).getOrElse(container)
