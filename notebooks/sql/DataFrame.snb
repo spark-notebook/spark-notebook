@@ -13,6 +13,7 @@
     "customRepos" : null,
     "customDeps" : null,
     "customImports" : null,
+    "customArgs" : null,
     "customSparkConf" : null
   },
   "cells" : [ {
@@ -105,10 +106,23 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "widgets.BarChart(people, Some((\"name\", \"age\")), maxPoints=40)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Render the DataFrame in a Bar plot, but only 40 **SAMPLED** points"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import notebook.front.widgets.magic.SamplerImplicits.Sampler\nimport org.apache.spark.sql.DataFrame\nimplicit val sampler = new Sampler[DataFrame] {\n  def apply(df:DataFrame, max:Int):DataFrame = {\n    val count = df.count\n    println(\"Sampling DF\")\n    df.sample(false, max/count.toDouble, 5555)\n  }\n}\nwidgets.BarChart(people, Some((\"name\", \"age\")), maxPoints=40)",
     "outputs" : [ ]
   } ],
   "nbformat" : 4

@@ -72,16 +72,39 @@ case class Edge[I](id:I, ends:(I, I), value:Any, color:String="#999") extends Gr
                                   StringPoint(color, headers=Seq("color"))
 }
 
+object SamplerImplicits extends ExtraSamplerImplicits {
+  trait Sampler[C] {
+    def apply(c:C, max:Int):C
+  }
+
+  implicit def SeqSampler[T] = new Sampler[Seq[T]] {
+    def apply(x:Seq[T], max:Int):Seq[T] = x.take(max)
+  }
+  implicit def ListSampler[T] = new Sampler[List[T]] {
+    def apply(x:List[T], max:Int):List[T] = x.take(max)
+  }
+  implicit def ArraySampler[T] = new Sampler[Array[T]] {
+    def apply(x:Array[T], max:Int):Array[T] = x.take(max)
+  }
+  implicit def MapSampler[K,V] = new Sampler[Map[K, V]] {
+    def apply(x:Map[K,V], max:Int):Map[K,V] = x.toSeq.take(max).toMap
+  }
+
+}
+
 object Implicits extends ExtraMagicImplicits {
+  import SamplerImplicits.Sampler
+
   trait ToPoints[C] {
-    def apply(c:C, max:Int):Seq[MagicRenderPoint]
+    def apply(c:C, max:Int)(implicit sampler:Sampler[C]):Seq[MagicRenderPoint]
     def count(x:C):Long
     def append(x:C, y:C):C
   }
+
   implicit def SeqToPoints[T] = new ToPoints[Seq[T]] {
-    def apply(_x:Seq[T], max:Int):Seq[MagicRenderPoint] =
+    def apply(_x:Seq[T], max:Int)(implicit sampler:Sampler[Seq[T]]):Seq[MagicRenderPoint] =
       if (!_x.isEmpty) {
-        val x = _x.take(max)
+        val x = sampler(_x, max)
         val points:Seq[MagicRenderPoint] = x.head match {
           case _:String   => x.map(i => StringPoint(i.asInstanceOf[String]))
           case _:Graph[_] => x.map(_.asInstanceOf[Graph[_]].toPoint)
@@ -102,17 +125,17 @@ object Implicits extends ExtraMagicImplicits {
     def append(x:Seq[T], y:Seq[T]) = x ++ y
   }
   implicit def ListToPoints[T] = new ToPoints[List[T]] {
-    def apply(x:List[T], max:Int):Seq[MagicRenderPoint] = SeqToPoints(x.take(max), max)
+    def apply(x:List[T], max:Int)(implicit sampler:Sampler[List[T]]):Seq[MagicRenderPoint] = SeqToPoints(sampler(x,max), max)
     def count(x:List[T]) = x.size.toLong
     def append(x:List[T], y:List[T]) = x ::: y
   }
   implicit def ArrayToPoints[T:scala.reflect.ClassTag] = new ToPoints[Array[T]] {
-    def apply(x:Array[T], max:Int):Seq[MagicRenderPoint] = SeqToPoints(x.take(max).toSeq, max)
+    def apply(x:Array[T], max:Int)(implicit sampler:Sampler[Array[T]]):Seq[MagicRenderPoint] = SeqToPoints(sampler(x,max).toSeq, max)
     def count(x:Array[T]) = x.size.toLong
     def append(x:Array[T], y:Array[T]) = (x ++ y).toArray
   }
   implicit def MapToPoints[K,V] = new ToPoints[Map[K,V]] {
-    def apply(x:Map[K,V], max:Int):Seq[MagicRenderPoint] = SeqToPoints(x.take(max).toSeq, max)//x.toSeq.map(e => MapPoint(e._1, e._2))
+    def apply(x:Map[K,V], max:Int)(implicit sampler:Sampler[Map[K,V]]):Seq[MagicRenderPoint] = SeqToPoints(sampler(x,max).toSeq, max)//x.toSeq.map(e => MapPoint(e._1, e._2))
     def count(x:Map[K,V]) = x.size.toLong
     def append(x:Map[K,V], y:Map[K,V]) = x ++ y
   }
