@@ -33,7 +33,6 @@ define([
             )
     displayShown(options.shown)
 
-
     svg = d3.select(container).append("svg:svg").attr("width", w+"px").attr("height", h+"px").attr("id", "graph"+@genId)
 
     #if we want goup field (int 1..20)

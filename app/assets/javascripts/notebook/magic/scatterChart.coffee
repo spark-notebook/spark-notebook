@@ -33,7 +33,6 @@ define([
             )
     displayShown(options.shown)
 
-
     svg = d3.select(container).append("svg:svg").attr("width", w+"px").attr("height", h+"px").attr("id", "scatter"+@genId)
     chart = new dimple.chart(svg, @dataInit)
     chart.setBounds(w*(50/600), h*(20/400), w *(540/600), h*(350/400))

@@ -33,7 +33,6 @@ define([
             )
     displayShown(options.shown)
 
-
     svg = d3.select(container).append("svg:svg").attr("width", w+"px").attr("height", h+"px").attr("id", "pie"+@genId)
     chart = new dimple.chart(svg, @dataInit)
     chart.setBounds(w*(100/600), h*(30/400), w *(380/600), h*(360/400))

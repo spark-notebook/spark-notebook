@@ -35,7 +35,6 @@ define([
             )
     displayShown(options.shown)
 
-
     mapId = "map"+@genId
     mapDiv = $(container).append("div").css("width", w+"px").css("height", h+"px").attr("id", mapId)
 
