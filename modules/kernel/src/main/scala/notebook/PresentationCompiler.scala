@@ -74,7 +74,7 @@ class PresentationCompiler(dependencies: List[String]) {
   }
 
   def complete(code: String, position: Int) : (String, Seq[Match]) = {
-    val (wrappedCode,positionOffset) = wrapCode(code) //.substring(0,position))
+    val (wrappedCode,positionOffset) = wrapCode(code).substring(0,position))
     val filter1 = code.substring(0,position).split(";|\n", -1)
     var filterSnippet = ""
     if(filter1.nonEmpty) {
