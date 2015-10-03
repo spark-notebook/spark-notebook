@@ -1,6 +1,7 @@
 package notebook.server
 
 import java.io._
+import java.nio.charset.Charset
 import java.net.URLDecoder
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -127,7 +128,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
     if (!overwrite && file.exists()) {
       throw new NotebookExistsException("Notebook " + path + " already exists.")
     }
-    FileUtils.writeStringToFile(file, NBSerializer.write(notebook))
+    FileUtils.writeStringToFile(file, NBSerializer.write(notebook), Charset.forName("UTF-8"))
     val nb = load(path)
     (nb.get.metadata.get.name, path)
   }

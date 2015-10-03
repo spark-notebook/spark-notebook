@@ -1,4 +1,5 @@
 package notebook.front.widgets.magic
 
-trait ExtraMagicImplicits {
-}
+trait ExtraSamplerImplicits {}
+
+trait ExtraMagicImplicits {}
