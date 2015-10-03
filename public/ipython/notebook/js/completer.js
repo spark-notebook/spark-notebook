@@ -161,20 +161,36 @@ define([
                 cursor_end: cursor_pos,
             }});
         } else {
-            this.cell.kernel.complete(this.editor.getValue(), cursor_pos,
+            var completionCode = this.get_all_prior_code();
+            this.cell.kernel.complete(completionCode.code+ this.cell.get_text(),
+                completionCode.offset + cursor_pos,
                 $.proxy(this.finish_completing, this)
             );
         }
     };
+
+    Completer.prototype.get_all_prior_code = function() {
+        var notebookCells = this.cell.notebook.get_cells();
+        var i;
+        var text = "";
+        var pos = 0;
+        for (i=0; i < notebookCells.length && !notebookCells[i].selected; i++) {
+            var cellText = notebookCells[i].get_text();
+            text = text + cellText + "\n";
+            pos = pos + cellText.length + 1;
+        }
+        return { code: text, offset: pos }
+    }
 
     Completer.prototype.finish_completing = function (msg) {
         /**
          * let's build a function that wrap all that stuff into what is needed
          * for the new completer:
          */
+        var completionCode = this.get_all_prior_code();
         var content = msg.content;
-        var start = content.cursor_start;
-        var end = content.cursor_end;
+        var start = content.cursor_start - completionCode.offset;
+        var end = content.cursor_end - completionCode.offset;
         var matches = content.matches;
 
         var cur = this.editor.getCursor();

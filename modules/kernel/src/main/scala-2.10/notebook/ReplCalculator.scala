@@ -4,6 +4,7 @@ import java.io.File
 
 import akka.actor.{Actor, ActorRef, Props}
 import notebook.OutputTypes._
+import notebook.PresentationCompiler
 import notebook.kernel._
 import notebook.util.{CustomResolvers, Deps}
 import sbt._
@@ -98,7 +99,7 @@ class ReplCalculator(
     val deps = Deps.script(customDeps, resolvers, repo).toOption.getOrElse(List.empty[String])
     (deps, ("deps", () => {
       s"""
-         |val CustomJars = ${deps.mkString("Array(\"", "\",\"", "\")")}
+         |val CustomJars = ${deps.mkString("Array(\"", "\",\"", "\")").replace("\\","\\\\")}
       """.stripMargin
     }))
   }.getOrElse((List.empty[String], ("deps", () => "val CustomJars = Array.empty[String]\n")))
@@ -110,6 +111,14 @@ class ReplCalculator(
   private def repl: Repl = _repl getOrElse {
     val r = new Repl(compilerArgs, depsJars)
     _repl = Some(r)
+    r
+  }
+
+  private var _presentationCompiler: Option[PresentationCompiler] = None
+
+  private def presentationCompiler: PresentationCompiler = _presentationCompiler getOrElse {
+    val r = new PresentationCompiler(depsJars)
+    _presentationCompiler = Some(r)
     r
   }
 
@@ -408,10 +417,13 @@ class ReplCalculator(
 
     val allInitScrips: List[(String, () => String)] = dummyScript :: SparkHookScript :: depsScript :: ImportsScripts :: CustomSparkConfFromNotebookMD :: initScripts.map(
       x => (x._1, () => x._2))
+    val pc = new PresentationCompiler(depsJars)
     for ((name, script) <- allInitScrips) {
       log.info(s" INIT SCRIPT: $name")
       eval(script)
+      pc.addScripts(script())
     }
+    _presentationCompiler = Some(pc)
   }
 
   override def preStart() {
@@ -446,7 +458,7 @@ class ReplCalculator(
         case req@ExecuteRequest(_, code) => executor.forward(req)
 
         case CompletionRequest(line, cursorPosition) =>
-          val (matched, candidates) = repl.complete(line, cursorPosition)
+          val (matched, candidates) = presentationCompiler.complete(line, cursorPosition)
           sender ! CompletionResponse(cursorPosition, candidates, matched)
 
         case ObjectInfoRequest(code, position) =>
