@@ -5,7 +5,7 @@ import java.net.URL
 import java.util.Arrays
 
 import scala.collection.JavaConversions._
-import scala.util.Try
+import scala.util.{Failure, Try}
 import scala.xml.{ Text, NodeSeq, Elem, XML }
 
 import com.typesafe.config.{ConfigFactory, Config}
@@ -112,7 +112,9 @@ object ArtifactSelector {
 }
 
 object Deps extends java.io.Serializable {
-  type ArtifactPredicate = PartialFunction[(ArtifactMD, Set[ArtifactMD]), Boolean]
+   val logger = org.slf4j.LoggerFactory.getLogger("Aether downloads")
+
+   type ArtifactPredicate = PartialFunction[(ArtifactMD, Set[ArtifactMD]), Boolean]
 
   private val PATTERN_MODULEID_1 = """^([^%\s]+)\s*%\s*([^%\s]+)\s*%\s*([^%\s]+)$""".r
   private val PATTERN_MODULEID_2 = """^([^%\s]+)\s*%\s*([^%\s]+)\s*%\s*([^%\s]+)\s*%\s*([^%\s]+)$""".r
@@ -187,7 +189,12 @@ object Deps extends java.io.Serializable {
                                 "runtime",
                                 exc
                               ).toSet
-
+    logger.info(s"""|
+      |Resolved/Downloaded:
+      |${deps.map(x => "* " + x.toString).mkString("\n")}
+      |===================================================
+      |""".stripMargin
+    )
     val newJars = deps.map(_.getFile.getPath).toSet.toList
     newJars
   }
@@ -203,6 +210,10 @@ object Deps extends java.io.Serializable {
 
     val tryDeps:Try[List[String]] = includes.foldLeft(Try(List.empty[String])) { case (t, a) =>
       t flatMap { l => Try(l ::: Deps.resolve(a, excludesFns)(remotes, repo)) }
+    }
+    tryDeps match {
+      case Failure(t) => logger.error("Failed to resolve dependencies: \n" + cp, t)
+      case _ =>
     }
     //println(tryDeps)
     tryDeps
