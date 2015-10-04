@@ -43,7 +43,7 @@ class CalcWebSocketService(
     val ws = new {
       def send(header: JsValue, session: JsValue /*ignored*/ , msgType: String, channel: String,
         content: JsValue) = {
-        Logger.debug(s"Sending info to websockets $wss in $this")
+        Logger.trace(s"Sending info to websockets $wss in $this")
         wss.foreach { ws =>
           ws.send(header, ws.session, msgType, channel, content)
         }
@@ -78,7 +78,8 @@ class CalcWebSocketService(
       val remoteDeploy = Await.result(remoteDeployFuture, 2 minutes)
 
       calculator = context.actorOf {
-        Props(new ReplCalculator(
+        Props(
+          classOf[ReplCalculator],
           kNotebookName,
           kCustomLocalRepo,
           kCustomRepos,
@@ -86,8 +87,9 @@ class CalcWebSocketService(
           kCustomImports,
           kCustomArgs,
           kCustomSparkConf,
+          self,
           kInitScripts,
-          kCompilerArgs)
+          kCompilerArgs
         ).withDeploy(remoteDeploy)
       }
     }
@@ -148,6 +150,28 @@ class CalcWebSocketService(
             currentSessionOperation = currentSessionOperation.dequeue._2
           }
         }
+
+      case event:org.apache.log4j.spi.LoggingEvent =>
+        // println("Received log event: " + s"""
+        //   > ${event.getLevel}
+        //   > ${event.getTimeStamp}
+        //   > ${event.getLoggerName}
+        //   > ${event.getMessage}
+        // """)
+        ws.send(
+          obj(
+            "session" → "ignored"
+          ),
+          JsNull,
+          "log",
+          "iopub",
+          obj(
+            "level"       → event.getLevel.toString,
+            "time_stamp"  → event.getTimeStamp,
+            "logger_name" → event.getLoggerName,
+            "message"     → event.getMessage.toString
+          )
+        )
     }
 
     class SessionOperationActors(header: JsValue, session: JsValue) {

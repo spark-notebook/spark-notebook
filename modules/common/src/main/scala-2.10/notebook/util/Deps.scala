@@ -45,7 +45,7 @@ object Deps extends java.io.Serializable {
 
   def resolve(includes: Seq[ModuleID], exclusions: Seq[ExclusionRule] = Nil)
       (implicit _resolvers: Seq[Resolver], repo: java.io.File) = {
-    val logger: ConsoleLogger = ConsoleLogger(scala.Console.out)
+    val logger = new SbtLoggerSlf4j(org.slf4j.LoggerFactory.getLogger("SBT downloads"))
     val resolvers = Resolver.file("local-repo", repo / "local")(Resolver.ivyStylePatterns) +: _resolvers
     val configuration: InlineIvyConfiguration = new InlineIvyConfiguration(
       new IvyPaths(repo.getParentFile, Some(repo)),
@@ -86,7 +86,7 @@ object Deps extends java.io.Serializable {
 
     val files = try {
       val report: UpdateReport = IvyActions.update(module, config, logger)
-      println(report)
+      logger.log(sbt.Level.Info, report.toString)
       report.allFiles
     } catch {
       case x: Throwable =>
