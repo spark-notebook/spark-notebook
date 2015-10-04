@@ -33,6 +33,8 @@ class RemoteActorProcess extends ForkableProcess {
 
     _system = ActorSystem("Remote", actualCfg)
 
+    val ws = _system.actorOf(Props[notebook.kernel.WebSocketAppender], "remote-logger")
+
     val address = GetAddress(_system).address
     address.toString
     // address.port.getOrElse(sys.error("not a remote actor system: %s".format(cfg))).toString
