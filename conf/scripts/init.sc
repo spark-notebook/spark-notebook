@@ -68,4 +68,5 @@ import globalScope.{sparkContext, reset, sc, stopSpark}
 
 reset()
 
-"init.sc done!"
+println("init.sc done!")
+()
