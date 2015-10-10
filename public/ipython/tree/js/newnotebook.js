@@ -73,6 +73,7 @@ define([
 
     NewNotebookWidget.prototype.new_notebook = function (kernel_name, customMetadata) {
         /** create and open a new notebook */
+        var name = prompt("Notebook name:");
         var that = this;
         kernel_name = kernel_name || this.default_kernel;
         var w = window.open();
@@ -80,6 +81,7 @@ define([
             that.notebook_path,
             {
                 type: "notebook",
+                name: name,
                 custom: customMetadata
             }).then(
             function (data) {

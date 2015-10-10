@@ -53,9 +53,10 @@ class NotebookManager(val name: String, val notebookDir: File) {
     customDeps: Option[List[String]] = None,
     customImports: Option[List[String]] = None,
     customArgs: Option[List[String]] = None,
-    customSparkConf: Option[JsObject] = None) = {
+    customSparkConf: Option[JsObject] = None,
+    name:Option[String] = None) = {
     val sep = if (path.last == '/') "" else "/"
-    val fpath = incrementFileName(path + sep + "Untitled")
+    val fpath = name.map(path + sep + _ + extension).getOrElse(incrementFileName(path + sep + "Untitled"))
     val nb = Notebook(
       Some(new Metadata(getName(fpath),
         customLocalRepo = customLocalRepo,

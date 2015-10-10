@@ -279,7 +279,7 @@ object Application extends Controller {
     }
   }
 
-  def createNotebook(p: String, custom: JsObject) = {
+  def createNotebook(p: String, custom: JsObject, name:Option[String]) = {
     val path = URLDecoder.decode(p, UTF_8)
     Logger.info(s"Creating notebook at $path")
     val customLocalRepo = Try((custom \ "customLocalRepo").as[String]).toOption.map(_.trim()).filterNot(_.isEmpty)
@@ -299,7 +299,8 @@ object Application extends Controller {
       customDeps orElse config.deps,
       customImports orElse config.imports,
       customArgs orElse config.args,
-      customMetadata orElse config.sparkConf)
+      customMetadata orElse config.sparkConf,
+      name)
     Try(Redirect(routes.Application.contents("notebook", fpath)))
   }
 
@@ -311,23 +312,23 @@ object Application extends Controller {
   }
 
   def newNotebook(path: String, tryJson: Try[JsValue]) = {
-    def findkey[T](x: JsValue, k: String)(init: T)(implicit m: ClassTag[T]): Try[T] =
+    def findkey[T](x: JsValue, k: String)(init: Option[T])(implicit m: ClassTag[T]): Try[T] =
       (x \ k) match {
         case j: JsUndefined => Failure(new IllegalArgumentException("No " + k))
-        case JsNull => Success(init)
+        case JsNull => init.map(x => Success(x)).getOrElse(Failure(new IllegalStateException("Got JsNull ")))
         case o if m.runtimeClass == o.getClass => Success(o.asInstanceOf[T])
         case x => Failure(new IllegalArgumentException("Bad type: " + x))
       }
 
     lazy val custom = for {
       x <- tryJson
-      t <- findkey[JsObject](x, "custom")(Json.obj())
-      n <- createNotebook(path, t)
+      t <- findkey[JsObject](x, "custom")(Some(Json.obj()))
+      n <- createNotebook(path, t, findkey[JsString](x, "name")(None).toOption.map(_.value))
     } yield n
 
     lazy val copyFrom = for {
       x <- tryJson
-      t <- findkey[JsString](x, "copy_from")(JsString(""))
+      t <- findkey[JsString](x, "copy_from")(Some(JsString("")))
       n <- copyingNb(t.value)
     } yield n
 
