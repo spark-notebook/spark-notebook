@@ -90,7 +90,7 @@ object Deps extends java.io.Serializable {
       report.allFiles
     } catch {
       case x: Throwable =>
-        scala.Console.err.println(x)
+        logger.trace(x)
         Nil
     }
 
