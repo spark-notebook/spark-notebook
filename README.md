@@ -247,7 +247,7 @@ cd spark-notebook
 ```
 
 ##### Launch the server
-Enter the `sbt console` by running `sbt` within the `spark-notebook` folder:
+Enter `sbt run` within the `spark-notebook` folder:
 ```
 [info] Loading global plugins from /home/noootsab/.sbt/0.13/plugins
 [info] Loading project definition from /home/Sources/noootsab/spark-notebook/project
