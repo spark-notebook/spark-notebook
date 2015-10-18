@@ -24,7 +24,7 @@ trait JsWorld[I, O] extends Widget with IODataConnector[I, O] {
     x => s"'../javascripts/notebook/$x'").mkString("[", ",", "]")
   private lazy val call =
     s"""
-      function(playground, ${scripts.map(_.name).mkString(", ")}) {
+      function(${("playground" :: scripts.map(_.name)).mkString(", ")}) {
         // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }
         // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)
 
