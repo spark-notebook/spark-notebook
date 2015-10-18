@@ -247,7 +247,7 @@ cd spark-notebook
 ```
 
 ##### Launch the server
-Enter the `sbt console` by running `sbt` within the `spark-notebook` folder:
+Execute `sbt` within the `spark-notebook` folder:
 ```
 [info] Loading global plugins from /home/noootsab/.sbt/0.13/plugins
 [info] Loading project definition from /home/Sources/noootsab/spark-notebook/project
@@ -265,6 +265,8 @@ play 2.2.6 built with Scala 2.10.3 (running Java 1.7.0_72), http://www.playframe
 
 [spark-notebook] $
 ```
+Then you will need to execute the `run` command that will launch the server. In `run` mode, your changes in the code will be compiled behind the scene and will reload the application for you.
+
 
 ##### Change relevant versions
 When using **Spark** we generally have to take a lot of care with the **Spark** version itself but also the **Hadoop** version.
