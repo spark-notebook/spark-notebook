@@ -1,7 +1,7 @@
 package notebook.server
 
 import java.io._
-import java.nio.charset.Charset
+import java.nio.charset.{StandardCharsets, Charset}
 import java.net.URLDecoder
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -88,7 +88,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
   def getNotebook(path: String) = {
     Logger.info(s"getNotebook at path $path")
     for (notebook <- load(path)) yield {
-      val data = FileUtils.readFileToString(notebookFile(path))
+      val data = FileUtils.readFileToString(notebookFile(path), StandardCharsets.UTF_8)
       val df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss z'('Z')'")
       val last_mtime = df.format(new Date(notebookFile(path).lastModified()))
       (last_mtime, notebook.name, data, path)

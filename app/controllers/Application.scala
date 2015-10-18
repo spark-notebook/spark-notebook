@@ -569,6 +569,7 @@ object Application extends Controller {
             }
             Ok(json).withHeaders(
               HeaderNames.CONTENT_DISPOSITION → s"""attachment; filename="$path" """,
+              HeaderNames.CONTENT_ENCODING → "UTF-8",
               HeaderNames.LAST_MODIFIED → lastMod
             )
           case "scala" =>
