@@ -283,7 +283,7 @@ class ReplCalculator(
 
           (`text/plain`, s"""
              |import sys.process._
-             |$ps !!
+             |$ps.!!
               """.stripMargin.trim
           )
 
