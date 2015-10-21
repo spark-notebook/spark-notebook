@@ -8,6 +8,7 @@ Spark Notebook
 <!-- MarkdownTOC depth=6 autolink=true bracket=round -->
 
 - [Description](#description)
+  - [Quick Start Guide](#quick-start-guide)
   - [Discussions](#discussions)
   - [Mailing list](#mailing-list)
     - [Spark Notebook Dev](#spark-notebook-dev)
@@ -41,7 +42,7 @@ Spark Notebook
         - [MapR](#mapr)
         - [Building for MapR](#building-for-mapr)
         - [Running with MapR](#running-with-mapr)
-- [Use](#use)
+  - [Use](#use)
 - [Clusters / Clouds](#clusters--clouds)
   - [Amazon EMR](#amazon-emr)
     - [Description](#description-1)
@@ -123,7 +124,19 @@ This is achieved through an interactive web-based editor that can combine Scala 
 
 The usage of Spark comes out of the box, and is simply enabled by the implicit variable named `sparkContext`.
 
-You should also check the website, [http://spark-notebook.io](http://spark-notebook.io).
+### Quick Start Guide
+
+Want to try out Spark Notebook? Do these steps.
+
+* Go to [spark-notebook.io](http://spark-notebook.io/).
+* Download one of the builds.
+* Expand the file somewhere convenient.
+* Open a terminal/command window.
+* Change to the root directory of the expanded distribution.
+* Execute the command `bin/spark-notebook` (*NIX) or `bin\spark-notebook` (Windows).
+* Open your browser to [localhost:9000](http://localhost:9000).
+
+For more details on getting started, see [Launch](#launch).
 
 ### Discussions
 C'mon on [gitter](https://gitter.im/andypetrella/spark-notebook?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)!
@@ -392,8 +405,8 @@ manager {
 ```
 Otherwise you will get an error `No login modules configured for hadoop_simple`.
 
-# Use
-
+Use
+---
 Before the first launch, it may be necessary to add some settings to `conf/application.conf`.
 
 > **Warn:** When using a distribution, this `conf/application.conf` is already present in the installed package.
@@ -1249,7 +1262,7 @@ The logo is a proprietary of the Data Fellas company (BE), but it's not mandator
 
 However, you can still change it to put your own, this is easily achieved when running a distro.
 
-After having unpacked the Spark Notebook distro, create the `public/images` folder and put your `logo.png` file in.
+After having unpacked the spark notebook distro, create the `public/images` folder and put your `logo.png` file in.
 
 ## Project Name
 By default the project name is set to `Spark Notebook`, but you might want to clearly show your own business name in the title.
