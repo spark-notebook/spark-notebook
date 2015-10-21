@@ -9,6 +9,7 @@ Spark Notebook
 <!-- MarkdownTOC depth=6 autolink=true bracket=round -->
 
 - [Description](#description)
+  - [Quick Start Guide](#quick-start-guide)
   - [Discussions](#discussions)
   - [Mailing list](#mailing-list)
     - [Spark Notebook Dev](#spark-notebook-dev)
@@ -85,6 +86,20 @@ The main intent of this tool is to create [reproducible analysis](http://simplys
 This is achieved through an interactive web-based editor that can combine Scala code, SQL queries, Markup or even JavaScript in a collaborative manner.
 
 The usage of Spark comes out of the box, and is simply enabled by the implicit variable named `sparkContext`.
+
+### Quick Start Guide
+
+Want to try out Spark Notebook? Do these steps.
+
+* Go to [spark-notebook.io](http://spark-notebook.io/).
+* Download one of the builds.
+* Expand the file somewhere convenient.
+* Open a terminal/command window.
+* Change to the root directory of the expanded distribution.
+* Execute the command `bin/spark-notebook` (*NIX) or `bin\spark-notebook` (Windows).
+* Open your browser to [localhost:9000](http://localhost:9000).
+
+For more details on getting started, see [Launch](#launch).
 
 ### Discussions
 C'mon on [gitter](https://gitter.im/andypetrella/spark-notebook?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)!
@@ -252,16 +267,16 @@ While using the repository from SBT, you can use any version of Apache Spark you
 
 Use
 ---
-Before the first launch, it may be necessary to add some settings to `conf/application.conf`. 
+Before the first launch, it may be necessary to add some settings to `conf/application.conf`.
 
 > **Warn:** When using a distribution, this `conf/application.conf` is already present in the installed package.
-> 
+>
 > However, it won't be taken into account until you include it into you launch environment. To do so, you have to > create a `conf/application.ini` file with the following content:
 > ```
 > -Dconfig.file=./conf/application.conf
 > ```
 > This allows you to have several environment that can be switched via this `ini` file
-> 
+>
 > A **less** cleaner way would be to launch the script like this: `./bin/spark-notebook -Dconfig.file=./conf/application.conf`
 
 In particular `manager.kernel.vmArgs` can be used to set environment variables for the driver (e.g. `-Dhdp.version=$HDP-Version` if you want to run spark-notebook on a **Hortonworks** cluster). These are the settings that you would commonly pass via `spark.driver.extraJavaOptions`.
@@ -323,11 +338,11 @@ While the context `:remote-repo` is available from the notebook, we can also add
 Adding dependencies in the classpath **and** in the spark context can be done, this way (see also `:dp`).
 
 ```json
-    "customDeps"      : [ 
+    "customDeps"      : [
       "med-at-scale        %  ga4gh-model-java  % 0.1.0-SNAPSHOT",
       "org.apache.avro     %  avro-ipc          % 1.7.6",
       "- org.mortbay.jetty %  org.eclipse.jetty % _"
-    ] 
+    ]
 ```
 
 
@@ -520,7 +535,7 @@ Then all `SparkContext` will automatically have the tachyon configuration pointi
 ### ... Embedded local (default)
 If no configuration is set under `manager.tachyon` conf key in the `application.conf` file (see above).
 
-An embed Tachyon local cluster will be started for you automatically. 
+An embed Tachyon local cluster will be started for you automatically.
 
 Hence, if you wanna use this feature a bit, we'd recommend to increase the memory allocated to the spark-notebook server:
 ```
@@ -826,7 +841,7 @@ The logo is a proprietary of the Data Fellas company (BE), but it's not mandator
 
 However, you can still change it to put your own, this is easily achieved when running a distro.
 
-After having unpacked the spark notebook distro, create the `public/images` folder and put your `logo.png` file in. 
+After having unpacked the spark notebook distro, create the `public/images` folder and put your `logo.png` file in.
 
 ## Project Name
 By default the project name is set to `Spark Notebook`, but you might want to clearly show your own business name in the title.
