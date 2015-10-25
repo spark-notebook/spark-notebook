@@ -37,9 +37,17 @@ define([
     chart = new dimple.chart(svg, @dataInit)
     chart.setBounds(w*(50/600), h*(20/400), w *(540/600), h*(350/400))
 
-    chart.addCategoryAxis("x", options.x)
-    chart.addMeasureAxis("y", options.y)
-    chart.addSeries(options.y, dimple.plot.bubble)
+    #<painful> → https://github.com/PMSI-AlignAlytics/dimple/issues/140
+    order = []
+    n = @dataInit.length-1
+    for i in [0..n]
+      order.push(@dataInit[i][options.x]) if (order.indexOf(@dataInit[i][options.x]) == -1)
+    x = chart.addCategoryAxis("x", options.x)
+    x.addOrderRule(order)
+    #</painful>
+    y = chart.addMeasureAxis("y", options.y)
+
+    chart.addSeries([options.y], dimple.plot.bubble)
     chart.draw()
 
     dataO.subscribe( (newData) =>
