@@ -270,7 +270,7 @@ define(function(require){
                 env.notebook.delete_cell();
             }
         },
-        'interrupt-kernel':{
+        'stop-kernel':{
             icon: 'fa-stop',
             help_index : 'ha',
             handler : function (env) {

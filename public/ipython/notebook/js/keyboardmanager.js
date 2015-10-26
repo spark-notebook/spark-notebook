@@ -94,7 +94,7 @@ define([
             'enter' : 'ipython.enter-edit-mode',
             'space' : 'ipython.scroll-down',
             'down' : 'ipython.select-next-cell',
-            'i,i' : 'ipython.interrupt-kernel',
+            'i,i' : 'ipython.stop-kernel',
             '0,0' : 'ipython.restart-kernel',
             'k,a' : 'ipython.interrupt-jobs',
             'd,d' : 'ipython.delete-cell',

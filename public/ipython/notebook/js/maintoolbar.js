@@ -52,7 +52,7 @@ define([
             ],
             'move_up_down'],
           [ ['ipython.run-select-next',
-             'ipython.interrupt-kernel',
+             'ipython.stop-kernel',
              'ipython.restart-kernel',
              'ipython.interrupt-jobs'
             ],
