@@ -953,8 +953,14 @@ define([
             }
         }
 
+        var st = "";
+        if (!_.isEmpty(msg.content.thrown)) {
+            st = ". Stacktrace:\n" + msg.content.thrown.join("\n")
+        }
         // hide in console using filter: ^[^(?:Server log>)]
-        console[msg.content.level.toLowerCase()]("Server log> ["+new Date(msg.content.time_stamp)+"] [" + msg.content.logger_name + "] " + msg.content.message);
+        console[msg.content.level.toLowerCase()](
+            "Server log> ["+new Date(msg.content.time_stamp)+"] [" + msg.content.logger_name + "] " + msg.content.message + st
+        );
     };
 
     /**

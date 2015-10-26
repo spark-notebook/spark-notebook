@@ -3,7 +3,7 @@ package notebook.server
 import akka.actor.{Terminated, _}
 import notebook.client._
 import play.api._
-import play.api.libs.json.Json.obj
+import play.api.libs.json.Json.{obj, arr}
 import play.api.libs.json._
 
 import scala.concurrent._
@@ -169,7 +169,8 @@ class CalcWebSocketService(
             "level"       → event.getLevel.toString,
             "time_stamp"  → event.getTimeStamp,
             "logger_name" → event.getLoggerName,
-            "message"     → event.getMessage.toString
+            "message"     → event.getMessage.toString,
+            "thrown"      → (if (event.getThrowableStrRep == null) List.empty[String] else event.getThrowableStrRep.toList)
           )
         )
     }

@@ -249,7 +249,7 @@ class ReplCalculator(
               val newJarList = if (local == "l") {
                   "Nil"
                 } else {
-                  deps.mkString("List(\"", "\",\"", "\")")
+                  deps.map(x => x.replaceAll("\\\\", "\\\\\\\\")).mkString("List(\"", "\",\"", "\")")
                 }
               (`text/html`,
                 s"""
@@ -277,11 +277,11 @@ class ReplCalculator(
           _repl = Some(_r)
           preStartLogic()
           replay()
-
+          val newJarList = jars.map(x => x.replaceAll("\\\\", "\\\\\\\\")).mkString("List(\"", "\",\"", "\")")
           (`text/html`,
             s"""
               |//updating deps
-              |globalScope.jars = (${ jars.mkString("List(\"", "\",\"", "\")") } ::: globalScope.jars.toList).distinct.toArray
+              |globalScope.jars = ($newJarList ::: globalScope.jars.toList).distinct.toArray
               |//restarting spark
               |reset()
               |globalScope.jars.toList
@@ -292,7 +292,7 @@ class ReplCalculator(
           val ps = "s\"\"\"" + sh.replaceAll("\\s*\\|\\s*", "\" #\\| \"").replaceAll("\\s*&&\\s*", "\" #&& \"") + "\"\"\""
           (`text/plain`, s"""
                             |import sys.process._
-                            |$ps !!
+                            |$ps.!!
               """.stripMargin.trim
             )
 
