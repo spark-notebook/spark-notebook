@@ -25,6 +25,8 @@ define([
      * @param {string} name - the kernel type (e.g. python3)
      */
     var Kernel = function (kernel_service_url, base_url, ws_url, notebook, name) {
+        this.notebook = notebook;
+
         this.events = notebook.events;
 
         this.id = null;
@@ -319,6 +321,7 @@ define([
             processData: false,
             cache: false,
             type: "POST",
+            data: JSON.stringify({notebook_path: that.notebook.notebook_path}),
             dataType: "json",
             success: this._on_success(on_success),
             error: this._on_error(on_error)

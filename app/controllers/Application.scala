@@ -427,10 +427,13 @@ object Application extends Controller {
     Ok(s"""{"$kernelId": "closed"}""")
   }
 
-  def restartKernel(kernelId: String) = Action { request =>
+  def restartKernel(kernelId: String) = Action(parse.tolerantJson) { request =>
     val k = KernelManager.get(kernelId)
     closeKernel(kernelId)
-    Ok(newSession(notebookPath = k.flatMap(k => k.notebookPath)))
+    val p = (request.body \ "notebook_path").as[String]
+    val path = URLDecoder.decode(p, UTF_8)
+    val notebookPath = k.flatMap(_.notebookPath).getOrElse(p)
+    Ok(newSession(notebookPath = Some(notebookPath)))
   }
 
   def listCheckpoints(snb: String) = Action { request =>
