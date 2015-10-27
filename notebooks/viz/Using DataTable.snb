@@ -4,7 +4,7 @@
     "user_save_timestamp" : "2015-01-02T01:10:22.815Z",
     "auto_save_timestamp" : "2015-01-02T01:09:06.871Z",
     "language_info" : {
-      "name" : "Scala",
+      "name" : "scala",
       "file_extension" : "scala",
       "codemirror_mode" : "text/x-scala"
     },
@@ -13,6 +13,7 @@
     "customRepos" : null,
     "customDeps" : null,
     "customImports" : null,
+    "customArgs" : null,
     "customSparkConf" : null
   },
   "cells" : [ {
@@ -22,6 +23,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
@@ -34,6 +36,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
@@ -46,6 +49,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
@@ -58,6 +62,7 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
@@ -70,10 +75,11 @@
   }, {
     "metadata" : {
       "trusted" : true,
+      "input_collapsed" : false,
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "import notebook.Codec\nimport notebook.JsonCodec._\n\nimplicit val dataCodec:Codec[JsValue, Data] = formatToCodec(f)",
+    "source" : "import notebook.Codec\nimport notebook.JsonCodec._\n\nimplicit val dataCodec:Codec[JsValue, Data] = formatToCodec(Some((_:String) => ???))(f)",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -82,7 +88,8 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : true
+      "input_collapsed" : false,
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "import notebook.front.widgets._  \nnew DataTable(data)(dataCodec).plot",
