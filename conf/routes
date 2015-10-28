@@ -21,6 +21,7 @@ POST           /api/kernels/:kernelId/interrupt          controllers.Application
 POST           /api/kernels/:kernelId/restart            controllers.Application.restartKernel(kernelId:String)
 
 
+GET            /api/contents                             controllers.Application.contents(type:String, path:String="/")
 GET            /api/contents/                            controllers.Application.contents(type:String, path:String="/")
 GET            /api/contents/*path                       controllers.Application.contents(type:String, path:String)
 GET            /api/contents/*snb/checkpoints            controllers.Application.listCheckpoints(snb:String)
