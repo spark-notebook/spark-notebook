@@ -442,6 +442,8 @@ In both case, the `scala-notebook` will open a new tab with your notebook in it,
 
 You can on Amazon EMR launch Spark Clusters from this [page](https://console.aws.amazon.com/elasticmapreduce/) or using the [AWS CLI](https://docs.aws.amazon.com/ElasticMapReduce/latest/DeveloperGuide/emr-spark-launch.html).
 
+**NOTE**: For reproductability, the notebook which was already created including examples use its own metadata. Hence you will need to create a new notebook that will be applied the template from application.conf as explained below or you have to change the metadata of the exisiting one([Edit] -> [Edit Notebook Metadata]).
+
 ### Version 3.x
 
 #### Environment
