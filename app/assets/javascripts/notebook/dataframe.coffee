@@ -70,7 +70,7 @@ define([
             return schema.fields.map((c) ->
                 cell = {
                   'cl': c.type
-                  'value': row[c.name]
+                  'value': JSON.stringify(row[c.name])
                 }
                 return cell
             )
