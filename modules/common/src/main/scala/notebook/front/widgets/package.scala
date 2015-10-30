@@ -324,7 +324,7 @@ package object widgets {
 
     maxPointsBox.currentData --> Connection.fromObserver { max:Int =>
       currentMax = max
-      if (currentMax == toPoints.count(currentC)) {
+      if (currentMax >= toPoints.count(currentC)) {
         warnMax("")
       } else{
         warnMax(" (showing "+currentMax + ")")
@@ -337,7 +337,7 @@ package object widgets {
       maxPointsBox.currentData <-- Connection.just(max)
       //update state
       currentMax = max
-      if (currentMax == toPoints.count(currentC)) {
+      if (currentMax >= toPoints.count(currentC)) {
         warnMax("")
       } else{
         warnMax(" (showing "+currentMax + ")")
