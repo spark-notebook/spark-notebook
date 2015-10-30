@@ -8,35 +8,6 @@ define([
     w = options.width||600
     h = options.height||400
 
-    count = d3.select(container).append("p")
-    count .selectAll("span .nrow")
-          .data([options.nrow])
-          .enter()
-          .append("span")
-          .attr("class", "nrow")
-            .text( (d) ->
-              d + " items"
-            )
-    displayShown = (c) =>
-      shown = count.selectAll("span.shown")
-                    .data([c])
-                    .text (d) ->
-                      if options.nrow > d
-                        " (showing " +  d + ")"
-                      else
-                        ""
-      shown.enter()
-            .append("span")
-            .attr("class", "shown")
-            .attr("style", "color: red")
-            .text( (d) ->
-              if options.nrow > d
-                " (showing " +  d + ")"
-              else
-                ""
-            )
-    displayShown(options.shown)
-
     svg = d3.select(container).append("svg:svg").attr("width", w+"px").attr("height", h+"px").attr("id", "graph"+@genId)
 
     #if we want goup field (int 1..20)
@@ -108,6 +79,5 @@ define([
 
     dataO.subscribe( (newData) =>
       console.warn("graph update todo")
-      displayShown(newData.length)
     )
 )

@@ -242,7 +242,10 @@ return new function () {
   if (IPython.notebook && IPython.notebook.kernel && IPython.notebook.kernel.id) {
       me.start();
   } else {
+    console.warn("Observable init delayed because kernel id not available (IPython.notebook.kernel.id)")
+    console.debug("Observable delayed, IPython object is: ", IPython)
     events.on('app_initialized.NotebookApp', function(o) {
+      console.warn("Delayed observable is now starting")
       me.start(); //avoid pre-init of IPython → .kernel.id is null
     });
   }

@@ -9,35 +9,6 @@ define([
     data = @dataInit
     columns = options.headers
 
-    count = d3.select(container).append("p")
-    count .selectAll("span .nrow")
-          .data([options.nrow])
-          .enter()
-          .append("span")
-          .attr("class", "nrow")
-            .text( (d) ->
-              d + " items"
-            )
-    displayShown = (c) =>
-      shown = count.selectAll("span.shown")
-                    .data([c])
-                    .text (d) ->
-                      if options.nrow > d
-                        " (showing " +  d + ")"
-                      else
-                        ""
-      shown.enter()
-            .append("span")
-            .attr("class", "shown")
-            .attr("style", "color: red")
-            .text( (d) ->
-              if options.nrow > d
-                " (showing " +  d + ")"
-              else
-                ""
-            )
-    displayShown(options.shown)
-
     table = d3.select(container).append("table")
               .attr("style", "width: "+(options.width||600)+"px")
               .attr("id", "table"+id)
@@ -76,7 +47,6 @@ define([
 
     draw(columns, data)
     dataO.subscribe( (newData) =>
-      displayShown(newData.length)
       draw(columns, newData)
     )
 )

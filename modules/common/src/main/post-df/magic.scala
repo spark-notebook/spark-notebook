@@ -59,5 +59,6 @@ trait ExtraMagicImplicits {
     }
     def count(x:DataFrame) = x.count()
     def append(x:DataFrame, y:DataFrame) = x unionAll y
+    def mkString(x:DataFrame, sep:String=""):String = x.rdd.toDebugString
   }
 }
