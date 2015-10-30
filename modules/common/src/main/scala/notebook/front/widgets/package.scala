@@ -58,10 +58,17 @@ package object widgets {
       )}</p>)
   }
 
-  def ul(capacity:Int=10) = new DataConnectedWidget[String] {
+  def ul(capacity:Int=10, initData:Seq[String]=Nil, prefill:Option[String]=None) = new DataConnectedWidget[String] {
     implicit val singleCodec:Codec[JsValue, String] = JsonCodec.strings
 
-    var data = Seq.empty[String]
+    var data = (initData.size, prefill) match {
+      case (0, None) => Seq.empty[String]
+      case (x, None) => initData
+      case (0, Some(i)) => Seq.fill(capacity)(i)
+      case (x, Some(i)) => initData.padTo(capacity, i)
+    }
+
+    apply(data)
 
     lazy val toHtml = <ul data-bind="foreach: value">
       <li data-bind="text: $data"></li>{
@@ -245,7 +252,7 @@ package object widgets {
     def computeData(pts:Seq[MagicRenderPoint] = points) = pts.map(_.data.toSeq)
     override val data:Seq[Seq[(String, Any)]] = computeData()
 
-    val maxPointsBox = new InputBox[Int](maxPoints, "Max Points")
+    val maxPointsBox = new InputBox[Int](maxPoints, "Max Points (controlling all tabs)")
 
     maxPointsBox.currentData --> Connection.fromObserver { max:Int =>
       pages foreach { case (s, w) =>

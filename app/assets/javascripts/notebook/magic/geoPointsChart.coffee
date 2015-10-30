@@ -22,14 +22,18 @@ define([
     displayShown = (c) =>
       shown = count.selectAll("span.shown")
                     .data([c])
-      shown.remove()
+                    .text (d) ->
+                      if options.nrow > d
+                        " (showing " +  d + ")"
+                      else
+                        ""
       shown.enter()
             .append("span")
             .attr("class", "shown")
             .attr("style", "color: red")
             .text( (d) ->
               if options.nrow > d
-                "(showing " +  d + ")"
+                " (showing " +  d + ")"
               else
                 ""
             )
