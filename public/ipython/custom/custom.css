@@ -44,3 +44,17 @@ This will always be an empty file in IPython
     page-break-after: auto;
   }
 }
+
+/*fix #https://github.com/andypetrella/spark-notebook/issues/363 */
+/*http://stackoverflow.com/questions/17206631/why-are-bootstrap-tabs-displaying-tab-pane-divs-with-incorrect-widths-when-using/23267110#23267110*/
+/* bootstrap hack: fix content width inside hidden tabs */
+.tab-content > .tab-pane,
+.pill-content > .pill-pane {
+    display: block;     /* undo display:none          */
+    height: 0;          /* height:0 is also invisible */
+    overflow-y: hidden; /* no-overflow                */
+}
+.tab-content > .active,
+.pill-content > .active {
+    height: auto;       /* let the content decide it  */
+} /* bootstrap hack end */
