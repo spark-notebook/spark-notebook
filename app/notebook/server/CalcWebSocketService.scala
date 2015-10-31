@@ -169,7 +169,7 @@ class CalcWebSocketService(
             "level"       → event.getLevel.toString,
             "time_stamp"  → event.getTimeStamp,
             "logger_name" → event.getLoggerName,
-            "message"     → event.getMessage.toString,
+            "message"     → (""+Option(event.getMessage).map(_.toString).getOrElse("<no-message>")),
             "thrown"      → (if (event.getThrowableStrRep == null) List.empty[String] else event.getThrowableStrRep.toList)
           )
         )

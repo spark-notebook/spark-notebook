@@ -27,7 +27,7 @@ define([
         this.step_duration = 0;
         this.events = events;
         this.tour_steps = [
-            { 
+            {
                 title: "Welcome to the Notebook Tour",
                 placement: 'bottom',
                 orphan: true,
@@ -113,7 +113,7 @@ define([
                 title: "Fin.",
                 placement: 'bottom',
                 orphan: true,
-                content: "This concludes the IPython Notebook User Interface Tour. Happy hacking!"
+                content: "This concludes the Spark Notebook User Interface Tour. Happy hacking!"
             }
         ];
 
@@ -125,7 +125,7 @@ define([
             duration: this.step_duration,
             onStart: function() { console.log('tour started'); },
             // TODO: remove the onPause/onResume logic once pi's patch has been
-            // merged upstream to make this work via data-resume-class and 
+            // merged upstream to make this work via data-resume-class and
             // data-resume-text attributes.
             onPause: this.toggle_pause_play,
             onResume: this.toggle_pause_play,
@@ -133,7 +133,7 @@ define([
             template: tour_style,
             orphan: true
         });
-        
+
     };
 
     NotebookTour.prototype.start = function () {
@@ -149,13 +149,13 @@ define([
     NotebookTour.prototype.command_icon_hack =  function() {
         $('#modal_indicator').css('min-height', 20);
     };
-    
-    NotebookTour.prototype.toggle_pause_play = function () { 
-        $('#tour-pause').toggleClass('fa-pause fa-play'); 
+
+    NotebookTour.prototype.toggle_pause_play = function () {
+        $('#tour-pause').toggleClass('fa-pause fa-play');
     };
-    
-    NotebookTour.prototype.edit_mode = function() { 
-        this.notebook.focus_cell(); 
+
+    NotebookTour.prototype.edit_mode = function() {
+        this.notebook.focus_cell();
         this.notebook.edit_mode();
     };
 

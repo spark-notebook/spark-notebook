@@ -36,6 +36,9 @@ import org.apache.spark.rdd._
 
   @transient var sparkContext:SparkContext = _
 
+  import org.apache.spark.ui.notebook.front.gadgets.SparkMonitor
+  @transient var sparkMonitor:Option[SparkMonitor] = _
+
   def reset(appName:String=notebookName, lastChanges:(SparkConf=>Unit)=(_:SparkConf)=>()):Unit = {
     conf = new SparkConf()
     conf.setMaster(sparkMaster.getOrElse("local[*]"))
@@ -56,15 +59,14 @@ import org.apache.spark.rdd._
     }
     sparkContext = new SparkContext(conf)
     sparkContext.hadoopConfiguration.set("fs.tachyon.impl", "tachyon.hadoop.TFS")
+    sparkMonitor = Some(new SparkMonitor(sparkContext))
+    sparkMonitor.get.start
   }
-
-
-  val stopSpark:()=>Unit = () => sparkContext.stop()
 
   def sc:SparkContext = sparkContext
 }
 
-import globalScope.{sparkContext, reset, sc, stopSpark}
+import globalScope.{sparkContext, reset, sc}
 
 reset()
 

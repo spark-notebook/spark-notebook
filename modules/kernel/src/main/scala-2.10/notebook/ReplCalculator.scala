@@ -7,6 +7,7 @@ import notebook.OutputTypes._
 import notebook.PresentationCompiler
 import notebook.kernel._
 import notebook.util.{CustomResolvers, Deps}
+
 import sbt._
 
 import scala.collection.immutable.Queue
@@ -212,7 +213,7 @@ class ReplCalculator(
         log.debug("Clearing the queue of size " + queue.size)
         queue = scala.collection.immutable.Queue.empty
         repl.evaluate(
-          "sparkContext.cancelAllJobs()",
+          "globalScope.sparkContext.cancelAllJobs()",
           msg => {
             thisSender ! StreamResponse(msg, "stdout")
           }
@@ -456,8 +457,7 @@ class ReplCalculator(
     case msgThatShouldBeFromTheKernel =>
 
       msgThatShouldBeFromTheKernel match {
-        case InterruptRequest =>
-          executor.forward(InterruptRequest)
+        case InterruptRequest => executor.forward(InterruptRequest)
 
         case req@ExecuteRequest(_, code) => executor.forward(req)
 

@@ -24,6 +24,7 @@ require([
     'notebook/js/about',
     // only loaded, not used, please keep sure this is loaded last
     'custom/custom',
+    'job_progress',
     'tachyon'
 ], function(
     IPython,
@@ -48,6 +49,7 @@ require([
     about,
     // please keep sure that even if not used, this is loaded last
     custom,
+    job_progress,
     tachyon
     ) {
     "use strict";

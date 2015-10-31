@@ -37,7 +37,6 @@ private object JSBusState {
         }
       }
     }
-    log.debug("Sending %s to %s" format(value, id))
     publishCallback(id, value)
   }
 }
@@ -64,7 +63,7 @@ object JSBus {
   // TODO: How do these things get disposed? Need a notice from Javascript to Scala when an id is disposed, then we dispose all subscriptions (onComplete?)
   private val idToSubject: scala.collection.concurrent.Map[String, ValueConnection] = new scala.collection.concurrent.TrieMap[String, ValueConnection]()
 
-  class ValueConnection extends Connection[JsValue] {
+  class ValueConnection(val id:String = newID) extends Connection[JsValue] {
     val observer = new ConcreteObserver[JsValue] {
       // Called by extenral parties
       override def onNext(arg: JsValue) {
@@ -86,7 +85,6 @@ object JSBus {
     private[this] val subject = Subject[JsValue]()
     val observable: Observable[JsValue] = new WrappedObservable[JsValue](subject)
 
-    val id = newID
     var current: JsValue = null
 
 
@@ -96,8 +94,9 @@ object JSBus {
     }
   }
 
-  def createConnection = {
-    val cxn = new ValueConnection
+  def createConnection:ValueConnection = createConnection(newID)
+  def createConnection(id:String):ValueConnection = {
+    val cxn = new ValueConnection(id)
     idToSubject += cxn.id -> cxn
     cxn
   }

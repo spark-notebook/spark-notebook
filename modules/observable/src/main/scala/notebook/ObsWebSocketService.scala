@@ -6,7 +6,7 @@ import play.api.libs.json._
 import scala.concurrent._
 import scala.concurrent.duration._
 
-//import play.api.mvc.WebSocket
+import org.slf4j.LoggerFactory
 
 import play.api.libs.iteratee._
 
@@ -29,6 +29,8 @@ class ObsWebSocketService(system: ActorSystem, val channel: Concurrent.Channel[J
         remote ! msg
       case ObservableVMToBrowser(id, value) =>
         val respJson = Json.obj("id" -> id, "new_value" -> value)
+        //println(s"Pushing respJson: $respJson")
+
         channel push respJson
     }
   }

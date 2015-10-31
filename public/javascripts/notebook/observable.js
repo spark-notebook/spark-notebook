@@ -55,6 +55,7 @@ return new function () {
     }, 1000);
 
     this.channel.onmessage = $.proxy(this.handle_channel_reply, this);
+    events.trigger('Observable.ready', {});
   };
 
   this.handle_channel_reply = function (e) {

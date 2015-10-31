@@ -16,6 +16,8 @@ class SparkInfo(sparkContext: SparkContext, checkInterval: Duration = 5 seconds,
   execNumber: Option[Int] = None) extends SingleConnector[JsValue] with Widget {
   implicit val codec: Codec[JsValue, JsValue] = JsonCodec.idCodec[JsValue]
 
+  val log = org.slf4j.LoggerFactory.getLogger("SparkInfo")
+
   val listener = new org.apache.spark.ui.jobs.JobProgressListener(sparkContext.getConf)
 
   sparkContext.listenerBus.addListener(listener)
@@ -52,7 +54,7 @@ class SparkInfo(sparkContext: SparkContext, checkInterval: Duration = 5 seconds,
 
       val mode: String = listener.schedulingMode.map(_.toString).getOrElse("Unknown")
 
-      Json.obj(
+      val result = Json.obj(
         "duration" -> (now - sparkContext.startTime),
         "mode" -> mode,
         "activeNb" -> activeStages.size,
@@ -61,6 +63,8 @@ class SparkInfo(sparkContext: SparkContext, checkInterval: Duration = 5 seconds,
         "activeStages" -> (activeStagesList map stageExtract),
         "completedStages" -> (completedStagesList map stageExtract)
       )
+
+      result
     }
   }
 
@@ -83,7 +87,7 @@ class SparkInfo(sparkContext: SparkContext, checkInterval: Duration = 5 seconds,
               ['observable', 'knockout', 'knockout-bootstrap'],
               function (O, ko) {
                 v_v_v = O.makeObservable(valueId);
-                v_v_v.subscribe(function (x) {console.dir(x);});
+                v_v_v.subscribe(function (x) { console.dir(x); });
                 ko.applyBindings(
                   {
                     value: v_v_v

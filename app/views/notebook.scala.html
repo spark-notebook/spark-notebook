@@ -303,6 +303,8 @@
       <div id="notebook_panel">
           <div id="notebook"></div>
 
+          <div id="progress-pies" class="pull-left" style="top: 150px; position: absolute; left: 0px; width: 100px; height: 100px"></div>
+
           @if(utils.AppUtils.config.tachyonInfo.isDefined) {
               <div id="notebook-tachyon-container" class="pull-right" data-bind="style: { width: tachyon.width() }, visible: tachyon.opened()" style="top: 0px; position: absolute; right: 0px; background-color: #74AFAD; color: #ECECEA">
                 <div style="height:22px; ">
@@ -317,7 +319,6 @@
                     <i class="fa fa-expand"></i>
                   </button>
                 </div>
-
                 <div id="notebook-tachyon">
 
                   <ul class="breadcrumb" data-bind="foreach: tachyon.fragments()">
