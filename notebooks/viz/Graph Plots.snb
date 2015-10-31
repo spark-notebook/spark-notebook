@@ -11,8 +11,9 @@
     "trusted" : true,
     "customLocalRepo" : null,
     "customRepos" : null,
-    "customDeps" : [ "com.databricks:spark-csv_2.10:1.0.3" ],
+    "customDeps" : [ ],
     "customImports" : null,
+    "customArgs" : null,
     "customSparkConf" : null
   },
   "cells" : [ {
@@ -41,7 +42,33 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "widgets.GraphChart(Seq(\n  Node(1, \"a\"), \n  Node(2, 10), \n  Edge(1, (1,2), (\"hello\", \"world\")),\n  Node(3, NodePayload(\"test\", 3.14), color=\"red\"),\n  Node(4, NodePayload(\"test2\", 2.718)),\n  Edge(2, (1, 3), \"a pi\"),\n  Edge(3, (2, 4), EdgePayload(\"blah blah\", Left(10e1)))\n), \nsizes=(100,75))",
+    "source" : "val w = widgets.GraphChart(Seq(\n  Node(1, \"a\"), \n  Node(2, 10), \n  Edge(1, (1,2), (\"hello\", \"world\")),\n  Node(3, NodePayload(\"test\", 3.14), color=\"red\"),\n  Node(4, NodePayload(\"test2\", 2.718)),\n  Edge(2, (1, 3), \"a pi\"),\n  Edge(3, (2, 4), EdgePayload(\"blah blah\", Left(10e1)))\n), \nsizes=(300,150),\nmaxPoints=100)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Adding new nodes dynamically?"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "w.addAndApply(Seq.tabulate(10)(i => Node(4+i, \"new-\"+i, color=\"blue\")))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Adding new edges dynamically?"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "w.addAndApply(\n  Seq.tabulate(10){ i => \n    Edge(4+i, (scala.util.Random.nextInt(7), 7+scala.util.Random.nextInt(7)), \"new-edge-\"+i, color=\"red\")\n  }\n)",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -79,7 +106,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val colorAtoms = ('0' to 'F').toList ::: ('A' to 'F').toList\ndef color = \"#\"+scala.util.Random.shuffle(colorAtoms).take(3).mkString\nwidgets.GraphChart(\n  nodes.zipWithIndex.map{case (v,i) => Node(i, v, color=color) } ::: \n    links.zipWithIndex.map { case ((i,j,v), k) => Edge(k, (i,j), v, color=color)},\n  maxPoints=nodes.size+links.size,\n  linkStrength=0.1\n)",
+    "source" : "val colorAtoms = ('0' to 'F').toList ::: ('A' to 'F').toList\ndef color = \"#\"+scala.util.Random.shuffle(colorAtoms).take(3).mkString\nval gw = widgets.GraphChart(\n  nodes.zipWithIndex.map{case (v,i) => Node(i, v, color=color) } ::: \n    links.zipWithIndex.map { case ((i,j,v), k) => Edge(k, (i,j), v, color=color)},\n  maxPoints=nodes.size+links.size,\n  linkStrength=0.1\n)",
     "outputs" : [ ]
   } ],
   "nbformat" : 4
