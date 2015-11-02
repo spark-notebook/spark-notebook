@@ -3,24 +3,29 @@ define([
     'knockout'
     'd3'
     'dimple'
-], (Observable, ko, d3, dimple) ->
+    'dynatable'
+], (Observable, ko, d3, dimple, dynatable) ->
   (dataO, container, options) ->
     id = @genId
     data = @dataInit
     columns = options.headers
 
-    table = d3.select(container).append("table")
-              .attr("style", "width: "+(options.width||600)+"px")
-              .attr("id", "table"+id)
-    thead = table.append("thead")
-    tbody = table.append("tbody")
-    tr = thead.append("tr")
+    cont = d3.select(container).append("div").attr("class", "table")
+
     draw = (columns, data) =>
+      cont.html("")
+      table = cont.append("table")
+                .attr("style", "width: "+(options.width||600)+"px")
+                .attr("id", "table"+id)
+                .attr("class", "table table-bordered table-hover table-striped table-condensed")
+      thead = table.append("thead")
+      tbody = table.append("tbody")
+      tr = thead.append("tr")
 
       #append the header row
       th = tr .selectAll("th")
               .data(columns)
-      th.exit().remove()
+
       th.enter()
           .append("th")
             .text( (column) -> column )
@@ -45,7 +50,10 @@ define([
             .attr("style", "font-family: Courier") #sets the font style
               .html( (d) -> d.value )
 
+      $(table).dynatable()
+
     draw(columns, data)
+
     dataO.subscribe( (newData) =>
       draw(columns, newData)
     )
