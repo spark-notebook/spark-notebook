@@ -10,7 +10,8 @@ define([
     require(['observable'], function(O) {
       var progress = O.makeObservableArray("jobsProgress");
 
-      var pies = d3.select("#progress-pies");
+      var pies = d3.select("#progress-pies")
+      $(pies.node()).appendTo("body");
       var charts = [];
       var completed = [];
       progress.subscribe(function(ps) {
@@ -33,11 +34,15 @@ define([
         });
         ex.remove();
 
-        svgs.enter()
-            .append("svg:svg")
-            .attr("width", w+"px")
-            .attr("height", h+"px")
-            .attr("name", function(p) { return p.name; })
+        var gsvg = svgs.enter()
+                        .append("svg:svg")
+                          .attr("width", w+"px")
+                          .attr("height", h+"px")
+                          .attr("name", function(p) { return p.name; })
+                        .append("g")
+        gsvg.append("title")
+            .text(function(p) { return p.name; })
+        gsvg
             .each(function(p) {
               d3.select(this)
                 .append("text")
@@ -46,7 +51,7 @@ define([
                   .style("text-anchor", "middle")
                   .style("font-family", "sans-serif")
                   .style("font-weight", "bold")
-                  .text(p.name);
+                  .text((p.name.length > 15)?p.name.substring(0, 15)+" [...]":p.name);
               d3.select(this)
                 .append("text")
                   .attr("x", w*(250/600))
@@ -59,7 +64,7 @@ define([
 
               var data = [ {"cl": "completed", "pc" : 0 }, {"cl":"pending", "pc": 0 } ];
               var chart = new dimple.chart(
-                d3.select(this),
+                d3.select(this.parentNode /*get svg instead of g*/),
                 data
               );
               chart.setBounds(w*(10/600), h*(50/400), w *(380/600), h*(360/400));
