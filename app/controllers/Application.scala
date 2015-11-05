@@ -140,7 +140,10 @@ object Application extends Controller {
                               kernelSystem,
                               kId,
                               notebookPath,
-                              customArgs)
+                              Some(
+                                customArgs.getOrElse(List.empty[String]) :::
+                                AppUtils.proxy.all.map{ case (k,v) => s"""-D$k=$v"""}
+                              ))
       KernelManager.add(kId, kernel)
 
       val service = new CalcWebSocketService(kernelSystem,

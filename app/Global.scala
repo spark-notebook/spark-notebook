@@ -3,7 +3,6 @@ import play.api.mvc.{Handler, RequestHeader}
 
 
 object Global extends GlobalSettings {
-
   override def onStart(app: Application) {
     if (app.configuration.getBoolean("manager.tachyon.enabled").getOrElse(false)) {
       app.configuration.getString("manager.tachyon.url") match {
