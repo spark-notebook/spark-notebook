@@ -207,7 +207,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
                   line.pathTo("$rendered")+"$", true, classLoader
                 )
 
-                val o = renderedClass2.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get()
+                val o = renderedClass2.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get(())
 
                 def iws(o:Any):NodeSeq = {
                   val iw = o.getClass.getMethods.find(_.getName == "$iw")
