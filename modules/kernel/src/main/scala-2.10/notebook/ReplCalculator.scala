@@ -199,11 +199,11 @@ class ReplCalculator(
 
       case er@ExecuteRequest(_, code) if queue.nonEmpty =>
         log.debug("Enqueuing execute request at: " + queue.size)
-        queue = queue.enqueue(sender(), er)
+        queue = queue.enqueue((sender(), er))
 
       case er@ExecuteRequest(_, code) =>
         log.debug("Enqueuing execute request at: " + queue.size)
-        queue = queue.enqueue(sender(), er)
+        queue = queue.enqueue((sender(), er))
         log.debug("Executing execute request")
         execute(sender(), er)
 
