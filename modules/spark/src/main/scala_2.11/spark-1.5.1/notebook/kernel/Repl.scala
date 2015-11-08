@@ -200,7 +200,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
                 val renderedClass2 = Class.forName(
                   line.pathTo("$rendered")+"$", true, interp.classLoader
                 )
-                def getModule(c:Class[_]) = c.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get()
+                def getModule(c:Class[_]) = c.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get(())
 
                 val o = getModule(renderedClass2)
 
