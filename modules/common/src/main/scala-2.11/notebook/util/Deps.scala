@@ -177,7 +177,7 @@ object Deps extends java.io.Serializable {
                   val sa = parents.map(n => n.getDependency.getArtifact)
                                   .map(na => ArtifactMD(na.getGroupId, na.getArtifactId, na.getVersion, Option(na.getExtension)))
                                   .toSet
-                  f.isDefinedAt((a, sa)) && f(a, sa)
+                  f.isDefinedAt((a, sa)) && f((a, sa))
                 }
         !ex
       }
