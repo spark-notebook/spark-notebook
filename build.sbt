@@ -121,10 +121,13 @@ libraryDependencies ++= List(
   "org.scala-lang" % "scala-compiler" % defaultScalaVersion
 )
 
-//for aether
+//for aether and compensating for 2.11 modularization
 libraryDependencies <++= scalaBinaryVersion {
   case "2.10" => Nil
-  case "2.11" => List(ningAsyncHttpClient)
+  case "2.11" => List(ningAsyncHttpClient,
+    "org.scala-lang.modules" %% "scala-xml" % "1.0.4",
+    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
+  )
 }
 
 lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).enablePlugins(SbtWeb)
