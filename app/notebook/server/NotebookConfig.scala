@@ -59,7 +59,6 @@ case class NotebookConfig(config: Configuration) {
     val compilerArgs = config.getStringList("compilerArgs").map(_.asScala).getOrElse(Nil)
     val vmConfig = config.underlying
   }
-
 }
 
 
