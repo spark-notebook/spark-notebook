@@ -2,6 +2,7 @@ package notebook.front.widgets.magic
 
 import notebook.util.Reflector
 import notebook.front.widgets.isNumber
+import org.apache.spark.sql.{Row, DataFrame}
 
 trait MagicRenderPoint { me =>
   def headers:Seq[String]
@@ -56,6 +57,11 @@ case class AnyPoint(any:Any) extends MagicRenderPoint {
   }
 }
 
+case class SqlRowPoint(row: Row) extends MagicRenderPoint {
+  val headers = row.schema.fieldNames.toSeq
+  val values = headers.map(row.getAs[Any])
+}
+
 sealed trait Graph[I] {
   def id:I
   def color:String
@@ -88,6 +94,21 @@ object SamplerImplicits extends ExtraSamplerImplicits {
   }
   implicit def MapSampler[K,V] = new Sampler[Map[K, V]] {
     def apply(x:Map[K,V], max:Int):Map[K,V] = x.toSeq.take(max).toMap
+  }
+  /**
+   * count number of rows in a DataFrame, and do sampling if needed
+   */
+  implicit def AdvancedDataFrameSampler = new Sampler[DataFrame] {
+    def apply(df: DataFrame, max: Int): DataFrame = {
+      val count = df.cache().count()
+      if (count > max) {
+        println("DF is larger than maxRows. Will use sampling.")
+        df.sample(withReplacement = false, max / count.toDouble)
+          .cache()
+      } else {
+        df
+      }
+    }
   }
 
 }
@@ -149,5 +170,19 @@ object Implicits extends ExtraMagicImplicits {
     def count(x:Map[K,V]) = x.size.toLong
     def append(x:Map[K,V], y:Map[K,V]) = x ++ y
     def mkString(x:Map[K,V], sep:String="") = x.mkString(sep)
+  }
+
+  implicit def DataFrameToPoints = new ToPoints[DataFrame] {
+    def apply(df: DataFrame, max: Int)(implicit sampler: Sampler[DataFrame]): Seq[MagicRenderPoint] = {
+      val sampledDf = sampler(df, max)
+      val rows = sampledDf.collect().toList
+      rows.map(SqlRowPoint)
+    }
+
+    def count(df: DataFrame) = df.count()
+
+    def append(df1: DataFrame, df2: DataFrame) = df1 unionAll df2
+
+    def mkString(df: DataFrame, sep: String = "") = df.toString()
   }
 }
