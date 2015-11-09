@@ -79,6 +79,7 @@ object Dependencies {
     ExclusionRule("org.apache.ivy", "ivy"),
     ExclusionRule("javax.servlet", "servlet-api"),
     ExclusionRule("org.mortbay.jetty", "servlet-api"),
+    // P.S. Need to comment this out for spark 1.5.2 work with Hive+parquet in CDH 5.4.4+ (hadoop 2.6.0)    
     ExclusionRule("com.twitter", "parquet-hadoop-bundle")
   ) excludeAll(parquetList:_*)
 
