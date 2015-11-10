@@ -1,0 +1,895 @@
+{
+  "metadata" : {
+    "name" : "Simple ML in Spark",
+    "user_save_timestamp" : "1970-01-01T00:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T00:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "customLocalRepo" : "/root/.ivy2",
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customArgs" : null,
+    "customSparkConf" : {
+      "spark.executor.memory" : "1024m",
+      "spark.cassandra.connection.host" : "127.0.0.1",
+      "spark.cores.max" : "2",
+      "spark.executor.cores" : "2",
+      "spark.master" : "local[*]"
+    }
+  },
+  "cells" : [ {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Data types for MLLib: Breeze Vectors"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import org.apache.spark.mllib.linalg.{Vector, Vectors}",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import org.apache.spark.mllib.linalg.{Vector, Vectors}\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 2
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val dv: Vector = Vectors.dense(1.0, 0.0, 3.0)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "dv: org.apache.spark.mllib.linalg.Vector = [1.0,0.0,3.0]\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "[1.0,0.0,3.0]"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 3
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val nbValues = 3\nval indexes = Array(0, 2)\nval values = Array(1.0, 3.0)\nval sv1: Vector = Vectors.sparse(nbValues, indexes, values)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "nbValues: Int = 3\nindexes: Array[Int] = Array(0, 2)\nvalues: Array[Double] = Array(1.0, 3.0)\nsv1: org.apache.spark.mllib.linalg.Vector = (3,[0,2],[1.0,3.0])\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "(3,[0,2],[1.0,3.0])"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 4
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "sv1.toDense",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res2: org.apache.spark.mllib.linalg.DenseVector = [1.0,0.0,3.0]\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "[1.0,0.0,3.0]"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 5
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val sv2: Vector = Vectors.sparse(3, Seq((0, 1.0), (2, 3.0)))",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "sv2: org.apache.spark.mllib.linalg.Vector = (3,[0,2],[1.0,3.0])\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "(3,[0,2],[1.0,3.0])"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 6
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### LabeledPoints"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import org.apache.spark.mllib.regression.LabeledPoint",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import org.apache.spark.mllib.regression.LabeledPoint\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 7
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val pos = LabeledPoint(1.0, Vectors.dense(1.0, 0.0, 3.0))",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "pos: org.apache.spark.mllib.regression.LabeledPoint = (1.0,[1.0,0.0,3.0])\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "(1.0,[1.0,0.0,3.0])"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 8
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "### Create RDD of LabeledPoints from a Dataframe"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : ":sh wget https://s3-eu-west-1.amazonaws.com/spark-notebook-data/closes.csv -O /tmp/closes.csv",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import sys.process._\nres4: String = \"\"\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/plain" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 10
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val c = sparkContext.textFile(\"/tmp/closes.csv\")",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "c: org.apache.spark.rdd.RDD[String] = MapPartitionsRDD[1] at textFile at <console>:52\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "MapPartitionsRDD[1] at textFile at &lt;console&gt;:52"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 11
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import org.apache.spark.sql.SQLContext\nval sqlContext = new SQLContext(sparkContext)\nimport sqlContext.implicits._ ",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import org.apache.spark.sql.SQLContext\nsqlContext: org.apache.spark.sql.SQLContext = org.apache.spark.sql.SQLContext@5104524e\nimport sqlContext.implicits._\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 13
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "case class Quote(stock:String, date:Long, price:Double) extends java.io.Serializable\nobject Quote {\n  val df = new java.text.SimpleDateFormat(\"yyyy-MM-dd\")\n  def parse(d: String): Long = df.parse(d).getTime\n}",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "defined class Quote\ndefined module Quote\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "$line36.$read$$iwC$$iwC$Quote$@7f7e60d3"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 14
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val q  = c.map(_.split(\",\").toList)\n           .map{ \n             case List(s, d, p) => Quote(s, Quote.parse(d), p.toDouble)\n           }\n           .toDF\n()",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "q: org.apache.spark.sql.DataFrame = [stock: string, date: bigint, price: double]\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 15
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "q.cache()\n()",
+    "outputs" : [ {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 16
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import org.apache.spark.sql.functions._\nval maxDate = q.agg(max(\"date\")).map(_.getAs[Long](0)).first",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import org.apache.spark.sql.functions._\nmaxDate: Long = 1417993200000\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "1417993200000"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 17
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val stocks = q.filter($\"date\" === maxDate && $\"price\" > 20).select(\"stock\").distinct.sample(false, 0.05, 124L)\n              .map(_.getAs[String](0))\n              .collect\n              .toSet                                                                                                       + \"MCHB\" // ok ok we're owned! :-D   \nval nb = stocks.size\nval broadStocks = sparkContext.broadcast(stocks)\n()",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "stocks: scala.collection.immutable.Set[String] = Set(FGL, TGP, BUNT, RGLD, BWS, LG, SJB, FRAF, CSTE, BBSI, EMFM, WTM, BNFT, PLOW, PCI, TYC, LQD, JPX, SOMC, SYV, IYM, HOFD, IFEU, STX, IUSG, BANFP, DMRC, IEO, KME, IPW, GPS, PNRG, LTM, XMLV, BSV, PTH, WRB, DEE, FEMS, IGV, RCL, SMP, HYL, TNA, THD, WDIV, FIGY, AGX, AEIS, BWINB, AOK, SLXP, DCUA, MGU, IBDD, PNR, GPRO, SFN, BIG, AAIT, IOC, VOD, PACW, OXLCP, SDS, EIRL, SNY, OGE, MLPI, A, GGOV, KMF, MENT, DG, OSM, SMTC, ADS, SWX, TNH, AGM, GBX, RWX, DTQ, FXN, TLO, BBL, SHLD, OFED, UAL, MDCO, USPH, BARS, CRUD, NXST, FGM, ACE, SLQD, FISI, BRP, MNK, ROLL, FBAK, VTR, CFFI, VIDI, DXJT, ERIE, BUNL, BELFB, AAWW, SCHO, PARF, RLY, FDL, MPWR, CLVS, PIZ, PPS, XLNX, PM, WYDE, AGIO, AE, SCHH, VLU, USMI, RJF, GMK, GPN, MAA, MSA, ESPR, SBR, SYLD, BWV, LGND, CYN..."
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 18
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val strip = q.filter($\"stock\" isin (broadStocks.value.toList:_*)).cache()\n()",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "strip: org.apache.spark.sql.DataFrame = [stock: string, date: bigint, price: double]\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 19
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val dates = strip.groupBy($\"date\").count.filter($\"count\" === nb)\n()",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "dates: org.apache.spark.sql.DataFrame = [date: bigint, count: bigint]\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 20
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val cleanDF = strip.join(dates, dates(\"date\") === q(\"date\")).select($\"stock\", dates(\"date\"), $\"price\")\n()",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "cleanDF: org.apache.spark.sql.DataFrame = [stock: string, date: bigint, price: double]\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 22
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val takeOutMCHB_DF = cleanDF.withColumn(\"label\", when($\"stock\" startsWith \"MCHB\", true).otherwise(false)).cache()\n()",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "takeOutMCHB_DF: org.apache.spark.sql.DataFrame = [stock: string, date: bigint, price: double, label: boolean]\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 23
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "LineChart(\n  takeOutMCHB_DF.filter($\"stock\" startsWith \"VIDI\").orderBy(\"date\").map(r => r.getAs[Long](1) → r.getAs[Double](2)).collect,\n  maxPoints=90\n)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res16: notebook.front.widgets.LineChart[Array[(Long, Double)]] = <LineChart widget>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anonfcd5578d480ebf82c271aae8147785ac&quot;,&quot;dataInit&quot;:[{&quot;_1&quot;:1407362400000,&quot;_2&quot;:24.82},{&quot;_1&quot;:1407708000000,&quot;_2&quot;:25.26},{&quot;_1&quot;:1407794400000,&quot;_2&quot;:25.19},{&quot;_1&quot;:1407880800000,&quot;_2&quot;:25.33},{&quot;_1&quot;:1407967200000,&quot;_2&quot;:25.47},{&quot;_1&quot;:1408053600000,&quot;_2&quot;:25.46},{&quot;_1&quot;:1408312800000,&quot;_2&quot;:25.59},{&quot;_1&quot;:1408399200000,&quot;_2&quot;:25.63},{&quot;_1&quot;:1408485600000,&quot;_2&quot;:25.59},{&quot;_1&quot;:1408572000000,&quot;_2&quot;:25.59},{&quot;_1&quot;:1408658400000,&quot;_2&quot;:25.54},{&quot;_1&quot;:1409004000000,&quot;_2&quot;:25.71},{&quot;_1&quot;:1409090400000,&quot;_2&quot;:25.77},{&quot;_1&quot;:1409176800000,&quot;_2&quot;:25.7},{&quot;_1&quot;:1409263200000,&quot;_2&quot;:25.59},{&quot;_1&quot;:1409608800000,&quot;_2&quot;:25.66},{&quot;_1&quot;:1409695200000,&quot;_2&quot;:25.91},{&quot;_1&quot;:1409781600000,&quot;_2&quot;:25.82},{&quot;_1&quot;:1409868000000,&quot;_2&quot;:25.97},{&quot;_1&quot;:1410127200000,&quot;_2&quot;:25.75},{&quot;_1&quot;:1410213600000,&quot;_2&quot;:25.46},{&quot;_1&quot;:1410300000000,&quot;_2&quot;:25.5},{&quot;_1&quot;:1410386400000,&quot;_2&quot;:25.32},{&quot;_1&quot;:1410472800000,&quot;_2&quot;:25.2},{&quot;_1&quot;:1410732000000,&quot;_2&quot;:25.17},{&quot;_1&quot;:1410818400000,&quot;_2&quot;:25.29},{&quot;_1&quot;:1410904800000,&quot;_2&quot;:25.07},{&quot;_1&quot;:1410991200000,&quot;_2&quot;:25.23},{&quot;_1&quot;:1411077600000,&quot;_2&quot;:25.14},{&quot;_1&quot;:1411336800000,&quot;_2&quot;:24.91},{&quot;_1&quot;:1411423200000,&quot;_2&quot;:24.79},{&quot;_1&quot;:1411509600000,&quot;_2&quot;:24.94},{&quot;_1&quot;:1411596000000,&quot;_2&quot;:24.53},{&quot;_1&quot;:1411682400000,&quot;_2&quot;:24.66},{&quot;_1&quot;:1411941600000,&quot;_2&quot;:24.36},{&quot;_1&quot;:1412028000000,&quot;_2&quot;:24.37},{&quot;_1&quot;:1412114400000,&quot;_2&quot;:24.09},{&quot;_1&quot;:1412200800000,&quot;_2&quot;:24.01},{&quot;_1&quot;:1412287200000,&quot;_2&quot;:24.06},{&quot;_1&quot;:1412546400000,&quot;_2&quot;:24.21},{&quot;_1&quot;:1412632800000,&quot;_2&quot;:23.87},{&quot;_1&quot;:1412719200000,&quot;_2&quot;:24.22},{&quot;_1&quot;:1412805600000,&quot;_2&quot;:23.72},{&quot;_1&quot;:1412892000000,&quot;_2&quot;:23.4},{&quot;_1&quot;:1413151200000,&quot;_2&quot;:23.38},{&quot;_1&quot;:1413237600000,&quot;_2&quot;:23.49},{&quot;_1&quot;:1413324000000,&quot;_2&quot;:23.28},{&quot;_1&quot;:1413410400000,&quot;_2&quot;:23.14},{&quot;_1&quot;:1413496800000,&quot;_2&quot;:23.55},{&quot;_1&quot;:1413756000000,&quot;_2&quot;:23.65},{&quot;_1&quot;:1413842400000,&quot;_2&quot;:23.86},{&quot;_1&quot;:1413928800000,&quot;_2&quot;:23.71},{&quot;_1&quot;:1414015200000,&quot;_2&quot;:23.85},{&quot;_1&quot;:1414101600000,&quot;_2&quot;:23.94},{&quot;_1&quot;:1414364400000,&quot;_2&quot;:23.9},{&quot;_1&quot;:1414450800000,&quot;_2&quot;:24.25},{&quot;_1&quot;:1414537200000,&quot;_2&quot;:24.09},{&quot;_1&quot;:1414623600000,&quot;_2&quot;:24.27},{&quot;_1&quot;:1414710000000,&quot;_2&quot;:24.42},{&quot;_1&quot;:1414969200000,&quot;_2&quot;:24.35},{&quot;_1&quot;:1415055600000,&quot;_2&quot;:24.25},{&quot;_1&quot;:1415142000000,&quot;_2&quot;:24.17},{&quot;_1&quot;:1415228400000,&quot;_2&quot;:24.0},{&quot;_1&quot;:1415314800000,&quot;_2&quot;:24.05},{&quot;_1&quot;:1415574000000,&quot;_2&quot;:24.11},{&quot;_1&quot;:1415660400000,&quot;_2&quot;:24.17},{&quot;_1&quot;:1415746800000,&quot;_2&quot;:24.06},{&quot;_1&quot;:1415833200000,&quot;_2&quot;:24.04},{&quot;_1&quot;:1415919600000,&quot;_2&quot;:24.16},{&quot;_1&quot;:1416178800000,&quot;_2&quot;:24.09},{&quot;_1&quot;:1416265200000,&quot;_2&quot;:24.28},{&quot;_1&quot;:1416351600000,&quot;_2&quot;:24.24},{&quot;_1&quot;:1416438000000,&quot;_2&quot;:24.22},{&quot;_1&quot;:1416524400000,&quot;_2&quot;:24.51},{&quot;_1&quot;:1416783600000,&quot;_2&quot;:24.5},{&quot;_1&quot;:1416870000000,&quot;_2&quot;:24.54},{&quot;_1&quot;:1416956400000,&quot;_2&quot;:24.63},{&quot;_1&quot;:1417129200000,&quot;_2&quot;:24.4},{&quot;_1&quot;:1417388400000,&quot;_2&quot;:24.16},{&quot;_1&quot;:1417474800000,&quot;_2&quot;:24.14},{&quot;_1&quot;:1417561200000,&quot;_2&quot;:24.21},{&quot;_1&quot;:1417647600000,&quot;_2&quot;:24.18},{&quot;_1&quot;:1417734000000,&quot;_2&quot;:24.07},{&quot;_1&quot;:1417993200000,&quot;_2&quot;:23.93}],&quot;genId&quot;:&quot;307115299&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/lineChart'], \n      function(playground, _magiclineChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magiclineChart,\n    \"o\": {\"x\":\"_1\",\"y\":\"_2\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <label for=\"input-anon29a021f5dfb50182311dbea0e262c83f\">\n      Max Points\n    </label><input id=\"input-anon29a021f5dfb50182311dbea0e262c83f\" type=\"number\" name=\"input-anon29a021f5dfb50182311dbea0e262c83f\" data-bind=\"textInput: value, fireChange: true, valueUpdate: 'input'\">\n      <script data-selector=\"#input-anon29a021f5dfb50182311dbea0e262c83f\" data-this=\"{&quot;valueId&quot;:&quot;anon29a021f5dfb50182311dbea0e262c83f&quot;,&quot;valueInit&quot;:90}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n ['observable', 'knockout'],\n function (Observable, ko) {\n   //console.log(\"-----------\")\n   //console.dir(this);\n   //console.dir(valueId);\n   var obs = Observable.makeObservable(valueId)\n                       .extend({ rateLimit: { //throttle\n                                   timeout: 500,\n                                   method: \"notifyWhenChangesStop\"\n                                 }\n                               }\n                       );\n   ko.applyBindings({\n     value: obs\n   }, this);\n   obs(valueInit);\n }\n)/*]]>*/</script>\n    </input>\n        <p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon5066788c6d09deb2e19437ae289bda08&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p> <span style=\"color:red\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon050fb068ea96eaf1fb73f9fe1517f8c6&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p></span>\n        <div>\n        </div>\n      </div></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 26
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val takeOutMCHB = \n  takeOutMCHB_DF.rdd.map { row => \n    (row.getAs[String](\"stock\"), row.getAs[Long](\"date\"), row.getAs[Double](\"price\"), row.getAs[Boolean](\"label\"))\n  }",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "takeOutMCHB: org.apache.spark.rdd.RDD[(String, Long, Double, Boolean)] = MapPartitionsRDD[84] at map at <console>:84\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "MapPartitionsRDD[84] at map at &lt;console&gt;:84"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 27
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val byDateCloses = takeOutMCHB.groupBy( elt => elt._2 )\n                                .mapValues{ it => \n                                  val arr = it.toArray\n                                  val label = arr.find(_._4).map(_._3).get\n                                  val features = arr.filter(!_._4).sortBy(_._1).map(_._3)\n                                  label +: features\n                                }\n                                .values",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "byDateCloses: org.apache.spark.rdd.RDD[Array[Double]] = MapPartitionsRDD[88] at values at <console>:92\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "MapPartitionsRDD[88] at values at &lt;console&gt;:92"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 28
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val points = byDateCloses.map{ arr => \n                            LabeledPoint(arr(0), Vectors.dense(1d /*add intercept*/ +: arr.drop(1)))\n                          }",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "points: org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint] = MapPartitionsRDD[89] at map at <console>:87\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "MapPartitionsRDD[89] at map at &lt;console&gt;:87"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 29
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# Method"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Split the data into training and test sets (30% held out for testing)"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import org.apache.spark.mllib.optimization.{LBFGS, LeastSquaresGradient, SquaredL2Updater}\nimport org.apache.spark.mllib.regression.{LinearRegressionModel}",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import org.apache.spark.mllib.optimization.{LBFGS, LeastSquaresGradient, SquaredL2Updater}\nimport org.apache.spark.mllib.regression.LinearRegressionModel\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 30
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val seed = 42L\nval Array(trainingData, validationData) = points.randomSplit(Array(0.7, 0.3), seed)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "seed: Long = 42\ntrainingData: org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint] = MapPartitionsRDD[90] at randomSplit at <console>:92\nvalidationData: org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint] = MapPartitionsRDD[91] at randomSplit at <console>:92\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "MapPartitionsRDD[91] at randomSplit at &lt;console&gt;:92"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 31
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "def createModel(λ:Double = 0.01, trainingData:RDD[LabeledPoint]) = {\n  val one = trainingData.first\n  val numCorrections = 10\n  val convergenceTol = 1e-4\n  val maxNumIterations = 100\n  val regParam = λ\n  val initialWeightsWithIntercept = Vectors.dense(new Array[Double](one.features.size))\n\n  val (weightsWithIntercept, loss) = LBFGS.runLBFGS(\n    trainingData.map(lp => (lp.label, lp.features)), // create the RDD[(Double, Vector)]\n    new LeastSquaresGradient(),                      // loss function\n    new SquaredL2Updater(),\n    numCorrections,\n    convergenceTol,\n    maxNumIterations,\n    regParam,\n    initialWeightsWithIntercept\n  )\n\n  val model = new LinearRegressionModel(weightsWithIntercept, 0.0)\n  model\n}",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "createModel: (λ: Double, trainingData: org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint])org.apache.spark.mllib.regression.LinearRegressionModel\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 32
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import org.apache.spark.sql.functions._\ndef predict(model:LinearRegressionModel, validationData:RDD[LabeledPoint]) = {\n  \n  val labelsAndPredictions = validationData.map { point =>\n    val prediction = model.predict(point.features)\n    (point.label, prediction)\n  }.toDF(\"point\", \"prediction\")\n  \n  val withSe = labelsAndPredictions.withColumn(\"se\", pow($\"point\"-$\"prediction\", 2))\n  \n  val testSqrtMSE = scala.math.sqrt(withSe.agg(mean(\"se\")).first.getAs[Double](0))\n  \n  (model, testSqrtMSE)\n}",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import org.apache.spark.sql.functions._\npredict: (model: org.apache.spark.mllib.regression.LinearRegressionModel, validationData: org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint])(org.apache.spark.mllib.regression.LinearRegressionModel, Double)\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 33
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "def run(λ:Double = 0.01, \n        trainingData:RDD[LabeledPoint], \n        validationData:RDD[LabeledPoint],\n        plot:Option[Chart[Seq[(Double, Double)]]]=None) = {\n  val (model, r) = predict(createModel(λ, trainingData), validationData)\n  plot.foreach(_.addAndApply(Seq((λ, r))))\n  (model, r)\n}",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "run: (λ: Double, trainingData: org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint], validationData: org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint], plot: Option[notebook.front.widgets.Chart[Seq[(Double, Double)]]])(org.apache.spark.mllib.regression.LinearRegressionModel, Double)\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 34
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "sparkContext.setCheckpointDir(\"/tmp/chckdir\")\nval tr = trainingData.coalesce(24, true).cache()\ntr.checkpoint()\nval vd = validationData.coalesce(24, true).cache()\nvd.checkpoint()\ntr.count\nvd.count",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "tr: org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint] = MapPartitionsRDD[95] at coalesce at <console>:71\nvd: org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint] = MapPartitionsRDD[99] at coalesce at <console>:73\nres17: Long = 25\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "25"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 35
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Choose arbitrary $\\lambda = 0.01$"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val (model, r) = run(0.01, tr, vd)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "model: org.apache.spark.mllib.regression.LinearRegressionModel = org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197\nr: Double = 1024.059168083906\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "1024.059168083906"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 36
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val withoutReg = run(0, tr, vd)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "withoutReg: (org.apache.spark.mllib.regression.LinearRegressionModel, Double) = (org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.0694054422304)\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.0694054422304)"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 37
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Let's try many values of this hyper parameter."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val plotRuns = LineChart(Seq((0d, withoutReg._2)), maxPoints=1000)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "plotRuns: notebook.front.widgets.LineChart[Seq[(Double, Double)]] = <LineChart widget>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon5de4e7cb202e4d8d1d0ae1633d5c0588&quot;,&quot;dataInit&quot;:[{&quot;_1&quot;:0.0,&quot;_2&quot;:1024.0694054422304}],&quot;genId&quot;:&quot;1471546525&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/lineChart'], \n      function(playground, _magiclineChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magiclineChart,\n    \"o\": {\"x\":\"_1\",\"y\":\"_2\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <label for=\"input-anon3bcb87e2cc813963ea5abf6aa9c747d8\">\n      Max Points\n    </label><input id=\"input-anon3bcb87e2cc813963ea5abf6aa9c747d8\" type=\"number\" name=\"input-anon3bcb87e2cc813963ea5abf6aa9c747d8\" data-bind=\"textInput: value, fireChange: true, valueUpdate: 'input'\">\n      <script data-selector=\"#input-anon3bcb87e2cc813963ea5abf6aa9c747d8\" data-this=\"{&quot;valueId&quot;:&quot;anon3bcb87e2cc813963ea5abf6aa9c747d8&quot;,&quot;valueInit&quot;:1000}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n ['observable', 'knockout'],\n function (Observable, ko) {\n   //console.log(\"-----------\")\n   //console.dir(this);\n   //console.dir(valueId);\n   var obs = Observable.makeObservable(valueId)\n                       .extend({ rateLimit: { //throttle\n                                   timeout: 500,\n                                   method: \"notifyWhenChangesStop\"\n                                 }\n                               }\n                       );\n   ko.applyBindings({\n     value: obs\n   }, this);\n   obs(valueInit);\n }\n)/*]]>*/</script>\n    </input>\n        <p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anond9c890ab1a3daa8623823ca04db5ce81&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p> <span style=\"color:red\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon4f23cfec0dc9d260b5384f05afdfc6c2&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p></span>\n        <div>\n        </div>\n      </div></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 38
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val testBed = (1d to 20d by 1d) map {i => 10e-8 * math.pow(10, i/2)}\nval runs = testBed.map(λ => (λ, run(λ, tr, vd, plot=Some(plotRuns))))",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "testBed: scala.collection.immutable.IndexedSeq[Double] = Vector(3.162277660168379E-7, 1.0E-6, 3.162277660168379E-6, 9.999999999999999E-6, 3.1622776601683795E-5, 9.999999999999999E-5, 3.1622776601683794E-4, 0.001, 0.003162277660168379, 0.01, 0.03162277660168379, 0.09999999999999999, 0.31622776601683794, 1.0, 3.162277660168379, 10.0, 31.622776601683793, 100.0, 316.2277660168379, 1000.0)\nruns: scala.collection.immutable.IndexedSeq[(Double, (org.apache.spark.mllib.regression.LinearRegressionModel, Double))] = Vector((3.162277660168379E-7,(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.069397868491)), (1.0E-6,(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.069398501526)), (3.162277660168379E-6..."
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon6697ed384a49e3dcc9e1b2aec1443434&quot;,&quot;dataInit&quot;:[{&quot;_1&quot;:3.162277660168379E-7,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.069397868491)&quot;},{&quot;_1&quot;:0.0000010,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.069398501526)&quot;},{&quot;_1&quot;:0.000003162277660168379,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.069404950599)&quot;},{&quot;_1&quot;:0.000009999999999999999,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.0693942823254)&quot;},{&quot;_1&quot;:0.000031622776601683795,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.0693745549395)&quot;},{&quot;_1&quot;:0.00009999999999999999,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.0692961987008)&quot;},{&quot;_1&quot;:0.00031622776601683794,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.0690816721985)&quot;},{&quot;_1&quot;:0.001,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.068374967879)&quot;},{&quot;_1&quot;:0.003162277660168379,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.0661685322245)&quot;},{&quot;_1&quot;:0.01,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.0591776816257)&quot;},{&quot;_1&quot;:0.03162277660168379,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.0370891449504)&quot;},{&quot;_1&quot;:0.09999999999999999,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1023.9676256927459)&quot;},{&quot;_1&quot;:0.31622776601683794,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1023.7516021216667)&quot;},{&quot;_1&quot;:1.0,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1023.1039851173597)&quot;},{&quot;_1&quot;:3.162277660168379,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1021.3904826019688)&quot;},{&quot;_1&quot;:10.0,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1018.755730957171)&quot;},{&quot;_1&quot;:31.622776601683793,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1036.1137681419389)&quot;},{&quot;_1&quot;:100.0,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1141.4916684432187)&quot;},{&quot;_1&quot;:316.2277660168379,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1517.909883290868)&quot;},{&quot;_1&quot;:1000.0,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,2127.0100920215314)&quot;}],&quot;genId&quot;:&quot;1435009126&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tabs'], \n      function(playground, _magictabs) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictabs,\n    \"o\": {}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <label for=\"input-anon0080193d426cbf2704c46e34245a6f4d\">\n      Max Points (controlling all tabs)\n    </label><input id=\"input-anon0080193d426cbf2704c46e34245a6f4d\" type=\"number\" name=\"input-anon0080193d426cbf2704c46e34245a6f4d\" data-bind=\"textInput: value, fireChange: true, valueUpdate: 'input'\">\n      <script data-selector=\"#input-anon0080193d426cbf2704c46e34245a6f4d\" data-this=\"{&quot;valueId&quot;:&quot;anon0080193d426cbf2704c46e34245a6f4d&quot;,&quot;valueInit&quot;:25}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n ['observable', 'knockout'],\n function (Observable, ko) {\n   //console.log(\"-----------\")\n   //console.dir(this);\n   //console.dir(valueId);\n   var obs = Observable.makeObservable(valueId)\n                       .extend({ rateLimit: { //throttle\n                                   timeout: 500,\n                                   method: \"notifyWhenChangesStop\"\n                                 }\n                               }\n                       );\n   ko.applyBindings({\n     value: obs\n   }, this);\n   obs(valueInit);\n }\n)/*]]>*/</script>\n    </input>\n        <div>\n          <ul class=\"nav nav-tabs\" id=\"ul1435009126\"><li>\n                <a href=\"#tab1435009126-0\"><i class=\"fa fa-table\"/></a>\n              </li></ul>\n\n          <div class=\"tab-content\" id=\"tab1435009126\"><div class=\"tab-pane\" id=\"tab1435009126-0\">\n              <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon659bd379a889d5a1628f4637f842c30f&quot;,&quot;dataInit&quot;:[{&quot;_1&quot;:3.162277660168379E-7,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.069397868491)&quot;},{&quot;_1&quot;:0.0000010,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.069398501526)&quot;},{&quot;_1&quot;:0.000003162277660168379,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.069404950599)&quot;},{&quot;_1&quot;:0.000009999999999999999,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.0693942823254)&quot;},{&quot;_1&quot;:0.000031622776601683795,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.0693745549395)&quot;},{&quot;_1&quot;:0.00009999999999999999,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.0692961987008)&quot;},{&quot;_1&quot;:0.00031622776601683794,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.0690816721985)&quot;},{&quot;_1&quot;:0.001,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.068374967879)&quot;},{&quot;_1&quot;:0.003162277660168379,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.0661685322245)&quot;},{&quot;_1&quot;:0.01,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.0591776816257)&quot;},{&quot;_1&quot;:0.03162277660168379,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1024.0370891449504)&quot;},{&quot;_1&quot;:0.09999999999999999,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1023.9676256927459)&quot;},{&quot;_1&quot;:0.31622776601683794,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1023.7516021216667)&quot;},{&quot;_1&quot;:1.0,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1023.1039851173597)&quot;},{&quot;_1&quot;:3.162277660168379,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1021.3904826019688)&quot;},{&quot;_1&quot;:10.0,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1018.755730957171)&quot;},{&quot;_1&quot;:31.622776601683793,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1036.1137681419389)&quot;},{&quot;_1&quot;:100.0,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1141.4916684432187)&quot;},{&quot;_1&quot;:316.2277660168379,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,1517.909883290868)&quot;},{&quot;_1&quot;:1000.0,&quot;_2&quot;:&quot;(org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197,2127.0100920215314)&quot;}],&quot;genId&quot;:&quot;1560420079&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tableChart'], \n      function(playground, _magictableChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictableChart,\n    \"o\": {\"headers\":[\"_1\",\"_2\"],\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <label for=\"input-anonad4d77d58bbd236d5291805fcf1cb8b5\">\n      Max Points\n    </label><input id=\"input-anonad4d77d58bbd236d5291805fcf1cb8b5\" type=\"number\" name=\"input-anonad4d77d58bbd236d5291805fcf1cb8b5\" data-bind=\"textInput: value, fireChange: true, valueUpdate: 'input'\">\n      <script data-selector=\"#input-anonad4d77d58bbd236d5291805fcf1cb8b5\" data-this=\"{&quot;valueId&quot;:&quot;anonad4d77d58bbd236d5291805fcf1cb8b5&quot;,&quot;valueInit&quot;:25}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n ['observable', 'knockout'],\n function (Observable, ko) {\n   //console.log(\"-----------\")\n   //console.dir(this);\n   //console.dir(valueId);\n   var obs = Observable.makeObservable(valueId)\n                       .extend({ rateLimit: { //throttle\n                                   timeout: 500,\n                                   method: \"notifyWhenChangesStop\"\n                                 }\n                               }\n                       );\n   ko.applyBindings({\n     value: obs\n   }, this);\n   obs(valueInit);\n }\n)/*]]>*/</script>\n    </input>\n        <p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon75c88786c03b514783bfa49be11d096c&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p> <span style=\"color:red\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon30b574cbca20e9912acb1506339c4712&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p></span>\n        <div>\n        </div>\n      </div></div>\n              </div></div>\n        </div>\n      </div></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 39
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val bestLambda = runs.minBy(_._2._2)._1\nval bestModel = runs.minBy(_._2._2)._2._1\nval bestPerf = runs.minBy(_._2._2)._2._2",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "bestLambda: Double = 10.0\nbestModel: org.apache.spark.mllib.regression.LinearRegressionModel = org.apache.spark.mllib.regression.LinearRegressionModel: intercept = 0.0, numFeatures = 197\nbestPerf: Double = 1018.755730957171\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "1018.755730957171"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 40
+    } ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "However, we cannot validate the model against new data. So we only know that this model is best for the given data.\n\nIn other words, we have no clue if it over or under fits new data, under the condition that the variability of the universe is not fully captured in the validation test.\n\n> This assumption is viable because the validation test is only (generaly) 30 percent of the known data ; which is itself probably a small fraction of the universe.\n\n"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Solution: cross-validation!"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Cross Validation"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "The known data is split in two sets:\n* prediction set (`10%`)\n* learning set (`90%`)\n\nThe learning set is also split in K-Folds."
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "The validation set will help us to choose the best value for our hyper parameter $\\lambda$.\n\nIt is crucial to know this hyper parameter as best as possible because it regularizes how the model is built in the family."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val (predictionSet, learningData) = {\n  val Array(predictionSet, learningData) = points.randomSplit(Array(0.1, 0.9), 555L)\n  val p = predictionSet.coalesce(24, true).cache()\n  p.checkpoint()\n  p.count\n  val l = learningData.coalesce(24, true).cache()\n  l.checkpoint()\n  l.count\n  (p, l)\n}",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "predictionSet: org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint] = MapPartitionsRDD[6343] at coalesce at <console>:96\nlearningData: org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint] = MapPartitionsRDD[6348] at coalesce at <console>:99\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "MapPartitionsRDD[6348] at coalesce at &lt;console&gt;:99"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 41
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val (fold1, fold2, fold3, fold4) = {\n  val Array(fold1, fold2, fold3, fold4) = learningData.randomSplit(Array(0.25, 0.25, 0.25, 0.25), 94564L)\n  \n  val f1 = fold1.coalesce(24, true).cache()\n  f1.checkpoint()\n  f1.count\n  val f2 = fold2.coalesce(24, true).cache()\n  f2.checkpoint()\n  f2.count\n  val f3 = fold3.coalesce(24, true).cache()\n  f3.checkpoint()\n  f3.count\n  val f4 = fold4.coalesce(24, true).cache()\n  f4.checkpoint()\n  f4.count\n  (f1, f2, f3, f4)\n}",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "fold1: org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint] = MapPartitionsRDD[6357] at coalesce at <console>:71\nfold2: org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint] = MapPartitionsRDD[6362] at coalesce at <console>:74\nfold3: org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint] = MapPartitionsRDD[6367] at coalesce at <console>:77\nfold4: org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint] = MapPartitionsRDD[6372] at coalesce at <console>:80\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "MapPartitionsRDD[6372] at coalesce at &lt;console&gt;:80"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 42
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val cv1 = (sparkContext.union(fold1, fold2, fold3), fold4)\nval cv2 = (sparkContext.union(fold2, fold3, fold4), fold1)\nval cv3 = (sparkContext.union(fold3, fold4, fold1), fold2)\nval cv4 = (sparkContext.union(fold4, fold1, fold2), fold3)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "cv1: (org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint], org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint]) = (UnionRDD[6374] at union at <console>:74,MapPartitionsRDD[6372] at coalesce at <console>:80)\ncv2: (org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint], org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint]) = (UnionRDD[6375] at union at <console>:75,MapPartitionsRDD[6357] at coalesce at <console>:71)\ncv3: (org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint], org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint]) = (UnionRDD[6376] at union at <console>:76,MapPartitionsRDD[6362] at coalesce at <console>:74)\ncv4: (org.apache.spark.rdd.RDD[org.apache.spark.ml..."
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "(UnionRDD[6377] at union at &lt;console&gt;:77,MapPartitionsRDD[6367] at coalesce at &lt;console&gt;:77)"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 43
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val plotCv1 = LineChart(Seq((0d, 0d)), maxPoints=1000, sizes=(300,300))\nval plotCv2 = LineChart(Seq((0d, 0d)), maxPoints=1000, sizes=(300,300))\nval plotCv3 = LineChart(Seq((0d, 0d)), maxPoints=1000, sizes=(300,300))\nval plotCv4 = LineChart(Seq((0d, 0d)), maxPoints=1000, sizes=(300,300))\nval allPlot = LineChart(Seq((0d, 0d)), maxPoints=1000, sizes=(600,450))\ncontainerFluid(List(\n  List(plotCv1 → 6, plotCv2 → 6), \n  List(plotCv3 → 6, plotCv4 → 6)\n)) ++ allPlot",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "plotCv1: notebook.front.widgets.LineChart[Seq[(Double, Double)]] = <LineChart widget>\nplotCv2: notebook.front.widgets.LineChart[Seq[(Double, Double)]] = <LineChart widget>\nplotCv3: notebook.front.widgets.LineChart[Seq[(Double, Double)]] = <LineChart widget>\nplotCv4: notebook.front.widgets.LineChart[Seq[(Double, Double)]] = <LineChart widget>\nallPlot: notebook.front.widgets.LineChart[Seq[(Double, Double)]] = <LineChart widget>\nres18: notebook.front.Widget = <widget>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div class=\"container-fluid\"><div><div class=\"col-md-6\"><div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon1e5de9020b3540f2852824dd53aa18ff&quot;,&quot;dataInit&quot;:[{&quot;_1&quot;:0.0,&quot;_2&quot;:0.0}],&quot;genId&quot;:&quot;157707040&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/lineChart'], \n      function(playground, _magiclineChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magiclineChart,\n    \"o\": {\"x\":\"_1\",\"y\":\"_2\",\"width\":300,\"height\":300}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <label for=\"input-anona52a1451befd358899b4542150c778ae\">\n      Max Points\n    </label><input id=\"input-anona52a1451befd358899b4542150c778ae\" type=\"number\" name=\"input-anona52a1451befd358899b4542150c778ae\" data-bind=\"textInput: value, fireChange: true, valueUpdate: 'input'\">\n      <script data-selector=\"#input-anona52a1451befd358899b4542150c778ae\" data-this=\"{&quot;valueId&quot;:&quot;anona52a1451befd358899b4542150c778ae&quot;,&quot;valueInit&quot;:1000}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n ['observable', 'knockout'],\n function (Observable, ko) {\n   //console.log(\"-----------\")\n   //console.dir(this);\n   //console.dir(valueId);\n   var obs = Observable.makeObservable(valueId)\n                       .extend({ rateLimit: { //throttle\n                                   timeout: 500,\n                                   method: \"notifyWhenChangesStop\"\n                                 }\n                               }\n                       );\n   ko.applyBindings({\n     value: obs\n   }, this);\n   obs(valueInit);\n }\n)/*]]>*/</script>\n    </input>\n        <p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon24b562fbcb5e5ca60c04ebb4689c901a&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p> <span style=\"color:red\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anonbfece820a264a2048b0d1dc774aa6cf0&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p></span>\n        <div>\n        </div>\n      </div></div></div><div class=\"col-md-6\"><div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon43c9c83750585af45367820e5fe20706&quot;,&quot;dataInit&quot;:[{&quot;_1&quot;:0.0,&quot;_2&quot;:0.0}],&quot;genId&quot;:&quot;43363013&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/lineChart'], \n      function(playground, _magiclineChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magiclineChart,\n    \"o\": {\"x\":\"_1\",\"y\":\"_2\",\"width\":300,\"height\":300}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <label for=\"input-anon2cc48973cbae79d36f1f011558d40990\">\n      Max Points\n    </label><input id=\"input-anon2cc48973cbae79d36f1f011558d40990\" type=\"number\" name=\"input-anon2cc48973cbae79d36f1f011558d40990\" data-bind=\"textInput: value, fireChange: true, valueUpdate: 'input'\">\n      <script data-selector=\"#input-anon2cc48973cbae79d36f1f011558d40990\" data-this=\"{&quot;valueId&quot;:&quot;anon2cc48973cbae79d36f1f011558d40990&quot;,&quot;valueInit&quot;:1000}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n ['observable', 'knockout'],\n function (Observable, ko) {\n   //console.log(\"-----------\")\n   //console.dir(this);\n   //console.dir(valueId);\n   var obs = Observable.makeObservable(valueId)\n                       .extend({ rateLimit: { //throttle\n                                   timeout: 500,\n                                   method: \"notifyWhenChangesStop\"\n                                 }\n                               }\n                       );\n   ko.applyBindings({\n     value: obs\n   }, this);\n   obs(valueInit);\n }\n)/*]]>*/</script>\n    </input>\n        <p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon42125ab4331d8f6ae61fc3bee6867de0&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p> <span style=\"color:red\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anonf9c4050ae9d6bd99327784a796424e59&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p></span>\n        <div>\n        </div>\n      </div></div></div></div><div><div class=\"col-md-6\"><div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon5c1351dd9cecbceee8d7d37c6ac8358b&quot;,&quot;dataInit&quot;:[{&quot;_1&quot;:0.0,&quot;_2&quot;:0.0}],&quot;genId&quot;:&quot;914008241&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/lineChart'], \n      function(playground, _magiclineChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magiclineChart,\n    \"o\": {\"x\":\"_1\",\"y\":\"_2\",\"width\":300,\"height\":300}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <label for=\"input-anon0035f3f1e80b04761f7399ffe6673500\">\n      Max Points\n    </label><input id=\"input-anon0035f3f1e80b04761f7399ffe6673500\" type=\"number\" name=\"input-anon0035f3f1e80b04761f7399ffe6673500\" data-bind=\"textInput: value, fireChange: true, valueUpdate: 'input'\">\n      <script data-selector=\"#input-anon0035f3f1e80b04761f7399ffe6673500\" data-this=\"{&quot;valueId&quot;:&quot;anon0035f3f1e80b04761f7399ffe6673500&quot;,&quot;valueInit&quot;:1000}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n ['observable', 'knockout'],\n function (Observable, ko) {\n   //console.log(\"-----------\")\n   //console.dir(this);\n   //console.dir(valueId);\n   var obs = Observable.makeObservable(valueId)\n                       .extend({ rateLimit: { //throttle\n                                   timeout: 500,\n                                   method: \"notifyWhenChangesStop\"\n                                 }\n                               }\n                       );\n   ko.applyBindings({\n     value: obs\n   }, this);\n   obs(valueInit);\n }\n)/*]]>*/</script>\n    </input>\n        <p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anonf37764e4a9faec57654c651d08ad732a&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p> <span style=\"color:red\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anonca9b0a5e38605fef0bdc49fb35dae426&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p></span>\n        <div>\n        </div>\n      </div></div></div><div class=\"col-md-6\"><div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anonbe37c1f5b46f5972a485d94ed49fb1f1&quot;,&quot;dataInit&quot;:[{&quot;_1&quot;:0.0,&quot;_2&quot;:0.0}],&quot;genId&quot;:&quot;2032813215&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/lineChart'], \n      function(playground, _magiclineChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magiclineChart,\n    \"o\": {\"x\":\"_1\",\"y\":\"_2\",\"width\":300,\"height\":300}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <label for=\"input-anon0a179276546fd9394feb6be72f5afd9d\">\n      Max Points\n    </label><input id=\"input-anon0a179276546fd9394feb6be72f5afd9d\" type=\"number\" name=\"input-anon0a179276546fd9394feb6be72f5afd9d\" data-bind=\"textInput: value, fireChange: true, valueUpdate: 'input'\">\n      <script data-selector=\"#input-anon0a179276546fd9394feb6be72f5afd9d\" data-this=\"{&quot;valueId&quot;:&quot;anon0a179276546fd9394feb6be72f5afd9d&quot;,&quot;valueInit&quot;:1000}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n ['observable', 'knockout'],\n function (Observable, ko) {\n   //console.log(\"-----------\")\n   //console.dir(this);\n   //console.dir(valueId);\n   var obs = Observable.makeObservable(valueId)\n                       .extend({ rateLimit: { //throttle\n                                   timeout: 500,\n                                   method: \"notifyWhenChangesStop\"\n                                 }\n                               }\n                       );\n   ko.applyBindings({\n     value: obs\n   }, this);\n   obs(valueInit);\n }\n)/*]]>*/</script>\n    </input>\n        <p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anonece14c33b0e49929fa4f328eb6e72af6&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p> <span style=\"color:red\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon16956a6eee16be2f2fc4345cde4878b9&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p></span>\n        <div>\n        </div>\n      </div></div></div></div></div><div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anone2c6bf269a303baa68f2282b759b5dce&quot;,&quot;dataInit&quot;:[{&quot;_1&quot;:0.0,&quot;_2&quot;:0.0}],&quot;genId&quot;:&quot;1315321880&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/lineChart'], \n      function(playground, _magiclineChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magiclineChart,\n    \"o\": {\"x\":\"_1\",\"y\":\"_2\",\"width\":600,\"height\":450}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <label for=\"input-anone8d13e429099453683642d6a1eac0e2b\">\n      Max Points\n    </label><input id=\"input-anone8d13e429099453683642d6a1eac0e2b\" type=\"number\" name=\"input-anone8d13e429099453683642d6a1eac0e2b\" data-bind=\"textInput: value, fireChange: true, valueUpdate: 'input'\">\n      <script data-selector=\"#input-anone8d13e429099453683642d6a1eac0e2b\" data-this=\"{&quot;valueId&quot;:&quot;anone8d13e429099453683642d6a1eac0e2b&quot;,&quot;valueInit&quot;:1000}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n ['observable', 'knockout'],\n function (Observable, ko) {\n   //console.log(\"-----------\")\n   //console.dir(this);\n   //console.dir(valueId);\n   var obs = Observable.makeObservable(valueId)\n                       .extend({ rateLimit: { //throttle\n                                   timeout: 500,\n                                   method: \"notifyWhenChangesStop\"\n                                 }\n                               }\n                       );\n   ko.applyBindings({\n     value: obs\n   }, this);\n   obs(valueInit);\n }\n)/*]]>*/</script>\n    </input>\n        <p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anond982ae6bcabcd7cf00ca10a3f22b4ef7&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p> <span style=\"color:red\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anonca0808db51b7b85b66780bf3812a1e92&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p></span>\n        <div>\n        </div>\n      </div></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 44
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val cvs = testBed.drop(5).map { λ => \n  val onCv1 = run(λ, cv1._1, cv1._2, plot=Some(plotCv1))._2\n  val onCv2 = run(λ, cv2._1, cv2._2, plot=Some(plotCv2))._2\n  val onCv3 = run(λ, cv3._1, cv3._2, plot=Some(plotCv3))._2\n  val onCv4 = run(λ, cv4._1, cv4._2, plot=Some(plotCv4))._2\n  val result = (λ, onCv1+onCv2+onCv3+onCv4)\n  allPlot.addAndApply(Seq(result))\n  result\n}\n()",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "cvs: scala.collection.immutable.IndexedSeq[(Double, Double)] = Vector((9.999999999999999E-5,3891.3560031549273), (3.1622776601683794E-4,3824.5921148810426), (0.001,3831.8594604919176), (0.003162277660168379,3838.3782713921864), (0.01,3844.9624168774208), (0.03162277660168379,3498.948056285695), (0.09999999999999999,3781.163826301115), (0.31622776601683794,3670.184990352577), (1.0,3749.027922959515), (3.162277660168379,3815.742616000316), (10.0,3577.863256051155), (31.622776601683793,4135.322684017524), (100.0,4784.304019207215), (316.2277660168379,6267.454466191494), (1000.0,8778.040973744304))\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 45
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val bestLambdaCV = cvs.minBy(_._2)._1",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val modelOnInitialTrainingData = createModel(bestLambdaCV, tr)\nval (perfOnInitialValidationData, _r) = predict(modelOnInitialTrainingData, vd)\n_r",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Create model on full learning dataset"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val bestModelCV = createModel(bestLambdaCV, learningData)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Estimate error on test data."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val cv_r = predict(bestModelCV, predictionSet)._2",
+    "outputs" : [ ]
+  } ],
+  "nbformat" : 4
+}
