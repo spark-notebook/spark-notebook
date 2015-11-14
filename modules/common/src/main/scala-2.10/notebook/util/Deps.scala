@@ -119,9 +119,6 @@ object CustomResolvers extends java.io.Serializable {
   // enable S3 handlers
   fm.sbt.S3ResolverPlugin
 
-
-  // TODO :proxy: val config = ConfigFactory.load().getConfig("remote-repos")
-  // TODO :proxy: val proxy = Try(config.getConfig("proxy")).toOption
   private val authRegex = """(?s)^\s*\(([^\)]+)\)\s*$""".r
   private val credRegex = """"([^"]+)"\s*,\s*"([^"]+)"""".r //"
 
