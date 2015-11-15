@@ -2,7 +2,7 @@ package notebook.front.widgets.magic
 
 import notebook.util.Reflector
 import notebook.front.widgets.isNumber
-import org.apache.spark.sql.{Row, DataFrame}
+import org.apache.spark.sql.{Row}
 
 trait MagicRenderPoint { me =>
   def headers:Seq[String]
@@ -95,22 +95,6 @@ object SamplerImplicits extends ExtraSamplerImplicits {
   implicit def MapSampler[K,V] = new Sampler[Map[K, V]] {
     def apply(x:Map[K,V], max:Int):Map[K,V] = x.toSeq.take(max).toMap
   }
-  /**
-   * count number of rows in a DataFrame, and do sampling if needed
-   */
-  implicit def AdvancedDataFrameSampler = new Sampler[DataFrame] {
-    def apply(df: DataFrame, max: Int): DataFrame = {
-      val count = df.cache().count()
-      if (count > max) {
-        println("DF is larger than maxRows. Will use sampling.")
-        df.sample(withReplacement = false, max / count.toDouble)
-          .cache()
-      } else {
-        df
-      }
-    }
-  }
-
 }
 
 object Implicits extends ExtraMagicImplicits {
@@ -128,6 +112,7 @@ object Implicits extends ExtraMagicImplicits {
       if (!_x.isEmpty) {
         val x = sampler(_x, max)
         val points:Seq[MagicRenderPoint] = x.head match {
+          case _:Row   => x.map(i => SqlRowPoint(i.asInstanceOf[Row]))
           case _:String   => x.map(i => StringPoint(i.asInstanceOf[String]))
           case _:Graph[_] => x.map(_.asInstanceOf[Graph[_]].toPoint)
           case _          => x map AnyPoint
@@ -137,7 +122,7 @@ object Implicits extends ExtraMagicImplicits {
                         points
                       } else {
                         points.zipWithIndex.map { case (point, index) => point.values match {
-                          case List(o)    if isNumber(o)  =>  AnyPoint((index, o))
+                          case Seq(o)    if isNumber(o)  =>  AnyPoint((index, o))
                           case _                          =>  point
                         }}
                       }
@@ -172,17 +157,4 @@ object Implicits extends ExtraMagicImplicits {
     def mkString(x:Map[K,V], sep:String="") = x.mkString(sep)
   }
 
-  implicit def DataFrameToPoints = new ToPoints[DataFrame] {
-    def apply(df: DataFrame, max: Int)(implicit sampler: Sampler[DataFrame]): Seq[MagicRenderPoint] = {
-      val sampledDf = sampler(df, max)
-      val rows = sampledDf.collect().toList
-      rows.map(SqlRowPoint)
-    }
-
-    def count(df: DataFrame) = df.count()
-
-    def append(df1: DataFrame, df2: DataFrame) = df1 unionAll df2
-
-    def mkString(df: DataFrame, sep: String = "") = df.toString()
-  }
 }
