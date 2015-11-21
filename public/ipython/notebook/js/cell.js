@@ -111,6 +111,16 @@ define([
     Cell.prototype.create_element = function () {
     };
 
+    Cell.prototype.update_width_classes = function() {
+        // remove old width classes
+        for (var i = 1; i <= 12; i++) {
+            this.element.removeClass("col-md-" + i)
+        }
+        // get the width, or use full-width as default
+        var width = (this.metadata.presentation !== undefined && this.metadata.presentation.cell_width) || "12"
+        this.element.addClass("col-md-" + width)
+    }
+
     Cell.prototype.init_classes = function () {
         /**
          * Call after this.element exists to initialize the css classes
@@ -264,6 +274,7 @@ define([
      * @return is the action being taken
      */
     Cell.prototype.render = function () {
+        this.update_width_classes();
         if (!this.rendered) {
             this.element.addClass('rendered');
             this.element.removeClass('unrendered');
@@ -423,6 +434,8 @@ define([
     Cell.prototype.fromJSON = function (data) {
         if (data.metadata !== undefined) {
             this.metadata = data.metadata;
+            // need to rerender, as cell_width depends on metadata
+            this.render();
         }
     };
 
