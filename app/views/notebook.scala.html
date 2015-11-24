@@ -18,6 +18,10 @@
   <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/rickshaw/rickshaw.min.css")" type="text/css" />
   <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/leaflet.css")" type="text/css" />
   <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/L.Control.MousePosition.css")" type="text/css" />
+  <!-- tweaks for report mode, if it is active -->
+    @if(params.get("presentation") == Some("report")) {
+        <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/reportmode_notebook.css")" type="text/css" />
+    }
 }{
   <!-- meta -->
 
