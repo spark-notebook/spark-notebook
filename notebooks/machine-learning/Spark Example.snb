@@ -28,18 +28,7 @@
     },
     "cell_type" : "code",
     "source" : "import sys.process._\nval remoteFile = \"http://med-at-scale.s3.amazonaws.com/spark-training/dj.csv\"\nvar dataDir = \"/tmp\"\nval localFile = s\"${dataDir}/dow.csv\"",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "import sys.process._\nremoteFile: String = http://med-at-scale.s3.amazonaws.com/spark-training/dj.csv\ndataDir: String = /tmp\nlocalFile: String = /tmp/dow.csv\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "/tmp/dow.csv"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 1
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -52,18 +41,7 @@
     },
     "cell_type" : "code",
     "source" : "s\"wget $remoteFile -O $localFile\" !!",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "warning: there were 1 feature warning(s); re-run with -feature for details\nres2: String = \"\"\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 2
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -72,18 +50,7 @@
     },
     "cell_type" : "code",
     "source" : "sparkContext.getConf.toDebugString",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res3: String = \nspark.app.id=local-1447064241534\nspark.app.name=Spark Example\nspark.driver.host=172.21.0.82\nspark.driver.port=34271\nspark.executor.id=driver\nspark.externalBlockStore.folderName=spark-66e18576-3495-457b-b866-622bacf74311\nspark.fileserver.uri=http://172.21.0.82:49837\nspark.jars=\nspark.master=local[*]\nspark.repl.class.uri=http://172.21.0.82:50762\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "spark.app.id=local-1447064241534\nspark.app.name=Spark Example\nspark.driver.host=172.21.0.82\nspark.driver.port=34271\nspark.executor.id=driver\nspark.externalBlockStore.folderName=spark-66e18576-3495-457b-b866-622bacf74311\nspark.fileserver.uri=http://172.21.0.82:49837\nspark.jars=\nspark.master=local[*]\nspark.repl.class.uri=http://172.21.0.82:50762"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 4
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -92,18 +59,7 @@
     },
     "cell_type" : "code",
     "source" : "val lines = sparkContext.textFile(localFile)",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "lines: org.apache.spark.rdd.RDD[String] = MapPartitionsRDD[1] at textFile at <console>:54\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "MapPartitionsRDD[1] at textFile at &lt;console&gt;:54"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 3
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -112,18 +68,7 @@
     },
     "cell_type" : "code",
     "source" : "lines.take(4)",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res4: Array[String] = Array(DIA,2011-04-19,118.89, DIA,2011-04-20,120.79, DIA,2011-04-21,121.22, DIA,2011-04-25,120.99)\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<div class=\"container-fluid\"><div><div class=\"col-md-12\"><div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon3a2f2ca1c151459d4c72ecb2628fe2c3&quot;,&quot;dataInit&quot;:[{&quot;string value&quot;:&quot;DIA,2011-04-19,118.89&quot;},{&quot;string value&quot;:&quot;DIA,2011-04-20,120.79&quot;},{&quot;string value&quot;:&quot;DIA,2011-04-21,121.22&quot;},{&quot;string value&quot;:&quot;DIA,2011-04-25,120.99&quot;}],&quot;genId&quot;:&quot;240116742&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tableChart'], \n      function(playground, _magictableChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictableChart,\n    \"o\": {\"headers\":[\"string value\"],\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <label for=\"input-anonfd865cc63fd85367383b2a37e2d548e4\">\n      Max Points\n    </label><input id=\"input-anonfd865cc63fd85367383b2a37e2d548e4\" type=\"number\" name=\"input-anonfd865cc63fd85367383b2a37e2d548e4\" data-bind=\"textInput: value, fireChange: true, valueUpdate: 'input'\">\n      <script data-selector=\"#input-anonfd865cc63fd85367383b2a37e2d548e4\" data-this=\"{&quot;valueId&quot;:&quot;anonfd865cc63fd85367383b2a37e2d548e4&quot;,&quot;valueInit&quot;:25}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n ['observable', 'knockout'],\n function (Observable, ko) {\n   //console.log(\"-----------\")\n   //console.dir(this);\n   //console.dir(valueId);\n   var obs = Observable.makeObservable(valueId)\n                       .extend({ rateLimit: { //throttle\n                                   timeout: 500,\n                                   method: \"notifyWhenChangesStop\"\n                                 }\n                               }\n                       );\n   ko.applyBindings({\n     value: obs\n   }, this);\n   obs(valueInit);\n }\n)/*]]>*/</script>\n    </input>\n        <p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anonc04a4df747b1462aba7ba952a87bc230&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p> <span style=\"color:red\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anond8e3c21fd2c6847cfea22dbb7a9e6bcd&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p></span>\n        <div>\n        </div>\n      </div></div></div></div></div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 5
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -136,18 +81,7 @@
     },
     "cell_type" : "code",
     "source" : "object model extends Serializable {\n\n  object MyDate {\n    val df = new java.text.SimpleDateFormat(\"yyyy-MM-dd\")\n    def parse(field: String): Option[MyDate] = {\n      try {\n        val ts = df.parse(field).getTime\n        field.split(\"-\").map(_.toInt).toList match {\n          case year :: month :: day :: _ => Some(MyDate(year, month, day, ts))\n          case _ => None\n        }\n      } catch {\n        case ex: Throwable => \n          Console.err.println(s\"$ex: datefield = $field\")\n        None\n      }\n    }\n  }\n  case class MyDate(year: Int, month: Int, day: Int, timestamp: Long)\n  \n\n  object Quote {\n    def parse(line: String): Option[Quote] = {\n      val fields = line.trim.split(\"\"\"\\s*,\\s*\"\"\")\n      try {\n        MyDate.parse(fields(1)).map { date => Quote(fields(0), date, fields(2).toDouble)}                \n      } catch {\n        case ex: NumberFormatException =>\n          Console.err.println(s\"$ex: line = $line\")\n          None\n        case ex: IndexOutOfBoundsException =>\n          Console.err.println(s\"$ex: line = $line\")\n          None\n      }\n    }\n  }\n  case class Quote(stock:String, date:MyDate, price:Double)\n\n}\nimport model._",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "defined module model\nimport model._\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 6
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -160,18 +94,7 @@
     },
     "cell_type" : "code",
     "source" : "val quotes = lines.map(Quote.parse).collect{case Some(q) => q}",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "quotes: org.apache.spark.rdd.RDD[model.Quote] = MapPartitionsRDD[4] at collect at <console>:61\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "MapPartitionsRDD[4] at collect at &lt;console&gt;:61"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 7
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -184,18 +107,7 @@
     },
     "cell_type" : "code",
     "source" : "import org.apache.spark.sql.SQLContext\nval sqlContext = new SQLContext(sparkContext)\nimport sqlContext.implicits._ ",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "import org.apache.spark.sql.SQLContext\nsqlContext: org.apache.spark.sql.SQLContext = org.apache.spark.sql.SQLContext@4ec1a942\nimport sqlContext.implicits._\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 8
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -208,18 +120,7 @@
     },
     "cell_type" : "code",
     "source" : "val quotesdf = sqlContext.createDataFrame(quotes)",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "quotesdf: org.apache.spark.sql.DataFrame = [stock: string, date: struct<year:int,month:int,day:int,timestamp:bigint>, price: double]\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<div class=\"df-canvas\">\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon0373910081edf623cd2d04fb3901d5f2&quot;,&quot;partitionIndexId&quot;:&quot;anon9011b5521d90c42ed66b6361d611d855&quot;,&quot;numPartitions&quot;:317,&quot;dfSchema&quot;:{&quot;type&quot;:&quot;struct&quot;,&quot;fields&quot;:[{&quot;name&quot;:&quot;stock&quot;,&quot;type&quot;:&quot;string&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;date&quot;,&quot;type&quot;:{&quot;type&quot;:&quot;struct&quot;,&quot;fields&quot;:[{&quot;name&quot;:&quot;year&quot;,&quot;type&quot;:&quot;integer&quot;,&quot;nullable&quot;:false,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;month&quot;,&quot;type&quot;:&quot;integer&quot;,&quot;nullable&quot;:false,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;day&quot;,&quot;type&quot;:&quot;integer&quot;,&quot;nullable&quot;:false,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;timestamp&quot;,&quot;type&quot;:&quot;long&quot;,&quot;nullable&quot;:false,&quot;metadata&quot;:{}}]},&quot;nullable&quot;:true,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;price&quot;,&quot;type&quot;:&quot;double&quot;,&quot;nullable&quot;:false,&quot;metadata&quot;:{}}]}}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/dataframe','../javascripts/notebook/consoleDir'], \n      function(dataframe, extension) {\n        dataframe.call(data, this, extension);\n      }\n    );/*]]>*/</script>\n      <link rel=\"stylesheet\" href=\"/assets/stylesheets/ipython/css/dataframe.css\" type=\"text/css\"/>\n    </div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 9
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -232,18 +133,7 @@
     },
     "cell_type" : "code",
     "source" : "quotesdf.printSchema",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "root\n |-- stock: string (nullable = true)\n |-- date: struct (nullable = true)\n |    |-- year: integer (nullable = false)\n |    |-- month: integer (nullable = false)\n |    |-- day: integer (nullable = false)\n |    |-- timestamp: long (nullable = false)\n |-- price: double (nullable = false)\n\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 10
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -256,18 +146,7 @@
     },
     "cell_type" : "code",
     "source" : "val ts = quotesdf.select(\"date.timestamp\").map(_.getAs[Long](0)).distinct.collect.toList.sorted\nval withNextTs = ts.sliding(2, 1).map(x => (x(0) → x(1))).toList",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "ts: List[Long] = List(1294009200000, 1294095600000, 1294182000000, 1294268400000, 1294354800000, 1294614000000, 1294700400000, 1294786800000, 1294873200000, 1294959600000, 1295305200000, 1295391600000, 1295478000000, 1295564400000, 1295823600000, 1295910000000, 1295996400000, 1296082800000, 1296169200000, 1296428400000, 1296514800000, 1296601200000, 1296687600000, 1296774000000, 1297033200000, 1297119600000, 1297206000000, 1297292400000, 1297378800000, 1297638000000, 1297724400000, 1297810800000, 1297897200000, 1297983600000, 1298329200000, 1298415600000, 1298502000000, 1298588400000, 1298847600000, 1298934000000, 1299020400000, 1299106800000, 1299193200000, 1299452400000, 1299538800000, 1299625200000, 1299711600000, 1299798000000, 1300057200000, 1300143600000, 1300230000000, 1300316400..."
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon1b3eb5264d514a1b2b9b1929b4967731&quot;,&quot;dataInit&quot;:[{&quot;_1&quot;:1294009200000,&quot;_2&quot;:1294095600000},{&quot;_1&quot;:1294095600000,&quot;_2&quot;:1294182000000},{&quot;_1&quot;:1294182000000,&quot;_2&quot;:1294268400000},{&quot;_1&quot;:1294268400000,&quot;_2&quot;:1294354800000},{&quot;_1&quot;:1294354800000,&quot;_2&quot;:1294614000000},{&quot;_1&quot;:1294614000000,&quot;_2&quot;:1294700400000},{&quot;_1&quot;:1294700400000,&quot;_2&quot;:1294786800000},{&quot;_1&quot;:1294786800000,&quot;_2&quot;:1294873200000},{&quot;_1&quot;:1294873200000,&quot;_2&quot;:1294959600000},{&quot;_1&quot;:1294959600000,&quot;_2&quot;:1295305200000},{&quot;_1&quot;:1295305200000,&quot;_2&quot;:1295391600000},{&quot;_1&quot;:1295391600000,&quot;_2&quot;:1295478000000},{&quot;_1&quot;:1295478000000,&quot;_2&quot;:1295564400000},{&quot;_1&quot;:1295564400000,&quot;_2&quot;:1295823600000},{&quot;_1&quot;:1295823600000,&quot;_2&quot;:1295910000000},{&quot;_1&quot;:1295910000000,&quot;_2&quot;:1295996400000},{&quot;_1&quot;:1295996400000,&quot;_2&quot;:1296082800000},{&quot;_1&quot;:1296082800000,&quot;_2&quot;:1296169200000},{&quot;_1&quot;:1296169200000,&quot;_2&quot;:1296428400000},{&quot;_1&quot;:1296428400000,&quot;_2&quot;:1296514800000},{&quot;_1&quot;:1296514800000,&quot;_2&quot;:1296601200000},{&quot;_1&quot;:1296601200000,&quot;_2&quot;:1296687600000},{&quot;_1&quot;:1296687600000,&quot;_2&quot;:1296774000000},{&quot;_1&quot;:1296774000000,&quot;_2&quot;:1297033200000},{&quot;_1&quot;:1297033200000,&quot;_2&quot;:1297119600000}],&quot;genId&quot;:&quot;1877559866&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tabs'], \n      function(playground, _magictabs) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictabs,\n    \"o\": {}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <label for=\"input-anonfe66163b6fba4f9aaf6f1602ce7caf19\">\n      Max Points (controlling all tabs)\n    </label><input id=\"input-anonfe66163b6fba4f9aaf6f1602ce7caf19\" type=\"number\" name=\"input-anonfe66163b6fba4f9aaf6f1602ce7caf19\" data-bind=\"textInput: value, fireChange: true, valueUpdate: 'input'\">\n      <script data-selector=\"#input-anonfe66163b6fba4f9aaf6f1602ce7caf19\" data-this=\"{&quot;valueId&quot;:&quot;anonfe66163b6fba4f9aaf6f1602ce7caf19&quot;,&quot;valueInit&quot;:25}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n ['observable', 'knockout'],\n function (Observable, ko) {\n   //console.log(\"-----------\")\n   //console.dir(this);\n   //console.dir(valueId);\n   var obs = Observable.makeObservable(valueId)\n                       .extend({ rateLimit: { //throttle\n                                   timeout: 500,\n                                   method: \"notifyWhenChangesStop\"\n                                 }\n                               }\n                       );\n   ko.applyBindings({\n     value: obs\n   }, this);\n   obs(valueInit);\n }\n)/*]]>*/</script>\n    </input>\n        <div>\n          <ul class=\"nav nav-tabs\" id=\"ul1877559866\"><li>\n                <a href=\"#tab1877559866-0\"><i class=\"fa fa-table\"/></a>\n              </li><li>\n                <a href=\"#tab1877559866-1\"><i class=\"fa fa-dot-circle-o\"/></a>\n              </li><li>\n                <a href=\"#tab1877559866-2\"><i class=\"fa fa-line-chart\"/></a>\n              </li><li>\n                <a href=\"#tab1877559866-3\"><i class=\"fa fa-bar-chart\"/></a>\n              </li></ul>\n\n          <div class=\"tab-content\" id=\"tab1877559866\"><div class=\"tab-pane\" id=\"tab1877559866-0\">\n              <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anonf09e4b9d02adcf1932dc05c10d16e3ea&quot;,&quot;dataInit&quot;:[{&quot;_1&quot;:1294009200000,&quot;_2&quot;:1294095600000},{&quot;_1&quot;:1294095600000,&quot;_2&quot;:1294182000000},{&quot;_1&quot;:1294182000000,&quot;_2&quot;:1294268400000},{&quot;_1&quot;:1294268400000,&quot;_2&quot;:1294354800000},{&quot;_1&quot;:1294354800000,&quot;_2&quot;:1294614000000},{&quot;_1&quot;:1294614000000,&quot;_2&quot;:1294700400000},{&quot;_1&quot;:1294700400000,&quot;_2&quot;:1294786800000},{&quot;_1&quot;:1294786800000,&quot;_2&quot;:1294873200000},{&quot;_1&quot;:1294873200000,&quot;_2&quot;:1294959600000},{&quot;_1&quot;:1294959600000,&quot;_2&quot;:1295305200000},{&quot;_1&quot;:1295305200000,&quot;_2&quot;:1295391600000},{&quot;_1&quot;:1295391600000,&quot;_2&quot;:1295478000000},{&quot;_1&quot;:1295478000000,&quot;_2&quot;:1295564400000},{&quot;_1&quot;:1295564400000,&quot;_2&quot;:1295823600000},{&quot;_1&quot;:1295823600000,&quot;_2&quot;:1295910000000},{&quot;_1&quot;:1295910000000,&quot;_2&quot;:1295996400000},{&quot;_1&quot;:1295996400000,&quot;_2&quot;:1296082800000},{&quot;_1&quot;:1296082800000,&quot;_2&quot;:1296169200000},{&quot;_1&quot;:1296169200000,&quot;_2&quot;:1296428400000},{&quot;_1&quot;:1296428400000,&quot;_2&quot;:1296514800000},{&quot;_1&quot;:1296514800000,&quot;_2&quot;:1296601200000},{&quot;_1&quot;:1296601200000,&quot;_2&quot;:1296687600000},{&quot;_1&quot;:1296687600000,&quot;_2&quot;:1296774000000},{&quot;_1&quot;:1296774000000,&quot;_2&quot;:1297033200000},{&quot;_1&quot;:1297033200000,&quot;_2&quot;:1297119600000}],&quot;genId&quot;:&quot;39839930&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tableChart'], \n      function(playground, _magictableChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictableChart,\n    \"o\": {\"headers\":[\"_1\",\"_2\"],\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <label for=\"input-anon94242981c9c8ec87cbfd0437940f28bd\">\n      Max Points\n    </label><input id=\"input-anon94242981c9c8ec87cbfd0437940f28bd\" type=\"number\" name=\"input-anon94242981c9c8ec87cbfd0437940f28bd\" data-bind=\"textInput: value, fireChange: true, valueUpdate: 'input'\">\n      <script data-selector=\"#input-anon94242981c9c8ec87cbfd0437940f28bd\" data-this=\"{&quot;valueId&quot;:&quot;anon94242981c9c8ec87cbfd0437940f28bd&quot;,&quot;valueInit&quot;:25}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n ['observable', 'knockout'],\n function (Observable, ko) {\n   //console.log(\"-----------\")\n   //console.dir(this);\n   //console.dir(valueId);\n   var obs = Observable.makeObservable(valueId)\n                       .extend({ rateLimit: { //throttle\n                                   timeout: 500,\n                                   method: \"notifyWhenChangesStop\"\n                                 }\n                               }\n                       );\n   ko.applyBindings({\n     value: obs\n   }, this);\n   obs(valueInit);\n }\n)/*]]>*/</script>\n    </input>\n        <p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anonfb161284d1971a29674f254ee5522b09&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p> <span style=\"color:red\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon9617880056e745863d00fb0b82defc6f&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p></span>\n        <div>\n        </div>\n      </div></div>\n              </div><div class=\"tab-pane\" id=\"tab1877559866-1\">\n              <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anona6f7f29fb0aff24ad8fafd241d0205cc&quot;,&quot;dataInit&quot;:[{&quot;_1&quot;:1294009200000,&quot;_2&quot;:1294095600000},{&quot;_1&quot;:1294095600000,&quot;_2&quot;:1294182000000},{&quot;_1&quot;:1294182000000,&quot;_2&quot;:1294268400000},{&quot;_1&quot;:1294268400000,&quot;_2&quot;:1294354800000},{&quot;_1&quot;:1294354800000,&quot;_2&quot;:1294614000000},{&quot;_1&quot;:1294614000000,&quot;_2&quot;:1294700400000},{&quot;_1&quot;:1294700400000,&quot;_2&quot;:1294786800000},{&quot;_1&quot;:1294786800000,&quot;_2&quot;:1294873200000},{&quot;_1&quot;:1294873200000,&quot;_2&quot;:1294959600000},{&quot;_1&quot;:1294959600000,&quot;_2&quot;:1295305200000},{&quot;_1&quot;:1295305200000,&quot;_2&quot;:1295391600000},{&quot;_1&quot;:1295391600000,&quot;_2&quot;:1295478000000},{&quot;_1&quot;:1295478000000,&quot;_2&quot;:1295564400000},{&quot;_1&quot;:1295564400000,&quot;_2&quot;:1295823600000},{&quot;_1&quot;:1295823600000,&quot;_2&quot;:1295910000000},{&quot;_1&quot;:1295910000000,&quot;_2&quot;:1295996400000},{&quot;_1&quot;:1295996400000,&quot;_2&quot;:1296082800000},{&quot;_1&quot;:1296082800000,&quot;_2&quot;:1296169200000},{&quot;_1&quot;:1296169200000,&quot;_2&quot;:1296428400000},{&quot;_1&quot;:1296428400000,&quot;_2&quot;:1296514800000},{&quot;_1&quot;:1296514800000,&quot;_2&quot;:1296601200000},{&quot;_1&quot;:1296601200000,&quot;_2&quot;:1296687600000},{&quot;_1&quot;:1296687600000,&quot;_2&quot;:1296774000000},{&quot;_1&quot;:1296774000000,&quot;_2&quot;:1297033200000},{&quot;_1&quot;:1297033200000,&quot;_2&quot;:1297119600000}],&quot;genId&quot;:&quot;1776268017&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/scatterChart'], \n      function(playground, _magicscatterChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magicscatterChart,\n    \"o\": {\"x\":\"_1\",\"y\":\"_2\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <label for=\"input-anon92a4798ddf28dceff182d93ec1ab6e58\">\n      Max Points\n    </label><input id=\"input-anon92a4798ddf28dceff182d93ec1ab6e58\" type=\"number\" name=\"input-anon92a4798ddf28dceff182d93ec1ab6e58\" data-bind=\"textInput: value, fireChange: true, valueUpdate: 'input'\">\n      <script data-selector=\"#input-anon92a4798ddf28dceff182d93ec1ab6e58\" data-this=\"{&quot;valueId&quot;:&quot;anon92a4798ddf28dceff182d93ec1ab6e58&quot;,&quot;valueInit&quot;:25}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n ['observable', 'knockout'],\n function (Observable, ko) {\n   //console.log(\"-----------\")\n   //console.dir(this);\n   //console.dir(valueId);\n   var obs = Observable.makeObservable(valueId)\n                       .extend({ rateLimit: { //throttle\n                                   timeout: 500,\n                                   method: \"notifyWhenChangesStop\"\n                                 }\n                               }\n                       );\n   ko.applyBindings({\n     value: obs\n   }, this);\n   obs(valueInit);\n }\n)/*]]>*/</script>\n    </input>\n        <p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anond228346badc6516faf4a42c709b3f739&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p> <span style=\"color:red\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anona48d113829968812c85e214947339465&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p></span>\n        <div>\n        </div>\n      </div></div>\n              </div><div class=\"tab-pane\" id=\"tab1877559866-2\">\n              <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon45e805389876f1295215143c57b60f8a&quot;,&quot;dataInit&quot;:[{&quot;_1&quot;:1294009200000,&quot;_2&quot;:1294095600000},{&quot;_1&quot;:1294095600000,&quot;_2&quot;:1294182000000},{&quot;_1&quot;:1294182000000,&quot;_2&quot;:1294268400000},{&quot;_1&quot;:1294268400000,&quot;_2&quot;:1294354800000},{&quot;_1&quot;:1294354800000,&quot;_2&quot;:1294614000000},{&quot;_1&quot;:1294614000000,&quot;_2&quot;:1294700400000},{&quot;_1&quot;:1294700400000,&quot;_2&quot;:1294786800000},{&quot;_1&quot;:1294786800000,&quot;_2&quot;:1294873200000},{&quot;_1&quot;:1294873200000,&quot;_2&quot;:1294959600000},{&quot;_1&quot;:1294959600000,&quot;_2&quot;:1295305200000},{&quot;_1&quot;:1295305200000,&quot;_2&quot;:1295391600000},{&quot;_1&quot;:1295391600000,&quot;_2&quot;:1295478000000},{&quot;_1&quot;:1295478000000,&quot;_2&quot;:1295564400000},{&quot;_1&quot;:1295564400000,&quot;_2&quot;:1295823600000},{&quot;_1&quot;:1295823600000,&quot;_2&quot;:1295910000000},{&quot;_1&quot;:1295910000000,&quot;_2&quot;:1295996400000},{&quot;_1&quot;:1295996400000,&quot;_2&quot;:1296082800000},{&quot;_1&quot;:1296082800000,&quot;_2&quot;:1296169200000},{&quot;_1&quot;:1296169200000,&quot;_2&quot;:1296428400000},{&quot;_1&quot;:1296428400000,&quot;_2&quot;:1296514800000},{&quot;_1&quot;:1296514800000,&quot;_2&quot;:1296601200000},{&quot;_1&quot;:1296601200000,&quot;_2&quot;:1296687600000},{&quot;_1&quot;:1296687600000,&quot;_2&quot;:1296774000000},{&quot;_1&quot;:1296774000000,&quot;_2&quot;:1297033200000},{&quot;_1&quot;:1297033200000,&quot;_2&quot;:1297119600000}],&quot;genId&quot;:&quot;1392058353&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/lineChart'], \n      function(playground, _magiclineChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magiclineChart,\n    \"o\": {\"x\":\"_1\",\"y\":\"_2\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <label for=\"input-anon4f6da2494597ff92e54acde4fa448983\">\n      Max Points\n    </label><input id=\"input-anon4f6da2494597ff92e54acde4fa448983\" type=\"number\" name=\"input-anon4f6da2494597ff92e54acde4fa448983\" data-bind=\"textInput: value, fireChange: true, valueUpdate: 'input'\">\n      <script data-selector=\"#input-anon4f6da2494597ff92e54acde4fa448983\" data-this=\"{&quot;valueId&quot;:&quot;anon4f6da2494597ff92e54acde4fa448983&quot;,&quot;valueInit&quot;:25}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n ['observable', 'knockout'],\n function (Observable, ko) {\n   //console.log(\"-----------\")\n   //console.dir(this);\n   //console.dir(valueId);\n   var obs = Observable.makeObservable(valueId)\n                       .extend({ rateLimit: { //throttle\n                                   timeout: 500,\n                                   method: \"notifyWhenChangesStop\"\n                                 }\n                               }\n                       );\n   ko.applyBindings({\n     value: obs\n   }, this);\n   obs(valueInit);\n }\n)/*]]>*/</script>\n    </input>\n        <p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon9c0ce3847a0b397ab7419979439453a9&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p> <span style=\"color:red\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon7e3cb423eb93852f7d9b6dd16f7005de&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p></span>\n        <div>\n        </div>\n      </div></div>\n              </div><div class=\"tab-pane\" id=\"tab1877559866-3\">\n              <div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anonceee6be405fa719b81056be74f37e0a5&quot;,&quot;dataInit&quot;:[{&quot;_1&quot;:1294009200000,&quot;_2&quot;:1294095600000},{&quot;_1&quot;:1294095600000,&quot;_2&quot;:1294182000000},{&quot;_1&quot;:1294182000000,&quot;_2&quot;:1294268400000},{&quot;_1&quot;:1294268400000,&quot;_2&quot;:1294354800000},{&quot;_1&quot;:1294354800000,&quot;_2&quot;:1294614000000},{&quot;_1&quot;:1294614000000,&quot;_2&quot;:1294700400000},{&quot;_1&quot;:1294700400000,&quot;_2&quot;:1294786800000},{&quot;_1&quot;:1294786800000,&quot;_2&quot;:1294873200000},{&quot;_1&quot;:1294873200000,&quot;_2&quot;:1294959600000},{&quot;_1&quot;:1294959600000,&quot;_2&quot;:1295305200000},{&quot;_1&quot;:1295305200000,&quot;_2&quot;:1295391600000},{&quot;_1&quot;:1295391600000,&quot;_2&quot;:1295478000000},{&quot;_1&quot;:1295478000000,&quot;_2&quot;:1295564400000},{&quot;_1&quot;:1295564400000,&quot;_2&quot;:1295823600000},{&quot;_1&quot;:1295823600000,&quot;_2&quot;:1295910000000},{&quot;_1&quot;:1295910000000,&quot;_2&quot;:1295996400000},{&quot;_1&quot;:1295996400000,&quot;_2&quot;:1296082800000},{&quot;_1&quot;:1296082800000,&quot;_2&quot;:1296169200000},{&quot;_1&quot;:1296169200000,&quot;_2&quot;:1296428400000},{&quot;_1&quot;:1296428400000,&quot;_2&quot;:1296514800000},{&quot;_1&quot;:1296514800000,&quot;_2&quot;:1296601200000},{&quot;_1&quot;:1296601200000,&quot;_2&quot;:1296687600000},{&quot;_1&quot;:1296687600000,&quot;_2&quot;:1296774000000},{&quot;_1&quot;:1296774000000,&quot;_2&quot;:1297033200000},{&quot;_1&quot;:1297033200000,&quot;_2&quot;:1297119600000}],&quot;genId&quot;:&quot;1149277556&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/barChart'], \n      function(playground, _magicbarChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magicbarChart,\n    \"o\": {\"x\":\"_1\",\"y\":\"_2\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <label for=\"input-anonb04ac17fdcf2304a73759f0691641eef\">\n      Max Points\n    </label><input id=\"input-anonb04ac17fdcf2304a73759f0691641eef\" type=\"number\" name=\"input-anonb04ac17fdcf2304a73759f0691641eef\" data-bind=\"textInput: value, fireChange: true, valueUpdate: 'input'\">\n      <script data-selector=\"#input-anonb04ac17fdcf2304a73759f0691641eef\" data-this=\"{&quot;valueId&quot;:&quot;anonb04ac17fdcf2304a73759f0691641eef&quot;,&quot;valueInit&quot;:25}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n ['observable', 'knockout'],\n function (Observable, ko) {\n   //console.log(\"-----------\")\n   //console.dir(this);\n   //console.dir(valueId);\n   var obs = Observable.makeObservable(valueId)\n                       .extend({ rateLimit: { //throttle\n                                   timeout: 500,\n                                   method: \"notifyWhenChangesStop\"\n                                 }\n                               }\n                       );\n   ko.applyBindings({\n     value: obs\n   }, this);\n   obs(valueInit);\n }\n)/*]]>*/</script>\n    </input>\n        <p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon42ea9a9b99d763b48cccf171de8b99d9&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p> <span style=\"color:red\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anonb1ef6c8f493583773ff898047f9ed62a&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p></span>\n        <div>\n        </div>\n      </div></div>\n              </div></div>\n        </div>\n      </div></div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 12
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -285,18 +164,7 @@
     },
     "cell_type" : "code",
     "source" : "val scoped = new Serializable {\n  \n  @transient val wnt = withNextTs\n  \n  val bc = sparkContext.broadcast(wnt)\n  \n  val updatedQuotes:RDD[(String, Long, Double)] = \n      quotesdf\n      .withColumn(\"ts\", $\"date.timestamp\")\n      .flatMap { row =>\n        val ts = row.getAs[Long](3)\n        val wnt = bc.value\n        wnt.find(_._2 == ts) match {\n          case None => List.empty[(String, Long, Double)]\n          case Some((previousTs, _)) => \n            val thisUpdated = (row.getAs[String](0), ts, -1 * row.getAs[Double](2)) \n            val newRow = (row.getAs[String](0), previousTs, row.getAs[Double](2)) \n            \n            if (!wnt.find(_._1 == ts).isDefined)\n              List(newRow)\n            else if (!wnt.find(_._2 == previousTs).isDefined)\n              List(thisUpdated)\n            else\n              List(newRow, thisUpdated)\n        }\n      }\n  val df = updatedQuotes.toDF(\"symbol\", \"ts\", \"close\")\n}\nval duplicatedWithPreviousTs = scoped.df\n\nimport org.apache.spark.sql.functions._\nval diffQuotes = duplicatedWithPreviousTs.groupBy(\"symbol\", \"ts\").agg(sum(\"close\").as(\"diff_close\"))",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "warning: there were 1 feature warning(s); re-run with -feature for details\nscoped: Serializable{val wnt: List[(Long, Long)]; val bc: org.apache.spark.broadcast.Broadcast[List[(Long, Long)]]; val updatedQuotes: org.apache.spark.rdd.RDD[(String, Long, Double)]; val df: org.apache.spark.sql.DataFrame} = $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$anon$1@6c91c2f3\nduplicatedWithPreviousTs: org.apache.spark.sql.DataFrame = [symbol: string, ts: bigint, close: double]\nimport org.apache.spark.sql.functions._\ndiffQuotes: org.apache.spark.sql.DataFrame = [symbol: string, ts: bigint, diff_close: double]\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<div class=\"df-canvas\">\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon5e0302e35be4b9df4609954ba5eaa124&quot;,&quot;partitionIndexId&quot;:&quot;anona49ef48243520323f8338e75b1f0767a&quot;,&quot;numPartitions&quot;:317,&quot;dfSchema&quot;:{&quot;type&quot;:&quot;struct&quot;,&quot;fields&quot;:[{&quot;name&quot;:&quot;symbol&quot;,&quot;type&quot;:&quot;string&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;ts&quot;,&quot;type&quot;:&quot;long&quot;,&quot;nullable&quot;:false,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;diff_close&quot;,&quot;type&quot;:&quot;double&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}}]}}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/dataframe','../javascripts/notebook/consoleDir'], \n      function(dataframe, extension) {\n        dataframe.call(data, this, extension);\n      }\n    );/*]]>*/</script>\n      <link rel=\"stylesheet\" href=\"/assets/stylesheets/ipython/css/dataframe.css\" type=\"text/css\"/>\n    </div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 13
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -305,18 +173,7 @@
     },
     "cell_type" : "code",
     "source" : ":markdown \nWe have ${diffQuotes.count} element",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res7: String = We have 7904 element\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/markdown" : "We have 7904 element"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 14
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -329,14 +186,7 @@
     },
     "cell_type" : "code",
     "source" : "diffQuotes.write.parquet(s\"$dataDir/dow.parquet\")",
-    "outputs" : [ {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 15
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -345,14 +195,7 @@
     },
     "cell_type" : "code",
     "source" : "diffQuotes.write.json(s\"$dataDir/quotes.json\")",
-    "outputs" : [ {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 17
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -365,18 +208,7 @@
     },
     "cell_type" : "code",
     "source" : "val ibm = diffQuotes.filter($\"symbol\" === \"IBM\" && $\"diff_close\" < -10).orderBy($\"diff_close\".asc)",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "ibm: org.apache.spark.sql.DataFrame = [symbol: string, ts: bigint, diff_close: double]\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<div class=\"df-canvas\">\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon13dba396389f8f6b488666569bdae305&quot;,&quot;partitionIndexId&quot;:&quot;anon7417c34f6a362ae1ffa1a324b322d393&quot;,&quot;numPartitions&quot;:1,&quot;dfSchema&quot;:{&quot;type&quot;:&quot;struct&quot;,&quot;fields&quot;:[{&quot;name&quot;:&quot;symbol&quot;,&quot;type&quot;:&quot;string&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;ts&quot;,&quot;type&quot;:&quot;long&quot;,&quot;nullable&quot;:false,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;diff_close&quot;,&quot;type&quot;:&quot;double&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}}]}}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/dataframe','../javascripts/notebook/consoleDir'], \n      function(dataframe, extension) {\n        dataframe.call(data, this, extension);\n      }\n    );/*]]>*/</script>\n      <link rel=\"stylesheet\" href=\"/assets/stylesheets/ipython/css/dataframe.css\" type=\"text/css\"/>\n    </div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 26
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -385,18 +217,7 @@
     },
     "cell_type" : "code",
     "source" : "val ko = diffQuotes.filter($\"symbol\" === \"KO\" && $\"diff_close\" < -10)",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "ko: org.apache.spark.sql.DataFrame = [symbol: string, ts: bigint, diff_close: double]\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<div class=\"df-canvas\">\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon3acd94702eb67bf1967e935fa1a244ca&quot;,&quot;partitionIndexId&quot;:&quot;anon86c64a27effcaeda0f3094aae48da110&quot;,&quot;numPartitions&quot;:1,&quot;dfSchema&quot;:{&quot;type&quot;:&quot;struct&quot;,&quot;fields&quot;:[{&quot;name&quot;:&quot;symbol&quot;,&quot;type&quot;:&quot;string&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;ts&quot;,&quot;type&quot;:&quot;long&quot;,&quot;nullable&quot;:false,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;diff_close&quot;,&quot;type&quot;:&quot;double&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}}]}}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/dataframe','../javascripts/notebook/consoleDir'], \n      function(dataframe, extension) {\n        dataframe.call(data, this, extension);\n      }\n    );/*]]>*/</script>\n      <link rel=\"stylesheet\" href=\"/assets/stylesheets/ipython/css/dataframe.css\" type=\"text/css\"/>\n    </div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 21
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -405,18 +226,7 @@
     },
     "cell_type" : "code",
     "source" : "quotesdf.filter($\"stock\" === \"KO\").agg(max(\"price\"), min(\"price\"))",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res13: org.apache.spark.sql.DataFrame = [max(price): double, min(price): double]\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<div class=\"df-canvas\">\n      <script data-this=\"{&quot;dataId&quot;:&quot;anond04b71f752d12e7d647dbde64abe547f&quot;,&quot;partitionIndexId&quot;:&quot;anon8faee15dc4397a6b88c8126094998b3a&quot;,&quot;numPartitions&quot;:1,&quot;dfSchema&quot;:{&quot;type&quot;:&quot;struct&quot;,&quot;fields&quot;:[{&quot;name&quot;:&quot;max(price)&quot;,&quot;type&quot;:&quot;double&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;min(price)&quot;,&quot;type&quot;:&quot;double&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}}]}}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/dataframe','../javascripts/notebook/consoleDir'], \n      function(dataframe, extension) {\n        dataframe.call(data, this, extension);\n      }\n    );/*]]>*/</script>\n      <link rel=\"stylesheet\" href=\"/assets/stylesheets/ipython/css/dataframe.css\" type=\"text/css\"/>\n    </div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 22
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -429,18 +239,7 @@
     },
     "cell_type" : "code",
     "source" : "ibm.cache()",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res14: ibm.type = [symbol: string, ts: bigint, diff_close: double]\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<div class=\"df-canvas\">\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon3c1874f75d341cfbdbeee4810b910559&quot;,&quot;partitionIndexId&quot;:&quot;anon5a9f36213f64468b9d7c59832e346f5f&quot;,&quot;numPartitions&quot;:1,&quot;dfSchema&quot;:{&quot;type&quot;:&quot;struct&quot;,&quot;fields&quot;:[{&quot;name&quot;:&quot;symbol&quot;,&quot;type&quot;:&quot;string&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;ts&quot;,&quot;type&quot;:&quot;long&quot;,&quot;nullable&quot;:false,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;diff_close&quot;,&quot;type&quot;:&quot;double&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}}]}}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/dataframe','../javascripts/notebook/consoleDir'], \n      function(dataframe, extension) {\n        dataframe.call(data, this, extension);\n      }\n    );/*]]>*/</script>\n      <link rel=\"stylesheet\" href=\"/assets/stylesheets/ipython/css/dataframe.css\" type=\"text/css\"/>\n    </div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 23
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -453,18 +252,7 @@
     },
     "cell_type" : "code",
     "source" : "val bySymbol = diffQuotes.groupBy(\"symbol\")",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "bySymbol: org.apache.spark.sql.GroupedData = org.apache.spark.sql.GroupedData@34246111\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "org.apache.spark.sql.GroupedData@34246111"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 27
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -477,18 +265,7 @@
     },
     "cell_type" : "code",
     "source" : "bySymbol.count.orderBy($\"count\".desc)",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res15: org.apache.spark.sql.DataFrame = [symbol: string, count: bigint]\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<div class=\"df-canvas\">\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon84dd3e5f956c1b91cb51f8b81509b0c1&quot;,&quot;partitionIndexId&quot;:&quot;anon0fa5eecb94aca2171c5328246cd3f441&quot;,&quot;numPartitions&quot;:1,&quot;dfSchema&quot;:{&quot;type&quot;:&quot;struct&quot;,&quot;fields&quot;:[{&quot;name&quot;:&quot;symbol&quot;,&quot;type&quot;:&quot;string&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;count&quot;,&quot;type&quot;:&quot;long&quot;,&quot;nullable&quot;:false,&quot;metadata&quot;:{}}]}}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/dataframe','../javascripts/notebook/consoleDir'], \n      function(dataframe, extension) {\n        dataframe.call(data, this, extension);\n      }\n    );/*]]>*/</script>\n      <link rel=\"stylesheet\" href=\"/assets/stylesheets/ipython/css/dataframe.css\" type=\"text/css\"/>\n    </div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 28
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -501,18 +278,7 @@
     },
     "cell_type" : "code",
     "source" : "import org.apache.spark.sql.functions._\nbySymbol.agg(\n  count(\"diff_close\").as(\"count\"), \n  min(\"diff_close\").as(\"min\"), \n  max(\"diff_close\").as(\"max\"), \n  mean(\"diff_close\").as(\"avg.\")\n)",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "import org.apache.spark.sql.functions._\nres16: org.apache.spark.sql.DataFrame = [symbol: string, count: bigint, min: double, max: double, avg.: double]\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<div class=\"df-canvas\">\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon4fdb0f553825814a0189f67c23cabc40&quot;,&quot;partitionIndexId&quot;:&quot;anonf3e39f12cf03ab8359b801284c18ca8f&quot;,&quot;numPartitions&quot;:1,&quot;dfSchema&quot;:{&quot;type&quot;:&quot;struct&quot;,&quot;fields&quot;:[{&quot;name&quot;:&quot;symbol&quot;,&quot;type&quot;:&quot;string&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;count&quot;,&quot;type&quot;:&quot;long&quot;,&quot;nullable&quot;:false,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;min&quot;,&quot;type&quot;:&quot;double&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;max&quot;,&quot;type&quot;:&quot;double&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;avg.&quot;,&quot;type&quot;:&quot;double&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}}]}}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/dataframe','../javascripts/notebook/consoleDir'], \n      function(dataframe, extension) {\n        dataframe.call(data, this, extension);\n      }\n    );/*]]>*/</script>\n      <link rel=\"stylesheet\" href=\"/assets/stylesheets/ipython/css/dataframe.css\" type=\"text/css\"/>\n    </div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 29
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -525,18 +291,7 @@
     },
     "cell_type" : "code",
     "source" : "val data = sqlContext.read.parquet(s\"$dataDir/dow.parquet\")",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "data: org.apache.spark.sql.DataFrame = [symbol: string, ts: bigint, diff_close: double]\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<div class=\"df-canvas\">\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon6cc0678dd71cdb27dc8640d87e289004&quot;,&quot;partitionIndexId&quot;:&quot;anon989bc1c2e78967327358647d8a068aa8&quot;,&quot;numPartitions&quot;:317,&quot;dfSchema&quot;:{&quot;type&quot;:&quot;struct&quot;,&quot;fields&quot;:[{&quot;name&quot;:&quot;symbol&quot;,&quot;type&quot;:&quot;string&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;ts&quot;,&quot;type&quot;:&quot;long&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;diff_close&quot;,&quot;type&quot;:&quot;double&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}}]}}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/dataframe','../javascripts/notebook/consoleDir'], \n      function(dataframe, extension) {\n        dataframe.call(data, this, extension);\n      }\n    );/*]]>*/</script>\n      <link rel=\"stylesheet\" href=\"/assets/stylesheets/ipython/css/dataframe.css\" type=\"text/css\"/>\n    </div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 30
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -545,14 +300,7 @@
     },
     "cell_type" : "code",
     "source" : "data.registerTempTable(\"quote\")\ndata.cache()\n()",
-    "outputs" : [ {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 31
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -561,18 +309,7 @@
     },
     "cell_type" : "code",
     "source" : "sqlContext.sql(\"\"\"\n  SELECT s.symbol, s.ts, s.diff_close \n  FROM quote s \n  WHERE symbol = 'IBM' ORDER BY s.ts ASC\n\"\"\")",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res18: org.apache.spark.sql.DataFrame = [symbol: string, ts: bigint, diff_close: double]\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<div class=\"df-canvas\">\n      <script data-this=\"{&quot;dataId&quot;:&quot;anone3655cdfc53fe5bf6d420ed5bc277f4b&quot;,&quot;partitionIndexId&quot;:&quot;anon9d94bb26a81dcaa78e06926d1a8ab108&quot;,&quot;numPartitions&quot;:40,&quot;dfSchema&quot;:{&quot;type&quot;:&quot;struct&quot;,&quot;fields&quot;:[{&quot;name&quot;:&quot;symbol&quot;,&quot;type&quot;:&quot;string&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;ts&quot;,&quot;type&quot;:&quot;long&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;diff_close&quot;,&quot;type&quot;:&quot;double&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}}]}}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/dataframe','../javascripts/notebook/consoleDir'], \n      function(dataframe, extension) {\n        dataframe.call(data, this, extension);\n      }\n    );/*]]>*/</script>\n      <link rel=\"stylesheet\" href=\"/assets/stylesheets/ipython/css/dataframe.css\" type=\"text/css\"/>\n    </div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 32
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -581,18 +318,7 @@
     },
     "cell_type" : "code",
     "source" : "sqlContext.sql(\"\"\"\n SELECT q.symbol AS symbol, count(*) as count \n FROM quote q GROUP BY q.symbol \n ORDER BY count DESC\n\"\"\")",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res19: org.apache.spark.sql.DataFrame = [symbol: string, count: bigint]\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<div class=\"df-canvas\">\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon19d52a5a56ca7de6fa26b50a873a8cb9&quot;,&quot;partitionIndexId&quot;:&quot;anon9f5af2539945596304208eccef383b73&quot;,&quot;numPartitions&quot;:1,&quot;dfSchema&quot;:{&quot;type&quot;:&quot;struct&quot;,&quot;fields&quot;:[{&quot;name&quot;:&quot;symbol&quot;,&quot;type&quot;:&quot;string&quot;,&quot;nullable&quot;:true,&quot;metadata&quot;:{}},{&quot;name&quot;:&quot;count&quot;,&quot;type&quot;:&quot;long&quot;,&quot;nullable&quot;:false,&quot;metadata&quot;:{}}]}}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/dataframe','../javascripts/notebook/consoleDir'], \n      function(dataframe, extension) {\n        dataframe.call(data, this, extension);\n      }\n    );/*]]>*/</script>\n      <link rel=\"stylesheet\" href=\"/assets/stylesheets/ipython/css/dataframe.css\" type=\"text/css\"/>\n    </div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 33
-    } ]
+    "outputs" : [ ]
   } ],
   "nbformat" : 4
 }

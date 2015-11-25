@@ -13,6 +13,7 @@
     "customRepos" : null,
     "customDeps" : null,
     "customImports" : null,
+    "customArgs" : null,
     "customSparkConf" : {
       "spark.app.name" : "AnomalyDetectionDemo",
       "spark.master" : "local[*]",
