@@ -85,20 +85,25 @@ class ReplCalculator(
   var remotes:List[RemoteRepository] = customRepos.getOrElse(List.empty[String]).map(remoreRepo _).map(_._2) :::
     List(Repos.mavenLocal, Repos.central, Repos.sparkPackages, Repos.oss)
 
-  var repo:File = customLocalRepo.map(x => new File(x)).getOrElse{
-    val tmp = new File(System.getProperty("java.io.tmpdir"))
+  var repo:File = customLocalRepo.map { x =>
+                    import scala.util.matching.Regex
+                    val r = new Regex("""\$\{([_a-zA-Z0-9]+)\}+""", "var")
+                    val f = r.replaceAllIn(x, m => sys.env(m.group("var")))
+                    new File(f)
+                  }.getOrElse {
+                    val tmp = new File(System.getProperty("java.io.tmpdir"))
 
-    val snb = new File(tmp, "spark-notebook")
-    if (!snb.exists) snb.mkdirs
+                    val snb = new File(tmp, "spark-notebook")
+                    if (!snb.exists) snb.mkdirs
 
-    val aether = new File(snb, "aether")
-    if (!aether.exists) aether.mkdirs
+                    val aether = new File(snb, "aether")
+                    if (!aether.exists) aether.mkdirs
 
-    val r = new File(aether, java.util.UUID.randomUUID.toString)
-    if (!r.exists) r.mkdirs
+                    val r = new File(aether, java.util.UUID.randomUUID.toString)
+                    if (!r.exists) r.mkdirs
 
-    r
-  }
+                    r
+                  }
 
   def codeRepo = new File(repo, "code")
 

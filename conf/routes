@@ -33,8 +33,9 @@ PATCH          /api/contents/*path                       controllers.Application
 PUT            /api/contents/*path                       controllers.Application.saveNotebook(path:String)
 DELETE         /api/contents/*path                       controllers.Application.deleteNotebook(path:String)
 
-GET            /notebooks/*snb                           controllers.Application.openNotebook(snb:String)
-GET            /edit/:snb                                controllers.Application.openNotebook(snb:String)
+# The presentation parameter is optional. E.g. /notebooks/abc.snb?presentation=report
+GET            /notebooks/*snb                           controllers.Application.openNotebook(snb:String, presentation: Option[String])
+GET            /edit/:snb                                controllers.Application.openNotebook(snb:String, presentation: Option[String])
 
 GET            /files/*path                              controllers.Application.dlNotebookAs(path:String, format:String="json")
 GET            /nbconvert/:format/*path                  controllers.Application.dlNotebookAs(path:String, format:String)
