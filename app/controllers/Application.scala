@@ -370,9 +370,9 @@ object Application extends Controller {
     }.get
   }
 
-  def openNotebook(p: String) = Action { implicit request =>
+  def openNotebook(p: String, presentation: Option[String]) = Action { implicit request =>
     val path = URLDecoder.decode(p, UTF_8)
-    Logger.info(s"View notebook '$path'")
+    Logger.info(s"View notebook '$path', presentation: '$presentation'")
     val wsPath = base_project_url match {
       case "/" => "/ws"
       case x if x.endsWith("/") => x + "ws"
@@ -398,7 +398,8 @@ object Application extends Controller {
         "read-only" -> read_only,
         "notebook-name" -> nbm.name,
         "notebook-path" -> path,
-        "notebook-writable" -> "true"
+        "notebook-writable" -> "true",
+        "presentation" -> presentation.getOrElse("edit")
       ),
       Some("notebook")
     ))

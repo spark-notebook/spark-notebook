@@ -8991,7 +8991,6 @@ div.cell {
   -webkit-box-sizing: border-box;
   border-width: thin;
   border-style: solid;
-  width: 100%;
   padding: 5px;
   /* This acts as a spacer between cells, that is outside the border */
   margin: 0px;

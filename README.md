@@ -642,9 +642,9 @@ There is not so much to do here besides following the instructions to install th
 #### Install
 It requires the DCOS CLI interface installed and configured to access your new cluster.
 
-So you need to add the Mesosphere official multiverse reporsitory (until some work is done to have it in the universe one!):
+So you need to add the [Mesosphere official multiverse reporsitory](https://github.com/mesosphere/multiverse) (until some work is done to have it in the universe one!) :
 ```
-dcos config prepend package.sources https://github.com/mesosphere/multiverse/archive/master.zip
+dcos config prepend package.sources https://github.com/mesosphere/multiverse/archive/version-1.x.zip
 dcos package update --validate
 ```
 
