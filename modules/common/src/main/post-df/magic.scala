@@ -7,6 +7,22 @@ import notebook.front.widgets.isNumber
 
 trait ExtraSamplerImplicits {
   import SamplerImplicits.Sampler
+  /**
+   * count number of rows in a DataFrame, and do sampling if needed
+   */
+  implicit def SimpleDataFrameSampler = new Sampler[DataFrame] {
+    def apply(df: DataFrame, max: Int): DataFrame = {
+      val count = df.cache().count()
+      if (count > max) {
+        println("DF is larger than maxRows. Will use sampling.")
+        df.sample(withReplacement = false, max / count.toDouble)
+          .cache()
+      } else {
+        df
+      }
+    }
+  }
+
   implicit object DFSampler extends Sampler[DataFrame] {
     import org.apache.spark.sql.types.{StructType, StructField,LongType}
     import org.apache.spark.sql.functions._
@@ -51,7 +67,7 @@ trait ExtraMagicImplicits {
         }
 
         val encoded = points.zipWithIndex.map { case (point, index) => point.values match {
-          case List(o)    if isNumber(o)  =>  AnyPoint((index, o))
+          case Seq(o)    if isNumber(o)   =>  AnyPoint((index, o))
           case _                          =>  point
         }}
         encoded

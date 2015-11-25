@@ -77,15 +77,6 @@
     "cell_type" : "markdown",
     "source" : "## Render the DataFrame using default parameters"
   }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "people",
-    "outputs" : [ ]
-  }, {
     "metadata" : { },
     "cell_type" : "markdown",
     "source" : "## Render the DataFrame, but only 10 points"
@@ -93,7 +84,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "widgets.display(people, maxPoints=10)",
@@ -119,10 +110,23 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "import notebook.front.widgets.magic.SamplerImplicits.Sampler\nimport org.apache.spark.sql.DataFrame\nimplicit val sampler = new Sampler[DataFrame] {\n  def apply(df:DataFrame, max:Int):DataFrame = {\n    val count = df.count\n    println(\"Sampling DF\")\n    df.sample(false, max/count.toDouble, 5555)\n  }\n}\nwidgets.BarChart(people, Some((\"name\", \"age\")), maxPoints=40)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Render the DataFrame in a Pivot chart"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "PivotChart(people)",
     "outputs" : [ ]
   } ],
   "nbformat" : 4

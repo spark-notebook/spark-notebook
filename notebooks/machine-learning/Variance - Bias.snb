@@ -24,7 +24,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "import org.apache.spark.rdd.RDD\nimport com.cra.figaro.library.atomic.continuous._",
@@ -41,7 +41,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "val generatorModelX = Uniform(1.0, 5.0)\n\nval generateOneX = () => {\n  generatorModelX.generate()\n  generatorModelX.value\n}",
@@ -58,7 +58,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "val generatorModelZ = Normal(0.0, 0.25)\n\nval generateOneY = (x: Double) => {\n  generatorModelZ.generate()\n  x*x + math.abs(generatorModelZ.value)\n}",
@@ -68,7 +68,7 @@
       "trusted" : true,
       "input_collapsed" : false,
       "output_stream_collapsed" : true,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "import org.apache.spark.mllib.linalg.Vectors\nimport org.apache.spark.mllib.regression.LabeledPoint",
@@ -93,7 +93,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val collection = (1 to 1000).map(i => {\n                   val x = generateOneX().toDouble\n                   val y = generateOneY(x).toDouble\n                   (x, y)\n  })\nwidgets.LineChart(collection.toList, fields=Some((\"X\", \"Y\")), maxPoints=collection.size)",
+    "source" : "val collection = (1 to 1000).map(i => {\n                   val x = generateOneX().toDouble\n                   val y = generateOneY(x).toDouble\n                   (x, y)\n  })\nwidgets.LineChart(collection.toList, maxPoints=collection.size)",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -118,7 +118,7 @@
       "trusted" : true,
       "input_collapsed" : false,
       "output_stream_collapsed" : true,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "val toPoints0 = ( xy: (Double, Double)) => \n  LabeledPoint(xy._2, Vectors.dense(Array(1.0)))\n\nval toPoints1 = ( xy: (Double, Double)) => \n  LabeledPoint(xy._2, Vectors.dense(Array(xy._1, 1.0)))\n\nval toPoints2 = ( xy: (Double, Double)) => \n  LabeledPoint(xy._2, Vectors.dense(Array(xy._1*xy._1, xy._1, 1.0)))\n\nval toPoints3 = ( xy: (Double, Double)) => \n  LabeledPoint(xy._2, Vectors.dense(Array(xy._1*xy._1*xy._1, xy._1*xy._1, xy._1, 1.0)))",
@@ -140,7 +140,7 @@
       "trusted" : true,
       "input_collapsed" : false,
       "output_stream_collapsed" : true,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "val sample = () => universe.sample(true, 0.01)",
@@ -157,7 +157,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val data = sample().map(toPoints1)\nwidgets.LineChart(data.map(lp => (lp.features(0), lp.label)).collect.toList, fields=Some((\"X\", \"Y\")))",
+    "source" : "val data = sample().map(toPoints1)\nwidgets.LineChart(data.map(lp => (lp.features(0), lp.label)).collect.toList)",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -171,7 +171,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "import org.apache.spark.mllib.optimization.{LBFGS, LeastSquaresGradient, SimpleUpdater}\nimport org.apache.spark.mllib.regression.LinearRegressionModel",
@@ -184,7 +184,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "val train = (dta: RDD[LabeledPoint]) => {\n  val one = dta.first\n  val numCorrections = 10\n  val convergenceTol = 1e-4\n  val maxNumIterations = 100\n  val regParam = 0.1\n  val initialWeightsWithIntercept = Vectors.dense(new Array[Double](one.features.size))\n  \n  val (weightsWithIntercept, loss) = LBFGS.runLBFGS(\n    dta.map(lp => (lp.label, lp.features)), // create the RDD[(Double, Vector)]\n    new LeastSquaresGradient(),             // loss function\n    new SimpleUpdater(),\n    numCorrections,\n    convergenceTol,\n    maxNumIterations,\n    regParam,\n    initialWeightsWithIntercept\n  )\n  \n  new LinearRegressionModel(weightsWithIntercept, 0.0)\n}",
@@ -197,7 +197,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "val model = train(data)",
@@ -215,7 +215,7 @@
       "trusted" : true,
       "input_collapsed" : false,
       "output_stream_collapsed" : true,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "val safe = new java.io.Serializable {\n  val localModel = model\n  val pred = (p: LabeledPoint) => localModel.predict(p.features)\n  val localData = data\n  \n  localModel.predict(localData.map(_.features))\n  val valuesAndPreds = localData.map { point =>\n    val prediction = pred(point)\n    (point.label, prediction)\n  }\n  val MSE = valuesAndPreds.map{case(v, p) => math.pow((v - p), 2)}.mean()\n}\nimport safe._",
@@ -225,7 +225,7 @@
       "trusted" : true,
       "input_collapsed" : true,
       "output_stream_collapsed" : true,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : ":markdown\nSo we have a **${safe.MSE}** mean square error ",
@@ -261,7 +261,7 @@
       "trusted" : true,
       "input_collapsed" : true,
       "output_stream_collapsed" : true,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : ":markdown\nWe'll use the intercept `${model.intercept}` and the weights `${model.weights}`",
@@ -294,7 +294,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "val predict1 = model.intercept + (sample1.features.toArray zip model.weights.toArray).map(x => x._1*x._2).sum\n()",
@@ -304,7 +304,7 @@
       "trusted" : true,
       "input_collapsed" : true,
       "output_stream_collapsed" : true,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : ":markdown\nSo the prediction is `${predict1}` and is `${math.abs(sample1.label - predict1)}` far from the correct label",
@@ -317,7 +317,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "widgets.ScatterChart(List(predict1, sample1.label, math.abs(sample1.label - predict1)), fields=Some((\"X\", \"Y\")))",
+    "source" : "widgets.ScatterChart(List(predict1, sample1.label, math.abs(sample1.label - predict1)))",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -335,7 +335,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "import org.apache.spark.mllib.regression.LinearRegressionModel\nimport org.apache.spark.rdd.RDD\nimport com.quantifind.charts.highcharts._\n\nval MSE = (model: LinearRegressionModel, dta: RDD[LabeledPoint], deg:Int) => {\n  val localModel = model\n  val pred = (p: LabeledPoint) => localModel.predict(p.features)\n  val localData = dta\n  \n  localModel.predict(localData.map(_.features))\n  val valuesAndPreds = localData.map { point =>\n    val prediction = pred(point)\n    (point.label, prediction)\n  }\n  \n  val vs = localData.collect().map(v => (v.features.toArray.sum, v.label))\n  \n  val plot = Plot(Seq(\n    Pairs(vs.toList.sortBy(_._1), chart=\"line\"),\n    Pairs((vs.map(_._1) zip valuesAndPreds.map(_._2).collect.toList).sortBy(_._1), chart=\"line\")\n  ))\n  \n  (plot, valuesAndPreds.map{case(v, p) => math.pow((v - p), 2)}.mean())\n}",
@@ -353,10 +353,10 @@
       "trusted" : true,
       "input_collapsed" : false,
       "output_stream_collapsed" : true,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "case class ModelsMSE(mses: Array[(notebook.front.Widget, Double)])\n\nval errors = (1 to 20).map{ i =>\n                            \n  val data = universe.sample(true, 0.01)                            \n  val (data0, data1, data2, data3) = \n                           (data.map(toPoints0), data.map(toPoints1), data.map(toPoints2), data.map(toPoints3))\n  \n  val test = universe\n  val (test0, test1, test2, test3) = \n                           (test.map(toPoints0), test.map(toPoints1), test.map(toPoints2), test.map(toPoints3))\n              \n  val model0 = train(data0)\n  val model1 = train(data1)\n  val model2 = train(data2)\n  val model3 = train(data3)\n\n  (ModelsMSE(Array(MSE(model0, data0, 0), MSE(model1, data1, 1), MSE(model2, data2, 2), MSE(model3, data3, 3))),\n   ModelsMSE(Array(MSE(model0, test0, 0), MSE(model1, test1, 1), MSE(model2, test2, 2), MSE(model3, test3, 3))))\n}",
+    "source" : "case class ModelsMSE(mses: Array[(notebook.front.Widget, Double)])\n\nval errors = (1 to 20).map{ i =>\n                            \n  val data = universe.sample(true, 0.01)                            \n  val (data0, data1, data2, data3) = \n                           (data.map(toPoints0), data.map(toPoints1), data.map(toPoints2), data.map(toPoints3))\n  \n  val test = universe\n  val (test0, test1, test2, test3) = \n                           (test.map(toPoints0), test.map(toPoints1), test.map(toPoints2), test.map(toPoints3))\n              \n  val model0 = train(data0)\n  val model1 = train(data1)\n  val model2 = train(data2)\n  val model3 = train(data3)\n\n  (ModelsMSE(Array(MSE(model0, data0, 0), MSE(model1, data1, 1), MSE(model2, data2, 2), MSE(model3, data3, 3))),\n   ModelsMSE(Array(MSE(model0, test0, 0), MSE(model1, test1, 1), MSE(model2, test2, 2), MSE(model3, test3, 3))))\n}\n()",
     "outputs" : [ ]
   }, {
     "metadata" : { },
