@@ -58,3 +58,8 @@ This will always be an empty file in IPython
 .pill-content > .active {
     height: auto;       /* let the content decide it  */
 } /* bootstrap hack end */
+
+/* nicer tables (was horrible black) */
+.rendered_html tr, .rendered_html th, .rendered_html td {
+  border: 1px solid #aaa;
+}
