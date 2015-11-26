@@ -73,6 +73,11 @@ define([
       plotThat = (data) =>
         $(container).pivotUI(data, pivotOptions)
 
+        toggleOptionsBtn = $("<a class='pvtUi-toggle-controls-btn'>show/hide options</a>")
+        toggleOptionsBtn.click ->
+          $(container).find(".pvtUi").toggleClass("pivot-controls-hidden")
+        $(container).prepend(toggleOptionsBtn)
+
       dataO.subscribe( (newData) =>
         plotThat(newData)
       )
