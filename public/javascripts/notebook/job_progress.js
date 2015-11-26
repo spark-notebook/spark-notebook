@@ -31,7 +31,16 @@ define([
 
       myChart.addSeries("status", dimple.plot.bar);
 
+      var olderProgresses = []
+
       progress.subscribe(function(jobsProgress) {
+        // redraw only if changed
+        var totalCompletions = function(ps) { return _.reduce(ps, function(memo, p){ return memo + p.completed; }, 0); };
+        if (totalCompletions(olderProgresses) == totalCompletions(jobsProgress)) {
+          return;
+        }
+        olderProgresses = jobsProgress;
+
         var processedData = _.flatten(_.map(jobsProgress, function(p){
           p.status = "Done";
           if (p.completed != 100){
