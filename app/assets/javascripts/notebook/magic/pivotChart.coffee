@@ -77,6 +77,9 @@ define([
         toggleOptionsBtn.click ->
           $(container).find(".pvtUi").toggleClass("pivot-controls-hidden")
         $(container).prepend(toggleOptionsBtn)
+        # collapse all pivotchart controls in report mode
+        report_mode = $("body[data-presentation='report']").length > 0
+        $(".pvtUi").addClass("pivot-controls-hidden") if report_mode
 
       dataO.subscribe( (newData) =>
         plotThat(newData)
