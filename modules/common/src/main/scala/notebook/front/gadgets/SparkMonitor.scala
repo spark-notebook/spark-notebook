@@ -19,6 +19,16 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) {
 
   sparkContext.listenerBus.addListener(listener)
 
+  /**
+    * Identify link to Spark UI. Supports `yarn-*` modes so far.
+    */
+  def sparkUiLink: Option[String] = sparkContext.master match {
+    case m if m.startsWith("yarn") =>
+      sys.env.get("YARN_JOB_PROXY_URL")
+        .map(yarnProxyURL => s"${yarnProxyURL}/${sparkContext.applicationId}")
+    case _ => None
+  }
+
   def fetchMetrics = {
     listener.synchronized {
       val activeStages = listener.activeStages.values.toSeq
@@ -81,7 +91,11 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) {
         while(true) {
           Thread.sleep(1000)
           val m = fetchMetrics
-          connection <-- notebook.Connection.just(JsArray(m))
+          connection <-- notebook.Connection.just(
+            JsObject(Seq(
+              "jobsStatus" -> JsArray(m),
+              "sparkUi" -> JsString(sparkUiLink.getOrElse(""))
+            )))
         }
     }
   }

@@ -13,9 +13,17 @@ define([
       // move progress node to body, to enable absolute positioning
       var pies = d3.select("#progress-pies")
       $(pies.node()).appendTo("body");
+      $("#progress-pies").append($("<div id='progress-bars'/>")).append("<div id='spark-ui-link' />");
+
+      var updateSparkUiLink = function(sparkUi){
+        if (sparkUi != "") {
+          var sparkUiLink = $("<a href='" + sparkUi + "' id='spark-ui-link' target='_blank'>SparkUI</a>")
+          $("#spark-ui-link").replaceWith(sparkUiLink);
+        }
+      };
 
       // setup the progress chart
-      var svg = dimple.newSvg("#progress-pies", 100, 400);
+      var svg = dimple.newSvg("#progress-bars", 100, 400);
       var myChart = new dimple.chart(svg, []);
       var xAxis = myChart.addPctAxis("x", "completed");
       xAxis.title = "% completed";
@@ -33,7 +41,12 @@ define([
       var sum = function(items){ return _.reduce(items, function(memo, p){ return memo + p} , 0) };
 
       var olderProgresses = [];
-      progress.subscribe(function(jobsProgress) {
+      progress.subscribe(function(status) {
+        var jobsProgress = status.jobsStatus;
+        var sparkUi = status.sparkUi;
+
+        updateSparkUiLink(sparkUi);
+
         // redraw only if changed
         var totalCompletions = function(ps) { return sum(_.pluck(ps, 'completed')); };
         if (totalCompletions(olderProgresses) == totalCompletions(jobsProgress)) {
