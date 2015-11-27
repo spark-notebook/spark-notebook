@@ -14,29 +14,25 @@ define([
       var pies = d3.select("#progress-pies")
       $(pies.node()).appendTo("body");
 
+      // setup the progress chart
       var svg = dimple.newSvg("#progress-pies", 100, 400);
       var myChart = new dimple.chart(svg, []);
-
       var xAxis = myChart.addPctAxis("x", "completed");
       xAxis.title = "% completed";
       xAxis.ticks = 2;
       xAxis.showGridlines = false;
-
       myChart.assignColor("Done", "#3a3", "#3a3", 1);
       myChart.assignColor("Pending", "#a33", "#a33", 1);
-
       var yAxis = myChart.addCategoryAxis("y", ["id", "name", "time"]);
       yAxis.hidden = true;
       yAxis.addOrderRule("id");
-
       myChart.addSeries("status", dimple.plot.bar);
 
-      var olderProgresses = [];
-
+      // process the progresses and update the chart
       var isCompleted = function(p){ return p.completed == 100 };
-
       var sum = function(items){ return _.reduce(items, function(memo, p){ return memo + p} , 0) };
 
+      var olderProgresses = [];
       progress.subscribe(function(jobsProgress) {
         // redraw only if changed
         var totalCompletions = function(ps) { return sum(_.pluck(ps, 'completed')); };
