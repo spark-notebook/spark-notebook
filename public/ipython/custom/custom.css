@@ -63,3 +63,12 @@ This will always be an empty file in IPython
 .rendered_html tr, .rendered_html th, .rendered_html td {
   border: 1px solid #aaa;
 }
+
+/* pivot chart */
+.pivot-controls-hidden .pvtVals, .pivot-controls-hidden .pvtRenderer, .pivot-controls-hidden .pvtAxisContainer {
+  visibility: hidden;
+  display: none;
+}
+table.pivot-controls-hidden, .pivot-controls-hidden > tbody > tr, .pivot-controls-hidden > tbody > tr > td {
+  border: none ! important;
+}
