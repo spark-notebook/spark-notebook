@@ -31,28 +31,41 @@ define([
 
       myChart.addSeries("status", dimple.plot.bar);
 
-      var olderProgresses = []
+      var olderProgresses = [];
+
+      var isCompleted = function(p){ return p.completed == 100 };
+
+      var sum = function(items){ return _.reduce(items, function(memo, p){ return memo + p} , 0) };
 
       progress.subscribe(function(jobsProgress) {
         // redraw only if changed
-        var totalCompletions = function(ps) { return _.reduce(ps, function(memo, p){ return memo + p.completed; }, 0); };
+        var totalCompletions = function(ps) { return sum(_.pluck(ps, 'completed')); };
         if (totalCompletions(olderProgresses) == totalCompletions(jobsProgress)) {
           return;
         }
         olderProgresses = jobsProgress;
 
-        var processedData = _.flatten(_.map(jobsProgress, function(p){
+        // collapse completed jobs into one bar
+        var nCompletedJobs = _.filter(jobsProgress, isCompleted).length;
+        var completedJobsInfo = {
+          status: "Done",
+          completed: 100,
+          name: nCompletedJobs + " stages",
+          time: "N/A",
+          id: 0
+        };
+
+        var runningJobs = _.map(_.reject(jobsProgress, isCompleted));
+        var runningJobsInfo = _.flatten(_.map(runningJobs, function(p){
           p.status = "Done";
-          if (p.completed != 100){
-            pPending = _.clone(p);
-            pPending.status = "Pending";
-            pPending.completed = 100 - p.completed;
-            return [p, pPending]
-          }
-          return [p]
+          // part of stage that's still pending
+          pPending = _.clone(p);
+          pPending.status = "Pending";
+          pPending.completed = 100 - p.completed;
+          return [p, pPending]
         }), true);
 
-        myChart.data = processedData;
+        myChart.data = _.flatten([runningJobsInfo, completedJobsInfo]);
         myChart.draw();
       });
     });
