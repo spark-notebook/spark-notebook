@@ -76,7 +76,7 @@ object Dependencies {
       Nil
     }
 
-  val extractVs = "(\\d+)\\.(\\d+)\\.(\\d+).*".r
+  val extractVs = "[a-zA-Z]*(\\d+)\\.(\\d+)\\.(\\d+).*".r
   def sparkHive(v: String) = "org.apache.spark" %% "spark-hive" % v excludeAll(
     ExclusionRule("org.apache.hadoop"),
     ExclusionRule("org.apache.ivy", "ivy"),
@@ -84,14 +84,10 @@ object Dependencies {
     ExclusionRule("org.mortbay.jetty", "servlet-api")
   ) excludeAll(parquetList:_*) excludeAll(
     {
-      val s = defaultSparkVersion match { case extractVs(v, m, p) =>  (v.toInt, m.toInt, p.toInt)}
-      val h = defaultHadoopVersion match { case extractVs(v, m, p) => (v.toInt, m.toInt, p.toInt)}
-      if(
-        // spark >= 1.5.2
-        s._1 >= 1 && s._2 >= 5 && (s._2 != 5 || s._3 >= 2) &&
-        //hadoop >= 2.6.0
-        h._1 >= 2 && h._2 >= 6 && h._3 >= 0
-      ) {
+      val sparkVersion = defaultSparkVersion match { case extractVs(v, m, p) =>  (v.toInt, m.toInt, p.toInt)}
+      val hadoopVersion = defaultHadoopVersion match { case extractVs(v, m, p) => (v.toInt, m.toInt, p.toInt)}
+      import scala.math.Ordering.Implicits._
+      if (sparkVersion >= (1, 5, 2) && hadoopVersion >= (2, 6, 0)) {
         Nil
       } else {
         List(

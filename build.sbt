@@ -59,6 +59,7 @@ javaOptions in ThisBuild ++= Seq("-Xmx512M", "-XX:MaxPermSize=128M")
   https://repository.apache.org/content/repositories/orgapachespark-1153
   this props will only need the number 1153 at the end
 */
+val searchSparkResolver = Option(sys.props.getOrElse("spark.resolver.search", "false")).get.toBoolean
 val sparkResolver = Option(sys.props.getOrElse("spark.resolver.id", null))
 
 resolvers in ThisBuild ++= Seq(
@@ -70,11 +71,41 @@ resolvers in ThisBuild ++= Seq(
   "cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos",
   // docker
   "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
-) ++ (sparkResolver match {
-  case Some(x) => Seq(
+) ++ ((sparkResolver, searchSparkResolver, sparkVersion.value) match {
+  case (Some(x), _, sv) => Seq(
                     ("spark " + x) at ("https://repository.apache.org/content/repositories/orgapachespark-"+x)
                   )
-  case None => Nil
+  case (None, true, sv)  =>
+    println(s"""|
+    |**************************************************************
+    | SEARCHING for Spark Nightly repo for version ~ $sv
+    |**************************************************************
+    |""".stripMargin)
+    import scala.io.Source.fromURL
+    val mainPage = "https://repository.apache.org/content/repositories/"
+    val repos = fromURL(mainPage).mkString
+    val c = repos.split("\n").toList.filter(!_.contains("<link")).mkString
+    val r = scala.xml.parsing.XhtmlParser(scala.io.Source.fromString(c))
+    val as = r \\ "a"
+    val sparks:List[Option[String]] = as.filter(_.toString.contains("orgapachespark")).map(_.attribute("href").map(_.head.text)).toList
+    val sparkRepos = sparks.collect { case Some(l) =>
+      val id = l.reverse.tail.takeWhile(_.isDigit).reverse.toInt
+      val u = l + "org/apache/spark/spark-core_2.10/"
+      val repo = fromURL(u).mkString
+      val c = repo.split("\n").toList.filter(!_.contains("<link")).mkString
+      val r = scala.xml.parsing.XhtmlParser(scala.io.Source.fromString(c))
+      val v = (r \\ "table" \\ "a").map(_.text).filter(_ != "Parent Directory").head.replace("/", "")
+      (l, id, v)
+    }
+    .groupBy(_._3).mapValues(_.sortBy(_._2).last._1)
+    .map{ case (v, url) => (v == sv, v, url) }
+    println("======================================================================== ")
+    println("Found these repos")
+    println(sparkRepos.map{case (c, v, url) => s"${if(c) "[x]" else "[ ]" } $v: $url"}.mkString("\n"))
+
+    sparkRepos.filter(_._1).map{ case (_, v, url) => ("spark " + v) at url }
+
+  case (None, false, _) => Nil
 })
 
 EclipseKeys.skipParents in ThisBuild := false
