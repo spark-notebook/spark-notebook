@@ -10,8 +10,9 @@ import org.apache.spark.scheduler.StageInfo
 
 import play.api.libs.json._
 
+import notebook.util.Logging
 
-class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) {
+class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends Logging {
 
   val connection = notebook.JSBus.createConnection("jobsProgress")
 
@@ -39,8 +40,10 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) {
         }
         appUIAddress
       } catch {
-        case e =>
-          // add log I guess
+        // reflective methods above may throw: SecurityException | ReflectiveOperationException | IllegalArgumentException
+        // these are all RuntimeException, so at least catch this instead of catching any Exception
+        case e: RuntimeException =>
+          logWarn("Unable to determine URL for sparkUI", e)
           None
       }
   }
