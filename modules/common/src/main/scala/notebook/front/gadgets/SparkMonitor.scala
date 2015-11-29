@@ -26,7 +26,23 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) {
     case m if m.startsWith("yarn") =>
       sys.env.get("YARN_JOB_PROXY_URL")
         .map(yarnProxyURL => s"${yarnProxyURL}/${sparkContext.applicationId}")
-    case _ => None
+    case _ =>
+      try {
+        val u = sparkContext.getClass.getMethod("ui")
+        u.setAccessible(true)
+        val ui = u.invoke(sparkContext).asInstanceOf[Option[Any]]
+        val appUIAddress:Option[String] = ui.map{ u =>
+          val a = u.getClass.getMethod("appUIAddress")
+          a.setAccessible(true)
+          val appUIAddress = a.invoke(u)
+          appUIAddress.toString
+        }
+        appUIAddress
+      } catch {
+        case e =>
+          // add log I guess
+          None
+      }
   }
 
   def fetchMetrics = {
