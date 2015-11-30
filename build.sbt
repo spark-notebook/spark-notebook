@@ -53,15 +53,6 @@ parallelExecution in Test in ThisBuild := false
 // these java options are for the forked test JVMs
 javaOptions in ThisBuild ++= Seq("-Xmx512M", "-XX:MaxPermSize=128M")
 
-
-/*
-  adding nightly build resolver like
-  https://repository.apache.org/content/repositories/orgapachespark-1153
-  this props will only need the number 1153 at the end
-*/
-val searchSparkResolver = Option(sys.props.getOrElse("spark.resolver.search", "false")).get.toBoolean
-val sparkResolver = Option(sys.props.getOrElse("spark.resolver.id", null))
-
 resolvers in ThisBuild ++= Seq(
   Resolver.mavenLocal,
   Resolver.typesafeRepo("releases"),
@@ -70,43 +61,10 @@ resolvers in ThisBuild ++= Seq(
   Resolver.typesafeIvyRepo("snapshots"),
   "cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos",
   // docker
-  "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
-) ++ ((sparkResolver, searchSparkResolver, sparkVersion.value) match {
-  case (Some(x), _, sv) => Seq(
-                    ("spark " + x) at ("https://repository.apache.org/content/repositories/orgapachespark-"+x)
-                  )
-  case (None, true, sv)  =>
-    println(s"""|
-    |**************************************************************
-    | SEARCHING for Spark Nightly repo for version ~ $sv
-    |**************************************************************
-    |""".stripMargin)
-    import scala.io.Source.fromURL
-    val mainPage = "https://repository.apache.org/content/repositories/"
-    val repos = fromURL(mainPage).mkString
-    val c = repos.split("\n").toList.filter(!_.contains("<link")).mkString
-    val r = scala.xml.parsing.XhtmlParser(scala.io.Source.fromString(c))
-    val as = r \\ "a"
-    val sparks:List[Option[String]] = as.filter(_.toString.contains("orgapachespark")).map(_.attribute("href").map(_.head.text)).toList
-    val sparkRepos = sparks.collect { case Some(l) =>
-      val id = l.reverse.tail.takeWhile(_.isDigit).reverse.toInt
-      val u = l + "org/apache/spark/spark-core_2.10/"
-      val repo = fromURL(u).mkString
-      val c = repo.split("\n").toList.filter(!_.contains("<link")).mkString
-      val r = scala.xml.parsing.XhtmlParser(scala.io.Source.fromString(c))
-      val v = (r \\ "table" \\ "a").map(_.text).filter(_ != "Parent Directory").head.replace("/", "")
-      (l, id, v)
-    }
-    .groupBy(_._3).mapValues(_.sortBy(_._2).last._1)
-    .map{ case (v, url) => (v == sv, v, url) }
-    println("======================================================================== ")
-    println("Found these repos")
-    println(sparkRepos.map{case (c, v, url) => s"${if(c) "[x]" else "[ ]" } $v: $url"}.mkString("\n"))
-
-    sparkRepos.filter(_._1).map{ case (_, v, url) => ("spark " + v) at url }
-
-  case (None, false, _) => Nil
-})
+  "softprops-maven" at "http://dl.bintray.com/content/softprops/maven",
+  //spark cutting edge
+  "spark 1.5.0-rc2" at "https://repository.apache.org/content/repositories/orgapachespark-1141"
+)
 
 EclipseKeys.skipParents in ThisBuild := false
 
@@ -271,6 +229,7 @@ lazy val common = Project(id = "common", base = file("modules/common"))
     buildInfoPackage := "notebook"
   )
 
+
 lazy val spark = Project(id = "spark", base = file("modules/spark"))
   .dependsOn(common, subprocess, observable)
   .settings(
@@ -284,33 +243,12 @@ lazy val spark = Project(id = "spark", base = file("modules/spark"))
       jlineDef.value._1 % "jline" % jlineDef.value._2,
       "org.scala-lang" % "scala-compiler" % scalaVersion.value
     ),
-    unmanagedSourceDirectories in Compile += {
-      implicit val versionCompare = Ordering.apply[(Int, Int, Int)]
-      def folder(v:String, sv:String) = {
-          val tsv = sv match { case extractVs(v,m,p) => (v.toInt,m.toInt,p.toInt) }
-
-          val s = (sourceDirectory in Compile).value / ("scala_" + v)
-          val f =  s / ("spark-" + sv)
-          if (f.exists) {
-            f
-          } else {
-            val lastSparkVersion = s.listFiles.map(_.getName.drop("spark-".size))
-                                              .filter(!_.contains("last"))
-                                              .map( _ match { case extractVs(v,m,p) => (v.toInt,m.toInt,p.toInt) })
-                                              .sorted.last
-            if (versionCompare.lt(lastSparkVersion, tsv)) {
-              s / "spark-last"
-            } else {
-              s / ("spark-" + lastSparkVersion._1 + "." + lastSparkVersion._2 + "." + lastSparkVersion._3)
-            }
-          }
-      }
-      (scalaBinaryVersion.value, sparkVersion.value.takeWhile(_ != '-')) match {
-        case (v, sv) if v startsWith "2.10" => folder("2.10", sv)
-        case (v, sv) if v startsWith "2.11" => folder("2.11", sv)
+    unmanagedSourceDirectories in Compile +=
+      (sourceDirectory in Compile).value / ("scala_" + ((scalaBinaryVersion.value, sparkVersion.value.takeWhile(_ != '-')) match {
+        case (v, sv) if v startsWith "2.10" => "2.10" + "/spark-" + sv
+        case (v, sv) if v startsWith "2.11" => "2.11" + "/spark-" + sv
         case (v, sv) => throw new IllegalArgumentException("Bad scala version: " + v)
-      }
-    }
+      }))
   )
   .settings(sharedSettings: _*)
   .settings(sparkSettings: _*)

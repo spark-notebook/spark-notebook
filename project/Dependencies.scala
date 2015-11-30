@@ -24,17 +24,15 @@ object Dependencies {
   val akkaRemote = akkaGroup %% "akka-remote" % akkaVersion
   val akkaSlf4j = akkaGroup %% "akka-slf4j" % akkaVersion
 
-  val scala_2_1X = "2\\.1([0-9])\\.[0-9]+.*".r
-  val spark_1_X = "1\\.([0-9]+)\\.([0-9]+).*".r
+  val scala_2_1X = "2\\.1([0-9])\\.[0-9]+".r
+  val spark_1_X = "1\\.([0-9]+)\\.([0-9]+)".r
   val defaultSparkVersion = sys.props.getOrElse("spark.version", "1.5.1")
   val defaultScalaVersion = sys.props.getOrElse("scala.version", "2.10.4") match {
     case x@scala_2_1X("0") => x
     case x@scala_2_1X("1") => defaultSparkVersion match {
       case spark_1_X("4", "0") => x
       case spark_1_X("4", _) => "2.11.6"
-      case spark_1_X("5", x) if x.toInt < 2 => "2.11.6"
-      case spark_1_X("5", _) => "2.11.7"
-      case spark_1_X("6", _) => "2.11.7"
+      case spark_1_X("5", _) => "2.11.6"
       case spark_1_X(_, _) => x
     }
   }
@@ -76,26 +74,14 @@ object Dependencies {
       Nil
     }
 
-  val extractVs = "[a-zA-Z]*(\\d+)\\.(\\d+)\\.(\\d+).*".r
   def sparkHive(v: String) = "org.apache.spark" %% "spark-hive" % v excludeAll(
     ExclusionRule("org.apache.hadoop"),
     ExclusionRule("org.apache.ivy", "ivy"),
     ExclusionRule("javax.servlet", "servlet-api"),
-    ExclusionRule("org.mortbay.jetty", "servlet-api")
-  ) excludeAll(parquetList:_*) excludeAll(
-    {
-      val sparkVersion = defaultSparkVersion match { case extractVs(v, m, p) =>  (v.toInt, m.toInt, p.toInt)}
-      val hadoopVersion = defaultHadoopVersion match { case extractVs(v, m, p) => (v.toInt, m.toInt, p.toInt)}
-      import scala.math.Ordering.Implicits._
-      if (sparkVersion >= (1, 5, 2) && hadoopVersion >= (2, 6, 0)) {
-        Nil
-      } else {
-        List(
-          ExclusionRule("com.twitter", "parquet-hadoop-bundle")
-        )
-      }
-    }:_*
-  )
+    ExclusionRule("org.mortbay.jetty", "servlet-api"),
+    // P.S. Need to comment this out for spark 1.5.2 work with Hive+parquet in CDH 5.4.4+ (hadoop 2.6.0)    
+    ExclusionRule("com.twitter", "parquet-hadoop-bundle")
+  ) excludeAll(parquetList:_*)
 
   def sparkRepl(
     v: String) = "org.apache.spark" %% "spark-repl" % v excludeAll ExclusionRule("org.apache.hadoop")
