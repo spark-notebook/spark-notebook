@@ -114,7 +114,8 @@ object Shared {
 
   lazy val tachyonSettings: Seq[Def.Setting[_]] = {
     def tachyonVersion(sv: String) =
-      sv.takeWhile(_ != '-' /*get rid of -SNAPSHOT, -RC or whatever*/)
+      sv.dropWhile(!_.isDigit) /*get rid of the v in v1.6.0 for instance */
+        .takeWhile(_ != '-' /*get rid of -SNAPSHOT, -RC or whatever*/)
         .split("\\.")
         .toList
         .map(_.toInt) match {
