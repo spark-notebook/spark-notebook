@@ -32,18 +32,7 @@
     },
     "cell_type" : "code",
     "source" : "import org.apache.spark._\nimport org.apache.spark.SparkContext._\nimport org.apache.spark.rdd._",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "import org.apache.spark._\nimport org.apache.spark.SparkContext._\nimport org.apache.spark.rdd._\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 1
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -64,18 +53,7 @@
     },
     "cell_type" : "code",
     "source" : "val dta:RDD[Int] = sparkContext.textFile(\"/var/log/syslog\")\n                               .map(_.size)\n                               .distinct",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "dta: org.apache.spark.rdd.RDD[Int] = MapPartitionsRDD[5] at distinct at <console>:58\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "MapPartitionsRDD[5] at distinct at &lt;console&gt;:58"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 2
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -100,18 +78,7 @@
     },
     "cell_type" : "code",
     "source" : "val rdd1:RDD[(Int, Iterable[Int])] = dta.groupBy(_ % 10)",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "rdd1: org.apache.spark.rdd.RDD[(Int, Iterable[Int])] = ShuffledRDD[7] at groupBy at <console>:58\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "ShuffledRDD[7] at groupBy at &lt;console&gt;:58"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 3
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -124,18 +91,7 @@
     },
     "cell_type" : "code",
     "source" : "val rdd2 = dta.map(_ + 1)\n              .filter(_ % 2 == 0)\n              .map(x => (x%10, x*x))",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "rdd2: org.apache.spark.rdd.RDD[(Int, Int)] = MapPartitionsRDD[10] at map at <console>:60\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "MapPartitionsRDD[10] at map at &lt;console&gt;:60"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 4
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -152,18 +108,7 @@
     },
     "cell_type" : "code",
     "source" : "val joined = rdd1.join(rdd2)",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "joined: org.apache.spark.rdd.RDD[(Int, (Iterable[Int], Int))] = MapPartitionsRDD[13] at join at <console>:62\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "MapPartitionsRDD[13] at join at &lt;console&gt;:62"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 5
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -184,18 +129,7 @@
     },
     "cell_type" : "code",
     "source" : "joined.take(10).toList.mkString(\"\\n\")",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res2: String = \n(4,(CompactBuffer(104, 154, 314, 74, 284, 264, 94),23716))\n(4,(CompactBuffer(104, 154, 314, 74, 284, 264, 94),59536))\n(4,(CompactBuffer(104, 154, 314, 74, 284, 264, 94),5476))\n(4,(CompactBuffer(104, 154, 314, 74, 284, 264, 94),8836))\n(4,(CompactBuffer(104, 154, 314, 74, 284, 264, 94),30276))\n(4,(CompactBuffer(104, 154, 314, 74, 284, 264, 94),41616))\n(4,(CompactBuffer(104, 154, 314, 74, 284, 264, 94),10816))\n(0,(CompactBuffer(160, 230, 280, 180, 300, 80, 310, 240, 170, 220, 270, 250, 140, 70),25600))\n(0,(CompactBuffer(160, 230, 280, 180, 300, 80, 310, 240, 170, 220, 270, 250, 140, 70),6400))\n(0,(CompactBuffer(160, 230, 280, 180, 300, 80, 310, 240, 170, 220, 270, 250, 140, 70),3600))\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "(4,(CompactBuffer(104, 154, 314, 74, 284, 264, 94),23716))\n(4,(CompactBuffer(104, 154, 314, 74, 284, 264, 94),59536))\n(4,(CompactBuffer(104, 154, 314, 74, 284, 264, 94),5476))\n(4,(CompactBuffer(104, 154, 314, 74, 284, 264, 94),8836))\n(4,(CompactBuffer(104, 154, 314, 74, 284, 264, 94),30276))\n(4,(CompactBuffer(104, 154, 314, 74, 284, 264, 94),41616))\n(4,(CompactBuffer(104, 154, 314, 74, 284, 264, 94),10816))\n(0,(CompactBuffer(160, 230, 280, 180, 300, 80, 310, 240, 170, 220, 270, 250, 140, 70),25600))\n(0,(CompactBuffer(160, 230, 280, 180, 300, 80, 310, 240, 170, 220, 270, 250, 140, 70),6400))\n(0,(CompactBuffer(160, 230, 280, 180, 300, 80, 310, 240, 170, 220, 270, 250, 140, 70),3600))"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 6
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -220,18 +154,7 @@
     },
     "cell_type" : "code",
     "source" : "joined.toDebugString",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res3: String = \n(2) MapPartitionsRDD[13] at join at <console>:62 []\n |  MapPartitionsRDD[12] at join at <console>:62 []\n |  CoGroupedRDD[11] at join at <console>:62 []\n |  ShuffledRDD[7] at groupBy at <console>:58 []\n +-(2) MapPartitionsRDD[6] at groupBy at <console>:58 []\n    |  MapPartitionsRDD[5] at distinct at <console>:58 []\n    |  ShuffledRDD[4] at distinct at <console>:58 []\n    +-(2) MapPartitionsRDD[3] at distinct at <console>:58 []\n       |  MapPartitionsRDD[2] at map at <console>:57 []\n       |  MapPartitionsRDD[1] at textFile at <console>:56 []\n       |  /var/log/syslog HadoopRDD[0] at textFile at <console>:56 []\n +-(2) MapPartitionsRDD[10] at map at <console>:60 []\n    |  MapPartitionsRDD[9] at filter at <console>:59 []\n    |  MapPartitionsRDD[8] at map at <console>:58 []\n ..."
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "(2) MapPartitionsRDD[13] at join at &lt;console&gt;:62 []\n |  MapPartitionsRDD[12] at join at &lt;console&gt;:62 []\n |  CoGroupedRDD[11] at join at &lt;console&gt;:62 []\n |  ShuffledRDD[7] at groupBy at &lt;console&gt;:58 []\n +-(2) MapPartitionsRDD[6] at groupBy at &lt;console&gt;:58 []\n    |  MapPartitionsRDD[5] at distinct at &lt;console&gt;:58 []\n    |  ShuffledRDD[4] at distinct at &lt;console&gt;:58 []\n    +-(2) MapPartitionsRDD[3] at distinct at &lt;console&gt;:58 []\n       |  MapPartitionsRDD[2] at map at &lt;console&gt;:57 []\n       |  MapPartitionsRDD[1] at textFile at &lt;console&gt;:56 []\n       |  /var/log/syslog HadoopRDD[0] at textFile at &lt;console&gt;:56 []\n +-(2) MapPartitionsRDD[10] at map at &lt;console&gt;:60 []\n    |  MapPartitionsRDD[9] at filter at &lt;console&gt;:59 []\n    |  MapPartitionsRDD[8] at map at &lt;console&gt;:58 []\n    |  MapPartitionsRDD[5] at distinct at &lt;console&gt;:58 []\n    |  ShuffledRDD[4] at distinct at &lt;console&gt;:58 []\n    +-(2) MapPartitionsRDD[3] at distinct at &lt;console&gt;:58 []\n       |  MapPartitionsRDD[2] at map at &lt;console&gt;:57 []\n       |  MapPartitionsRDD[1] at textFile at &lt;console&gt;:56 []\n       |  /var/log/syslog HadoopRDD[0] at textFile at &lt;console&gt;:56 []"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 7
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -277,18 +200,7 @@
     },
     "cell_type" : "code",
     "source" : "import sys.process._\n\"mkdir -p /tmp/data\"!!\n\nif (!new java.io.File(\"/tmp/data/closes.csv\").exists)\n  \"wget https://s3-eu-west-1.amazonaws.com/spark-notebook-data/closes.csv -O /tmp/data/closes.csv\"!!",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "warning: there were 2 feature warning(s); re-run with -feature for details\nimport sys.process._\nres4: Any = ()\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "()"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 8
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -297,18 +209,7 @@
     },
     "cell_type" : "code",
     "source" : ":sh du -h /tmp/data/closes.csv",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "warning: there were 1 feature warning(s); re-run with -feature for details\nimport sys.process._\nres6: String = \n\"174M\t/tmp/data/closes.csv\n\"\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/plain" : "174M\t/tmp/data/closes.csv\n"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 10
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,

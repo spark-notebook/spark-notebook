@@ -24,7 +24,8 @@ define([
     'notebook/js/celltoolbarpresets/default',
     'notebook/js/celltoolbarpresets/rawcell',
     'notebook/js/celltoolbarpresets/slideshow',
-    'notebook/js/scrollmanager'
+    'notebook/js/celltoolbarpresets/presentation',
+    'notebook/js/scrollmanager',
 ], function (
     IPython,
     $,
@@ -45,6 +46,7 @@ define([
     default_celltoolbar,
     rawcell_celltoolbar,
     slideshow_celltoolbar,
+    presentation_celltoolbar,
     scrollmanager
     ) {
     "use strict";
@@ -165,8 +167,11 @@ define([
 
         // Trigger cell toolbar registration.
         default_celltoolbar.register(this);
-        rawcell_celltoolbar.register(this);
-        slideshow_celltoolbar.register(this);
+        presentation_celltoolbar.register(this);
+
+        // these are not used in spark-notebook
+        // rawcell_celltoolbar.register(this);
+        // slideshow_celltoolbar.register(this);
 
         // prevent assign to miss-typed properties.
         Object.seal(this);

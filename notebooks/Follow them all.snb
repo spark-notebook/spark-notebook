@@ -42,18 +42,7 @@
     },
     "cell_type" : "code",
     "source" : "val rdd = sparkContext.parallelize(1 to 10000)",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "rdd: org.apache.spark.rdd.RDD[Int] = ParallelCollectionRDD[0] at parallelize at <console>:51\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "ParallelCollectionRDD[0] at parallelize at &lt;console&gt;:51"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 1
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -66,18 +55,7 @@
     },
     "cell_type" : "code",
     "source" : "Future{ rdd.mapPartitions{ x => Thread.sleep(scala.util.Random.nextInt(10000)); x}.count }",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res2: scala.concurrent.Future[Long] = scala.concurrent.impl.Promise$DefaultPromise@19597744\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "scala.concurrent.impl.Promise$DefaultPromise@19597744"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 2
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -86,18 +64,7 @@
     },
     "cell_type" : "code",
     "source" : "Future{ \n  rdd.mapPartitions{ x => Thread.sleep(scala.util.Random.nextInt(10000)); x}\n   .count\n}",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res3: scala.concurrent.Future[Long] = scala.concurrent.impl.Promise$DefaultPromise@294e621b\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "scala.concurrent.impl.Promise$DefaultPromise@294e621b"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 3
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -106,18 +73,7 @@
     },
     "cell_type" : "code",
     "source" : "Future{ \n  rdd.repartition(12).mapPartitions{ x => Thread.sleep(scala.util.Random.nextInt(10000)); x}\n   .count\n}",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res5: scala.concurrent.Future[Long] = scala.concurrent.impl.Promise$DefaultPromise@12268f99\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "scala.concurrent.impl.Promise$DefaultPromise@12268f99"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 5
-    } ]
+    "outputs" : [ ]
   } ],
   "nbformat" : 4
 }

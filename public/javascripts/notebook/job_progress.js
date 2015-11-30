@@ -10,91 +10,59 @@ define([
     require(['observable'], function(O) {
       var progress = O.makeObservableArray("jobsProgress");
 
+      // move progress node to body, to enable absolute positioning
       var pies = d3.select("#progress-pies")
       $(pies.node()).appendTo("body");
-      var charts = [];
-      var completed = [];
-      progress.subscribe(function(ps) {
-        console.log("Progress:", ps);
 
-        var alreadyCompleted = _.intersection(completed, _.pluck(ps, "id"));
-        ps = _.filter(ps, function(p) { return !_.contains(alreadyCompleted, p.id); });
+      // setup the progress chart
+      var svg = dimple.newSvg("#progress-pies", 100, 400);
+      var myChart = new dimple.chart(svg, []);
+      var xAxis = myChart.addPctAxis("x", "completed");
+      xAxis.title = "% completed";
+      xAxis.ticks = 2;
+      xAxis.showGridlines = false;
+      myChart.assignColor("Done", "#3a3", "#3a3", 1);
+      myChart.assignColor("Pending", "#a33", "#a33", 1);
+      var yAxis = myChart.addCategoryAxis("y", ["id", "name", "time"]);
+      yAxis.hidden = true;
+      yAxis.addOrderRule("id");
+      myChart.addSeries("status", dimple.plot.bar);
 
-        _.each(ps, function(p) { if (p.completed == 100) {completed.push(p.id); }});
+      // process the progresses and update the chart
+      var isCompleted = function(p){ return p.completed == 100 };
+      var sum = function(items){ return _.reduce(items, function(memo, p){ return memo + p} , 0) };
 
-        var w = 180;
-        var h = w*0.75;
+      var olderProgresses = [];
+      progress.subscribe(function(jobsProgress) {
+        // redraw only if changed
+        var totalCompletions = function(ps) { return sum(_.pluck(ps, 'completed')); };
+        if (totalCompletions(olderProgresses) == totalCompletions(jobsProgress)) {
+          return;
+        }
+        olderProgresses = jobsProgress;
 
-        var svgs = pies.selectAll("svg")
-                        .data(ps, function(p){ return p.id; });
+        // collapse completed jobs into one bar
+        var nCompletedJobs = _.filter(jobsProgress, isCompleted).length;
+        var completedJobsInfo = {
+          status: "Done",
+          completed: 100,
+          name: nCompletedJobs + " stages",
+          time: "N/A",
+          id: 0
+        };
 
-        var ex = svgs.exit();
-        ex.each(function(p) {
-          charts = _.reject(charts, function(c) { return c.id == p.id; });
-        });
-        ex.remove();
+        var runningJobs = _.map(_.reject(jobsProgress, isCompleted));
+        var runningJobsInfo = _.flatten(_.map(runningJobs, function(p){
+          p.status = "Done";
+          // part of stage that's still pending
+          pPending = _.clone(p);
+          pPending.status = "Pending";
+          pPending.completed = 100 - p.completed;
+          return [p, pPending]
+        }), true);
 
-        var gsvg = svgs.enter()
-                        .append("svg:svg")
-                          .attr("width", w+"px")
-                          .attr("height", h+"px")
-                          .attr("name", function(p) { return p.name; })
-                        .append("g")
-        gsvg.append("title")
-            .text(function(p) { return p.name; })
-        gsvg
-            .each(function(p) {
-              d3.select(this)
-                .append("text")
-                  .attr("x", w*(250/600))
-                  .attr("y", h*(25/400))
-                  .style("text-anchor", "middle")
-                  .style("font-family", "sans-serif")
-                  .style("font-weight", "bold")
-                  .text((p.name.length > 15)?p.name.substring(0, 15)+" [...]":p.name);
-              d3.select(this)
-                .append("text")
-                  .attr("x", w*(250/600))
-                  .attr("y", h*(50/400))
-                  .style("text-anchor", "middle")
-                  .style("font-family", "sans-serif")
-                  .style("font-weight", "bold")
-                  .attr("class", "extra")
-                  .text(p.id + " [" + p.time + "]");
-
-              var data = [ {"cl": "completed", "pc" : 0 }, {"cl":"pending", "pc": 0 } ];
-              var chart = new dimple.chart(
-                d3.select(this.parentNode /*get svg instead of g*/),
-                data
-              );
-              chart.setBounds(w*(10/600), h*(50/400), w *(380/600), h*(360/400));
-
-              chart.addMeasureAxis("p", "pc");
-              chart.addSeries("cl", dimple.plot.pie);
-              chart.addLegend(w*(400 /600), h*(50/400), w*(60/600), h*(350/400), "left");
-              charts.push({id: p.id, chart: chart});
-            });
-
-        _.each(ps, function(p) {
-          var chart = _.findWhere(charts, {id: p.id});
-          if (chart) {
-            d3.selectAll(chart.chart.svg[0])
-                .select("text.extra")
-                .attr("x", w*(250/600))
-                .attr("y", h*(50/400))
-                .style("text-anchor", "middle")
-                .style("font-family", "sans-serif")
-                .style("font-weight", "bold")
-                .text(p.id + " [" + p.time + "]");
-
-            var data = [ {"cl": "completed", "pc" : p.completed }, {"cl":"pending", "pc": (100-p.completed) } ];
-            chart.chart.data = data;
-            chart.chart.draw(1000);
-          } else {
-            console.warn("Progress: Pie chart not found", p);
-          }
-        });
-        console.log("charts", charts);
+        myChart.data = _.flatten([runningJobsInfo, completedJobsInfo]);
+        myChart.draw();
       });
     });
   });

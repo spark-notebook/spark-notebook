@@ -145,3 +145,16 @@ require([
 });
 
 */
+
+require([
+    'base/js/namespace',
+    'base/js/events'
+], function (IPython, events) {
+    events.on("app_initialized.NotebookApp", function () {
+        var isReportMode = $("body[data-presentation='report']").length > 0;
+        if (isReportMode) {
+            // make all cells fluid, and use full width
+            $("#notebook-container").removeClass("container").addClass("container-fluid");
+        }
+    });
+});

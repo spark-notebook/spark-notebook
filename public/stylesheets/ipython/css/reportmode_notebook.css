@@ -1,0 +1,17 @@
+/* Custom CSS for Report mode */
+
+/* hide the header (log, menu etc), footer */
+#header, #header *, footer, .end_space { visibility: hidden !important; display: none !important; }
+
+#notebook, #notebook-container { padding: 0 !important; }
+
+/* hide stdout, and progress bar */
+.output_prompt, .output_stdout, #progress-pies { visibility: hidden !important; display: none !important; }
+
+/* hide inputs (code) */
+.input, .input_prompt { visibility: hidden !important; display: none !important; }
+
+/* make the selected cell look the same as others */
+.cell.selected { border: none; }
+
+div:empty { display: none !important; }

@@ -13,6 +13,7 @@
     "customRepos" : null,
     "customDeps" : null,
     "customImports" : null,
+    "customArgs" : null,
     "customSparkConf" : null
   },
   "cells" : [ {

@@ -178,6 +178,7 @@ Email: [spark-notebook-user@googlegroups.com](mailto:spark-notebook-user@googleg
 | Amino | ![Amino](https://amino.com/static/img/amino-logo-300x75.png) | [website](http://www.Amino.com)| A new way to get the facts about your health care choices. |
 | Vinted | ![Vinted](http://engineering.vinted.com/brandbook/images/logos/vinted.svg) | [website](http://www.vinted.com/)| Online marketplace and a social network focused on young women’s lifestyle. |
 | Vingle | ![Vingle](https://s3.amazonaws.com/vingle-assets/Vingle_Wordmark_Red.png) | [website](https://www.vingle.net)| Vingle is the community where you can meet someone like you. |
+| 47 Degrees | ![47 Degrees](http://www.47deg.com/assets/logo_148x148.png) | [website](http://www.47deg.com)| 47 Degrees is a global consulting firm and certified Typesafe & Databricks Partner specializing in Scala & Spark. |
 
 # Launch
 
@@ -641,9 +642,9 @@ There is not so much to do here besides following the instructions to install th
 #### Install
 It requires the DCOS CLI interface installed and configured to access your new cluster.
 
-So you need to add the Mesosphere official multiverse reporsitory (until some work is done to have it in the universe one!):
+So you need to add the [Mesosphere official multiverse reporsitory](https://github.com/mesosphere/multiverse) (until some work is done to have it in the universe one!) :
 ```
-dcos config prepend package.sources https://github.com/mesosphere/multiverse/archive/master.zip
+dcos config prepend package.sources https://github.com/mesosphere/multiverse/archive/version-1.x.zip
 dcos package update --validate
 ```
 
