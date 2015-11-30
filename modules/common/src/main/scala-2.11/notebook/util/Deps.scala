@@ -120,19 +120,24 @@ object Deps extends java.io.Serializable {
   private val PATTERN_MODULEID_2 = """^([^%\s]+)\s*%(%?)\s*([^%\s]+)\s*%\s*([^%\s]+)\s*%\s*([^%\s]+)$""".r
   private val PATTERN_COORDINATE_1 = """^([^:/]+)[:/]([^:]+):([^:]+)$""".r
 
+  def includeSparkVersion(v:String) = v match {
+    case "_" => notebook.BuildInfo.xSparkVersion
+    case x   => x
+  }
+
   def parseInclude(s:String):Option[ArtifactMD] = {
     s.headOption.filter(_ != '-').map(_ => s.dropWhile(_=='+').trim).flatMap { line =>
       line.replaceAll("\"", "").trim match {
         case PATTERN_MODULEID_1(g, "%", a, v) =>
-          Some(ArtifactMD(g, a+"_2.11", v))
+          Some(ArtifactMD(g, a+"_2.11", includeSparkVersion(v)))
         case PATTERN_MODULEID_1(g, "", a, v) =>
-          Some(ArtifactMD(g, a, v))
+          Some(ArtifactMD(g, a, includeSparkVersion(v)))
         case PATTERN_MODULEID_2(g, "%", a, v, p) =>
-          Some(ArtifactMD(g, a+"_2.11", v, Some(p)))
+          Some(ArtifactMD(g, a+"_2.11", includeSparkVersion(v), Some(p)))
         case PATTERN_MODULEID_2(g, "", a, v, p) =>
-          Some(ArtifactMD(g, a, v, Some(p)))
+          Some(ArtifactMD(g, a, includeSparkVersion(v), Some(p)))
         case PATTERN_COORDINATE_1(g, a, v) =>
-          Some(g % a % v % "compile")
+          Some(ArtifactMD(g, a, includeSparkVersion(v)))
         case _ =>
           None
       }

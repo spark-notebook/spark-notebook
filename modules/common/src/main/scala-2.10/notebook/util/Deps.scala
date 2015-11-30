@@ -9,19 +9,24 @@ object Deps extends java.io.Serializable {
   private val PATTERN_MODULEID_2 = """^([^%\s]+)\s*%(%?)\s*([^%\s]+)\s*%\s*([^%\s]+)\s*%\s*([^%\s]+)$""".r
   private val PATTERN_COORDINATE_1 = """^([^:/]+)[:/]([^:]+):([^:]+)$""".r
 
+  def includeSparkVersion(v:String) = v match {
+    case "_" => notebook.BuildInfo.xSparkVersion
+    case x   => x
+  }
+
   def parseInclude(s: String): Option[ModuleID] = {
     s.headOption.filter(_ != '-').map(_ => s.dropWhile(_ == '+').trim).flatMap { line =>
       line.replaceAll("\"", "").trim match {
         case PATTERN_MODULEID_1(g, "%", a, v) =>
-          Some(g %% a % v % "compile")
+          Some(g %% a % includeSparkVersion(v) % "compile")
         case PATTERN_MODULEID_1(g, "", a, v) =>
-          Some(g % a % v % "compile")
+          Some(g % a % includeSparkVersion(v) % "compile")
         case PATTERN_MODULEID_2(g, "%", a, v, p) =>
-          Some(g %% a % v % p)
+          Some(g %% a % includeSparkVersion(v) % p)
         case PATTERN_MODULEID_2(g, "", a, v, p) =>
-          Some(g % a % v % p)
+          Some(g % a % includeSparkVersion(v) % p)
         case PATTERN_COORDINATE_1(g, a, v) =>
-          Some(g % a % v % "compile")
+          Some(g % a % includeSparkVersion(v) % "compile")
         case _ =>
           None
       }
