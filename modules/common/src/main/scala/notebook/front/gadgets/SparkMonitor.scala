@@ -10,14 +10,43 @@ import org.apache.spark.scheduler.StageInfo
 
 import play.api.libs.json._
 
+import notebook.util.Logging
 
-class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) {
+class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends Logging {
 
   val connection = notebook.JSBus.createConnection("jobsProgress")
 
   val listener = new org.apache.spark.ui.jobs.JobProgressListener(sparkContext.getConf)
 
   sparkContext.listenerBus.addListener(listener)
+
+  /**
+    * Identify link to Spark UI. Supports `yarn-*` modes so far.
+    */
+  def sparkUiLink: Option[String] = sparkContext.master match {
+    case m if m.startsWith("yarn") =>
+      sys.env.get("YARN_JOB_PROXY_URL")
+        .map(yarnProxyURL => s"${yarnProxyURL}/${sparkContext.applicationId}")
+    case _ =>
+      try {
+        val u = sparkContext.getClass.getMethod("ui")
+        u.setAccessible(true)
+        val ui = u.invoke(sparkContext).asInstanceOf[Option[Any]]
+        val appUIAddress:Option[String] = ui.map{ u =>
+          val a = u.getClass.getMethod("appUIAddress")
+          a.setAccessible(true)
+          val appUIAddress = a.invoke(u)
+          appUIAddress.toString
+        }
+        appUIAddress
+      } catch {
+        // reflective methods above may throw: SecurityException | ReflectiveOperationException | IllegalArgumentException
+        // these are all RuntimeException, so at least catch this instead of catching any Exception
+        case e: RuntimeException =>
+          logWarn("Unable to determine URL for sparkUI", e)
+          None
+      }
+  }
 
   def fetchMetrics = {
     listener.synchronized {
@@ -81,7 +110,11 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) {
         while(true) {
           Thread.sleep(1000)
           val m = fetchMetrics
-          connection <-- notebook.Connection.just(JsArray(m))
+          connection <-- notebook.Connection.just(
+            JsObject(Seq(
+              "jobsStatus" -> JsArray(m),
+              "sparkUi" -> JsString(sparkUiLink.getOrElse(""))
+            )))
         }
     }
   }
