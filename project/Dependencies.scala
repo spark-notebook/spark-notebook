@@ -87,7 +87,7 @@ object Dependencies {
       val sparkVersion = defaultSparkVersion match { case extractVs(v, m, p) =>  (v.toInt, m.toInt, p.toInt)}
       val hadoopVersion = defaultHadoopVersion match { case extractVs(v, m, p) => (v.toInt, m.toInt, p.toInt)}
       import scala.math.Ordering.Implicits._
-      if (sparkVersion >= (1, 5, 2) && hadoopVersion >= (2, 6, 0)) {
+      if (sparkVersion >= (1, 5, 2)) {
         Nil
       } else {
         List(
