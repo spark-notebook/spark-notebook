@@ -112,23 +112,32 @@ object ArtifactSelector {
 }
 
 object Deps extends java.io.Serializable {
-   val logger = org.slf4j.LoggerFactory.getLogger("Aether downloads")
+  val logger = org.slf4j.LoggerFactory.getLogger("Aether downloads")
 
-   type ArtifactPredicate = PartialFunction[(ArtifactMD, Set[ArtifactMD]), Boolean]
+  type ArtifactPredicate = PartialFunction[(ArtifactMD, Set[ArtifactMD]), Boolean]
 
-  private val PATTERN_MODULEID_1 = """^([^%\s]+)\s*%\s*([^%\s]+)\s*%\s*([^%\s]+)$""".r
-  private val PATTERN_MODULEID_2 = """^([^%\s]+)\s*%\s*([^%\s]+)\s*%\s*([^%\s]+)\s*%\s*([^%\s]+)$""".r
+  private val PATTERN_MODULEID_1 = """^([^%\s]+)\s*%(%?)\s*([^%\s]+)\s*%\s*([^%\s]+)$""".r
+  private val PATTERN_MODULEID_2 = """^([^%\s]+)\s*%(%?)\s*([^%\s]+)\s*%\s*([^%\s]+)\s*%\s*([^%\s]+)$""".r
   private val PATTERN_COORDINATE_1 = """^([^:/]+)[:/]([^:]+):([^:]+)$""".r
+
+  def includeSparkVersion(v:String) = v match {
+    case "_" => notebook.BuildInfo.xSparkVersion
+    case x   => x
+  }
 
   def parseInclude(s:String):Option[ArtifactMD] = {
     s.headOption.filter(_ != '-').map(_ => s.dropWhile(_=='+').trim).flatMap { line =>
       line.replaceAll("\"", "").trim match {
-        case PATTERN_MODULEID_1(g, a, v) =>
-          Some(ArtifactMD(g, a, v))
-        case PATTERN_MODULEID_2(g, a, v, p) =>
-          Some(ArtifactMD(g, a, v, Some(p)))
+        case PATTERN_MODULEID_1(g, "%", a, v) =>
+          Some(ArtifactMD(g, a+"_2.11", includeSparkVersion(v)))
+        case PATTERN_MODULEID_1(g, "", a, v) =>
+          Some(ArtifactMD(g, a, includeSparkVersion(v)))
+        case PATTERN_MODULEID_2(g, "%", a, v, p) =>
+          Some(ArtifactMD(g, a+"_2.11", includeSparkVersion(v), Some(p)))
+        case PATTERN_MODULEID_2(g, "", a, v, p) =>
+          Some(ArtifactMD(g, a, includeSparkVersion(v), Some(p)))
         case PATTERN_COORDINATE_1(g, a, v) =>
-          Some(ArtifactMD(g, a, v))
+          Some(ArtifactMD(g, a, includeSparkVersion(v)))
         case _ =>
           None
       }
@@ -143,8 +152,10 @@ object Deps extends java.io.Serializable {
   def parseExclude(s:String):Option[ArtifactSelector] = {
     s.headOption.filter(_ == '-').map(_ => s.dropWhile(_=='-').trim).flatMap { line =>
       line.replaceAll("\"", "") match {
-        case PATTERN_MODULEID_1(g, a, v) =>
+        case PATTERN_MODULEID_1(g, "", a, v) =>
           Some(ArtifactSelector(parsePartialExclude(g), parsePartialExclude(a), parsePartialExclude(v)))
+        case PATTERN_MODULEID_1(g, "%", a, v) =>
+          Some(ArtifactSelector(parsePartialExclude(g), Some(a+"_2.11"), parsePartialExclude(v)))
         case PATTERN_COORDINATE_1(g, a, v) =>
           Some(ArtifactSelector(parsePartialExclude(g), parsePartialExclude(a), parsePartialExclude(v)))
         case _ =>
