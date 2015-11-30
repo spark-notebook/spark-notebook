@@ -72,3 +72,7 @@ This will always be an empty file in IPython
 table.pivot-controls-hidden, .pivot-controls-hidden > tbody > tr, .pivot-controls-hidden > tbody > tr > td {
   border: none ! important;
 }
+.pvtUi td.pvtAxisContainer.pvtRows {
+  /* align selected dimensions on the top, so easier to control them when there are many rows in table */
+  vertical-align: top;
+}
