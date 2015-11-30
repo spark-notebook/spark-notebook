@@ -157,4 +157,12 @@ require([
             $("#notebook-container").removeClass("container").addClass("container-fluid");
         }
     });
+    events.on("kernel_ready.Kernel", function(){
+        // recompute the notebook if 'action=recompute_now' is in URL
+        var url = window.location.href;
+        if (url.indexOf("recompute_now") != -1) {
+            console.log("Now running all cells in notebook (recompute_now)");
+            IPython.notebook.execute_all_cells();
+        }
+    });
 });
