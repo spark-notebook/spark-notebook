@@ -327,7 +327,7 @@ package object widgets {
       if (currentMax >= toPoints.count(currentC)) {
         warnMax("")
       } else{
-        warnMax(" (showing "+currentMax + ")")
+        warnMax(" (Warning: randomly sampled "+currentMax + " entries)")
       }
       applyOn(currentC)
     }
@@ -340,7 +340,7 @@ package object widgets {
       if (currentMax >= toPoints.count(currentC)) {
         warnMax("")
       } else{
-        warnMax(" (showing "+currentMax + ")")
+        warnMax(" (Warning: randomly sampled "+currentMax + " entries)")
       }
       applyOn(currentC)
     }
@@ -349,7 +349,7 @@ package object widgets {
       currentC = newData
       currentPoints = toPoints(newData, currentMax)
       val d = currentPoints map mToSeq
-      nrow(toPoints.count(currentC)+ " points")
+      nrow(toPoints.count(currentC)+ " entries")
       this.apply(d)
       d
     }
@@ -358,7 +358,7 @@ package object widgets {
     def addAndApply(otherData:C) = apply {
       currentC = toPoints.append(currentC, otherData)
       currentPoints = toPoints(currentC, currentMax)
-      nrow(toPoints.count(currentC)+ " points")
+      nrow(toPoints.count(currentC)+ " entries")
       val d =  currentPoints map mToSeq
       this.apply(d)
       d
