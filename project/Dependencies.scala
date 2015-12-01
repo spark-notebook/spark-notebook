@@ -25,7 +25,7 @@ object Dependencies {
   val akkaSlf4j = akkaGroup %% "akka-slf4j" % akkaVersion
 
   val scala_2_1X = "2\\.1([0-9])\\.[0-9]+.*".r
-  val spark_1_X = "[a-zA-Z]1\\.([0-9]+)\\.([0-9]+).*".r
+  val spark_1_X = "[a-zA-Z]*1\\.([0-9]+)\\.([0-9]+).*".r
   val defaultSparkVersion = sys.props.getOrElse("spark.version", "1.5.1")
   val defaultScalaVersion = sys.props.getOrElse("scala.version", "2.10.4") match {
     case x@scala_2_1X("0") => x
