@@ -70,13 +70,16 @@ define([
       pivotOptions.onRefresh = refresh
       pivotOptions.rendererOptions = rendererOptions
 
+      p = $("<div>")
+      p.addClass("pivotChart").appendTo(container)
+
       plotThat = (data) =>
-        $(container).pivotUI(data, pivotOptions)
+        p.pivotUI(data, pivotOptions)
 
         toggleOptionsBtn = $("<a class='pvtUi-toggle-controls-btn'>show/hide options</a>")
         toggleOptionsBtn.click ->
-          $(container).find(".pvtUi").toggleClass("pivot-controls-hidden")
-        $(container).prepend(toggleOptionsBtn)
+          p.find(".pvtUi").toggleClass("pivot-controls-hidden")
+        p.prepend(toggleOptionsBtn)
         # collapse all pivotchart controls in report mode
         report_mode = $("body[data-presentation='report']").length > 0
         $(".pvtUi").addClass("pivot-controls-hidden") if report_mode
