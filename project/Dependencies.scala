@@ -8,7 +8,7 @@ object Dependencies {
       ExclusionRule("com.typesafe.akka"),
       ExclusionRule("com.google.guava")
       ),
-    "com.typesafe.play" %% "play-test" % "2.4.2" % "test" withSources() excludeAll(
+    "com.typesafe.play" %% "play-test" % "2.4.4" % "test" withSources() excludeAll(
       ExclusionRule("com.typesafe.akka"),
       ExclusionRule("com.google.guava")
       )

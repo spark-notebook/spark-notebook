@@ -133,7 +133,7 @@ object Application extends Controller {
         case (k, JsNumber(v))    => k → v.toString
         case (k, o@JsObject(v))  => k → o.toString
         case (k, JsString(v))    => k → v
-        case (k, v:JsUndefined)  => k → s"Undefined: ${v.error}"
+        case (k, v:JsValue)  => k → s"Undefined: ${v}"
       }
 
       val kernel = new Kernel(config.kernel.config.underlying,
@@ -318,8 +318,7 @@ object Application extends Controller {
     def findkey[T](x: JsValue, k: String)(init: Option[T])(implicit m: ClassTag[T]): Try[T] =
       (x \ k) match {
         case j: JsUndefined => Failure(new IllegalArgumentException("No " + k))
-        case JsNull => init.map(x => Success(x)).getOrElse(Failure(new IllegalStateException("Got JsNull ")))
-        case j: JsLookupResult if j.toOption.isEmpty => Success(init)
+        case j: JsLookupResult if j.toOption.isEmpty => init.map(x=>Success(x)).getOrElse(Failure(new IllegalStateException("Got JsNull ")))
         case o if m.runtimeClass == o.getClass => Success(o.asInstanceOf[T])
         case x => Failure(new IllegalArgumentException("Bad type: " + x))
       }

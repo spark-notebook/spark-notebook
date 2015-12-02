@@ -9,7 +9,7 @@ resolvers += Resolver.url("hmrc-sbt-plugin-releases",
   url("https://dl.bintray.com/hmrc/sbt-plugin-releases"))(Resolver.ivyStylePatterns)
 
 // Use the Play sbt plugin for Play projects
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.4.2")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.4.4")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-less" % "1.0.6")
 
