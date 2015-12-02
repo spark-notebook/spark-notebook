@@ -88,6 +88,7 @@ object Shared {
         sparkCore(sv),
         sparkYarn(sv),
         sparkSQL(sv),
+        "com.databricks" %% "spark-csv" % "1.3.0",
         hadoopClient(hv),
         jets3tVersion,
         commonsCodec
