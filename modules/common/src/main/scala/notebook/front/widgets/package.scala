@@ -506,6 +506,16 @@ package object widgets {
                                                   "width" → sizes._1, "height" → sizes._2)))
   }
 
+  case class CustomC3Chart[C:ToPoints:Sampler](originalData:C, chartOptions :String = "{}", override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {
+    def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
+
+    override val scripts = List(Script( "magic/customC3Chart",
+      Json.obj(
+        "js" → s"var chartOptions = $chartOptions;",
+        "headers" → headers,
+        "height" → sizes._2)))
+  }
+
   case class TableChart[C:ToPoints:Sampler](originalData:C, filterCol:Option[Seq[String]]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
       t.data.toSeq.filter{case (k, v) => filterCol.getOrElse(headers).contains(k)}
