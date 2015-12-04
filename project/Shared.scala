@@ -91,8 +91,7 @@ object Shared {
         hadoopClient(hv),
         jets3tVersion,
         commonsCodec
-      ) ++
-          (
+      ) ++ sparkCSV ++ (
             if (!v.startsWith("2.10")) {
               // in 2.11
               //Boot.scala → HttpServer → eclipse
