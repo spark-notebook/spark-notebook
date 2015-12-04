@@ -27,6 +27,7 @@ object Dependencies {
   val scala_2_1X = "2\\.1([0-9])\\.[0-9]+.*".r
   val spark_1_X = "[a-zA-Z]*1\\.([0-9]+)\\.([0-9]+).*".r
   val defaultSparkVersion = sys.props.getOrElse("spark.version", "1.5.1")
+  val sparkVersionTuple = defaultSparkVersion match { case extractVs(v, m, p) =>  (v.toInt, m.toInt, p.toInt)}
   val defaultScalaVersion = sys.props.getOrElse("scala.version", "2.10.4") match {
     case x@scala_2_1X("0") => x
     case x@scala_2_1X("1") => defaultSparkVersion match {
@@ -84,10 +85,8 @@ object Dependencies {
     ExclusionRule("org.mortbay.jetty", "servlet-api")
   ) excludeAll(parquetList:_*) excludeAll(
     {
-      val sparkVersion = defaultSparkVersion match { case extractVs(v, m, p) =>  (v.toInt, m.toInt, p.toInt)}
-      val hadoopVersion = defaultHadoopVersion match { case extractVs(v, m, p) => (v.toInt, m.toInt, p.toInt)}
       import scala.math.Ordering.Implicits._
-      if (sparkVersion >= (1, 5, 2)) {
+      if (sparkVersionTuple >= (1, 5, 2)) {
         Nil
       } else {
         List(
