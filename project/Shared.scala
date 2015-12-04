@@ -88,12 +88,10 @@ object Shared {
         sparkCore(sv),
         sparkYarn(sv),
         sparkSQL(sv),
-        "com.databricks" %% "spark-csv" % "1.3.0",
         hadoopClient(hv),
         jets3tVersion,
         commonsCodec
-      ) ++
-          (
+      ) ++ sparkCSV ++ (
             if (!v.startsWith("2.10")) {
               // in 2.11
               //Boot.scala → HttpServer → eclipse

@@ -103,6 +103,13 @@ object Dependencies {
     ExclusionRule("org.apache.hadoop")
   ) excludeAll(parquetList:_*)
 
+  def sparkCSV: Seq[ModuleID] = {
+    import scala.math.Ordering.Implicits._
+    if (sparkVersionTuple >= (1, 3, 0)) {
+      Seq("com.databricks" %% "spark-csv" % "1.3.0")
+    } else Nil
+  }
+
   def hadoopClient(v: String) = "org.apache.hadoop" % "hadoop-client" % v excludeAll(
     ExclusionRule("org.apache.commons", "commons-exec"),
     ExclusionRule("commons-codec", "commons-codec"),
