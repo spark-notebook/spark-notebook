@@ -13,7 +13,8 @@ trait PipeComponent[X <: PipeComponent[X]] {
   def name:String
   def tpe:String
   def parameters:Map[String, String]
-  def apply(a:Any):Any
+  def init(a:Any):Any
+  def next(a:Map[PipeComponent[_], Any]):Any
   def merge(j:JsValue):X
   def toJSON:JsValue = Json.obj(
     "name" → name,
@@ -26,19 +27,28 @@ trait PipeComponent[X <: PipeComponent[X]] {
 abstract class BasePipeComponent[X<:BasePipeComponent[X]] extends PipeComponent[X] {
 }
 
+abstract class LinkPipeComponent[X<:LinkPipeComponent[X]]() extends BasePipeComponent[X]() {
+  val tpe = "link"
+  def source:Option[String]
+  def target:Option[String]
+}
+
 abstract class BoxPipeComponent[X<:BoxPipeComponent[X]]() extends BasePipeComponent[X]() {
   val tpe = "box"
 }
 
 case class LinkPipe(id:String = java.util.UUID.randomUUID.toString,
                     source:Option[String]=None,
-                    target:Option[String]=None) extends BasePipeComponent[LinkPipe]() {
+                    target:Option[String]=None) extends LinkPipeComponent[LinkPipe]() {
   val name = "link"
-  val tpe = "link"
   val parameters = source.map(x => Map("source" → x)).getOrElse(Map.empty[String, String]) ++
                    target.map(x => Map("target" → x)).getOrElse(Map.empty[String, String])
-  def apply(a:Any):Any = {
-    println("Applying LinkPipe with " + a)
+  def init(a:Any):Any = {
+    println("Initializing with LinkPipe given " + a)
+    a
+  }
+  def next(a:Map[PipeComponent[_], Any]):Any = {
+    println("Applying next on LinkPipe with " + a)
     a
   }
   def merge(j:JsValue) = copy(source = (j \ "parameters" \ "source").asOpt[String],
@@ -48,19 +58,28 @@ case class LinkPipe(id:String = java.util.UUID.randomUUID.toString,
 case class LogPipe(id:String = java.util.UUID.randomUUID.toString) extends BoxPipeComponent[LogPipe]() {
   val name = "log"
   val parameters = Map.empty[String, String]
-  def apply(a:Any):Any = {
-    println("Applying LogPipe with " + a)
+  def init(a:Any):Any = {
+    println("Initializing with LogPipe given " + a)
+    a
+  }
+  def next(a:Map[PipeComponent[_], Any]):Any = {
+    println("Applying next on LogPipe with " + a)
     a
   }
   def merge(j:JsValue):LogPipe = this
 }
 
+// Example
 case class WithParamPipe( id:String = java.util.UUID.randomUUID.toString,
                           parameters:Map[String, String] = Map("testA" → "a", "testB" → "b")
                         ) extends BoxPipeComponent[WithParamPipe]() {
   val name = "withParam"
-  def apply(a:Any):Any = {
-    println("Applying WithParamPipe with " + a)
+  def init(a:Any):Any = {
+    println("Initializing with WithParamPipe given " + a)
+    a
+  }
+  def next(a:Map[PipeComponent[_], Any]):Any = {
+    println("Applying next on WithParamPipe with " + a)
     a
   }
   def merge(j:JsValue):WithParamPipe = copy(
@@ -137,9 +156,70 @@ case class Flow() extends JsWorld[PipeComponent[_], JsValue] {
     apply(data)
   }
 
-  def run(init:Any) {
+  /**
+   * @param init is a function that take a source box and gives it a init value
+   */
+  def run(init:String => Any):scala.collection.Map[String,Any] = {
     // build tree
-    mutData.foreach(pc => pc(init))
+    val currentData:List[PipeComponent[_]] = mutData.toList
+
+    val (links, boxes) = {
+      val (ls, boxes) = currentData.partition(_.isInstanceOf[LinkPipeComponent[_]])
+      val links = ls.map(_.asInstanceOf[LinkPipeComponent[_]])
+      (links.filter(l => l.source.isDefined && l.target.isDefined), boxes)
+    }
+    /**
+     *  X ----> Z ------> U ----> A
+     *  Y --/         /
+     *  W -----------/
+     *\____/  \_____/  \_____/  \____/
+     * L0       L1        L2      L3
+     */
+
+    def layer(remaning:Seq[PipeComponent[_]], acc:List[Seq[PipeComponent[_]]]):List[Seq[PipeComponent[_]]] = {
+      remaning match {
+        case Nil          => acc.reverse
+
+        case `boxes`      =>
+          val layer0 =  remaning.filterNot { b =>
+                          links.exists(l => l.target == Some(b.id))
+                        }
+          layer(remaning diff layer0, List(layer0))
+
+        case xs  =>
+          val next = xs.filter { b =>
+            val targetB = links.filter(l => l.target == Some(b.id))
+
+            targetB.forall { l =>
+              acc.flatten.exists(p => l.source == Some(p.id))
+            }
+          }
+          layer(remaning diff next, next :: acc)
+      }
+    }
+    val layers = layer(boxes, Nil)
+
+    val values = scala.collection.mutable.Map.empty[String, Any]
+
+    val results = layers.map { pcs =>
+      pcs.foreach { pc =>
+        val linksToPc = links.filter(_.target == Some(pc.id)).map(_.source.get)
+
+        val valuesForLinksSource = linksToPc.map(s => currentData.find(_.id == s) → values.get(s))
+                                            .collect{case (Some(x), Some(y)) => x → y }
+                                            .toMap[PipeComponent[_], Any]
+
+        values += (valuesForLinksSource match {
+          case xs if xs.isEmpty => pc.id → pc.init(init(pc.id))
+          case xs               => pc.id → pc.next(xs)
+        })
+      }
+    }
+    val lastPCs = boxes.filterNot { b =>
+                    links.exists(l => l.source == Some(b.id))
+                  }
+
+    values.filterKeys(k => lastPCs.exists(_.id == k))
   }
 
   override def content = Some {

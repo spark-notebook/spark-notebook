@@ -106,6 +106,24 @@ define([
           l.id = d.id
           l.pipeComponent = d
           l.on("remove", (l) => dataO([_.extend(l.pipeComponent, {'remove': true})]))
+          l.on("change:source", (l, c) =>
+            if (l.get("source").id && l.get("source").id != l.pipeComponent.parameters.source)
+              l.pipeComponent.parameters.source = l.get("source").id
+              dataO([l.pipeComponent])
+            else
+              if (l.pipeComponent.parameters.source)
+                delete l.pipeComponent.parameters.source
+                dataO([l.pipeComponent])
+          )
+          l.on("change:target", (l, c) =>
+            if (l.get("target").id && l.get("target").id != l.pipeComponent.parameters.target)
+              l.pipeComponent.parameters.target = l.get("target").id
+              dataO([l.pipeComponent])
+            else
+              if (l.pipeComponent.parameters.target)
+                delete l.pipeComponent.parameters.target
+                dataO([l.pipeComponent])
+          )
           l
       )
       graph.addCells(addCells)

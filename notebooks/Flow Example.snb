@@ -31,7 +31,7 @@
     }, {
       "metadata" : { },
       "data" : {
-        "text/html" : "<p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon92d9f60ed9367ae401effacf9a416907&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p>"
+        "text/html" : "<p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon562266b0cb77f27642eb65d5f82744b7&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p>"
       },
       "output_type" : "execute_result",
       "execution_count" : 1
@@ -43,11 +43,11 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "import notebook.front.widgets.BoxPipeComponent\ncase class MyPipeComp(id:String = java.util.UUID.randomUUID.toString,\n                      myParam:String=\"v1\", myOtherParam:String=\"other\") \n  extends BoxPipeComponent[MyPipeComp]() {\n    \n  val name = \"myPipe\"\n\n  val parameters = Map(\"myParam\" → myParam, \"myOtherParam\" → myOtherParam)\n  def apply(a:Any):Any = {\n    t(\"Applying BasePipeComponent with \" + a)\n    a\n  }\n  \n  def merge(j:play.api.libs.json.JsValue):MyPipeComp = copy(\n    myParam = (j \\ \"parameters\" \\ \"myParam\").as[String],\n    myOtherParam = (j \\ \"parameters\" \\ \"myOtherParam\").as[String]\n  )\n  \n  override val toString = toJSON.toString\n}",
+    "source" : "import notebook.front.widgets.{BoxPipeComponent, PipeComponent}",
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "import notebook.front.widgets.BoxPipeComponent\ndefined class MyPipeComp\n"
+      "text" : "import notebook.front.widgets.{BoxPipeComponent, PipeComponent}\n"
     }, {
       "metadata" : { },
       "data" : {
@@ -63,18 +63,54 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "Flow.registeredPC += \"myPipe\" → (() => MyPipeComp())",
+    "source" : "case class MyPipeComp(id:String = java.util.UUID.randomUUID.toString,\n                      myParam:String=\"v1\", myOtherParam:String=\"other\") \n  extends BoxPipeComponent[MyPipeComp]() {\n    \n  val name = \"myPipe\"\n\n  val parameters = Map(\"myParam\" → myParam, \"myOtherParam\" → myOtherParam)\n  def init(a:Any):Any = {\n    t(\"Applying init on BasePipeComponent with \" + a)\n    a\n  }\n  def next(a:Map[PipeComponent[_], Any]):Any = {\n    t(\"Applying next on BasePipeComponent with \" + a)\n    a\n  }\n  \n  def merge(j:play.api.libs.json.JsValue):MyPipeComp = copy(\n    myParam = (j \\ \"parameters\" \\ \"myParam\").as[String],\n    myOtherParam = (j \\ \"parameters\" \\ \"myOtherParam\").as[String]\n  )\n  \n  override val toString = toJSON.toString\n}",
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "res2: scala.collection.mutable.Map[String,() => notebook.front.widgets.BoxPipeComponent[_]] = Map(withParam -> <function0>, log -> <function0>, myPipe -> <function0>)\n"
+      "text" : "defined class MyPipeComp\n"
     }, {
       "metadata" : { },
       "data" : {
-        "text/html" : "Map(withParam -&gt; &lt;function0&gt;, log -&gt; &lt;function0&gt;, myPipe -&gt; &lt;function0&gt;)"
+        "text/html" : ""
       },
       "output_type" : "execute_result",
       "execution_count" : 3
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "case class SumPipeComp(id:String = java.util.UUID.randomUUID.toString,\n                      mult:String=\"1\") \n  extends BoxPipeComponent[SumPipeComp]() {\n    \n  val name = \"sumPipe\"\n\n  val parameters = Map(\"mult\" → mult)\n  \n  def extractMult:Int = parameters(\"mult\").toInt\n    \n  def init(a:Any):Any = {\n    a match {\n      case i:Int => extractMult * i\n    }\n  }\n  def next(a:Map[PipeComponent[_], Any]):Any = {\n    val vs = a.toList.map { \n      case (_, v:Int) => v * extractMult\n    }\n    vs.sum\n  }\n  \n  def merge(j:play.api.libs.json.JsValue):SumPipeComp = copy(\n    mult = (j \\ \"parameters\" \\ \"mult\").as[String]\n  )\n  \n  override val toString = toJSON.toString\n}",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "defined class SumPipeComp\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 14
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "Flow.registerPipeComponent(\"myPipe\", (() => MyPipeComp()))\nFlow.registerPipeComponent(\"sumPipe\", (() => SumPipeComp()))",
+    "outputs" : [ {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 15
     } ]
   }, {
     "metadata" : {
@@ -91,10 +127,10 @@
     }, {
       "metadata" : { },
       "data" : {
-        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anonc73d39d7d9fae6a717cde6a2baa3e980&quot;,&quot;dataInit&quot;:[],&quot;genId&quot;:&quot;972253313&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/flow'], \n      function(playground, _flow) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _flow,\n    \"o\": {}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div class=\"container-fluid\">\n      <div class=\"control col-md-12\">\n        <select data-bind=\"options: options, optionsText: 'text', optionsValue: 'index', value: selectedIndex, fireChange: true\">\n      <script data-this=\"{&quot;optionsId&quot;:&quot;anonaf2db6d1443d3c91e138b798ba503f02&quot;,&quot;selectedIndexId&quot;:&quot;anonbb6c43b0900e71a23121f9a474950d21&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq( ['observable', 'knockout'],\n  function (O, ko) {\n    ko.applyBindings({\n      options: O.makeObservableArray(optionsId),\n      selectedIndex: O.makeObservable(selectedIndexId)\n    },\n    this);\n  }\n);/*]]>*/</script>\n    </select>\n        <button type=\"button\" class=\"btn btn-xs\" data-bind=\"click: clicked, fireChange: true\">\n      <script data-this=\"{&quot;clicksId&quot;:&quot;anon8caa611511b504052aecd58199b366b3&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq( ['observable', 'knockout'],\n  function (O, ko) {\n    ko.applyBindings({\n      clicks: O.makeObservable(clicksId),\n      clicked : function() {\n          this.clicks(Math.random());\n      }\n    },\n    this);\n  }\n);/*]]>*/</script>\n    +\n    <span></span>\n    </button>\n        <button type=\"button\" class=\"btn btn-xs\" data-bind=\"click: clicked, fireChange: true\">\n      <script data-this=\"{&quot;clicksId&quot;:&quot;anoneca17b304e8d6284595b8f00ca53ea63&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq( ['observable', 'knockout'],\n  function (O, ko) {\n    ko.applyBindings({\n      clicks: O.makeObservable(clicksId),\n      clicked : function() {\n          this.clicks(Math.random());\n      }\n    },\n    this);\n  }\n);/*]]>*/</script>\n    \n    <i class=\"fa fa-arrow-right\"></i>\n    </button>\n      </div>\n      <div class=\"jointgraph col-md-9\"></div>\n      <div class=\"col-md-3\">\n        <h4>Configuration</h4>\n        <form class=\"form configure\" action=\"#\">\n          <div class=\"configuration\">\n          </div>\n          <button type=\"button\" class=\"btn btn-xs btn-danger remove\">Remove</button>\n          <button type=\"submit\" class=\"btn btn-default\">Apply</button>\n        </form>\n      </div>\n    </div></div>"
+        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anoned7a016ae7d699b76f4412b364afe929&quot;,&quot;dataInit&quot;:[],&quot;genId&quot;:&quot;1250243884&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/flow'], \n      function(playground, _flow) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _flow,\n    \"o\": {}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div class=\"container-fluid\">\n      <div class=\"control col-md-12\">\n        <select data-bind=\"options: options, optionsText: 'text', optionsValue: 'index', value: selectedIndex, fireChange: true\">\n      <script data-this=\"{&quot;optionsId&quot;:&quot;anon77843591e31763644ce681e6b3aab5a3&quot;,&quot;selectedIndexId&quot;:&quot;anon84ceb565b3448de0ea616b4a9d376164&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq( ['observable', 'knockout'],\n  function (O, ko) {\n    ko.applyBindings({\n      options: O.makeObservableArray(optionsId),\n      selectedIndex: O.makeObservable(selectedIndexId)\n    },\n    this);\n  }\n);/*]]>*/</script>\n    </select>\n        <button type=\"button\" class=\"btn btn-xs\" data-bind=\"click: clicked, fireChange: true\">\n      <script data-this=\"{&quot;clicksId&quot;:&quot;anon5d6339ce2ca45d3b74ce764403fb6f7f&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq( ['observable', 'knockout'],\n  function (O, ko) {\n    ko.applyBindings({\n      clicks: O.makeObservable(clicksId),\n      clicked : function() {\n          this.clicks(Math.random());\n      }\n    },\n    this);\n  }\n);/*]]>*/</script>\n    +\n    <span></span>\n    </button>\n        <button type=\"button\" class=\"btn btn-xs\" data-bind=\"click: clicked, fireChange: true\">\n      <script data-this=\"{&quot;clicksId&quot;:&quot;anon4ebec96e51f5ecfc93490405046bd4f1&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq( ['observable', 'knockout'],\n  function (O, ko) {\n    ko.applyBindings({\n      clicks: O.makeObservable(clicksId),\n      clicked : function() {\n          this.clicks(Math.random());\n      }\n    },\n    this);\n  }\n);/*]]>*/</script>\n    \n    <i class=\"fa fa-arrow-right\"></i>\n    </button>\n      </div>\n      <div class=\"jointgraph col-md-9\"></div>\n      <div class=\"col-md-3\">\n        <h4>Configuration</h4>\n        <form class=\"form configure\" action=\"#\">\n          <div class=\"configuration\">\n          </div>\n          <button type=\"button\" class=\"btn btn-xs btn-danger remove\">Remove</button>\n          <button type=\"submit\" class=\"btn btn-default\">Apply</button>\n        </form>\n      </div>\n    </div></div>"
       },
       "output_type" : "execute_result",
-      "execution_count" : 4
+      "execution_count" : 16
     } ]
   }, {
     "metadata" : {
@@ -103,106 +139,18 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "f.data",
+    "source" : "f.run {\n  case x => \n    println(x)\n    2 // let's pass 2 to every sources\n}",
     "outputs" : [ {
       "name" : "stdout",
       "output_type" : "stream",
-      "text" : "res7: Seq[notebook.front.widgets.PipeComponent[_]] = List(WithParamPipe(086ac029-4d36-48a2-82ee-d412d0fbc985,Map(testA -> a, testB -> b)), WithParamPipe(028bc0c7-2c2c-41ec-97c1-b0afa1d8a426,Map(testA -> a, testB -> b)))\n"
+      "text" : "5dab3070-e8cd-40d5-8a24-a0b90d347395\nff1571e1-3adf-4a19-97c2-f1891f529915\nres12: scala.collection.Map[String,Any] = Map(ff1571e1-3adf-4a19-97c2-f1891f529915 -> 2, 667a6079-ab44-4b81-810e-67d94d99e258 -> 10)\n"
     }, {
       "metadata" : { },
       "data" : {
-        "text/html" : "<div class=\"container-fluid\"><div><div class=\"col-md-12\"><div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon9ef86c75663678129a22e6c50a52d57a&quot;,&quot;dataInit&quot;:[{&quot;id&quot;:&quot;086ac029-4d36-48a2-82ee-d412d0fbc985&quot;,&quot;parameters&quot;:&quot;Map(testA -&gt; a, testB -&gt; b)&quot;,&quot;name&quot;:&quot;withParam&quot;},{&quot;id&quot;:&quot;028bc0c7-2c2c-41ec-97c1-b0afa1d8a426&quot;,&quot;parameters&quot;:&quot;Map(testA -&gt; a, testB -&gt; b)&quot;,&quot;name&quot;:&quot;withParam&quot;}],&quot;genId&quot;:&quot;2050183892&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/tableChart'], \n      function(playground, _magictableChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magictableChart,\n    \"o\": {\"headers\":[\"id\",\"parameters\",\"name\"],\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <label for=\"input-anonea3d728775f5126c46631bd28a9b1376\">\n      Max Points\n    </label><input id=\"input-anonea3d728775f5126c46631bd28a9b1376\" type=\"number\" name=\"input-anonea3d728775f5126c46631bd28a9b1376\" data-bind=\"textInput: value, fireChange: true, valueUpdate: 'input'\">\n      <script data-selector=\"#input-anonea3d728775f5126c46631bd28a9b1376\" data-this=\"{&quot;valueId&quot;:&quot;anonea3d728775f5126c46631bd28a9b1376&quot;,&quot;valueInit&quot;:25}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n ['observable', 'knockout'],\n function (Observable, ko) {\n   //console.log(\"-----------\")\n   //console.dir(this);\n   //console.dir(valueId);\n   var obs = Observable.makeObservable(valueId)\n                       .extend({ rateLimit: { //throttle\n                                   timeout: 500,\n                                   method: \"notifyWhenChangesStop\"\n                                 }\n                               }\n                       );\n   ko.applyBindings({\n     value: obs\n   }, this);\n   obs(valueInit);\n }\n)/*]]>*/</script>\n    </input>\n        <p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon5a2fbce6a955896127b0c3ed6e07ff47&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p> <span style=\"color:red\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon18148bff7a96d3362ec6d87548475818&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p></span>\n        <div>\n        </div>\n      </div></div></div></div></div>"
+        "text/html" : "Map(ff1571e1-3adf-4a19-97c2-f1891f529915 -&gt; 2, 667a6079-ab44-4b81-810e-67d94d99e258 -&gt; 10)"
       },
       "output_type" : "execute_result",
-      "execution_count" : 9
-    } ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "f.data.head",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res4: notebook.front.widgets.PipeComponent[_] = WithParamPipe(Map(testA -> a1, testB -> b1))\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "WithParamPipe(Map(testA -&gt; a1, testB -&gt; b1))"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 5
-    } ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "f.run(\"test2\")",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "Applying WithParamPipe with test2\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 8
-    } ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : true
-    },
-    "cell_type" : "markdown",
-    "source" : "***"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "<em>test</em>",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res8: scala.xml.Elem = <em>test</em>\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<em>test</em>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 12
-    } ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "<b>{res8}</b>",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res9: scala.xml.Elem = <b><em>test</em></b>\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<b><em>test</em></b>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 13
+      "execution_count" : 19
     } ]
   } ],
   "nbformat" : 4
