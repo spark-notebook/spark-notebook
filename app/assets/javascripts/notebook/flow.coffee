@@ -39,15 +39,32 @@ define([
         target:{x: 220, y: 50}
       })
 
-    $(container).find(".fa-square").on("click", () => graph.addCells([grect()]))
-    $(container).find(".fa-arrow-right").on("click", () => graph.addCells([glink()]))
+    conf = $(container).find(".configuration")
+    form = $(container).find("form.configure")
+    form.on("submit", (e) =>
+      e.preventDefault()
+      e.stopImmediatePropagation()
+
+      newConf = form.serializeArray()
+      pipeComponent = form.cell.pipeComponent
+      parameters = {}
+      _.each(newConf, (e) -> parameters[e.name] = e.value)
+      pipeComponent.parameters = parameters
+      dataO([pipeComponent])
+    )
+    form.find("button.remove").on("click", (e) =>
+      e.preventDefault()
+      e.stopImmediatePropagation()
+      pipeComponent = form.cell.pipeComponent
+      form.cell.remove()
+      dataO([_.extend(pipeComponent, {'remove': true})])
+    )
     paper.on("cell:pointerdblclick", (cellView, evt, x, y) =>
       if (cellView.model instanceof joint.shapes.basic.Rect)
         cell = cellView.model
-
-        conf = $(container).find(".configuration")
+        form.cell = cell
         conf.html("")
-        _.each(cell.parameters, (v,k) ->
+        _.each(cell.pipeComponent.parameters, (v,k) ->
           d = $("<div class='form-group'></div>")
           l = $("<label>"+k+"</label>")
           i = $("<input type='text'class='form-control' name='"+k+"'/>")
@@ -58,14 +75,38 @@ define([
         )
     )
 
+    #graph.getLinks().on("remove", () => console.dir(arguments))
+
+
     dataO.subscribe( (newData) =>
       cells = graph.getCells()
-      toAdd = _.filter(newData, (d) => !_.find(_.pluck(cells, "id"), d.id))
+      links = graph.getLinks()
+      cellsLinks =  _.union(cells, links)
+
+      _.each(newData,
+        (d) -> if (_.isUndefined(d.remove))
+          d.remove = false
+      )
+      toAdd = _.filter(newData, (d) => !d.remove && !_.contains(_.pluck(cellsLinks, "id"), d.id))
+
+      _.each(newData, (u) ->
+        c = _.findWhere(cellsLinks, {id: u.id})
+        if (c)
+          c.pipeComponent = u
+      )
+
       addCells = _.map(toAdd, (d) =>
-        r = grect(d.name)
-        r.id = d.id
-        r.parameters = d.parameters
-        r
+        if (d.tpe == "box")
+          r = grect(d.name)
+          r.id = d.id
+          r.pipeComponent = d
+          r
+        else
+          l = glink()
+          l.id = d.id
+          l.pipeComponent = d
+          l.on("remove", (l) => dataO([_.extend(l.pipeComponent, {'remove': true})]))
+          l
       )
       graph.addCells(addCells)
     )

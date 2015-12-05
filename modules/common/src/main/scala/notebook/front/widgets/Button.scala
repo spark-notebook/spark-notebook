@@ -4,7 +4,7 @@ import notebook._
 import notebook.front._
 import play.api.libs.json._
 
-class Button(text:String)(implicit val codec: Codec[JsValue, Double]) extends Widget with SingleConnector[Double] {
+class Button(text:Option[String]=None, icon:Option[String]=None)(implicit val codec: Codec[JsValue, Double]) extends Widget with SingleConnector[Double] {
   lazy val toHtml =
     <button  type="button" class="btn btn-xs" data-bind="click: clicked, fireChange: true">
       {scopedScript(
@@ -22,6 +22,14 @@ class Button(text:String)(implicit val codec: Codec[JsValue, Double]) extends Wi
         |);""".stripMargin,
       Json.obj("clicksId" -> dataConnection.id)
     )}
-    {text}
+    {
+      text.getOrElse("")
+    }
+    {
+      icon.map{ i =>
+        val c = "fa fa-"+i
+        <i class={c}></i>
+      }.getOrElse(<span></span>)
+    }
     </button>
 }
