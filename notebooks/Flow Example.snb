@@ -24,18 +24,7 @@
     },
     "cell_type" : "code",
     "source" : "val t = out",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "t: notebook.front.SingleConnectedWidget[String]{implicit val codec: notebook.Codec[play.api.libs.json.JsValue,String]; lazy val toHtml: scala.xml.Elem} = <anon$2 widget>\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon562266b0cb77f27642eb65d5f82744b7&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 1
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -44,18 +33,7 @@
     },
     "cell_type" : "code",
     "source" : "import notebook.front.widgets.{BoxPipeComponent, PipeComponent}",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "import notebook.front.widgets.{BoxPipeComponent, PipeComponent}\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 2
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -63,19 +41,17 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "case class MyPipeComp(id:String = java.util.UUID.randomUUID.toString,\n                      myParam:String=\"v1\", myOtherParam:String=\"other\") \n  extends BoxPipeComponent[MyPipeComp]() {\n    \n  val name = \"myPipe\"\n\n  val parameters = Map(\"myParam\" → myParam, \"myOtherParam\" → myOtherParam)\n  def init(a:Any):Any = {\n    t(\"Applying init on BasePipeComponent with \" + a)\n    a\n  }\n  def next(a:Map[PipeComponent[_], Any]):Any = {\n    t(\"Applying next on BasePipeComponent with \" + a)\n    a\n  }\n  \n  def merge(j:play.api.libs.json.JsValue):MyPipeComp = copy(\n    myParam = (j \\ \"parameters\" \\ \"myParam\").as[String],\n    myOtherParam = (j \\ \"parameters\" \\ \"myOtherParam\").as[String]\n  )\n  \n  override val toString = toJSON.toString\n}",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "defined class MyPipeComp\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 3
-    } ]
+    "source" : "import org.apache.spark.rdd.RDD\ncase class RddFilterEvenPipeComp(\n  id:String = java.util.UUID.randomUUID.toString)\n  extends BoxPipeComponent[RddFilterEvenPipeComp]() {\n    \n  val name = \"filterEvenPipe\"\n\n  val parameters = Map.empty[String, String]\n  \n  def init(a:Any):Any = a match {\n    case rdd:RDD[Int] => rdd.filter(_ % 2 == 0)\n  }\n  def next(a:Map[PipeComponent[_], Any]):Any = {\n    val vs = a.toList.map { \n      case (_, rdd:RDD[Int]) => rdd.filter(_ % 2 == 0)\n    }\n    sparkContext.union(vs)\n  }\n  \n  def merge(j:play.api.libs.json.JsValue):RddFilterEvenPipeComp = this\n  \n  override val toString = toJSON.toString\n}",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import org.apache.spark.rdd.RDD\ncase class RddCollectEvenPipeComp(\n  id:String = java.util.UUID.randomUUID.toString)\n  extends BoxPipeComponent[RddCollectEvenPipeComp]() {\n    \n  val name = \"collectPipe\"\n\n  val parameters = Map.empty[String, String]\n  \n  def init(a:Any):Any = a match {\n    case rdd:RDD[Int] => rdd.collect\n  }\n  def next(a:Map[PipeComponent[_], Any]):Any = {\n    val vs = a.toList.map { \n      case (_, rdd:RDD[Int]) => rdd.collect\n    }\n    vs.flatten\n  }\n  \n  def merge(j:play.api.libs.json.JsValue):RddCollectEvenPipeComp = this\n  \n  override val toString = toJSON.toString\n}",
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -84,18 +60,7 @@
     },
     "cell_type" : "code",
     "source" : "case class SumPipeComp(id:String = java.util.UUID.randomUUID.toString,\n                      mult:String=\"1\") \n  extends BoxPipeComponent[SumPipeComp]() {\n    \n  val name = \"sumPipe\"\n\n  val parameters = Map(\"mult\" → mult)\n  \n  def extractMult:Int = parameters(\"mult\").toInt\n    \n  def init(a:Any):Any = {\n    a match {\n      case i:Int => extractMult * i\n    }\n  }\n  def next(a:Map[PipeComponent[_], Any]):Any = {\n    val vs = a.toList.map { \n      case (_, v:Int) => v * extractMult\n    }\n    vs.sum\n  }\n  \n  def merge(j:play.api.libs.json.JsValue):SumPipeComp = copy(\n    mult = (j \\ \"parameters\" \\ \"mult\").as[String]\n  )\n  \n  override val toString = toJSON.toString\n}",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "defined class SumPipeComp\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 14
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -103,15 +68,8 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "Flow.registerPipeComponent(\"myPipe\", (() => MyPipeComp()))\nFlow.registerPipeComponent(\"sumPipe\", (() => SumPipeComp()))",
-    "outputs" : [ {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 15
-    } ]
+    "source" : "Flow.registerPipeComponent(\"sumPipe\", (() => SumPipeComp()))\nFlow.registerPipeComponent(\"filterEvenPipe\", (() => RddFilterEvenPipeComp()))\nFlow.registerPipeComponent(\"collectPipe\", (() => RddCollectEvenPipeComp()))",
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -120,18 +78,25 @@
     },
     "cell_type" : "code",
     "source" : "val f:Flow = Flow()",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "f: notebook.front.widgets.Flow = <Flow widget>\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anoned7a016ae7d699b76f4412b364afe929&quot;,&quot;dataInit&quot;:[],&quot;genId&quot;:&quot;1250243884&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/flow'], \n      function(playground, _flow) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _flow,\n    \"o\": {}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div class=\"container-fluid\">\n      <div class=\"control col-md-12\">\n        <select data-bind=\"options: options, optionsText: 'text', optionsValue: 'index', value: selectedIndex, fireChange: true\">\n      <script data-this=\"{&quot;optionsId&quot;:&quot;anon77843591e31763644ce681e6b3aab5a3&quot;,&quot;selectedIndexId&quot;:&quot;anon84ceb565b3448de0ea616b4a9d376164&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq( ['observable', 'knockout'],\n  function (O, ko) {\n    ko.applyBindings({\n      options: O.makeObservableArray(optionsId),\n      selectedIndex: O.makeObservable(selectedIndexId)\n    },\n    this);\n  }\n);/*]]>*/</script>\n    </select>\n        <button type=\"button\" class=\"btn btn-xs\" data-bind=\"click: clicked, fireChange: true\">\n      <script data-this=\"{&quot;clicksId&quot;:&quot;anon5d6339ce2ca45d3b74ce764403fb6f7f&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq( ['observable', 'knockout'],\n  function (O, ko) {\n    ko.applyBindings({\n      clicks: O.makeObservable(clicksId),\n      clicked : function() {\n          this.clicks(Math.random());\n      }\n    },\n    this);\n  }\n);/*]]>*/</script>\n    +\n    <span></span>\n    </button>\n        <button type=\"button\" class=\"btn btn-xs\" data-bind=\"click: clicked, fireChange: true\">\n      <script data-this=\"{&quot;clicksId&quot;:&quot;anon4ebec96e51f5ecfc93490405046bd4f1&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq( ['observable', 'knockout'],\n  function (O, ko) {\n    ko.applyBindings({\n      clicks: O.makeObservable(clicksId),\n      clicked : function() {\n          this.clicks(Math.random());\n      }\n    },\n    this);\n  }\n);/*]]>*/</script>\n    \n    <i class=\"fa fa-arrow-right\"></i>\n    </button>\n      </div>\n      <div class=\"jointgraph col-md-9\"></div>\n      <div class=\"col-md-3\">\n        <h4>Configuration</h4>\n        <form class=\"form configure\" action=\"#\">\n          <div class=\"configuration\">\n          </div>\n          <button type=\"button\" class=\"btn btn-xs btn-danger remove\">Remove</button>\n          <button type=\"submit\" class=\"btn btn-default\">Apply</button>\n        </form>\n      </div>\n    </div></div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 16
-    } ]
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "// SumPipe → SumPipe → ...\nf.run {\n  case x => \n    2 // init value for all \"sources\" of the pipeline\n}",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "// filterEventPipe → CollectPipe\nf.run {\n  case x => \n    if (x.last.isDigit)\n      sparkContext.parallelize(1 to 100)\n    else\n      sparkContext.parallelize(400 to 800)\n}",
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -139,19 +104,17 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "f.run {\n  case x => \n    println(x)\n    2 // let's pass 2 to every sources\n}",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "5dab3070-e8cd-40d5-8a24-a0b90d347395\nff1571e1-3adf-4a19-97c2-f1891f529915\nres12: scala.collection.Map[String,Any] = Map(ff1571e1-3adf-4a19-97c2-f1891f529915 -> 2, 667a6079-ab44-4b81-810e-67d94d99e258 -> 10)\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "Map(ff1571e1-3adf-4a19-97c2-f1891f529915 -&gt; 2, 667a6079-ab44-4b81-810e-67d94d99e258 -&gt; 10)"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 19
-    } ]
+    "source" : "// filterEventPipe → CollectPipe\nf.run {\n  case x => \n    if (x.endsWith(\"5\"))\n      sparkContext.parallelize(1 to 100)\n    else\n      sparkContext.parallelize(400 to 800)\n}",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "f.data",
+    "outputs" : [ ]
   } ],
   "nbformat" : 4
 }
