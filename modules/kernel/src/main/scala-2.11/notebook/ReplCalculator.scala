@@ -85,11 +85,15 @@ class ReplCalculator(
   var remotes:List[RemoteRepository] = customRepos.getOrElse(List.empty[String]).map(remoreRepo _).map(_._2) :::
     List(Repos.mavenLocal, Repos.central, Repos.sparkPackages, Repos.oss)
 
+  def updateWithVarEnv(s:String) = {
+    import scala.util.matching.Regex
+    val r = new Regex("""\$\{([_a-zA-Z0-9]+)\}+""", "var")
+    val x = r.replaceAllIn(s, m => sys.env(m.group("var")))
+    x
+  }
+
   var repo:File = customLocalRepo.map { x =>
-                    import scala.util.matching.Regex
-                    val r = new Regex("""\$\{([_a-zA-Z0-9]+)\}+""", "var")
-                    val f = r.replaceAllIn(x, m => sys.env(m.group("var")))
-                    new File(f)
+                    new File(notebook.util.StringUtils.updateWithVarEnv(x))
                   }.getOrElse {
                     val tmp = new File(System.getProperty("java.io.tmpdir"))
 
