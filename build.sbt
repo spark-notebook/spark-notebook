@@ -64,7 +64,7 @@ val sparkResolver = Option(sys.props.getOrElse("spark.resolver.id", null))
 
 resolvers in ThisBuild ++= Seq(
   Resolver.mavenLocal,
-  //Resolver.typesafeRepo("releases"),
+  Resolver.typesafeRepo("releases"),
   Resolver.sonatypeRepo("releases"),
   Resolver.typesafeIvyRepo("releases"),
   Resolver.typesafeIvyRepo("snapshots"),
