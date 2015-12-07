@@ -74,6 +74,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
+      "output_stream_collapsed" : true,
       "collapsed" : false
     },
     "cell_type" : "code",
@@ -83,16 +84,16 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "// SumPipe → SumPipe → ...\nf.run {\n  case x => \n    2 // init value for all \"sources\" of the pipeline\n}",
+    "source" : "// SumPipe → SumPipe → ...\nf.run {\n  case x => \n    println(x)\n    2 // init value for all \"sources\" of the pipeline\n}",
     "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
     "source" : "// filterEventPipe → CollectPipe\nf.run {\n  case x => \n    if (x.last.isDigit)\n      sparkContext.parallelize(1 to 100)\n    else\n      sparkContext.parallelize(400 to 800)\n}",
@@ -115,6 +116,10 @@
     "cell_type" : "code",
     "source" : "f.data",
     "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "***"
   } ],
   "nbformat" : 4
 }

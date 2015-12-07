@@ -4,7 +4,8 @@ define([
     'jquery'
     'd3'
     'underscore'
-], (Observable, joint, $, d3, _) ->
+    'base/js/events'
+], (Observable, joint, $, d3, _, events) ->
   (dataO, container, options) ->
     gId = @genId
 
@@ -39,6 +40,19 @@ define([
         target:{x: 220, y: 50}
       })
 
+    # get cell object, like done in get_cell_elements in notebook.js
+    cell_dom_element = $(container).parents(".cell").not('.cell .cell')[0]
+    snb_cell = $(cell_dom_element).data("cell")
+
+    html_output = (v) =>
+      output = _.find(
+        snb_cell.output_area.outputs,
+        (o) => o.data && o.data["text/html"]
+      )
+      if (v)
+        output.data["text/html"] = v
+      else
+        output.data["text/html"]
     conf = $(container).find(".configuration")
     form = $(container).find("form.configure")
     form.on("submit", (e) =>
@@ -75,10 +89,28 @@ define([
         )
     )
 
-    #graph.getLinks().on("remove", () => console.dir(arguments))
+    # TODO → this is not working (aims to save the last flow in the cell's output)
+    save = (e) =>
+      cells = graph.getCells()
+      links = graph.getLinks()
+      cellsLinks =  _.union(cells, links)
+      d = _.map(cellsLinks, (cl) =>
+        o = _.clone(cl.pipeComponent)
+        o.position = cl.position
+        o
+      )
+      o = $(html_output())
+      sc = o.find("script")[0]
+      dt = $(sc).attr("data-this")
+      j = JSON.parse(dt)
+      j.dataInit = d
+      s = JSON.stringify(j)
+      $(sc).attr("data-this", s)
+      html_output(o.html())
 
+    #graph.on("change", save)
 
-    dataO.subscribe( (newData) =>
+    onData = (newData) =>
       cells = graph.getCells()
       links = graph.getLinks()
       cellsLinks =  _.union(cells, links)
@@ -127,128 +159,10 @@ define([
           l
       )
       graph.addCells(addCells)
-    )
+
+
+    onData(@dataInit)
+    dataO(@dataInit)
+
+    dataO.subscribe(onData)
 )
-
-
-#  NOT NEEDED... but kept here in case we need something like this: inputarea in the chart...
-#    # Create a custom element.
-#    # ------------------------
-#    joint.shapes.html = {}
-#    joint.shapes.html.Element = joint.shapes.basic.Generic.extend(_.extend({}, joint.shapes.basic.PortsModelInterface, {
-#        markup: '<g class="rotatable"><g class="scalable"><rect/></g><g class="inPorts"/><g class="outPorts"/></g>',
-#        portMarkup: '<g class="port<%=1%>"><circle/></g>',
-#        defaults: joint.util.deepSupplement({
-#            type: 'html.Element',
-#            size: {width: 100, height: 80},
-#            inPorts: [],
-#            outPorts: [],
-#            attrs: {
-#                '.': {magnet: false},
-#                rect: {
-#                    stroke: 'none', 'fill-opacity': 0, width: 150, height: 250,
-#                },
-#                circle: {
-#                    r: 6, #circle radius
-#                    magnet: true,
-#                    stroke: 'black'
-#                },
-#                '.inPorts circle': {fill: 'green', magnet: 'passive', type: 'input'},
-#                '.outPorts circle': {fill: 'red', type: 'output'}
-#            }
-#        }, joint.shapes.basic.Generic.prototype.defaults),
-#        getPortAttrs: (portName, index, total, selector, type) ->
-#          attrs = {}
-#          portClass = 'port' + index
-#          portSelector = selector + '>.' + portClass
-#          portCircleSelector = portSelector + '>circle'
-#          attrs[portCircleSelector] = {port: {id: portName || _.uniqueId(type), type: type}}
-#          attrs[portSelector] = {ref: 'rect', 'ref-y': (index + 1) * (10 / total)}
-#          if (selector == '.outPorts')
-#            attrs[portSelector]['ref-dx'] = 0
-#          return attrs
-#    }))
-#
-#
-#    # Create a custom view for that element that displays an HTML div above it.
-#    # -------------------------------------------------------------------------
-#
-#    joint.shapes.html.ElementView = joint.dia.ElementView.extend({
-#        template: [
-#            '<div class="html-element">',
-#            '<button class="delete">x</button>',
-#            '<span id="lbl" value="Please write here"></span>',
-#            '<textarea id="txt" type="text" value="Please write here"></textarea>',
-#            '</div>'
-#        ].join(''),
-#        initialize: () ->
-#          _.bindAll(this, 'updateBox')
-#          joint.dia.ElementView.prototype.initialize.apply(this, arguments)
-#
-#          this.$box = $(_.template(this.template)())
-#          # Prevent paper from handling pointerdown.
-#          this.$box.find('input,select').on('mousedown click', (evt)-> evt.stopPropagation())
-#
-#
-#          # This is an example of reacting on the input change and storing the input data in the cell model.
-#          this.$box.find('textarea').on('change', _.bind(
-#            ((evt) -> this.model.set('textarea', $(evt.target).val())), this)
-#          )
-#          this.$box.find('.delete').on('click', _.bind(this.model.remove, this.model))
-#          # Update the box position whenever the underlying model changes.
-#          this.model.on('change', this.updateBox, this)
-#          # Remove the box when the model gets removed from the graph.
-#          this.model.on('remove', this.removeBox, this)
-#
-#          this.updateBox()
-#
-#          this.listenTo(this.model, 'process:ports', this.update)
-#          joint.dia.ElementView.prototype.initialize.apply(this, arguments)
-#        ,
-#        render: () ->
-#          joint.dia.ElementView.prototype.render.apply(this, arguments)
-#          this.paper.$el.prepend(this.$box)
-#          # this.paper.$el.mousemove(this.onMouseMove.bind(this)), this.paper.$el.mouseup(this.onMouseUp.bind(this))
-#          this.updateBox()
-#          return this
-#        ,
-#        renderPorts: () ->
-#          $inPorts = @.$('.inPorts').empty()
-#          $outPorts = @.$('.outPorts').empty()
-#
-#          portTemplate = _.template(this.model.portMarkup)
-#
-#          _.each(
-#            _.filter(this.model.ports, (p) -> p.type == 'in'),
-#            (port, index) -> $inPorts.append(joint.V(portTemplate({id: index, port: port})).node)
-#          )
-#          _.each(
-#            _.filter(this.model.ports, (p) -> p.type == 'out'),
-#            (port, index) -> $outPorts.append(joint.V(portTemplate({id: index, port: port})).node)
-#          )
-#        ,
-#        update: () ->
-#          # First render ports so that `attrs` can be applied to those newly created DOM elements
-#          # in `ElementView.prototype.update()`.
-#          this.renderPorts()
-#          joint.dia.ElementView.prototype.update.apply(this, arguments)
-#        ,
-#        updateBox: () ->
-#          # Set the position and dimension of the box so that it covers the JointJS element.
-#          bbox = this.model.getBBox()
-#          # Example of updating the HTML with a data stored in the cell model.
-#          # paper.on('blank:pointerdown', function(evt, x, y) { this.$box.find('textarea').toBack() })
-#          this.$box.find('span').text(this.model.get('textarea'))
-#          this.model.on('cell:pointerclick', (evt, x, y) -> this.$box.find('textarea').toFront())
-#          this.$box.css({width: bbox.width, height: bbox.height, left: bbox.x, top: bbox.y, transform: 'rotate(' + (this.model.get('angle') || 0) + 'deg)'})
-#        ,
-#        removeBox: (evt) ->
-#          this.$box.remove()
-#    })
-#    el1 = new joint.shapes.html.Element({
-#              position: {x: 600, y: 250},
-#              size: {width: 170, height: 100},
-#              inPorts: ['in'],
-#              outPorts: ['out'],
-#              textarea: 'Start writing'
-#          })
