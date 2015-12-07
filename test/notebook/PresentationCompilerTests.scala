@@ -10,7 +10,7 @@ class PresentationCompilerTests extends Specification {
 
   "complete" should {
     "return the correct completions" in {
-      val pc = new PresentationCompiler()
+      val pc = new PresentationCompiler(Nil)
       pc.complete("val test = 123\ntest.toS", 23) must beEqualTo("toS", Seq(
         Match("toString", Map.empty[String,String]),
         Match("toShort", Map.empty[String,String])
@@ -22,9 +22,9 @@ class PresentationCompilerTests extends Specification {
     }
 
     "have the correct amount of completions" in {
-      val pc = new PresentationCompiler()
-      pc.complete("val test = 123\nval testAsString = test.toString()\ntestAsString.", 63)._2.length must beEqualTo(213)
-      pc.complete("val test = \"Hello World!\"\ntest.substring(", 41)._2.length must beEqualTo(631)
+      val pc = new PresentationCompiler(Nil)
+      pc.complete("val test = 123\nval testAsString = test.toString()\ntestAsString.", 63)._2.length must beEqualTo(237)
+      pc.complete("val test = \"Hello World!\"\ntest.substring(", 41)._2.length must beEqualTo(547)
     }
   }
 }
