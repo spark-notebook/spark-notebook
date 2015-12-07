@@ -2,6 +2,7 @@ Spark Notebook
 ==============
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/andypetrella/spark-notebook?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/andypetrella/spark-notebook.svg?branch=master)](https://travis-ci.org/andypetrella/spark-notebook)
 
 *Originally forked from the amazing [scala-notebook](https://github.com/Bridgewater/scala-notebook), almost entirely refactored for Massive Dataset Analysis using [Apache Spark](http://spark.apache.org).*
 
