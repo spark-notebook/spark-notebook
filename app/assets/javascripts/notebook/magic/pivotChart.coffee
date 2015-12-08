@@ -10,7 +10,6 @@ define([
   (dataO, container, options) ->
     require(['c3', 'pivotC3'],
     (c3, pivotC3) =>
-      w = options.width||600
       h = options.height||400
 
       derivers = $.pivotUtilities.derivers;
@@ -54,8 +53,8 @@ define([
       rendererOptions = {
                           c3: {
                             size: {
-                              height: h
-                              width: w
+                              height: h,
+                              width: $(container).width()
                             }
                           }
                         }
