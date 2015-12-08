@@ -48,7 +48,6 @@ define([
         cell.metadata.presentation.pivot_chart_state = state
 
       refresh = (options) ->
-        $(".pvtUi path.c3-shape.c3-line").css("fill", "transparent")
         $(".pvtUi").css("width", "100%")
         save_pivot_state(extract_pivot_state(options))
 

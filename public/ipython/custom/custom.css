@@ -81,3 +81,7 @@ table.pivot-controls-hidden, .pivot-controls-hidden > tbody > tr, .pivot-control
 table.c3-tooltip {
   background-color: #ffffff;
 }
+/* fix the black rect fill appearing in C3 Line charts (looks like a clash with something) */
+.pvtUi path.c3-shape.c3-line, .custom-c3-chart path.c3-shape.c3-line {
+  fill: transparent;
+}

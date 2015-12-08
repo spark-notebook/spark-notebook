@@ -1,0 +1,108 @@
+{
+  "metadata" : {
+    "name" : "Simple & Flexible Custom C3 Charts",
+    "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customArgs" : null,
+    "customSparkConf" : null
+  },
+  "cells" : [ {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## C3 Charts\n\nC3 Charts are better than `DIYChart` by the fact that these charts look good out-of-the-box without fine tuning the low-level parameters (such a bounding-box or legend size in pixels).\n\nLike other charts, they can be created from `Seq's of case-classes`, `DataFrames`, etc.\n\nBelow is a small set of examples of how to use them. For a more comprehensive list of features see [C3 Examples and Documentation](http://c3js.org/examples.html)\n"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "case class Person(name: String, yearsWorked: Int, yearsStudied: Int = 0)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "CustomC3Chart(Seq(Person(\"boris\", 10), Person(\"john\", 20), Person(\"john\", 10)),\n              \"{ data: { type: 'line'}}\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Bar chart with categorical X-axis"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "CustomC3Chart(Seq(Person(\"boris\", 69, 10), Person(\"peter\", 30, 7), Person(\"john\", 90, 20)),\n             chartOptions = \"\"\"\n             { data: { x: 'name', type: 'bar'},\n               axis: {x: {type: 'categorical'}} }\n             \"\"\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Stacked Bar Chart"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "CustomC3Chart(Seq(Person(\"boris\", 10, 1), Person(\"peter\", 20, 15), Person(\"john\", 10, 20)),\n             chartOptions = \"\"\"\n             { data: { \n                 x: 'name',\n                 type: 'bar',\n                 groups: [['yearsWorked', 'yearsStudied']]\n               },\n               axis: {\n                 x: {type: 'categorical'}}\n               }\n             \"\"\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Render a DataFrame in C3 Chart (categorical x-axis)"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)\nimport sqlContext.implicits._\n\nval salariesDf = Seq(\n  (\"ben\", 3000),\n  (\"boris\", 5000)\n).toDF(\"name\", \"salary_eur\")\n\nCustomC3Chart(salariesDf,\n             chartOptions = \"\"\"\n             { data: { x: 'name', \n                       type: 'bar'},\n               axis: {x: { type: 'categorical' }}\n             }\n             \"\"\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "markdown",
+    "source" : "## Time-series data\n\n[More info here](http://c3js.org/samples/timeseries.html)"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val df = Seq(\n  (\"2013\", 1.5),\n  (\"2014\", 1.3),\n  (\"2015\", 1.04)\n).toDF(\"time\", \"fuel_cost\")\n\nCustomC3Chart(df,\n             chartOptions = \"\"\"\n             { data: { x: 'time',\n                       xFormat: '%Y',\n                       type: 'bar'},\n               axis: {x: { \n                 type: 'timeseries',\n                 tick: { format: '%Y' } }\n               }\n             }\n             \"\"\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "",
+    "outputs" : [ ]
+  } ],
+  "nbformat" : 4
+}
