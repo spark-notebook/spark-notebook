@@ -4,6 +4,8 @@ import notebook.util.Reflector
 import notebook.front.widgets.isNumber
 import org.apache.spark.sql.{Row}
 
+import com.vividsolutions.jts.geom.Geometry
+
 trait MagicRenderPoint { me =>
   def headers:Seq[String]
   def numOfFields = headers.size
@@ -42,6 +44,7 @@ case class AnyPoint(any:Any) extends MagicRenderPoint {
       case v: BigDecimal  => Seq("BigDecimal")
       case v: String      => Seq("String")
       case v: Boolean     => Seq("Boolean")
+      case v: Geometry    => Seq("Geometry")
       case v: Any         => Reflector.toFieldNameArray(any)
   }
   val values  = any match {
@@ -53,6 +56,7 @@ case class AnyPoint(any:Any) extends MagicRenderPoint {
       case v: BigDecimal  => Seq(v)
       case v: String      => Seq(v)
       case v: Boolean     => Seq(v)
+      case v: Geometry    => Seq(v)
       case v: Any         => Reflector.toFieldValueArray(any)
   }
 }

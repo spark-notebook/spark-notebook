@@ -40,6 +40,10 @@ object Shared {
     )
   )
 
+  val gisSettings: Seq[Def.Setting[_]] = Seq(
+    libraryDependencies ++= geometryDeps
+  )
+
   val repl: Seq[Def.Setting[_]] = {
     val lib = libraryDependencies <++= (sparkVersion, hadoopVersion, jets3tVersion) {
       (sv, hv, jv) => if (sv != "1.2.0") Seq(sparkRepl(sv)) else Seq.empty

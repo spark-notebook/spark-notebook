@@ -5,6 +5,7 @@ import scala.xml.{NodeSeq, UnprefixedAttribute, Null}
 import play.api.libs.json._
 import play.api.libs.json.Json.JsValueWrapper
 import play.api.libs.json.Json.JsValueWrapper
+import com.vividsolutions.jts.geom.Geometry
 import notebook._
 import notebook.JsonCodec._
 import notebook.front.widgets.magic._
@@ -234,6 +235,14 @@ package object widgets {
       case v: BigDecimal => JsNumber(v)
       case v: String => JsString(v)
       case v: Boolean => JsBoolean(v)
+      case v: Geometry =>
+        import com.vividsolutions.jts.geom.Geometry
+        import org.wololo.geojson.GeoJSON
+        import org.wololo.jts2geojson.GeoJSONWriter
+        val writer = new GeoJSONWriter()
+        val json:GeoJSON = writer.write(v)
+        val jsonstring = json.toString()
+        Json.parse(jsonstring)
       case v: Any => JsString(v.toString)
     }
   }
@@ -484,6 +493,28 @@ package object widgets {
                 )
         ++ rField.map(r => Json.obj("r" → r)).getOrElse(Json.obj())
         ++ colorField.map(color => Json.obj("color" → color)).getOrElse(Json.obj())
+      ))
+  }
+
+  case class GeoChart[C:ToPoints:Sampler](
+    originalData:C,
+    override val sizes:(Int, Int)=(600, 400),
+    maxPoints:Int = 25,
+    geometryField:Option[String]=None) extends Chart[C] {
+
+    val geometry = geometryField.getOrElse(headers(0))
+
+    def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
+      val stripedData = t.data.toSeq.filter { case (k, v) => k == geometry }
+      stripedData
+    }
+
+    override val scripts =
+      List(Script("magic/geoChart",
+        Json.obj(
+          "geometry" → geometry,
+          "width" → sizes._1, "height" → sizes._2
+        )
       ))
   }
 

@@ -174,6 +174,9 @@ object Dependencies {
   // Viz
   val bokeh = "io.continuum.bokeh" %% "bokeh" % "0.2"
   val wispDepSumac = "com.quantifind" %% "sumac" % "0.3.0"
+  val geometryDeps = Seq(
+    "org.wololo" % "jts2geojson" % "0.6.0"
+  )
   //"com.quantifind" %% "wisp" % "0.0.4" excludeAll(
   //  ExclusionRule("com.google.guava"),
   //  ExclusionRule("org.json4s"),
