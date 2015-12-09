@@ -76,6 +76,11 @@ table.pivot-controls-hidden, .pivot-controls-hidden > tbody > tr, .pivot-control
   /* align selected dimensions on the top, so easier to control them when there are many rows in table */
   vertical-align: top;
 }
+/* auto-resize currently do not take account of the pivot controls.
+   to look less horrible, used white background */
+td.pvtRendererArea {
+  background-color: #ffffff;
+}
 
 /* default styles from bokeh messes up c3-tooltip (pivotchart etc) */
 table.c3-tooltip {
