@@ -34,8 +34,10 @@ PUT            /api/contents/*path                       controllers.Application
 DELETE         /api/contents/*path                       controllers.Application.deleteNotebook(path:String)
 
 # The presentation parameter is optional. E.g. /notebooks/abc.snb?presentation=report
-GET            /notebooks/*snb                           controllers.Application.openNotebook(snb:String, presentation: Option[String])
+GET            /notebooks/$snb<.+\.snb>                  controllers.Application.openNotebook(snb:String, presentation: Option[String])
 GET            /edit/:snb                                controllers.Application.openNotebook(snb:String, presentation: Option[String])
+GET            /notebooks/                               controllers.Application.dash(path:String="/")
+GET            /notebooks/*path                          controllers.Application.dash(path:String)
 
 GET            /files/*path                              controllers.Application.dlNotebookAs(path:String, format:String="json")
 GET            /nbconvert/:format/*path                  controllers.Application.dlNotebookAs(path:String, format:String)
