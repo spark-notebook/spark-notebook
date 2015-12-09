@@ -35,18 +35,7 @@
     },
     "cell_type" : "code",
     "source" : "import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, LinearRing, PrecisionModel}\nval factory:GeometryFactory = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING))",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, LinearRing, PrecisionModel}\nfactory: com.vividsolutions.jts.geom.GeometryFactory = com.vividsolutions.jts.geom.GeometryFactory@71ea4811\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "com.vividsolutions.jts.geom.GeometryFactory@71ea4811"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 1
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -59,18 +48,7 @@
     },
     "cell_type" : "code",
     "source" : "val point = factory.createPoint(new Coordinate(5.57, 50.65))",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "point: com.vividsolutions.jts.geom.Point = POINT (5.57 50.65)\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "POINT (5.57 50.65)"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 2
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -83,18 +61,7 @@
     },
     "cell_type" : "code",
     "source" : "import scala.collection.JavaConverters._",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "import scala.collection.JavaConverters._\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 5
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -107,18 +74,7 @@
     },
     "cell_type" : "code",
     "source" : "def cc(close:Boolean, xs:(Double, Double)*):Array[Coordinate] = {\n  val l = xs.toArray\n  val s = l map { case (x, y) => new Coordinate(x, y) } \n  s :+ s.head\n}",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "cc: (close: Boolean, xs: (Double, Double)*)Array[com.vividsolutions.jts.geom.Coordinate]\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 21
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -132,18 +88,7 @@
     },
     "cell_type" : "code",
     "source" : "val x = 30d\nval y = 50d\nval w = 5d\nval h = 10d\nval cl = cc(true, (x,y), (x + w,y), (x + w,y + h), (x,y + h))\nval lr = factory.createLinearRing(cl);\nval polygon = factory.createPolygon(lr)",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "x: Double = 30.0\ny: Double = 50.0\nw: Double = 5.0\nh: Double = 10.0\ncl: Array[com.vividsolutions.jts.geom.Coordinate] = Array((30.0, 50.0, NaN), (35.0, 50.0, NaN), (35.0, 60.0, NaN), (30.0, 60.0, NaN), (30.0, 50.0, NaN))\nlr: com.vividsolutions.jts.geom.LinearRing = LINEARRING (30 50, 35 50, 35 60, 30 60, 30 50)\npolygon: com.vividsolutions.jts.geom.Polygon = POLYGON ((30 50, 35 50, 35 60, 30 60, 30 50))\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "POLYGON ((30 50, 35 50, 35 60, 30 60, 30 50))"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 24
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -156,18 +101,7 @@
     },
     "cell_type" : "code",
     "source" : "val g = GeoChart(Seq(polygon, point))",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "g: notebook.front.widgets.GeoChart[Seq[com.vividsolutions.jts.geom.Geometry]] = <GeoChart widget>\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon4138c2c1bc38745f8e3de08565db508f&quot;,&quot;dataInit&quot;:[{&quot;Geometry&quot;:{&quot;type&quot;:&quot;Polygon&quot;,&quot;coordinates&quot;:[[[30.0,50.0],[35.0,50.0],[35.0,60.0],[30.0,60.0],[30.0,50.0]]]}},{&quot;Geometry&quot;:{&quot;type&quot;:&quot;Point&quot;,&quot;coordinates&quot;:[5.57,50.65]}}],&quot;genId&quot;:&quot;113988555&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/geoChart'], \n      function(playground, _magicgeoChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magicgeoChart,\n    \"o\": {\"geometry\":\"Geometry\",\"width\":600,\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <label for=\"input-anonfbd4ed73ad7c976911c711869bb8dfc1\">\n      Max Points\n    </label><input id=\"input-anonfbd4ed73ad7c976911c711869bb8dfc1\" type=\"number\" name=\"input-anonfbd4ed73ad7c976911c711869bb8dfc1\" data-bind=\"textInput: value, fireChange: true, valueUpdate: 'input'\">\n      <script data-selector=\"#input-anonfbd4ed73ad7c976911c711869bb8dfc1\" data-this=\"{&quot;valueId&quot;:&quot;anonfbd4ed73ad7c976911c711869bb8dfc1&quot;,&quot;valueInit&quot;:25}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n ['observable', 'knockout'],\n function (Observable, ko) {\n   //console.log(\"-----------\")\n   //console.dir(this);\n   //console.dir(valueId);\n   var obs = Observable.makeObservable(valueId)\n                       .extend({ rateLimit: { //throttle\n                                   timeout: 500,\n                                   method: \"notifyWhenChangesStop\"\n                                 }\n                               }\n                       );\n   ko.applyBindings({\n     value: obs\n   }, this);\n   obs(valueInit);\n }\n)/*]]>*/</script>\n    </input>\n        <p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon1a51ce861e86e2bf5ffc98ca674b8e98&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p> <span style=\"color:red\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon40e1b28486b8c862ccdb3d89ff3ef352&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p></span>\n        <div>\n        </div>\n      </div></div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 51
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -181,18 +115,7 @@
     },
     "cell_type" : "code",
     "source" : "val ptc = new Coordinate(14.0d,14.0d)\nval lsc = cc(false, (5.0d,5.0d),(6.0d,5.0d),(6.0d,6.0d),(7.0d,6.0d),(7.0d,7.0d),(8.0d,7.0d),(8.0d,8.0d),(9.0d,9.0d))\nval pgc = cc(true, (7,7),(6,9),(6,11),(7,12),(9,11),(11,12),(13,11),(13,9),(11,7))\nval ptG = factory.createPoint(ptc)\nval lnG = factory.createLineString(lsc)\nval rgG = factory.createLinearRing(pgc)\nval pgG = factory.createPolygon(rgG, null)\ng.addAndApply(Seq(pgG))",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "ptc: com.vividsolutions.jts.geom.Coordinate = (14.0, 14.0, NaN)\nlsc: Array[com.vividsolutions.jts.geom.Coordinate] = Array((5.0, 5.0, NaN), (6.0, 5.0, NaN), (6.0, 6.0, NaN), (7.0, 6.0, NaN), (7.0, 7.0, NaN), (8.0, 7.0, NaN), (8.0, 8.0, NaN), (9.0, 9.0, NaN), (5.0, 5.0, NaN))\npgc: Array[com.vividsolutions.jts.geom.Coordinate] = Array((7.0, 7.0, NaN), (6.0, 9.0, NaN), (6.0, 11.0, NaN), (7.0, 12.0, NaN), (9.0, 11.0, NaN), (11.0, 12.0, NaN), (13.0, 11.0, NaN), (13.0, 9.0, NaN), (11.0, 7.0, NaN), (7.0, 7.0, NaN))\nptG: com.vividsolutions.jts.geom.Point = POINT (14 14)\nlnG: com.vividsolutions.jts.geom.LineString = LINESTRING (5 5, 6 5, 6 6, 7 6, 7 7, 8 7, 8 8, 9 9, 5 5)\nrgG: com.vividsolutions.jts.geom.LinearRing = LINEARRING (7 7, 6 9, 6 11, 7 12, 9 11, 11 12, 13 11, 13 9, 11 7, 7 7)\npgG: com..."
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 57
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
@@ -209,18 +132,7 @@
     },
     "cell_type" : "code",
     "source" : "import org.wololo.geojson.GeoJSON\nimport org.wololo.jts2geojson.GeoJSONReader\nval reader = new GeoJSONReader()",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "import org.wololo.geojson.GeoJSON\nimport org.wololo.jts2geojson.GeoJSONReader\nreader: org.wololo.jts2geojson.GeoJSONReader = org.wololo.jts2geojson.GeoJSONReader@55badbba\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "org.wololo.jts2geojson.GeoJSONReader@55badbba"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 58
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -229,18 +141,7 @@
     },
     "cell_type" : "code",
     "source" : "val json = \"\"\"{ \"type\": \"Point\", \"coordinates\": [100.0, 0.0] }\"\"\"",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "json: String = { \"type\": \"Point\", \"coordinates\": [100.0, 0.0] }\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "{ &quot;type&quot;: &quot;Point&quot;, &quot;coordinates&quot;: [100.0, 0.0] }"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 59
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -249,18 +150,7 @@
     },
     "cell_type" : "code",
     "source" : "val p = reader.read(json)",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "p: com.vividsolutions.jts.geom.Geometry = POINT (100 0)\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "POINT (100 0)"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 60
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -269,14 +159,108 @@
     },
     "cell_type" : "code",
     "source" : "g.addAndApply(Seq(p))",
-    "outputs" : [ {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 61
-    } ]
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Full GeoJSON support"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val geoJSON = \"\"\"\n{ \"type\": \"FeatureCollection\",\n  \"features\": [\n    { \n      \"type\": \"Feature\",\n      \"geometry\": {\"type\": \"Point\", \"coordinates\": [102.0, 0.5]},\n      \"properties\": {\"prop0\": \"value0\"}\n    },\n    { \n      \"type\": \"Feature\",\n      \"geometry\": {\n        \"type\": \"LineString\",\n        \"coordinates\": [\n          [102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]\n        ]\n      },\n      \"properties\": \n      {\n        \"prop0\": \"value0\",\n        \"prop1\": 0.0\n      }\n    },\n    { \n      \"type\": \"Feature\",\n      \"geometry\": {\n        \"type\": \"Polygon\",\n        \"coordinates\": [\n          [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0],\n            [100.0, 1.0], [100.0, 0.0] ]\n          ]\n      },\n      \"properties\": {\n        \"prop0\": \"value0\",\n        \"prop1\": {\"this\": \"that\"}\n      }\n    }\n  ]\n}\n\"\"\"",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val geoJSONRepr = GeoChart.parseGeoJSON(geoJSON)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val g2 = GeoChart(Seq(geoJSONRepr))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Adding other geometries will require to transform them in GeoJSON instance, we can use the `GeoChart.geometryToGeoJSON` util for that"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val otherGeoms:Seq[GeoJSON] = g.currentC map GeoChart.geometryToGeoJSON\ng2.addAndApply(otherGeoms)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Lazy? Wanna use String? Ok!"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val g3 = GeoChart(Seq(geoJSON))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Using `DataFrame` now"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Since DataFrame doesn't understand the GeoJSON or Geometry type (yet?), we can use the String representation instead!"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import org.apache.spark.sql._\nval sqlContext = new SQLContext(sparkContext)\nimport sqlContext.implicits._",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import scala.util.Random.{nextLong, nextString}\nobject pkg extends Serializable {\n  case class GeoData(geo:String, name:String, value:Long)\n  object GeoData {\n    def apply(geo:GeoJSON, name:String = nextString(10), value:Long = nextLong):GeoData = \n      GeoData(geo.toString, name, value)\n  }\n}",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "object scope extends Serializable {\n  @transient val gs = g2.currentC\n  val df = sparkContext.parallelize(gs map (x => pkg.GeoData(x))).toDF\n}",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "GeoChart(scope.df, geometryField=Some(\"geo\"))",
+    "outputs" : [ ]
   } ],
   "nbformat" : 4
 }

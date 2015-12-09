@@ -6,6 +6,7 @@ import play.api.libs.json._
 import play.api.libs.json.Json.JsValueWrapper
 import play.api.libs.json.Json.JsValueWrapper
 import com.vividsolutions.jts.geom.Geometry
+import org.wololo.geojson.GeoJSON
 import notebook._
 import notebook.JsonCodec._
 import notebook.front.widgets.magic._
@@ -236,13 +237,11 @@ package object widgets {
       case v: String => JsString(v)
       case v: Boolean => JsBoolean(v)
       case v: Geometry =>
-        import com.vividsolutions.jts.geom.Geometry
-        import org.wololo.geojson.GeoJSON
-        import org.wololo.jts2geojson.GeoJSONWriter
-        val writer = new GeoJSONWriter()
-        val json:GeoJSON = writer.write(v)
+        val json  = GeoChart.geometryToGeoJSON(v)
         val jsonstring = json.toString()
         Json.parse(jsonstring)
+      case v: GeoJSON =>
+        Json.parse(v.toString())
       case v: Any => JsString(v.toString)
     }
   }
@@ -516,6 +515,16 @@ package object widgets {
           "width" → sizes._1, "height" → sizes._2
         )
       ))
+  }
+
+  object GeoChart {
+    def parseGeoJSON(s:String):GeoJSON = org.wololo.geojson.GeoJSONFactory.create(s)
+    def geometryToGeoJSON(g:Geometry):GeoJSON = {
+      import org.wololo.jts2geojson.GeoJSONWriter
+      val writer = new GeoJSONWriter()
+      val json:GeoJSON = writer.write(g)
+      json
+    }
   }
 
   case class GraphChart[C:ToPoints:Sampler](originalData:C, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25, charge:Int= -30, linkDistance:Int=20, linkStrength:Double=1.0) extends Chart[C] {

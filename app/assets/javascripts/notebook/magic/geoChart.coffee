@@ -33,7 +33,13 @@ define([
       if _.isEmpty(data)
         return
 
-      geoms = _.map(data, (o) -> o[options.geometry])
+      geoms = _.map(data, (o) ->
+        g = o[options.geometry]
+        if (typeof g == "string")
+          JSON.parse(g)
+        else
+          geojson
+      )
 
       geojsonMarkerOptions = {
           radius: 8,

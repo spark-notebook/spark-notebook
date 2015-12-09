@@ -5,6 +5,7 @@ import notebook.front.widgets.isNumber
 import org.apache.spark.sql.{Row}
 
 import com.vividsolutions.jts.geom.Geometry
+import org.wololo.geojson.GeoJSON
 
 trait MagicRenderPoint { me =>
   def headers:Seq[String]
@@ -19,18 +20,6 @@ trait MagicRenderPoint { me =>
     override val data = me.data ++ m.data
   }
 }
-//case class ChartPoint(x: Any, y: Any) extends MagicRenderPoint {
-//  val X = "_1"
-//  val Y = "_2"
-//  val headers = Seq(X, Y)
-//  def values  = Seq(x, y)
-//}
-//case class MapPoint(key: Any, value: Any) extends MagicRenderPoint {
-//  val Key = "_1"
-//  val Value = "_2"
-//  val headers = Seq(Key, Value)
-//  val values =  Seq(key, value)
-//}
 case class StringPoint(string:String, headers:Seq[String]=Seq("string value")) extends MagicRenderPoint {
   val values  = Seq(string)
 }
@@ -45,6 +34,7 @@ case class AnyPoint(any:Any) extends MagicRenderPoint {
       case v: String      => Seq("String")
       case v: Boolean     => Seq("Boolean")
       case v: Geometry    => Seq("Geometry")
+      case v: GeoJSON     => Seq("GeoJSON")
       case v: Any         => Reflector.toFieldNameArray(any)
   }
   val values  = any match {
@@ -57,6 +47,7 @@ case class AnyPoint(any:Any) extends MagicRenderPoint {
       case v: String      => Seq(v)
       case v: Boolean     => Seq(v)
       case v: Geometry    => Seq(v)
+      case v: GeoJSON     => Seq(v)
       case v: Any         => Reflector.toFieldValueArray(any)
   }
 }

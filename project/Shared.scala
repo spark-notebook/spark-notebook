@@ -133,7 +133,12 @@ object Shared {
       ExclusionRule("org.apache.hadoop",  "hadoop-client"),
       ExclusionRule("org.apache.curator", "curator-recipes"),
       ExclusionRule("org.tachyonproject", "tachyon-underfs-glusterfs"),
-      ExclusionRule("org.tachyonproject", "tachyon-underfs-s3")
+      ExclusionRule("org.tachyonproject", "tachyon-underfs-s3"),
+      ExclusionRule("com.fasterxml.jackson.module", "jackson-module-scala"),
+      ExclusionRule("com.fasterxml.jackson.core", "jackson-databind"),
+      ExclusionRule("com.fasterxml.jackson.core", "jackson-annotations"),
+      ExclusionRule("com.fasterxml.jackson.module", "jackson-module-jsonSchema"),
+      ExclusionRule("com.fasterxml.jackson.datatype", "jackson-datatype-joda")
     )
 
     val deps = sparkVersion { sv =>
