@@ -222,11 +222,11 @@ package object widgets {
   import java.util.Date
 
   implicit val jsStringAnyCodec:Codec[JsValue, Seq[(String, Any)]] = new Codec[JsValue, Seq[(String, Any)]] {
-    def decode(a: Seq[(String, Any)]):JsValue = Json.obj(a.map( f => f._1.trim -> toJson(f._2) ):_*)
+    def decode(a: Seq[(String, Any)]):JsValue = JsObject(a.map( f => f._1.trim -> toJson(f._2) ))
     def encode(v: JsValue):Seq[(String, Any)] = ??? //todo
   }
 
-  def toJson(obj: Any): JsValueWrapper = {
+  def toJson(obj: Any): JsValue = {
     obj match {
       case null => JsNull
       case v: Int => JsNumber(v)
@@ -242,7 +242,15 @@ package object widgets {
         Json.parse(jsonstring)
       case v: GeoJSON =>
         Json.parse(v.toString())
-      case v: Any => JsString(v.toString)
+      case v: Iterable[_] =>
+        val it = v.map(x => toJson(x))
+        JsArray(it.toSeq)
+      case v:Tuple2[_,_] =>
+        JsObject(Seq(("_1" → toJson(v._1)), ("_2" → toJson(v._2))))
+      case v:Tuple3[_,_,_] =>
+        JsObject(Seq(("_1" → toJson(v._1)), ("_2" → toJson(v._2)), ("_3" → toJson(v._3))))
+      case v =>
+        JsString(v.toString)
     }
   }
 
@@ -499,12 +507,20 @@ package object widgets {
     originalData:C,
     override val sizes:(Int, Int)=(600, 400),
     maxPoints:Int = 25,
-    geometryField:Option[String]=None) extends Chart[C] {
+    geometryField:Option[String]=None,
+    rField:Option[String]=None,
+    colorField:Option[String]=None,
+    fillColorField:Option[String]=None) extends Chart[C] {
 
     val geometry = geometryField.getOrElse(headers(0))
 
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
-      val stripedData = t.data.toSeq.filter { case (k, v) => k == geometry }
+      val stripedData = t.data.toSeq.filter { case (k, v) =>
+                                              k == geometry ||
+                                              Some(k) == rField ||
+                                              Some(k) == colorField  ||
+                                              Some(k) == fillColorField
+                                            }
       stripedData
     }
 
@@ -514,6 +530,9 @@ package object widgets {
           "geometry" → geometry,
           "width" → sizes._1, "height" → sizes._2
         )
+        ++ rField.map(r => Json.obj("r" → r)).getOrElse(Json.obj())
+        ++ colorField.map(color => Json.obj("color" → color)).getOrElse(Json.obj())
+        ++ fillColorField.map(color => Json.obj("fillColor" → color)).getOrElse(Json.obj())
       ))
   }
 

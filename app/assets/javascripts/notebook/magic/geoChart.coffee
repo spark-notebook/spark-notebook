@@ -29,6 +29,14 @@ define([
 
     L.control.mousePosition().addTo(map) if L.control.mousePosition
 
+    serializeXmlNode = (xmlNode) ->
+      if (typeof window.XMLSerializer != "undefined")
+        (new window.XMLSerializer()).serializeToString(xmlNode)
+      else if (typeof xmlNode.xml != "undefined")
+        xmlNode.xml
+      else
+        ""
+
     updateData = (data) =>
       if _.isEmpty(data)
         return
@@ -36,9 +44,16 @@ define([
       geoms = _.map(data, (o) ->
         g = o[options.geometry]
         if (typeof g == "string")
-          JSON.parse(g)
+          g = JSON.parse(g)
         else
-          geojson
+          g
+        if (g["type"] == "FeatureCollection")
+          _.each(g.features, (f) -> f.geometry.original = o)
+        else if (g.type == "Feature")
+          g.geometry.original = o
+        else
+          g.original = o
+        g
       )
 
       geojsonMarkerOptions = {
@@ -49,7 +64,28 @@ define([
           opacity: 1,
           fillOpacity: 0.8
       }
-      geojson = L.geoJson(geoms)
+      geojson = L.geoJson(geoms, {
+        pointToLayer: (feature, latlng) ->
+          original = feature.original || feature.geometry.original || {}
+          L.circleMarker( latlng,
+                          _.extend(
+                            geojsonMarkerOptions,
+                            {
+                              color: original[options.color] || "#000",
+                              fillColor: original[options.fillColor] || "#ff7800",
+                              radius: original[options.radius] || 8,
+                            }
+                          )
+                        )
+        ,
+        style: (feature) ->
+          original = feature.original || feature.geometry.original || {}
+          {
+            weight: 1,
+            color: original[options.color] || "black"
+            fillColor: original[options.fillColor] || "fillColor"
+          }
+      })
 
       bounds = geojson.getBounds()
 

@@ -17,8 +17,11 @@
         @stylesheet
         @*<link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/bootstrap/css/bootstrap.min.css")" type="text/css" />*@
         <link rel="stylesheet" href="@routes.Assets.at("javascripts/third/dynatable/jquery.dynatable.css")" type="text/css" />
+        <link rel="stylesheet" href="@routes.Assets.at("javascripts/third/leaflet-ext/MarkerCluster.Default.css")" type="text/css" />
+        <link rel="stylesheet" href="@routes.Assets.at("javascripts/third/leaflet-ext/MarkerCluster.css")" type="text/css" />
         <link rel="stylesheet" href="@routes.Assets.at("ipython/custom/custom.css")" type="text/css" />
         <link rel="stylesheet" href="@routes.Assets.at("stylesheets/user_custom.css")" type="text/css" />
+
         <script src="@routes.Assets.at("ipython/components/es6-promise/promise.min.js")" type="text/javascript" charset="utf-8"></script>
         <script src="@routes.Assets.at("ipython/components/requirejs/require.js")" type="text/javascript" charset="utf-8"></script>
         <script>
@@ -39,6 +42,7 @@
           termjs: 'components/term.js/src/term',
           leaflet: '@routes.Assets.at("javascripts/third/leaflet")',
           LeafletMousePosition: '@routes.Assets.at("javascripts/third/LControlMousePosition")',
+          LeafletMarkerCluster: '@routes.Assets.at("javascripts/third/leaflet-ext/markercluster-src")',
           proj4: '@routes.Assets.at("javascripts/third/proj4")',
           epsg: '@routes.Assets.at("javascripts/third/epsg")',
           proj4leaflet: '@routes.Assets.at("javascripts/third/proj4leaflet")',
