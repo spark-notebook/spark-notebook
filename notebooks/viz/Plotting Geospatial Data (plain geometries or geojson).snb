@@ -1,0 +1,329 @@
+{
+  "metadata" : {
+    "name" : "Plotting Geospatial Data (plain geometries or geojson)",
+    "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customArgs" : [ "-Dh=${HOME}" ],
+    "customSparkConf" : {
+      "test" : "${HOME}"
+    }
+  },
+  "cells" : [ {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# Geospatial: easy plotting!"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "<div class=\"well\">`GeoChart`: Plotting a series of regular `Geometry` (JTS), `GeoJSON` and `String`.</div>"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Helpers"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Creating tools to generate `Geometry` instances"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "output_stream_collapsed" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, LinearRing, PrecisionModel}\nval factory:GeometryFactory = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Next we'll create a polygon composed of a single linear ring."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "import scala.collection.JavaConverters._",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Let's define a function that converts coordinates pair in `Coordinate`s instances (using JTS' Java API)."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "def cc(close:Boolean, xs:(Double, Double)*):Array[Coordinate] = {\n  val l = xs.toArray\n  val s = l map { case (x, y) => new Coordinate(x, y) } \n  s :+ s.head\n}",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## JTS geometries first"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "First, we can create a point (on Liège, Belgium) using regular LatLon."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val point = factory.createPoint(new Coordinate(5.57, 50.65))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "So, here is a rectangle"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "output_stream_collapsed" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val x = 30d\nval y = 50d\nval w = 5d\nval h = 10d\nval cl = cc(true, (x,y), (x + w,y), (x + w,y + h), (x,y + h))\nval lr = factory.createLinearRing(cl);\nval polygon = factory.createPolygon(lr)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## First usage of `GeoChart` "
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Now that we have some `Geometry`s available we can use the `GeoChart` to display them on an interactive map."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val g = GeoChart(Seq(polygon, point))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "This chart can be updated with new geometries, so let's add a more complex geometry"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "output_stream_collapsed" : true,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val ptc = new Coordinate(14.0d,14.0d)\nval lsc = cc(false, (5.0d,5.0d),(6.0d,5.0d),(6.0d,6.0d),(7.0d,6.0d),(7.0d,7.0d),(8.0d,7.0d),(8.0d,8.0d),(9.0d,9.0d))\nval pgc = cc(true, (7,7),(6,9),(6,11),(7,12),(9,11),(11,12),(13,11),(13,9),(11,7))\nval ptG = factory.createPoint(ptc)\nval lnG = factory.createLineString(lsc)\nval rgG = factory.createLinearRing(pgc)\nval pgG = factory.createPolygon(rgG, null)\ng.addAndApply(Seq(pgG))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "So what about using geoJSON parsed as `Geometry` to update the chart."
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "> **NOTE:** the geoJSON spec defines `Feature` and `FeatureCollection` which are WFS, and the `Geometry` doesn't deal with that. So the following won't work, we'll need to use the GeoJson API instead."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "import org.wololo.geojson.GeoJSON\nimport org.wololo.jts2geojson.GeoJSONReader\nval reader = new GeoJSONReader()",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val json = \"\"\"{ \"type\": \"Point\", \"coordinates\": [100.0, 0.0] }\"\"\"",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val p = reader.read(json)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "g.addAndApply(Seq(p))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# GeoJSON support"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val geoJSON = \"\"\"\n{ \"type\": \"FeatureCollection\",\n  \"features\": [\n    { \n      \"type\": \"Feature\",\n      \"geometry\": {\"type\": \"Point\", \"coordinates\": [102.0, 0.5]},\n      \"properties\": {\"prop0\": \"value0\"}\n    },\n    { \n      \"type\": \"Feature\",\n      \"geometry\": {\n        \"type\": \"LineString\",\n        \"coordinates\": [\n          [102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]\n        ]\n      },\n      \"properties\": \n      {\n        \"prop0\": \"value0\",\n        \"prop1\": 0.0\n      }\n    },\n    { \n      \"type\": \"Feature\",\n      \"geometry\": {\n        \"type\": \"Polygon\",\n        \"coordinates\": [\n          [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0],\n            [100.0, 1.0], [100.0, 0.0] ]\n          ]\n      },\n      \"properties\": {\n        \"prop0\": \"value0\",\n        \"prop1\": {\"this\": \"that\"}\n      }\n    }\n  ]\n}\n\"\"\"",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## We can use regular `GeoJSON` type instead of `String`"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val geoJSONRepr = GeoChart.parseGeoJSON(geoJSON)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val g2 = GeoChart(Seq(geoJSONRepr))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Update chart with other geometries"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Adding other geometries will require to transform them in GeoJSON instance, we can use the `GeoChart.geometryToGeoJSON` util for that"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val otherGeoms:Seq[GeoJSON] = g.currentC map GeoChart.geometryToGeoJSON\ng2.addAndApply(otherGeoms)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# Of course: GeoJSON as `String`"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val g3 = GeoChart(Seq(geoJSON))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# `DataFrame` "
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Since DataFrame doesn't understand the `GeoJSON` or `Geometry` type (yet?), we can use the **`String`** representation instead!"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "import org.apache.spark.sql._\nval sqlContext = new SQLContext(sparkContext)\nimport sqlContext.implicits._",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "import scala.util.Random.{nextBoolean, nextLong}\nobject pkg extends Serializable {\n  case class GeoData(geo:String, category:String, value:Long)\n  object GeoData {\n    def randomCategory = if (nextBoolean) \"a\" else \"b\"\n    def apply(geo:GeoJSON, category:String = randomCategory, value:Long = nextLong):GeoData = \n      GeoData(geo.toString, category, value)\n  }\n}",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "object scope extends Serializable {\n  @transient val gs = g2.currentC\n  val df = sparkContext.parallelize(gs map (x => pkg.GeoData(x))).toDF\n}",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "GeoChart(scope.df, geometryField=Some(\"geo\"))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "markdown",
+    "source" : "# Adding some contextual style"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "import org.apache.spark.sql.functions._\n\nval extendedDF = scope.df\n                        .withColumn(\"color\", when($\"value\" % 2 === 0, \"red\")\n                                              .otherwise(\"blue\"))\n                        .withColumn(\"radius\",log(abs($\"value\")))\n                        .withColumn(\"fillColor\", when($\"category\" === \"a\", \"purple\")\n                                                  .otherwise(\"cyan\"))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "val g3 = GeoChart(extendedDF, geometryField=Some(\"geo\"), \n                              rField=Some(\"radius\"),\n                              colorField=Some(\"color\"),\n                              fillColorField=Some(\"fillColor\")\n                 )",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# The World"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import scala.io.Source.fromURL\nval worldGeoJsonURL = \"https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json\"\nval world = fromURL(worldGeoJsonURL).getLines.mkString\nGeoChart(Seq(world), sizes=(800, 600))",
+    "outputs" : [ ]
+  } ],
+  "nbformat" : 4
+}
