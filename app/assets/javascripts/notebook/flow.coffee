@@ -19,21 +19,22 @@ define([
         gridSize: 1
     })
 
-    grect = (n) ->
+    grect = (n, options) ->
+      options = options || {}
       new joint.shapes.basic.Rect({
-          position: { x: 100, y: 30 },
-          size: { width: 100, height: 30 },
+          position: options.position || { x: 100, y: 30 },
+          size: options.size || { width: 100, height: 30 },
           attrs: {
             rect: { fill: 'blue' },
             text: { text: n||'box', fill: 'white'}
           }
       })
 
-    glink = (s, t) ->
-      if (s && t)
+    glink = (options) ->
+      if (options.source && options.target)
         new joint.dia.Link({
-            source: { id: s },
-            target: { id: t }
+          source: { id: options.source },
+          target: { id: options.target }
         })
       else new joint.dia.Link({
         source:{x: 120, y: 50},
@@ -53,8 +54,10 @@ define([
         output.data["text/html"] = v
       else
         output.data["text/html"]
+
     conf = $(container).find(".configuration")
     form = $(container).find("form.configure")
+
     form.on("submit", (e) =>
       e.preventDefault()
       e.stopImmediatePropagation()
@@ -96,7 +99,8 @@ define([
       cellsLinks =  _.union(cells, links)
       d = _.map(cellsLinks, (cl) =>
         o = _.clone(cl.pipeComponent)
-        o.position = cl.position
+        o.position = cl.attributes.position
+        o.size = cl.attributes.size
         o
       )
       o = $(html_output())
@@ -106,9 +110,9 @@ define([
       j.dataInit = d
       s = JSON.stringify(j)
       $(sc).attr("data-this", s)
-      html_output(o.html())
+      html_output(o.prop('outerHTML'))
 
-    #graph.on("change", save)
+    graph.on("change", save)
 
     onData = (newData) =>
       cells = graph.getCells()
@@ -129,12 +133,12 @@ define([
 
       addCells = _.map(toAdd, (d) =>
         if (d.tpe == "box")
-          r = grect(d.name)
+          r = grect(d.name, {position: d.position, size: d.size})
           r.id = d.id
           r.pipeComponent = d
           r
         else
-          l = glink()
+          l = glink({source: d.parameters.source, target: d.parameters.target})
           l.id = d.id
           l.pipeComponent = d
           l.on("remove", (l) => dataO([_.extend(l.pipeComponent, {'remove': true})]))
