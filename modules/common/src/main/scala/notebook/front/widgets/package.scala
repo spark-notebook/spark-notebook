@@ -3,8 +3,6 @@ package notebook.front
 import scala.util.Random
 import scala.xml.{NodeSeq, UnprefixedAttribute, Null}
 import play.api.libs.json._
-import play.api.libs.json.Json.JsValueWrapper
-import play.api.libs.json.Json.JsValueWrapper
 import com.vividsolutions.jts.geom.Geometry
 import org.wololo.geojson.GeoJSON
 import notebook._
