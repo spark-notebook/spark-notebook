@@ -175,7 +175,7 @@ object Dependencies {
   val bokeh = "io.continuum.bokeh" %% "bokeh" % "0.2"
   val wispDepSumac = "com.quantifind" %% "sumac" % "0.3.0"
   val geometryDeps = Seq(
-    "org.wololo" % "jts2geojson" % "0.6.0" excludeAll (
+    "org.wololo" % "jts2geojson" % "0.7.0" excludeAll (
         ExclusionRule("com.fasterxml.jackson.module", "jackson-module-scala"),
         ExclusionRule("com.fasterxml.jackson.core", "jackson-annotations"),
         ExclusionRule("com.fasterxml.jackson.core", "jackson-databind"),
