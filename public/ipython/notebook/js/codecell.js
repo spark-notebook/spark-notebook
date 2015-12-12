@@ -385,6 +385,16 @@ define([
      * @method execute
      */
     CodeCell.prototype.execute = function (stop_on_error) {
+        if (!this.kernel) {
+            // will be handled by a notificationarea.js, showing a little msg to user
+            console.log("Can't execute, kernel is not initialized.");
+            this.events.trigger('kernel_not_started_yet.Kernel', this.notebook);
+            this.element.addClass("failed");
+            return;
+        } else {
+            this.element.removeClass("failed");
+        }
+
         if (!this.kernel || !this.kernel.is_connected()) {
             console.log("Can't execute, kernel is not connected.");
             return;

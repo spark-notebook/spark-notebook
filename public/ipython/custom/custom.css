@@ -64,6 +64,10 @@ This will always be an empty file in IPython
   border: 1px solid #aaa;
 }
 
+.cell.failed {
+  background-color: #ee5f5b;
+}
+
 /* pivot chart */
 .pivot-controls-hidden .pvtVals, .pivot-controls-hidden .pvtRenderer, .pivot-controls-hidden .pvtAxisContainer {
   visibility: hidden;
