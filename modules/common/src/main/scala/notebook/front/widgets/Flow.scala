@@ -16,6 +16,7 @@ trait PipeComponent[X <: PipeComponent[X]] {
   def init(a:Any):Any
   def next(a:Map[PipeComponent[_], Any]):Any
   def merge(j:JsValue):X
+  private[front] val me:X = this.asInstanceOf[X]
   def toJSON:JsValue = Json.obj(
     "name" → name,
     "id" → id,
@@ -139,7 +140,7 @@ case class Flow() extends JsWorld[PipeComponent[_], JsValue] {
     val m = s.map{ j => ((j \ "id").as[String]) → j }.toMap
     mutData = mutData.map { pc =>
       m.get(pc.id) match {
-        case None => Some(pc)
+        case None => Some(pc.me)
         case Some(j) =>
           j match {
             case x:JsObject if x.keys.contains("remove") && (x \ "remove").as[Boolean] =>
@@ -206,12 +207,11 @@ case class Flow() extends JsWorld[PipeComponent[_], JsValue] {
         val linksToPc = links.filter(_.target == Some(pc.id)).map(_.source.get)
 
         val valuesForLinksSource = linksToPc.map(s => currentData.find(_.id == s) → values.get(s))
-                                            .collect{case (Some(x), Some(y)) => x → y }
-                                            .toMap[PipeComponent[_], Any]
+                                            .collect{case (Some(x), Some(y)) => x.me → y }
 
         values += (valuesForLinksSource match {
           case xs if xs.isEmpty => pc.id → pc.init(init(pc.id))
-          case xs               => pc.id → pc.next(xs)
+          case xs               => pc.id → pc.next(xs.asInstanceOf[Map[PipeComponent[_], Any]])
         })
       }
     }
