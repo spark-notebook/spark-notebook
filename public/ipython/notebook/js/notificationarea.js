@@ -77,6 +77,12 @@ define([
             }, {title: 'click to reconnect'});
         });
 
+        this.events.on('kernel_not_started_yet.Kernel', function (evt, notebook) {
+            knw.danger("No Kernel. Click to start", undefined, function () {
+                notebook.start_session();
+            }, {title: 'click to start'});
+        });
+
         this.events.on('kernel_connected.Kernel', function () {
             knw.info("Connected", 500);
         });
