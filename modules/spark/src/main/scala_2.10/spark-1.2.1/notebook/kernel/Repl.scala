@@ -253,6 +253,8 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
 
   def addCp(newJars:List[String]) = {
     val prevCode = interp.prevRequestList.map(_.originalLine)
+    // this will close the repl class server, which is needed in order to reuse `-Dspark.replClassServer.port`!
+    interp.close()
     val r = new Repl(compilerOpts, newJars:::jars)
     (r, () => prevCode.drop(7/*init scripts... → UNSAFE*/) foreach (c => r.evaluate(c, _ => ())))
   }
