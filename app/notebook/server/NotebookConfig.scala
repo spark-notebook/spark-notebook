@@ -20,15 +20,9 @@ case class NotebookConfig(config: Configuration) {
     Logger.debug(s"Notebooks directory in the config is referring $confDir. Does it exist? ${new File(confDir).exists}")
   }
 
-  val custom = config.getConfig("notebooks.custom")
-  val localRepo = custom.flatMap(_.getString("localRepo"))
-  val repos = custom.flatMap(_.getStringList("repos")).map(_.asScala.toList)
-  val deps = custom.flatMap(_.getStringList("deps")).map(_.asScala.toList)
-  val imports = custom.flatMap(_.getStringList("imports")).map(_.asScala.toList)
-  val args = custom.flatMap(_.getStringList("args")).map(_.asScala.toList)
-  val sparkConf = custom.flatMap(_.getConfig("sparkConf")).map { c =>
-    JsObject(c.entrySet.map { case (k, v) => (k, JsString(v.unwrapped().toString)) }.toSeq)
-  }
+  val customConf = CustomConf.fromConfig(config.getConfig("notebooks.custom"))
+
+  val overrideConf = CustomConf.fromConfig(config.getConfig("notebooks.override"))
 
   val notebooksDir = config.getString("notebooks.dir").map(new File(_)).filter(_.exists)
     .orElse(Option(new File("./notebooks"))).filter(_.exists) // ./bin/spark-notebook
@@ -61,6 +55,44 @@ case class NotebookConfig(config: Configuration) {
   }
 }
 
+case class CustomConf(
+  localRepo: Option[String],
+  repos:     Option[List[String]],
+  deps:      Option[List[String]],
+  imports:   Option[List[String]],
+  args:      Option[List[String]],
+  sparkConf: Option[JsObject]
+) {
+  val sparkConfMap:Option[Map[String, String]] = sparkConf flatMap CustomConf.fromSparkConfJsonToMap
+}
+object CustomConf {
+  def fromConfig(custom:Option[Configuration]) = {
+    val localRepo = custom.flatMap(_.getString("localRepo"))
+    val repos = custom.flatMap(_.getStringList("repos")).map(_.asScala.toList)
+    val deps = custom.flatMap(_.getStringList("deps")).map(_.asScala.toList)
+    val imports = custom.flatMap(_.getStringList("imports")).map(_.asScala.toList)
+    val args = custom.flatMap(_.getStringList("args")).map(_.asScala.toList)
+    val sparkConf = custom.flatMap(_.getConfig("sparkConf")).map { c =>
+      JsObject(c.entrySet.map { case (k, v) => (k, JsString(v.unwrapped().toString)) }.toSeq)
+    }
+    CustomConf(localRepo, repos, deps, imports, args, sparkConf)
+  }
+
+  private val readJsValueMap = Reads.map[JsValue]
+  def fromSparkConfJsonToMap(conf:JsObject):Option[Map[String, String]] =
+    for {
+      map <- readJsValueMap.reads(conf).asOpt
+    } yield map.map {
+      case (k, a@JsArray(v))   => k → a.toString
+      case (k, JsBoolean(v))   => k → v.toString
+      case (k, JsNull)         => k → "null"
+      case (k, JsNumber(v))    => k → v.toString
+      case (k, o@JsObject(v))  => k → o.toString
+      case (k, JsString(v))    => k → v
+      case (k, v:JsUndefined)  => k → s"Undefined: ${v.error}"
+    }
+
+}
 
 case class TachyonInfo(url: Option[String] = None, baseDir: String = "/share")
 
