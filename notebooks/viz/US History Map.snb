@@ -1,0 +1,66 @@
+{
+  "metadata" : {
+    "name" : "US History Map",
+    "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customArgs" : null,
+    "customSparkConf" : null
+  },
+  "cells" : [ {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val geoJsonsDir = \"https://api.github.com/repos/poezn/us-history-maps/contents/GeoJSON?ref=master\"\nval listingString = scala.io.Source.fromURL(geoJsonsDir).getLines.mkString\nval listing = play.api.libs.json.Json.parse(listingString)\n()",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val play.api.libs.json.JsArray(arr) = listing\n()",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val geoJsons = arr.map(x => (x \\ \"name\").as[String])\n                  .filterNot(_ == \".DS_Store\")\n                  .filterNot(_ startsWith \"mapgroup\")\n                  .filter(_.nonEmpty)\n                  .map(x => (x.takeWhile(_.isDigit).toInt, s\"https://raw.githubusercontent.com/poezn/us-history-maps/master/GeoJSON/$x\"))\n                  .sortBy(_._1)\n()",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val head = geoJsons.head\ndef extractData(u:String) = {\n  val h = scala.io.Source.fromURL(u).getLines.mkString\n  val fs =  GeoChart.parseGeoJSON(h) match {\n              case fc:org.wololo.geojson.FeatureCollection => fc.getFeatures\n            }\n  fs.map { f =>\n    (f, Option(f.getProperties.get(\"COUNTRY\")).map(_.toString).getOrElse(\"Disputed\"))\n  }\n  \n}\nval h = extractData(head._2)\nvar countries = h.map(_._2).distinct.toList\nval colors = List(\n  \"#1f77b4\", \"#aec7e8\", \"#ff7f0e\", \"#ffbb78\", \"#2ca02c\", \"#98df8a\", \"#d62728\", \"#ff9896\", \"#9467bd\", \"#c5b0d5\", \n  \"#8c564b\", \"#c49c94\", \"#e377c2\", \"#f7b6d2\", \"#7f7f7f\", \"#c7c7c7\", \"#bcbd22\", \"#dbdb8d\", \"#17becf\", \"#9edae5\"\n)\ndef mapping = (countries zip colors).toMap\nval u:DataConnectedWidget[String] = ul(20)\ndef updateLegend(cs:List[String]) = {\n  u(mapping.filter(xs => cs contains (xs._1)).map{ case (n, c) => s\"\"\"<span style=\"color: $c\">$n</span>\"\"\"}.toSeq)\n}\nupdateLegend(countries)\ndef toGeoData(d:Array[(org.wololo.geojson.Feature, String)]) = d.map(x => (x._1, mapping(x._2)))\nval g = GeoChart(toGeoData(h), geometryField=Some(\"_1\"), fillColorField=Some(\"_2\"), sizes=(800,800), maxPoints=1000)\nval d:SingleConnectedWidget[String] = out\nval dt = new java.text.SimpleDateFormat(\"MMM YYYY\")\nval c = java.util.Calendar.getInstance\nc.set(java.util.Calendar.DATE, 1)\ndef toDate(v:Int) = {\n  val i = v.toString.take(6)\n  c.set(java.util.Calendar.YEAR, i.take(4).toInt)\n  c.set(java.util.Calendar.MONTH, i.drop(4).take(2).toInt)\n  dt.format(c.getTime)\n}\nd(\"In \" + toDate(head._1))\nval b = BarChart(List((\"US\", 0)), maxPoints=100, sizes=(300, 300))\ndef updateBars(xs:Array[String]) = b.applyOn(xs.groupBy(x=>x).map{ x => (x._1, x._2.size)}.toList)\nupdateBars(h.map(_._2))\ncontainerFluid(List(\n  List((d, 2), (u, 5), (b, 5)),\n  List((html(<div><br/><hr/><br/></div>), 12)),\n  List((g.asInstanceOf[Widget], 12))\n))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "geoJsons.tail.foreach{ x =>\n  Thread.sleep(500)\n  val dt = extractData(x._2)\n  val cs = dt.map(_._2).distinct.toList\n  countries = countries ::: (cs diff countries) \n  updateLegend(cs)\n  updateBars(dt.map(_._2))\n  val j = toGeoData(dt)\n  d(\"In \" + toDate(x._1))\n  g.applyOn(j)\n}",
+    "outputs" : [ ]
+  } ],
+  "nbformat" : 4
+}

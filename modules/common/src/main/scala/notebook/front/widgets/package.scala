@@ -71,7 +71,7 @@ package object widgets {
     apply(data)
 
     lazy val toHtml = <ul data-bind="foreach: value">
-      <li data-bind="text: $data"></li>{
+      <li data-bind="html: $data"></li>{
         scopedScript(
           """
               |req(
