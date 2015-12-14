@@ -28,7 +28,7 @@ object Dependencies {
   val spark_1_X = "[a-zA-Z]*1\\.([0-9]+)\\.([0-9]+).*".r
   val extractVs = "[a-zA-Z]*(\\d+)\\.(\\d+)\\.(\\d+).*".r
 
-  val defaultSparkVersion = sys.props.getOrElse("spark.version", "1.5.1")
+  val defaultSparkVersion = sys.props.getOrElse("spark.version", "1.5.2")
   val sparkVersionTuple = defaultSparkVersion match { case extractVs(v, m, p) =>  (v.toInt, m.toInt, p.toInt)}
   val defaultScalaVersion = sys.props.getOrElse("scala.version", "2.10.4") match {
     case x@scala_2_1X("0") => x
