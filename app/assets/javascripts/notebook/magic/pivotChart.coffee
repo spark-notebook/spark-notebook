@@ -10,7 +10,6 @@ define([
   (dataO, container, options) ->
     require(['c3', 'pivotC3'],
     (c3, pivotC3) =>
-      w = options.width||600
       h = options.height||400
 
       derivers = $.pivotUtilities.derivers;
@@ -48,15 +47,14 @@ define([
         cell.metadata.presentation.pivot_chart_state = state
 
       refresh = (options) ->
-        $(".pvtUi path.c3-shape.c3-line").css("fill", "transparent")
         $(".pvtUi").css("width", "100%")
         save_pivot_state(extract_pivot_state(options))
 
       rendererOptions = {
                           c3: {
                             size: {
-                              height: h
-                              width: w
+                              height: h,
+                              width: $(container).width()
                             }
                           }
                         }

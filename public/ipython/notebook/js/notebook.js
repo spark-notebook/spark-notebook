@@ -1647,6 +1647,14 @@ define([
      */
     Notebook.prototype.restart_kernel = function () {
         var that = this;
+        // if kernel was not started yet, start it straight away
+        if (!that.kernel) {
+            // start a new session with the server's default kernel
+            // spec_changed events will fire after kernel is loaded
+            this.start_session();
+            return;
+        }
+
         dialog.modal({
             notebook: this,
             keyboard_manager: this.keyboard_manager,
@@ -2210,6 +2218,11 @@ define([
         this.set_dirty(false);
         this.scroll_to_top();
         this.writable = data.writable || false;
+
+        // to save resources eagerly load the kernel only if configured-so in application.conf
+        var autoStartKernel = data.autoStartKernel || false;
+        console.log("autoStartKernel on load_notebook: ", autoStartKernel);
+
         var nbmodel = data.content;
         var orig_nbformat = nbmodel.metadata.orig_nbformat;
         var orig_nbformat_minor = nbmodel.metadata.orig_nbformat_minor;
@@ -2258,11 +2271,15 @@ define([
             }
             if (kernel_name) {
                 // setting kernel_name here triggers start_session
-                this.kernel_selector.set_kernel(kernel_name);
+                if (autoStartKernel) {
+                    this.kernel_selector.set_kernel(kernel_name);
+                }
             } else {
-                // start a new session with the server's default kernel
-                // spec_changed events will fire after kernel is loaded
-                this.start_session();
+                if (autoStartKernel) {
+                    // start a new session with the server's default kernel
+                    // spec_changed events will fire after kernel is loaded
+                    this.start_session();
+                }
             }
         }
         // load our checkpoint list

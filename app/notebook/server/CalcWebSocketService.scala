@@ -92,6 +92,8 @@ class CalcWebSocketService(
           kCompilerArgs
         ).withDeploy(remoteDeploy)
       }
+
+      context.watch(calculator)
     }
 
     def receive = {
@@ -144,7 +146,17 @@ class CalcWebSocketService(
       case Terminated(actor) =>
         Logger.debug("Termination of op calculator")
         if (actor == calculator) {
-          spawnCalculator()
+          Logger.error(s"Remote calculator ($calculator) has been terminated !!!!!")
+          ws.send(
+            obj(
+              "session" → "ignored"
+            ),
+            JsNull,
+            "status",
+            "iopub",
+            obj("execution_state" → "dead")
+          )
+          self ! PoisonPill
         } else {
           if (currentSessionOperation.nonEmpty) {
             currentSessionOperation = currentSessionOperation.dequeue._2

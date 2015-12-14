@@ -3,8 +3,8 @@ package notebook.front
 import scala.util.Random
 import scala.xml.{NodeSeq, UnprefixedAttribute, Null}
 import play.api.libs.json._
-import play.api.libs.json.Json.JsValueWrapper
-import play.api.libs.json.Json.JsValueWrapper
+import com.vividsolutions.jts.geom.Geometry
+import org.wololo.geojson.GeoJSON
 import notebook._
 import notebook.JsonCodec._
 import notebook.front.widgets.magic._
@@ -71,7 +71,7 @@ package object widgets {
     apply(data)
 
     lazy val toHtml = <ul data-bind="foreach: value">
-      <li data-bind="text: $data"></li>{
+      <li data-bind="html: $data"></li>{
         scopedScript(
           """
               |req(
@@ -220,11 +220,11 @@ package object widgets {
   import java.util.Date
 
   implicit val jsStringAnyCodec:Codec[JsValue, Seq[(String, Any)]] = new Codec[JsValue, Seq[(String, Any)]] {
-    def decode(a: Seq[(String, Any)]):JsValue = Json.obj(a.map( f => f._1.trim -> toJson(f._2) ):_*)
+    def decode(a: Seq[(String, Any)]):JsValue = JsObject(a.map( f => f._1.trim -> toJson(f._2) ))
     def encode(v: JsValue):Seq[(String, Any)] = ??? //todo
   }
 
-  def toJson(obj: Any): JsValueWrapper = {
+  def toJson(obj: Any): JsValue = {
     obj match {
       case null => JsNull
       case v: Int => JsNumber(v)
@@ -234,7 +234,21 @@ package object widgets {
       case v: BigDecimal => JsNumber(v)
       case v: String => JsString(v)
       case v: Boolean => JsBoolean(v)
-      case v: Any => JsString(v.toString)
+      case v: Geometry =>
+        val json  = GeoChart.geometryToGeoJSON(v)
+        val jsonstring = json.toString()
+        Json.parse(jsonstring)
+      case v: GeoJSON =>
+        Json.parse(v.toString())
+      case v: Iterable[_] =>
+        val it = v.map(x => toJson(x))
+        JsArray(it.toSeq)
+      case v:Tuple2[_,_] =>
+        JsObject(Seq(("_1" → toJson(v._1)), ("_2" → toJson(v._2))))
+      case v:Tuple3[_,_,_] =>
+        JsObject(Seq(("_1" → toJson(v._1)), ("_2" → toJson(v._2)), ("_3" → toJson(v._3))))
+      case v =>
+        JsString(v.toString)
     }
   }
 
@@ -487,6 +501,49 @@ package object widgets {
       ))
   }
 
+  case class GeoChart[C:ToPoints:Sampler](
+    originalData:C,
+    override val sizes:(Int, Int)=(600, 400),
+    maxPoints:Int = 25,
+    geometryField:Option[String]=None,
+    rField:Option[String]=None,
+    colorField:Option[String]=None,
+    fillColorField:Option[String]=None) extends Chart[C] {
+
+    val geometry = geometryField.getOrElse(headers(0))
+
+    def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
+      val stripedData = t.data.toSeq.filter { case (k, v) =>
+                                              k == geometry ||
+                                              Some(k) == rField ||
+                                              Some(k) == colorField  ||
+                                              Some(k) == fillColorField
+                                            }
+      stripedData
+    }
+
+    override val scripts =
+      List(Script("magic/geoChart",
+        Json.obj(
+          "geometry" → geometry,
+          "width" → sizes._1, "height" → sizes._2
+        )
+        ++ rField.map(r => Json.obj("r" → r)).getOrElse(Json.obj())
+        ++ colorField.map(color => Json.obj("color" → color)).getOrElse(Json.obj())
+        ++ fillColorField.map(color => Json.obj("fillColor" → color)).getOrElse(Json.obj())
+      ))
+  }
+
+  object GeoChart {
+    def parseGeoJSON(s:String):GeoJSON = org.wololo.geojson.GeoJSONFactory.create(s)
+    def geometryToGeoJSON(g:Geometry):GeoJSON = {
+      import org.wololo.jts2geojson.GeoJSONWriter
+      val writer = new GeoJSONWriter()
+      val json:GeoJSON = writer.write(g)
+      json
+    }
+  }
+
   case class GraphChart[C:ToPoints:Sampler](originalData:C, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25, charge:Int= -30, linkDistance:Int=20, linkStrength:Double=1.0) extends Chart[C] {
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
 
@@ -504,6 +561,16 @@ package object widgets {
     override val scripts = List(Script( "magic/diyChart",
                                         Json.obj( "js" → s"var js = $js;", "headers" → headers,
                                                   "width" → sizes._1, "height" → sizes._2)))
+  }
+
+  case class CustomC3Chart[C:ToPoints:Sampler](originalData:C, chartOptions :String = "{}", override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {
+    def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
+
+    override val scripts = List(Script( "magic/customC3Chart",
+      Json.obj(
+        "js" → s"var chartOptions = $chartOptions;",
+        "headers" → headers,
+        "height" → sizes._2)))
   }
 
   case class TableChart[C:ToPoints:Sampler](originalData:C, filterCol:Option[Seq[String]]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = 25) extends Chart[C] {

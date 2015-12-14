@@ -44,6 +44,7 @@ object Application extends Controller {
 
   val project = nbm.name
   val base_project_url = current.configuration.getString("application.context").getOrElse("/")
+  val autoStartKernel = current.configuration.getBoolean("manager.kernel.autostartOnNotebookOpen").getOrElse(true)
   val base_kernel_url = "/"
   val base_observable_url = "observable"
   val read_only = false.toString
@@ -572,6 +573,7 @@ object Application extends Controller {
                 "content" → j,
                 "name" → nbname,
                 "path" → fpath, //FIXME
+                "autoStartKernel" -> autoStartKernel,
                 "writable" -> true //TODO
               )
             } else {

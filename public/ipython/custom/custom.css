@@ -64,6 +64,10 @@ This will always be an empty file in IPython
   border: 1px solid #aaa;
 }
 
+.cell.failed {
+  background-color: #ee5f5b;
+}
+
 /* pivot chart */
 .pivot-controls-hidden .pvtVals, .pivot-controls-hidden .pvtRenderer, .pivot-controls-hidden .pvtAxisContainer {
   visibility: hidden;
@@ -76,8 +80,20 @@ table.pivot-controls-hidden, .pivot-controls-hidden > tbody > tr, .pivot-control
   /* align selected dimensions on the top, so easier to control them when there are many rows in table */
   vertical-align: top;
 }
+/* auto-resize currently do not take account of the pivot controls.
+   to look less horrible, used white background */
+td.pvtRendererArea {
+  background-color: #ffffff;
+}
 
 /* default styles from bokeh messes up c3-tooltip (pivotchart etc) */
 table.c3-tooltip {
   background-color: #ffffff;
+}
+table.c3-tooltip th {
+  color: #ffffff;
+}
+/* fix the black rect fill appearing in C3 Line charts (looks like a clash with something) */
+.pvtUi path.c3-shape.c3-line, .custom-c3-chart path.c3-shape.c3-line {
+  fill: transparent;
 }

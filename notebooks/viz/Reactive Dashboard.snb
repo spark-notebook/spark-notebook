@@ -1,0 +1,40 @@
+{
+  "metadata" : {
+    "name" : "Reactive Dashboard",
+    "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customArgs" : null,
+    "customSparkConf" : null
+  },
+  "cells" : [ {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val list  = List.fill(100)(scala.util.Random.nextInt(100))\n()",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "output_stream_collapsed" : true,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val m = 10 \nval l = LineChart(list, maxPoints =m, sizes=(200, 200))\nval b = BarChart(list, maxPoints =m, sizes=(200, 200))\nval b2 = BarChart(list.reverse, maxPoints =m, sizes=(200, 200))\nval l2 = LineChart(list.reverse, maxPoints =m, sizes=(200, 200))\nval t = TableChart(list, maxPoints=m, sizes=(200, 200))\nval all = List(l, b, b2, l2, t)\nval maxPointsBox = new InputBox[Int](m, \"Max Points (for ALL)\")\n\nmaxPointsBox.currentData --> Connection.fromObserver { max:Int =>\n  all foreach { w =>\n    w.newMax(max)\n  }\n}\n\ncontainerFluid(\n  List(\n      List((maxPointsBox, 12)),\n      List((html(<hr/>), 12)),\n      List(\n        (6, l).swap,\n        (3, b).swap,\n        (3, l2).swap\n      ),\n      List(\n        (3, b2).swap,\n        (9, t).swap\n      )\n))",
+    "outputs" : [ ]
+  } ],
+  "nbformat" : 4
+}

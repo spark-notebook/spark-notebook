@@ -40,6 +40,10 @@ object Shared {
     )
   )
 
+  val gisSettings: Seq[Def.Setting[_]] = Seq(
+    libraryDependencies ++= geometryDeps
+  )
+
   val repl: Seq[Def.Setting[_]] = {
     val lib = libraryDependencies <++= (sparkVersion, hadoopVersion, jets3tVersion) {
       (sv, hv, jv) => if (sv != "1.2.0") Seq(sparkRepl(sv)) else Seq.empty
@@ -129,7 +133,12 @@ object Shared {
       ExclusionRule("org.apache.hadoop",  "hadoop-client"),
       ExclusionRule("org.apache.curator", "curator-recipes"),
       ExclusionRule("org.tachyonproject", "tachyon-underfs-glusterfs"),
-      ExclusionRule("org.tachyonproject", "tachyon-underfs-s3")
+      ExclusionRule("org.tachyonproject", "tachyon-underfs-s3"),
+      ExclusionRule("com.fasterxml.jackson.module", "jackson-module-scala"),
+      ExclusionRule("com.fasterxml.jackson.core", "jackson-databind"),
+      ExclusionRule("com.fasterxml.jackson.core", "jackson-annotations"),
+      ExclusionRule("com.fasterxml.jackson.module", "jackson-module-jsonSchema"),
+      ExclusionRule("com.fasterxml.jackson.datatype", "jackson-datatype-joda")
     )
 
     val deps = sparkVersion { sv =>
