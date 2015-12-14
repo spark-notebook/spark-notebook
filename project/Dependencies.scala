@@ -4,11 +4,11 @@ object Dependencies {
   val mesosVersion = sys.props.getOrElse("mesos.version", "0.22.0") //0.22.0 is current DCOS version
 
   val playDeps = Seq(
-    "com.typesafe.play" %% "play" % "2.3.7" withSources() excludeAll(
+    "com.typesafe.play" %% "play" % "2.4.2" withSources() excludeAll(
       ExclusionRule("com.typesafe.akka"),
       ExclusionRule("com.google.guava")
       ),
-    "com.typesafe.play" %% "play-test" % "2.3.7" % "test" withSources() excludeAll(
+    "com.typesafe.play" %% "play-test" % "2.4.4" % "test" withSources() excludeAll(
       ExclusionRule("com.typesafe.akka"),
       ExclusionRule("com.google.guava")
       )
@@ -48,22 +48,25 @@ object Dependencies {
 
   def sparkCore(v: String) = "org.apache.spark" %% "spark-core" % v excludeAll(
     ExclusionRule("org.apache.hadoop"),
-    ExclusionRule("org.apache.ivy", "ivy")
-  )
+    ExclusionRule("org.apache.ivy", "ivy"),
+    ExclusionRule("commons-codec", "commons-codec")
+    )
 
   def sparkYarn(v: String) = if (v == "1.2.0") {
     "org.apache.spark" %% "spark-yarn" % (v + "-adatao") excludeAll(
       ExclusionRule("org.apache.hadoop"),
       ExclusionRule("javax.servlet", "servlet-api"),
       ExclusionRule("org.mortbay.jetty", "servlet-api"),
-      ExclusionRule("org.apache.ivy", "ivy")
+      ExclusionRule("org.apache.ivy", "ivy"),
+      ExclusionRule("commons-codec", "commons-codec")
     )
   } else {
     "org.apache.spark" %% "spark-yarn" % v excludeAll(
       ExclusionRule("org.apache.hadoop"),
       ExclusionRule("javax.servlet", "servlet-api"),
       ExclusionRule("org.mortbay.jetty", "servlet-api"),
-      ExclusionRule("org.apache.ivy", "ivy")
+      ExclusionRule("org.apache.ivy", "ivy"),
+      ExclusionRule("commons-codec", "commons-codec")
     )
   }
 

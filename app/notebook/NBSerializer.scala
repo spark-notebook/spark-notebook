@@ -243,6 +243,28 @@ object NBSerializer {
     }
   }
 
+  def fromJson(jsonLR: JsLookupResult): Notebook = {
+
+    val json = jsonLR.get;
+
+    println("\r\n**************************************\r\n")
+    println(Json.prettyPrint(json))
+    println("**************************************\r\n")
+    json.validate[Notebook] match {
+      case s: JsSuccess[Notebook] => {
+        val notebook: Notebook = s.get
+        val nb = notebook.cells.map { _ => notebook } getOrElse notebook.copy(cells = Some(Nil))
+        nb
+      }
+      case e: JsError => {
+        val ex = new RuntimeException(Json.stringify(JsError.toFlatJson(e)))
+        Logger.error("parse notebook", ex)
+        throw ex
+      }
+    }
+  }
+
+
   def read(s: String): Notebook = {
     //Logger.info("Reading Notebook")
     //Logger.info(s)

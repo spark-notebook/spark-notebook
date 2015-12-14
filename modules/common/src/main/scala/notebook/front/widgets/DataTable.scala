@@ -14,7 +14,7 @@ class DataTable[T](data: Seq[T])(implicit val codec: Codec[JsValue, T]) {
     val source = new ColumnDataSource()
     val keys = array(0).asInstanceOf[JsObject].keys.toList
     val columns = keys map { k =>
-      (array(0) \ k) match {
+      (array(0) \ k).get match {
         case JsString(_) =>
           val values = array.value.map { i =>
             (i \ k).as[String]

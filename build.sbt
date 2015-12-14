@@ -118,6 +118,8 @@ javacOptions ++= Seq("-Xlint:deprecation", "-g")
 
 scalacOptions += "-deprecation"
 
+javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint")
+
 scalacOptions ++= Seq("-Xmax-classfile-name", "100")
 
 //scriptClasspath := Seq("*")
@@ -139,6 +141,11 @@ bashScriptDefines := bashScriptDefines.value.map {
 dependencyOverrides += "log4j" % "log4j" % "1.2.16"
 
 dependencyOverrides += guava
+
+dependencyOverrides += "commons-codec" % "commons-codec" % "1.10"
+
+dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-databind" % "2.4.4"
+
 
 enablePlugins(DebianPlugin)
 
