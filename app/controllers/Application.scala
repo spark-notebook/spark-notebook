@@ -120,7 +120,10 @@ object Application extends Controller {
 
       val customImports: Option[List[String]] = md.flatMap(_.customImports)
 
-      val customArgs: Option[List[String]] = md.flatMap(_.customArgs)
+      val customArgs: Option[List[String]] =  for {
+                                                m <- md
+                                                as <- m.customArgs
+                                              } yield as.map(notebook.util.StringUtils.updateWithVarEnv)
 
       val customSparkConf: Option[Map[String, String]] = for {
         m <- md
@@ -135,7 +138,7 @@ object Application extends Controller {
         case (k, o@JsObject(v))  => k → o.toString
         case (k, JsString(v))    => k → v
         case (k, v:JsUndefined)  => k → s"Undefined: ${v.error}"
-      }
+      }.map{ case (k, v) => k → notebook.util.StringUtils.updateWithVarEnv(v) }
 
       val kernel = new Kernel(config.kernel.config.underlying,
                               kernelSystem,
