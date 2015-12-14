@@ -89,6 +89,18 @@ object Application extends Controller {
     Ok(kernelDef)
   }
 
+  // this function takes two optional lists and add the values in the second one
+  // the values are considered to be unique
+  private def overrideOptionListDistinctString(x:Option[List[String]], y:Option[List[String]]) = {
+    val t = x.getOrElse(List.empty[String])
+    val withY =  t ::: (y.getOrElse(List.empty[String]).toSet -- t.toSet).toList
+    withY match {
+      case Nil => None
+      case xs => Some(xs.distinct)
+    }
+  }
+
+
   private[this] def newSession(kernelId: Option[String] = None,
     notebookPath: Option[String] = None) = {
     val existing = for {
@@ -103,8 +115,6 @@ object Application extends Controller {
       val compilerArgs = config.kernel.compilerArgs.toList
       val initScripts = config.kernel.initScripts.toList
 
-      val r = Reads.map[JsValue]
-
       // Load the notebook → get the metadata
       val md: Option[Metadata] = for {
         p <- notebookPath
@@ -112,29 +122,53 @@ object Application extends Controller {
         m <- n.metadata
       } yield m
 
-      val customLocalRepo: Option[String] = md.flatMap(_.customLocalRepo)
+      val customLocalRepo: Option[String] =
+        md.flatMap(_.customLocalRepo) // get the custom in the metadata
+          .map { l =>
+            config.overrideConf.localRepo // precedence on the override
+                               .getOrElse(l) // get back to custom if exists
+          }
+          .orElse(config.overrideConf.localRepo) // if no custom, try fallback on override
 
-      val customRepos: Option[List[String]] = md.flatMap(_.customRepos)
+      val customRepos: Option[List[String]] =
+        overrideOptionListDistinctString(
+          md.flatMap(_.customRepos),
+          config.overrideConf.repos
+        )
 
-      val customDeps: Option[List[String]] = md.flatMap(_.customDeps)
+      val customDeps: Option[List[String]] =
+        overrideOptionListDistinctString(
+          md.flatMap(_.customDeps),
+          config.overrideConf.deps
+        )
 
-      val customImports: Option[List[String]] = md.flatMap(_.customImports)
 
-      val customArgs: Option[List[String]] = md.flatMap(_.customArgs)
+      val customImports: Option[List[String]] =
+        overrideOptionListDistinctString(
+          md.flatMap(_.customImports),
+          config.overrideConf.imports
+        )
 
-      val customSparkConf: Option[Map[String, String]] = for {
-        m <- md
-        c <- m.customSparkConf
-        _ = Logger.info("customSparkConf >> " + c)
-        map <- r.reads(c).asOpt
-      } yield map.map {
-        case (k, a@JsArray(v))   => k → a.toString
-        case (k, JsBoolean(v))   => k → v.toString
-        case (k, JsNull)         => k → "null"
-        case (k, JsNumber(v))    => k → v.toString
-        case (k, o@JsObject(v))  => k → o.toString
-        case (k, JsString(v))    => k → v
-        case (k, v:JsUndefined)  => k → s"Undefined: ${v.error}"
+      val customArgs: Option[List[String]] =
+        overrideOptionListDistinctString(
+          md.flatMap(_.customArgs),
+          config.overrideConf.args
+        )
+
+      val customSparkConf: Option[Map[String, String]] = {
+        val me = Map.empty[String, String]
+        val sconf = for {
+                      m <- md
+                      c <- m.customSparkConf
+                      v <- CustomConf.fromSparkConfJsonToMap(c)
+                    } yield v
+        val ovsc = config.overrideConf.sparkConf flatMap CustomConf.fromSparkConfJsonToMap
+        val updated = sconf.getOrElse(me) ++ ovsc.getOrElse(me)
+        if (updated.isEmpty) {
+          None
+        } else {
+          Some(updated)
+        }
       }
 
       val kernel = new Kernel(config.kernel.config.underlying,
@@ -298,12 +332,12 @@ object Application extends Controller {
 
     val fpath = nbm.newNotebook(
       path,
-      customLocalRepo orElse config.localRepo,
-      customRepos orElse config.repos,
-      customDeps orElse config.deps,
-      customImports orElse config.imports,
-      customArgs orElse config.args,
-      customMetadata orElse config.sparkConf,
+      customLocalRepo orElse config.customConf.localRepo,
+      customRepos orElse config.customConf.repos,
+      customDeps orElse config.customConf.deps,
+      customImports orElse config.customConf.imports,
+      customArgs orElse config.customConf.args,
+      customMetadata orElse config.customConf.sparkConf,
       name)
     Try(Redirect(routes.Application.contents("notebook", fpath)))
   }
