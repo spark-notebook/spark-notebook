@@ -16,7 +16,13 @@ return new function () {
   };
 
   this.start = function() {
-  	if (this.channelID === IPython.notebook.kernel.id) return;
+  	if (this.channelID === IPython.notebook.kernel.id) {
+      return ;
+    }
+    else if (this.channelID && this.channelID !== IPython.notebook.kernel.id) {
+      console.error("Observable.channelID ('"+ this.channelID +"')is different from kernel id ('"+ IPython.notebook.kernel.id + "'"+
+        ". The Observable initialize status is " + this.isInitialized());
+    }
     var that = this;
     this.stop_channels();
     var ws_url = this.base_url;
@@ -108,6 +114,17 @@ return new function () {
 
 
   this.makeObservableHelper = function (id, kind, initialValue) {
+    if(!this.isInitialized()) {
+      // in case the Observable isn't initialized, we differ the creation of the observable
+      var args = Array.prototype.slice.call(arguments);
+      var me = this;
+      console.warn("Delaying the creation of Observable (" + args.join(",") + ") since Observable isn't initialized yet");
+      console.log("Observable not initialized:", me);
+      events.on('Observable.ready', function() {
+        me.makeObservableHelper.apply(me, args);
+      });
+      return;
+    }
     var observable = this.observables[id];
     if (typeof observable === 'undefined') {
     	console.log("Creating new observable (client request): " + id)
@@ -115,6 +132,10 @@ return new function () {
       this.register_observable(id, observable);
     } else if (typeof initialValue !== 'undefined') {
       this.observableSetIfChanged(observable, initialValue);
+    } else {
+      console.error("Cannot register observable with id '" + id + "', kind '" + kind + "'" + "', initialValue '" + initialValue + "'")
+      console.log("Observable is ", this);
+      console.log("Registered observables are ", this.observables);
     }
     return observable;
   };
@@ -246,8 +267,12 @@ return new function () {
     console.warn("Observable init delayed because kernel id not available (IPython.notebook.kernel.id)")
     console.debug("Observable delayed, IPython object is: ", IPython)
     events.on('app_initialized.NotebookApp', function(o) {
-      console.warn("Delayed observable is now starting")
-      me.start(); //avoid pre-init of IPython → .kernel.id is null
+      if (!me.isInitialized()) {
+        console.warn("Delayed observable is now starting");
+        me.start(); //avoid pre-init of IPython → .kernel.id is null
+      } else {
+        console.warn("Delayed observable was actually already started...", me);
+      }
     });
   }
 

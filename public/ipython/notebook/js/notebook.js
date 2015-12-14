@@ -2220,7 +2220,9 @@ define([
         this.writable = data.writable || false;
 
         // to save resources eagerly load the kernel only if configured-so in application.conf
-        var autoStartKernel = data.autoStartKernel || false;
+        // must automatically start kernel it was requested to recompute the whole notebook immediately
+        var recomputeNowRequested = window.location.href.indexOf("recompute_now") != -1;
+        var autoStartKernel = data.autoStartKernel || recomputeNowRequested || false;
         console.log("autoStartKernel on load_notebook: ", autoStartKernel);
 
         var nbmodel = data.content;

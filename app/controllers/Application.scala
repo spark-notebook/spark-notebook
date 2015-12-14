@@ -153,7 +153,7 @@ object Application extends Controller {
         overrideOptionListDistinctString(
           md.flatMap(_.customArgs),
           config.overrideConf.args
-        )
+        ).map(xs => xs map notebook.util.StringUtils.updateWithVarEnv)
 
       val customSparkConf: Option[Map[String, String]] = {
         val me = Map.empty[String, String]
@@ -167,7 +167,7 @@ object Application extends Controller {
         if (updated.isEmpty) {
           None
         } else {
-          Some(updated)
+          Some(updated.map{ case (k, v) => k → notebook.util.StringUtils.updateWithVarEnv(v) })
         }
       }
 
