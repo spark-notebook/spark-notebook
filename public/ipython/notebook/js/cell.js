@@ -17,8 +17,9 @@ define([
     'codemirror/lib/codemirror',
     'codemirror/addon/edit/matchbrackets',
     'codemirror/addon/edit/closebrackets',
-    'codemirror/addon/comment/comment'
-], function(IPython, $, utils, CodeMirror, cm_match, cm_closeb, cm_comment) {
+    'codemirror/addon/comment/comment',
+    'underscore'
+], function(IPython, $, utils, CodeMirror, cm_match, cm_closeb, cm_comment, _) {
     // TODO: remove IPython dependency here
     "use strict";
 
@@ -53,6 +54,7 @@ define([
             get: function() { return that._metadata; },
             set: function(value) {
                 that._metadata = value;
+                that.cell_id = value.id;
                 if (that.celltoolbar) {
                     that.celltoolbar.rebuild();
                 }
@@ -62,7 +64,9 @@ define([
         // load this from metadata later ?
         this.user_highlight = 'auto';
         this.cm_config = config.cm_config;
-        this.cell_id = utils.uuid();
+        this.cell_id = this.cell_id || utils.uuid();
+        if (!this.metadata.id) this.metadata.id = this.cell_id;
+        console.log("cell id: " + this.cell_id);
         this._options = config;
 
         // For JS VM engines optimization, attributes should be all set (even
