@@ -51,13 +51,26 @@ define([
         save_pivot_state(extract_pivot_state(options))
 
       rendererOptions = {
-                          c3: {
-                            size: {
-                              height: h,
-                              width: $(container).width()
-                            }
-                          }
-                        }
+        c3: {
+          size: {
+            height: h,
+            width: $(container).width()
+          },
+          padding: {
+            # make sure x labels fit
+            right: 50
+          },
+          axis: {
+            x: {
+              tick: {
+                culling: { max: 25 },
+                rotate: 75,
+                multiline: false
+              }
+            }
+          }
+        }
+      }
       window.c3 = c3
 
       pivotOptions = get_saved_pivot_state()
