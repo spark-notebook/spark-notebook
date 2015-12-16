@@ -644,7 +644,8 @@ package object widgets {
       val line:Option[(String, Chart[C])]    = if (isNumber(f1) && isNumber(f2)) { Some("line-chart" → LineChart(originalData, fields,maxPoints=maxPoints)) } else None
       val bar :Option[(String, Chart[C])]    = if (isNumber(f2)) { Some("bar-chart" → BarChart(originalData, fields,maxPoints=maxPoints)) } else None
       val pie :Option[(String, Chart[C])]    = if (!isNumber(f1)) { Some("pie-chart" → PieChart(originalData, fields,maxPoints=maxPoints)) } else None
-      val allTabs:Seq[Option[(String, Chart[C])]] = tbl :: scatter :: line :: bar :: pie :: Nil
+      val pivot:Option[(String, Chart[C])]   = Some("cubes" → PivotChart(originalData, maxPoints=maxPoints))
+      val allTabs:Seq[Option[(String, Chart[C])]] = tbl :: scatter :: line :: bar :: pie :: pivot :: Nil
       tabs(originalData, allTabs.collect{ case Some(t) => t})
     } else {
       val main =
