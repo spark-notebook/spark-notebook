@@ -86,6 +86,12 @@ define([
       pivotOptions.onRefresh = refresh
       pivotOptions.rendererOptions = rendererOptions
 
+      customAggregators = {
+        # allows calculating ratios over any dimensions (sum is additive, ratio is not)
+        "Ratio - sumOverSum": $.pivotUtilities.aggregatorTemplates.sumOverSum()
+      }
+      pivotOptions.aggregators = $.extend($.pivotUtilities.aggregators, customAggregators)
+
       p = $("<div>")
       p.addClass("pivotChart").appendTo(container)
 
