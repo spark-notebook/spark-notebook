@@ -42,7 +42,7 @@ class PresentationCompiler(dependencies: List[String]) {
     (wrappedCode,snippetPre().length)
   }
 
-  case class CompletionInformation(symbol : String, parameters : String, symbolType: String)
+  case class CompletionInformation(symbol : String, parameters : String, returnType: String)
 
   def completion(pos: OffsetPosition, op: (OffsetPosition,Response[List[compiler.Member]]) => Unit) : Seq[CompletionInformation] = {
     var result: Seq[CompletionInformation] = null
@@ -53,8 +53,8 @@ class PresentationCompiler(dependencies: List[String]) {
           case Some(Left(t)) =>
             t .map( m => CompletionInformation(
                   m.sym.nameString,
-                  m.tpe.params.map( p => s"<${p.name.toString}:${p.tpe.toString()}>").mkString(", "),
-                  ""//m.tpe.toString()
+                  m.tpe.params.map( p => s"${p.name.toString}: ${p.tpe.toString()}").mkString(", "),
+                  m.tpe.resultType.toString
                 )
               )
               .toSeq
@@ -90,10 +90,19 @@ class PresentationCompiler(dependencies: List[String]) {
     if(matches.isEmpty) {
       matches = completion (pos, compiler.askScopeCompletion)
     }
-    val returnMatches = matches
+    val returnMatches: Seq[Match] = matches
       .filter(m => m.symbol.startsWith(filterSnippet))
-      .map( m => if (m.symbol == filterSnippet) Match(s"${m.symbol}(${m.parameters})", Map()) else Match(s"${m.symbol}", Map()))
+      .map {
+        case m if m.symbol == filterSnippet =>
+          val methodWithParams = s"${m.symbol}(${m.parameters})"
+          val metadata = Map(
+            "display_text" -> s"$methodWithParams: ${m.returnType}"
+          )
+          Match(methodWithParams, metadata)
+        case m =>
+          Match(s"${m.symbol}", Map())
+      }
       .distinct
-    (filterSnippet,returnMatches)
+    (filterSnippet, returnMatches)
   }
 }

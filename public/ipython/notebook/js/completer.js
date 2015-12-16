@@ -23,7 +23,8 @@ define([
 
     var _existing_completion = function(item, completion_array){
         for( var i=0; i < completion_array.length; i++) {
-            if (completion_array[i].trim().substr(-item.length) == item) {
+            var completion_text = completion_array[i].value.trim();
+            if (completion_text.substr(-item.length) == item) {
                 return true;
             }
         }
@@ -221,7 +222,8 @@ define([
         // positon and matched_text length.
         for (i = matches.length - 1; i >= 0; --i) {
             filtered_results.unshift({
-                str: matches[i],
+                str: matches[i].value,
+                display_text: matches[i].display_text,
                 type: "introspection",
                 from: utils.from_absolute_cursor_pos(this.editor, start),
                 to: utils.from_absolute_cursor_pos(this.editor, end)
@@ -315,7 +317,13 @@ define([
 
     Completer.prototype.build_gui_list = function (completions) {
         for (var i = 0; i < completions.length; ++i) {
-            var opt = $('<option/>').text(completions[i].str).addClass(completions[i].type);
+            // show more verbose text if exists
+            // the completion value will be selected from completions.str, in this.pick()
+            var display_text = completions[i].display_text;
+            if (display_text === undefined) {
+                display_text = completions[i].str;
+            }
+            var opt = $('<option/>').text(display_text).addClass(completions[i].type);
             this.sel.append(opt);
         }
         this.sel.children().first().attr('selected', 'true');
