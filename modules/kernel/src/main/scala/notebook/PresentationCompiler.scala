@@ -42,7 +42,15 @@ class PresentationCompiler(dependencies: List[String]) {
     (wrappedCode,snippetPre().length)
   }
 
-  case class CompletionInformation(symbol : String, parameters : String, returnType: String)
+  case class CompletionInformation(symbol : String, parameters : String, returnType: String){
+    def nameAndParams = if (parameters.isEmpty) {
+      symbol
+    } else {
+      s"${symbol}(${parameters})"
+    }
+
+    def nameParamsAndReturnType = s"${nameAndParams}: ${returnType}"
+  }
 
   def completion(pos: OffsetPosition, op: (OffsetPosition,Response[List[compiler.Member]]) => Unit) : Seq[CompletionInformation] = {
     var result: Seq[CompletionInformation] = null
@@ -93,16 +101,23 @@ class PresentationCompiler(dependencies: List[String]) {
     val returnMatches: Seq[Match] = matches
       .filter(m => m.symbol.startsWith(filterSnippet))
       .map {
+        // if text already matches the method-name, autocomplete all matching method versions (name, params, returnType)
         case m if m.symbol == filterSnippet =>
-          val methodWithParams = s"${m.symbol}(${m.parameters})"
-          val metadata = Map(
-            "display_text" -> s"$methodWithParams: ${m.returnType}"
-          )
-          Match(methodWithParams, metadata)
+          val metadata = Map("display_text" -> m.nameParamsAndReturnType, "dedup_key" -> m.nameParamsAndReturnType)
+          Match(m.nameAndParams, metadata)
+        // otherwise, autocomplete only method name, but we'll display the first matching signature
         case m =>
-          Match(s"${m.symbol}", Map())
+          Match(m.symbol, Map("display_text" -> m.nameParamsAndReturnType, "dedup_key" -> m.symbol))
       }
-      .distinct
+      .groupBy(_.metadata("dedup_key"))
+      .map {
+        case (_, matches) if matches.size > 1 =>
+          val m = matches.head
+          val updatedDisplayText = s"${m.metadata("display_text")} [multiple versions]"
+          Match(m.matchedValue, m.metadata.updated("display_text", updatedDisplayText))
+        case (_, matches) => matches.head
+      }.toSeq
+
     (filterSnippet, returnMatches)
   }
 }
