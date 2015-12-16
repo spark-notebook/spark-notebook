@@ -76,8 +76,9 @@ This will always be an empty file in IPython
 table.pivot-controls-hidden, .pivot-controls-hidden > tbody > tr, .pivot-controls-hidden > tbody > tr > td {
   border: none ! important;
 }
-.pvtUi td.pvtAxisContainer.pvtRows {
-  /* align selected dimensions on the top, so easier to control them when there are many rows in table */
+.pvtUi td.pvtAxisContainer.pvtRows, td.pvtAxisContainer.pvtUnused.pvtVertList {
+  /* align both selected and unselected dimensions on the top,
+  so it's easier to control them when there are many rows or many columns in a table */
   vertical-align: top;
 }
 /* auto-resize currently do not take account of the pivot controls.
