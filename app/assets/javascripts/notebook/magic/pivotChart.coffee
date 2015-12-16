@@ -60,6 +60,11 @@ define([
             # make sure x labels fit
             right: 50
           },
+          grid: {
+            y: {
+              show: true
+            }
+          },
           axis: {
             x: {
               tick: {
