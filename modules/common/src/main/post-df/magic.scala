@@ -3,50 +3,27 @@ package notebook.front.widgets.magic
 import org.apache.spark.sql.{DataFrame, Row}
 
 import notebook.front.widgets.magic.Implicits._
+import notebook.front.widgets.magic.LimitBasedSampling
 import notebook.front.widgets.isNumber
 
 trait ExtraSamplerImplicits {
   import SamplerImplicits.Sampler
+
   /**
-   * count number of rows in a DataFrame, and do sampling if needed
+   * count number of rows in a DataFrame, and select first N rows if needed
    */
-  implicit def SimpleDataFrameSampler = new Sampler[DataFrame] {
+  implicit def DummyDataFrameSampler = new Sampler[DataFrame] {
+    override def samplingStrategy = new LimitBasedSampling()
+
     def apply(df: DataFrame, max: Int): DataFrame = {
-      val count = df.cache().count()
-      if (count > max) {
-        println("DF is larger than maxRows. Will use sampling.")
-        df.sample(withReplacement = false, max / count.toDouble)
-          .cache()
+      val firstRows = df.limit(max).cache()
+      if (firstRows.count() > max) {
+        println(s"DF is larger than maxRows. Showing only first ${max} rows.")
+        firstRows
       } else {
         df
       }
     }
-  }
-
-  implicit object DFSampler extends Sampler[DataFrame] {
-    import org.apache.spark.sql.types.{StructType, StructField,LongType}
-    import org.apache.spark.sql.functions._
-    //until zipWithIndex will be available on DF
-    def dfZipWithIndex(df: DataFrame):DataFrame = {
-      df.sqlContext.createDataFrame(
-        df.rdd.zipWithIndex.map(ln =>
-          Row.fromSeq(
-            ln._1.toSeq ++ Seq(ln._2)
-          )
-        ),
-        StructType(
-          df.schema.fields ++
-          Array(StructField("_sn_index_",LongType,false))
-        )
-      )
-    }
-    def apply(df:DataFrame, max:Int):DataFrame = {
-      import df.sqlContext.implicits._
-      val columns = df.columns
-      dfZipWithIndex(df).filter($"_sn_index_" < max)
-                        .select(columns.head, columns.tail: _*)
-    }
-
   }
 }
 

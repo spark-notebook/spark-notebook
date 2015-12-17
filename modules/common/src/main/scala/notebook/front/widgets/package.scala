@@ -7,6 +7,7 @@ import com.vividsolutions.jts.geom.Geometry
 import org.wololo.geojson.GeoJSON
 import notebook._
 import notebook.JsonCodec._
+import notebook.front.widgets.magic
 import notebook.front.widgets.magic._
 import notebook.front.widgets.magic.Implicits._
 import notebook.front.widgets.magic.SamplerImplicits._
@@ -323,6 +324,8 @@ package object widgets {
     def originalData:C
     def maxPoints:Int
 
+    def sampler = implicitly[Sampler[C]]
+
     def toPoints = implicitly[ToPoints[C]]
     lazy val points:Seq[MagicRenderPoint] = toPoints(originalData, maxPoints)
 
@@ -344,7 +347,10 @@ package object widgets {
       if (currentMax >= toPoints.count(currentC)) {
         ""
       } else {
-        " (Warning: randomly sampled "+currentMax + " entries)"
+        sampler.samplingStrategy match {
+          case magic.LimitBasedSampling() => " (Warning: showing first "+currentMax + " rows)"
+          case _ => " (Warning: randomly sampled "+currentMax + " entries)"
+        }
       }
     }
 
