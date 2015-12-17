@@ -227,7 +227,7 @@ class CalcWebSocketService(
           case CompletionResponse(cursorPosition, candidates, matchedText) =>
             ws.send(header, session, "complete_reply", "shell", obj(
               "matched_text" → matchedText,
-              "matches" → candidates.map(_.toJson).toList,
+              "matches" → candidates.map(_.toJsonWithDescription).toList,
               "cursor_start" → (cursorPosition - matchedText.length),
               "cursor_end" → cursorPosition))
             context.stop(self)
