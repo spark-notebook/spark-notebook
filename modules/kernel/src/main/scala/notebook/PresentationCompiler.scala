@@ -59,13 +59,15 @@ class PresentationCompiler(dependencies: List[String]) {
       result = compiler.ask( () => {
         response.get(10) match {
           case Some(Left(t)) =>
-            t .map( m => CompletionInformation(
-                  m.sym.nameString,
-                  m.tpe.params.map( p => s"${p.name.toString}: ${p.tpe.toString()}").mkString(", "),
-                  m.tpe.resultType.toString
-                )
-              )
-              .toSeq
+            t .map { m =>
+              val params = m.tpe.params.map(p => s"${p.name.toString}: ${p.tpe.toString()}").mkString(", ")
+              val returnType = try {
+                m.tpe.resultType.toString
+              } catch {
+                case exc: RuntimeException => println("Unable to get symbol type", exc); "?"
+              }
+              CompletionInformation(m.sym.nameString, params, returnType)
+            }.toSeq
           case Some(Right(ex)) =>
             ex.printStackTrace()
             println(ex)
