@@ -34,12 +34,26 @@ class PresentationCompilerTests extends Specification {
 
       val c = complete(pc) _
       c(code, code.size) must beEqualTo("toS", Set(
-        Match("toString", Map.empty[String,String]),
-        Match("toSchwarz", Map.empty[String,String])
+        Match("toSchwarz", Map("display_text" -> "toSchwarz: Float")),
+        Match("toString", Map("display_text" -> "toString: String"))
       ))
-      c(code+"\nval testAsSt$ring = test.toString()", code.size) must beEqualTo("toS", Set(
-        Match("toString", Map.empty[String,String]),
-        Match("toSchwarz", Map.empty[String,String])
+      c(code + "\nval testAsSt$ring = test.toString()", code.size) must beEqualTo("toS", Set(
+        Match("toSchwarz", Map("display_text" -> "toSchwarz: Float")),
+        Match("toString", Map("display_text" -> "toString: String"))
+      ))
+    }
+
+    "lists all overrided method versions" in {
+      val line = "test.testMeth"
+      val code = List(newInst, newLine, line).mkString
+
+      val pc = new PresentationCompiler(Nil)
+      pc.addScripts(cz)
+      val c = complete(pc) _
+
+      c(code, code.size) must beEqualTo("testMeth", Set(
+        Match("testMethod(a: String)", Map("display_text" -> "testMethod(a: String): String")),
+        Match("testMethod(a: String, b: String)", Map("display_text" -> "testMethod(a: String, b: String): String"))
       ))
     }
 
@@ -50,7 +64,7 @@ class PresentationCompilerTests extends Specification {
       val c = complete(pc) _
 
       val code1 = List(newInst, newLine, "test.").mkString
-      c(code1, code1.size)._2.size must beEqualTo(32)
+      c(code1, code1.size)._2.size must beEqualTo(43)
 
       val code2 = List(newLine, newInst, newLine, "test.testMethod(").mkString
       c(code2, code2.size-1)._2.size must beEqualTo(2)
