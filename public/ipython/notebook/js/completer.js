@@ -175,9 +175,11 @@ define([
         var text = "";
         var pos = 0;
         for (i=0; i < notebookCells.length && !notebookCells[i].selected; i++) {
-            var cellText = notebookCells[i].get_text();
-            text = text + cellText + "\n";
-            pos = pos + cellText.length + 1;
+            if (notebookCells[i].cell_type == 'code') {
+                var cellText = notebookCells[i].get_text();
+                text = text + cellText + "\n";
+                pos = pos + cellText.length + 1;
+            }
         }
         return { code: text, offset: pos }
     }
