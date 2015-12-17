@@ -340,13 +340,17 @@ package object widgets {
     @volatile var currentPoints = points
     @volatile var currentMax = maxPoints
 
+    def samplingWarning(maxEntriesLimit: Int): String = {
+      if (currentMax >= toPoints.count(currentC)) {
+        ""
+      } else {
+        " (Warning: randomly sampled "+currentMax + " entries)"
+      }
+    }
+
     maxPointsBox.currentData --> Connection.fromObserver { max:Int =>
       currentMax = max
-      if (currentMax >= toPoints.count(currentC)) {
-        warnMax("")
-      } else{
-        warnMax(" (Warning: randomly sampled "+currentMax + " entries)")
-      }
+      warnMax(samplingWarning(currentMax))
       applyOn(currentC)
     }
 
@@ -355,11 +359,7 @@ package object widgets {
       maxPointsBox.currentData <-- Connection.just(max)
       //update state
       currentMax = max
-      if (currentMax >= toPoints.count(currentC)) {
-        warnMax("")
-      } else{
-        warnMax(" (Warning: randomly sampled "+currentMax + " entries)")
-      }
+      warnMax(samplingWarning(currentMax))
       applyOn(currentC)
     }
 
