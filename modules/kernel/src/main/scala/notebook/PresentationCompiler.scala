@@ -98,26 +98,11 @@ class PresentationCompiler(dependencies: List[String]) {
     if(matches.isEmpty) {
       matches = completion (pos, compiler.askScopeCompletion)
     }
-    val returnMatches: Seq[Match] = matches
+    val returnMatches = matches
       .filter(m => m.symbol.startsWith(filterSnippet))
-      .map {
-        // if text already matches the method-name, autocomplete all matching method versions (name, params, returnType)
-        case m if m.symbol == filterSnippet =>
-          val metadata = Map("display_text" -> m.nameParamsAndReturnType, "dedup_key" -> m.nameParamsAndReturnType)
-          Match(m.nameAndParams, metadata)
-        // otherwise, autocomplete only method name, but we'll display the first matching signature
-        case m =>
-          Match(m.symbol, Map("display_text" -> m.nameParamsAndReturnType, "dedup_key" -> m.symbol))
-      }
-      .groupBy(_.metadata("dedup_key"))
-      .map {
-        case (_, matches) if matches.size > 1 =>
-          val m = matches.head
-          val updatedDisplayText = s"${m.metadata("display_text")} [multiple versions]"
-          Match(m.matchedValue, m.metadata.updated("display_text", updatedDisplayText))
-        case (_, matches) => matches.head
-      }.toSeq
-
-    (filterSnippet, returnMatches)
+      // autocomplete all matching method versions (name, params, returnType)
+      .map { m => Match(m.nameAndParams, Map("display_text" -> m.nameParamsAndReturnType))}
+      .distinct
+    (filterSnippet,returnMatches)
   }
 }
