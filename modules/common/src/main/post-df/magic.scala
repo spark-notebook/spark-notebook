@@ -12,17 +12,11 @@ trait ExtraSamplerImplicits {
   /**
    * count number of rows in a DataFrame, and select first N rows if needed
    */
-  implicit def DummyDataFrameSampler = new Sampler[DataFrame] {
+  implicit def LimitBasedDataFrameSampler = new Sampler[DataFrame] {
     override def samplingStrategy = new LimitBasedSampling()
 
     def apply(df: DataFrame, max: Int): DataFrame = {
-      val firstRows = df.limit(max).cache()
-      if (firstRows.count() > max) {
-        println(s"DF is larger than maxRows. Showing only first ${max} rows.")
-        firstRows
-      } else {
-        df
-      }
+      df.limit(max).cache()
     }
   }
 }
@@ -36,8 +30,8 @@ trait ExtraMagicImplicits {
   implicit object DFToPoints extends ToPoints[DataFrame] {
     import SamplerImplicits.Sampler
     def apply(df:DataFrame, max:Int)(implicit sampler:Sampler[DataFrame]):Seq[MagicRenderPoint] = {
-      if (df.take(1).nonEmpty) {
-        val rows = sampler(df, max).collect
+      val rows = sampler(df, max).collect
+      if (rows.length > 0) {
         val points = df.schema.toList.map(_.dataType) match {
           case List(x) if x.isInstanceOf[org.apache.spark.sql.types.StringType] => rows.map(i => StringPoint(i.asInstanceOf[String]))
           case _                                                                => rows.map(i => DFPoint(i, df))
