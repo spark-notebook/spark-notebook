@@ -42,8 +42,8 @@ import org.apache.spark.rdd._
   def reset(appName:String=notebookName, lastChanges:(SparkConf=>Unit)=(_:SparkConf)=>()):Unit = {
     conf = new SparkConf()
     conf.setMaster(sparkMaster.getOrElse("local[*]"))
-        .setAppName(appName)
         .setAll(_5C4L4_N0T3800K_5P4RK_C0NF.toList)
+        .setAppName(appName)
         .set("spark.repl.class.uri", uri)
 
     execMemory foreach (v => conf.set("spark.executor.memory", v))
