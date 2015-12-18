@@ -182,7 +182,7 @@ object Application extends Controller {
       KernelManager.add(kId, kernel)
 
       val service = new CalcWebSocketService(kernelSystem,
-        md.map(_.name).getOrElse("Spark Notebook"),
+        appNameToDisplay(md, notebookPath),
         customLocalRepo,
         customRepos,
         customDeps,
@@ -591,6 +591,17 @@ object Application extends Controller {
       ref ! akka.actor.PoisonPill
     }
   )
+
+  /**
+    * The notebook name to attach to Spark Context (and all related jobs)
+    */
+  def appNameToDisplay(metadata: Option[Metadata], notebookPath: Option[String]): String = {
+    val explicitName = metadata.map(_.name).getOrElse("Spark-notebook")
+    notebookPath match {
+      case Some(path) => s"${explicitName} ($path)"
+      case None => explicitName
+    }
+  }
 
   def getNotebook(name: String, path: String, format: String, dl: Boolean = false) = {
     try {
