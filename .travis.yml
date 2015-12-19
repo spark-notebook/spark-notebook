@@ -4,3 +4,5 @@ scala:
   - 2.11.7
 env:
   - SBT_OPTS="-XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -XX:PermSize=256M -XX:MaxPermSize=512M"
+script:
+  - sbt -Dscala.version=$TRAVIS_SCALA_VERSION ++$TRAVIS_SCALA_VERSION test
