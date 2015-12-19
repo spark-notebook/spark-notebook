@@ -17,6 +17,7 @@ class PresentationCompilerTests extends Specification {
       |  def testVar:String = ""
       |  def testMethod(a:String):String = ""
       |  def testMethod(a:String, b:String):String = ""
+      |  def testMethod(a:Int, optionalB: String = ""):String = ""
       |  lazy val toSchwarz:Float = 1f
       |}
       |
@@ -43,7 +44,7 @@ class PresentationCompilerTests extends Specification {
       ))
     }
 
-    "lists all overrided method versions" in {
+    "lists all overrided method versions, indicating optional parameters if any" in {
       val line = "test.testMeth"
       val code = List(newInst, newLine, line).mkString
 
@@ -52,6 +53,8 @@ class PresentationCompilerTests extends Specification {
       val c = complete(pc) _
 
       c(code, code.size) must beEqualTo("testMeth", Set(
+        Match("testMethod(a: Int, [optionalB: String])",
+          Map("display_text" -> "testMethod(a: Int, [optionalB: String]): String")),
         Match("testMethod(a: String)", Map("display_text" -> "testMethod(a: String): String")),
         Match("testMethod(a: String, b: String)", Map("display_text" -> "testMethod(a: String, b: String): String"))
       ))

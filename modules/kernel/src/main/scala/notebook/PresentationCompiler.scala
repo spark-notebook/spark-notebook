@@ -59,8 +59,12 @@ class PresentationCompiler(dependencies: List[String]) {
       result = compiler.ask( () => {
         response.get(10) match {
           case Some(Left(t)) =>
-            t .map { m =>
-              val params = m.tpe.params.map(p => s"${p.name.toString}: ${p.tpe.toString()}").mkString(", ")
+            t .map { m: compiler.Member =>
+              val params = m.tpe.params.map{ p =>
+                val nameAndType = s"${p.name.toString}: ${p.tpe.toString()}"
+                if (p.isParamWithDefault) s"[${nameAndType}]" else nameAndType
+              }.mkString(", ")
+
               val returnType = try {
                 m.tpe.resultType.toString
               } catch {
