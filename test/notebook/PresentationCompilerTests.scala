@@ -20,7 +20,9 @@ class PresentationCompilerTests extends Specification {
       |  def testMethod(a:Int, optionalB: String = ""):String = ""
       |  lazy val toSchwarz:Float = 1f
       |}
-      |
+      |implicit class AnExampleWithImplicits(cls: AnExample) {
+      |  def implicitMethod(a: Int): Int = 1
+      |}
       |""".stripMargin
 
     val newInst = "val test = new AnExample(123)"
@@ -60,17 +62,25 @@ class PresentationCompilerTests extends Specification {
       ))
     }
 
-    "have the correct amount of completions" in {
+    "lists the methods inherited and the implicit methods" in {
       val pc = new PresentationCompiler(Nil)
       pc.addScripts(cz)
 
       val c = complete(pc) _
 
       val code1 = List(newInst, newLine, "test.").mkString
-      c(code1, code1.size)._2.size must beEqualTo(43)
+      val suggestions: Set[String] = c(code1, code1.size)._2.map {case Match(s, _) => s }
+      println(suggestions.map(s=> s""""${s}""""))
 
-      val code2 = List(newLine, newInst, newLine, "test.testMethod(").mkString
-      c(code2, code2.size-1)._2.size must beEqualTo(2)
+      suggestions must containAllOf(Seq(
+        "+(other: String)",
+        "clone",
+        "hashCode",
+        "asInstanceOf",
+        "getClass",
+        "isInstanceOf",
+        "implicitMethod(a: Int)"
+      ))
     }
   }
 }
