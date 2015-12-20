@@ -59,6 +59,14 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends
       val completedStagesList = completedStages.sortBy(_.submissionTime).reverse
       val failedStagesList = failedStages.sortBy(_.submissionTime).reverse
 
+      val activeJobs = listener.activeJobs.values.toList
+      val completedJobs = listener.completedJobs.toList
+      val failedJobs = listener.failedJobs.toList
+      val jobs =  (for {
+                    j <- activeJobs ::: completedJobs ::: failedJobs
+                    stageId <- j.stageIds
+                  } yield stageId → (j.jobId, j.jobGroup)).toMap
+
       val stageExtract = (s: StageInfo) => {
         val stageDataOption = listener.stageIdToData.get((s.stageId, s.attemptId))
         stageDataOption.map { stageData =>
@@ -77,6 +85,8 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends
           //)
           Json.obj(
             "id" → s.stageId,
+            "job" → jobs(s.stageId)._1,
+            "group" → jobs(s.stageId)._2,
             "name" → s.name,
             "completed" → (completed.toDouble / total * 100),
             "time"  → (""+s.submissionTime.map(t => s.completionTime.getOrElse(System.currentTimeMillis) - t)

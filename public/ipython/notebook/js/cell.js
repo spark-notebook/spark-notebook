@@ -55,7 +55,10 @@ define([
             set: function(value) {
                 that._metadata = value;
                 if (!_.isUndefined(value.id)) {
-                  that.cell_id = value.id;
+                    that.cell_id = value.id;
+                    if (that.element) {
+                        $(that.element).attr("data-cell-id", that.cell_id);
+                    }
                 }
                 if (that.celltoolbar) {
                     that.celltoolbar.rebuild();
@@ -67,12 +70,10 @@ define([
         this.user_highlight = 'auto';
         this.cm_config = config.cm_config;
         this.cell_id = this.cell_id || utils.uuid();
-        console.log("cell id in metadata: " + this.metadata.id);
         if (!this.metadata.id) {
             var md = this.metadata;
             md.id = this.cell_id;
             this.metadata = md;
-            console.log("cell id in metadata: " + this.metadata.id);
         }
         this._options = config;
 
@@ -671,6 +672,7 @@ define([
     UnrecognizedCell.prototype.create_element = function () {
         Cell.prototype.create_element.apply(this, arguments);
         var cell = this.element = $("<div>").addClass('cell unrecognized_cell');
+        cell.attr("data-cell-id", this.cell_id);
         cell.attr('tabindex','2');
 
         var prompt = $('<div/>').addClass('prompt input_prompt');

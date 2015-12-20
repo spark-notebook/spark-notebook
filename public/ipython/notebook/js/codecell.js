@@ -158,6 +158,7 @@ define([
 
         var cell =  $('<div></div>').addClass('cell code_cell');
         cell.attr('tabindex','2');
+        cell.attr("data-cell-id", this.cell_id);
 
         var input = $('<div></div>').addClass('input');
         var prompt = $('<div/>').addClass('prompt input_prompt');

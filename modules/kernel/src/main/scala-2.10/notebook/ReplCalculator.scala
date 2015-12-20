@@ -362,7 +362,21 @@ class ReplCalculator(
         // this future is required to allow InterruptRequest messages to be received and process
         // so that spark jobs can be killed and the hand given back to the user to refine their tasks
         val cellId = er.cellId
-        val result = repl.evaluate(newCode, msg => thisSender ! StreamResponse(msg, "stdout"))
+        def replEvaluate(code:String, cellId:String) = {
+          val cellResult = try {
+           repl.evaluate(s"""
+              |sparkContext.setJobGroup("cell-$cellId", "Created by Spark Notebook")
+              |$code
+              """.stripMargin,
+              msg => thisSender ! StreamResponse(msg, "stdout")
+            )
+          }
+          finally {
+             repl.evaluate("sparkContext.clearJobGroup()")
+          }
+          cellResult
+        }
+        val result = replEvaluate(newCode, cellId)
         val d = toCoarsest(Duration(System.currentTimeMillis - start, MILLISECONDS))
         (d, result._1)
       }
