@@ -262,6 +262,8 @@ class Repl(val compilerOpts: List[String], val jars: List[String] = Nil) {
 
     val prevCode = requests.map(_.originalLine)
     val jarList = newJars ::: jars
+    // this will close the repl class server, which is needed in order to reuse `-Dspark.replClassServer.port`!
+    interp.close()
     val r = new Repl(compilerOpts, jarList)
     (r, () => prevCode.dropWhile(_.trim != "\"END INIT\"") foreach (c => r.evaluate(c, _ => ())))
   }

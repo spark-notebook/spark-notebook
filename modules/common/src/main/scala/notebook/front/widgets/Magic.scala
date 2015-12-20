@@ -74,8 +74,8 @@ case class Edge[I](id:I, ends:(I, I), value:Any, color:String="#999") extends Gr
 }
 
 sealed trait SamplingStrategy
-case class LimitBasedSampling extends SamplingStrategy
-case class RandomSampling extends SamplingStrategy
+case class LimitBasedSampling() extends SamplingStrategy
+case class RandomSampling() extends SamplingStrategy
 
 object SamplerImplicits extends ExtraSamplerImplicits {
   trait Sampler[C] {

@@ -17,9 +17,12 @@ class PresentationCompilerTests extends Specification {
       |  def testVar:String = ""
       |  def testMethod(a:String):String = ""
       |  def testMethod(a:String, b:String):String = ""
+      |  def testMethod(a:Int, optionalB: String = ""):String = ""
       |  lazy val toSchwarz:Float = 1f
       |}
-      |
+      |implicit class AnExampleWithImplicits(cls: AnExample) {
+      |  def implicitMethod(a: Int): Int = 1
+      |}
       |""".stripMargin
 
     val newInst = "val test = new AnExample(123)"
@@ -43,7 +46,7 @@ class PresentationCompilerTests extends Specification {
       ))
     }
 
-    "lists all overrided method versions" in {
+    "lists all overrided method versions, indicating optional parameters if any" in {
       val line = "test.testMeth"
       val code = List(newInst, newLine, line).mkString
 
@@ -52,22 +55,32 @@ class PresentationCompilerTests extends Specification {
       val c = complete(pc) _
 
       c(code, code.size) must beEqualTo("testMeth", Set(
+        Match("testMethod(a: Int, [optionalB: String])",
+          Map("display_text" -> "testMethod(a: Int, [optionalB: String]): String")),
         Match("testMethod(a: String)", Map("display_text" -> "testMethod(a: String): String")),
         Match("testMethod(a: String, b: String)", Map("display_text" -> "testMethod(a: String, b: String): String"))
       ))
     }
 
-    "have the correct amount of completions" in {
+    "lists the methods inherited and the implicit methods" in {
       val pc = new PresentationCompiler(Nil)
       pc.addScripts(cz)
 
       val c = complete(pc) _
 
       val code1 = List(newInst, newLine, "test.").mkString
-      c(code1, code1.size)._2.size must beEqualTo(43)
+      val suggestions: Set[String] = c(code1, code1.size)._2.map {case Match(s, _) => s }
+      println(suggestions.map(s=> s""""${s}""""))
 
-      val code2 = List(newLine, newInst, newLine, "test.testMethod(").mkString
-      c(code2, code2.size-1)._2.size must beEqualTo(2)
+      suggestions must containAllOf(Seq(
+        "+(other: String)",
+        "clone",
+        "hashCode",
+        "asInstanceOf",
+        "getClass",
+        "isInstanceOf",
+        "implicitMethod(a: Int)"
+      ))
     }
   }
 }
