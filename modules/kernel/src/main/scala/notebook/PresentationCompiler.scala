@@ -42,7 +42,15 @@ class PresentationCompiler(dependencies: List[String]) {
     (wrappedCode,snippetPre().length)
   }
 
-  case class CompletionInformation(symbol : String, parameters : String, symbolType: String)
+  case class CompletionInformation(symbol : String, parameters : String, returnType: String){
+    def nameAndParams = if (parameters.isEmpty) {
+      symbol
+    } else {
+      s"${symbol}(${parameters})"
+    }
+
+    def nameParamsAndReturnType = s"${nameAndParams}: ${returnType}"
+  }
 
   def completion(pos: OffsetPosition, op: (OffsetPosition,Response[List[compiler.Member]]) => Unit) : Seq[CompletionInformation] = {
     var result: Seq[CompletionInformation] = null
@@ -51,13 +59,15 @@ class PresentationCompiler(dependencies: List[String]) {
       result = compiler.ask( () => {
         response.get(10) match {
           case Some(Left(t)) =>
-            t .map( m => CompletionInformation(
-                  m.sym.nameString,
-                  m.tpe.params.map( p => s"<${p.name.toString}:${p.tpe.toString()}>").mkString(", "),
-                  ""//m.tpe.toString()
-                )
-              )
-              .toSeq
+            t .map { m =>
+              val params = m.tpe.params.map(p => s"${p.name.toString}: ${p.tpe.toString()}").mkString(", ")
+              val returnType = try {
+                m.tpe.resultType.toString
+              } catch {
+                case exc: RuntimeException => println("Unable to get symbol type", exc); "?"
+              }
+              CompletionInformation(m.sym.nameString, params, returnType)
+            }.toSeq
           case Some(Right(ex)) =>
             ex.printStackTrace()
             println(ex)
@@ -92,7 +102,8 @@ class PresentationCompiler(dependencies: List[String]) {
     }
     val returnMatches = matches
       .filter(m => m.symbol.startsWith(filterSnippet))
-      .map( m => if (m.symbol == filterSnippet) Match(s"${m.symbol}(${m.parameters})", Map()) else Match(s"${m.symbol}", Map()))
+      // autocomplete all matching method versions (name, params, returnType)
+      .map { m => Match(m.nameAndParams, Map("display_text" -> m.nameParamsAndReturnType))}
       .distinct
     (filterSnippet,returnMatches)
   }

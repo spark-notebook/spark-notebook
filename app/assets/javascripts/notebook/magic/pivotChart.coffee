@@ -51,13 +51,31 @@ define([
         save_pivot_state(extract_pivot_state(options))
 
       rendererOptions = {
-                          c3: {
-                            size: {
-                              height: h,
-                              width: $(container).width()
-                            }
-                          }
-                        }
+        c3: {
+          size: {
+            height: h,
+            width: $(container).width()
+          },
+          padding: {
+            # make sure x labels fit
+            right: 50
+          },
+          grid: {
+            y: {
+              show: true
+            }
+          },
+          axis: {
+            x: {
+              tick: {
+                culling: { max: 25 },
+                rotate: 75,
+                multiline: false
+              }
+            }
+          }
+        }
+      }
       window.c3 = c3
 
       pivotOptions = get_saved_pivot_state()
@@ -67,6 +85,12 @@ define([
       pivotOptions.derivedAttributes = derivedAttributes
       pivotOptions.onRefresh = refresh
       pivotOptions.rendererOptions = rendererOptions
+
+      customAggregators = {
+        # allows calculating ratios over any dimensions (sum is additive, ratio is not)
+        "Ratio - sumOverSum": $.pivotUtilities.aggregatorTemplates.sumOverSum()
+      }
+      pivotOptions.aggregators = $.extend($.pivotUtilities.aggregators, customAggregators)
 
       p = $("<div>")
       p.addClass("pivotChart").appendTo(container)

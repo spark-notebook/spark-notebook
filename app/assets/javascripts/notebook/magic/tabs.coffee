@@ -1,9 +1,10 @@
 define([
+    'jquery'
     'observable'
     'knockout'
     'd3'
     'dimple'
-], (Observable, ko, d3, dimple) ->
+], ($, Observable, ko, d3, dimple) ->
   (dataO, container, options) ->
     ulId = @genId
     $('#ul'+ulId+' a').click( (e) ->
@@ -16,6 +17,9 @@ define([
       $(id).addClass('active')
       $(@).parent().addClass('active')
     )
+
+    # select the first tab
+    $('#ul'+ulId+' li:first a').click()
 
     dataO.subscribe( (newData) =>
       #notify tabs
