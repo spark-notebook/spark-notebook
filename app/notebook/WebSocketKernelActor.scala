@@ -71,9 +71,10 @@ class WebSocketKernelActor(
         case JsString("interrupt_request") =>
           calcService.calcActor ! InterruptCalculator
         case JsString("execute_request") =>
+          val JsString(cellId) = content \ "cell_id"
           val JsString(code) = content \ "code"
           val execCounter = executionCounter.incrementAndGet()
-          calcService.calcActor ! SessionRequest(header, session, ExecuteRequest(execCounter, code))
+          calcService.calcActor ! SessionRequest(header, session, ExecuteRequest(cellId, execCounter, code))
         case JsString("complete_request") =>
           val JsString(line) = content \ "code"
           val JsNumber(cursorPos) = content \ "cursor_pos"

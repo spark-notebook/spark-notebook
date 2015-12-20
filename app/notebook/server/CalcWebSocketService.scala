@@ -126,10 +126,10 @@ class CalcWebSocketService(
       case req@SessionRequest(header, session, request) =>
         val operations = new SessionOperationActors(header, session)
         val operationActor = (request: @unchecked) match {
-          case ExecuteRequest(counter, code) =>
+          case ExecuteRequest(cellId, counter, code) =>
             ws.send(header, session, "status", "iopub", obj("execution_state" → "busy"))
-            ws.send(header, session, "pyin", "iopub", obj("execution_count" → counter, "code" → code))
-            operations.singleExecution(counter)
+            ws.send(header, session, "pyin", "iopub", obj("cell_id" → cellId, "execution_count" → counter, "code" → code))
+            operations.singleExecution(cellId, counter)
 
           case _: CompletionRequest =>
             operations.completion
@@ -188,19 +188,20 @@ class CalcWebSocketService(
     }
 
     class SessionOperationActors(header: JsValue, session: JsValue) {
-      def singleExecution(counter: Int) = Props(new Actor {
+      def singleExecution(cellId:String, counter: Int) = Props(new Actor {
         def receive = {
           case StreamResponse(data, name) =>
-            ws.send(header, session, "stream", "iopub", obj("text" → data, "name" → name))
+            ws.send(header, session, "stream", "iopub", obj("cell_id" → cellId, "text" → data, "name" → name))
 
           case ExecuteResponse(outputType, content, time) =>
             ws.send(header, session, "execute_result", "iopub", obj(
+              "cell_id" → cellId,
               "execution_count" → counter,
               "data" → obj(outputType → content),
               "time" → time
             ))
-            ws.send(header, session, "status", "iopub", obj("execution_state" → "idle"))
-            ws.send(header, session, "execute_reply", "shell", obj("execution_count" → counter))
+            ws.send(header, session, "status", "iopub", obj("cell_id" → cellId, "execution_state" → "idle"))
+            ws.send(header, session, "execute_reply", "shell", obj("cell_id" → cellId, "execution_count" → counter))
             context.stop(self)
 
           case ErrorResponse(msg, incomplete) =>

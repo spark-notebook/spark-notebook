@@ -54,7 +54,9 @@ define([
             get: function() { return that._metadata; },
             set: function(value) {
                 that._metadata = value;
-                that.cell_id = value.id;
+                if (!_.isUndefined(value.id)) {
+                  that.cell_id = value.id;
+                }
                 if (that.celltoolbar) {
                     that.celltoolbar.rebuild();
                 }
@@ -65,8 +67,13 @@ define([
         this.user_highlight = 'auto';
         this.cm_config = config.cm_config;
         this.cell_id = this.cell_id || utils.uuid();
-        if (!this.metadata.id) this.metadata.id = this.cell_id;
-        console.log("cell id: " + this.cell_id);
+        console.log("cell id in metadata: " + this.metadata.id);
+        if (!this.metadata.id) {
+            var md = this.metadata;
+            md.id = this.cell_id;
+            this.metadata = md;
+            console.log("cell id in metadata: " + this.metadata.id);
+        }
         this._options = config;
 
         // For JS VM engines optimization, attributes should be all set (even
@@ -437,6 +444,9 @@ define([
      **/
     Cell.prototype.fromJSON = function (data) {
         if (data.metadata !== undefined) {
+            if (_.isUndefined(data.metadata.id)) {
+                data.metadata.id = this.cell_id;
+            }
             this.metadata = data.metadata;
             // need to rerender, as cell_width depends on metadata
             this.render();
@@ -648,6 +658,9 @@ define([
     UnrecognizedCell.prototype.fromJSON = function (data) {
         this.data = data;
         if (data.metadata !== undefined) {
+            if (_.isUndefined(data.metadata.id)) {
+                data.metadata.id = thui.cell_id;
+            }
             this.metadata = data.metadata;
         } else {
             data.metadata = this.metadata;

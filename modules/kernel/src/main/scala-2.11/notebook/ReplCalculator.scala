@@ -206,11 +206,11 @@ class ReplCalculator(
           }
         }
 
-      case er@ExecuteRequest(_, code) if queue.nonEmpty =>
+      case er@ExecuteRequest(_, _, code) if queue.nonEmpty =>
         log.debug("Enqueuing execute request at: " + queue.size)
         queue = queue.enqueue((sender(), er))
 
-      case er@ExecuteRequest(_, code) =>
+      case er@ExecuteRequest(_, _, code) =>
         log.debug("Enqueuing execute request at: " + queue.size)
         queue = queue.enqueue((sender(), er))
         log.debug("Executing execute request")
@@ -469,7 +469,7 @@ class ReplCalculator(
         case InterruptRequest =>
           executor.forward(InterruptRequest)
 
-        case req @ ExecuteRequest(_, code) => executor.forward(req)
+        case req @ ExecuteRequest(_, _, code) => executor.forward(req)
 
         case CompletionRequest(line, cursorPosition) =>
           val (matched, candidates) = repl.complete(line, cursorPosition)
