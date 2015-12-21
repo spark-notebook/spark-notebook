@@ -17,14 +17,17 @@
     "customSparkConf" : null
   },
   "cells" : [ {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "val geoJsonsDir = \"https://api.github.com/repos/poezn/us-history-maps/contents/GeoJSON?ref=master\"\nval listingString = scala.io.Source.fromURL(geoJsonsDir).getLines.mkString\nval listing = play.api.libs.json.Json.parse(listingString)\n()",
-    "outputs" : [ ]
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# History of the US "
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Using GitHub data"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "First we list the available sources on github."
   }, {
     "metadata" : {
       "trusted" : true,
@@ -32,8 +35,12 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val play.api.libs.json.JsArray(arr) = listing\n()",
+    "source" : "val geoJsonsDir = \"https://api.github.com/repos/poezn/us-history-maps/contents/GeoJSON?ref=master\"\nval listingString = scala.io.Source.fromURL(geoJsonsDir).getLines.mkString\nval listing = play.api.libs.json.Json.parse(listingString)\nval play.api.libs.json.JsArray(arr) = listing\n()",
     "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Here is the list of recorded changes in the US states ownership"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -50,7 +57,56 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val head = geoJsons.head\ndef extractData(u:String) = {\n  val h = scala.io.Source.fromURL(u).getLines.mkString\n  val fs =  GeoChart.parseGeoJSON(h) match {\n              case fc:org.wololo.geojson.FeatureCollection => fc.getFeatures\n            }\n  fs.map { f =>\n    (f, Option(f.getProperties.get(\"COUNTRY\")).map(_.toString).getOrElse(\"Disputed\"))\n  }\n  \n}\nval h = extractData(head._2)\nvar countries = h.map(_._2).distinct.toList\nval colors = List(\n  \"#1f77b4\", \"#aec7e8\", \"#ff7f0e\", \"#ffbb78\", \"#2ca02c\", \"#98df8a\", \"#d62728\", \"#ff9896\", \"#9467bd\", \"#c5b0d5\", \n  \"#8c564b\", \"#c49c94\", \"#e377c2\", \"#f7b6d2\", \"#7f7f7f\", \"#c7c7c7\", \"#bcbd22\", \"#dbdb8d\", \"#17becf\", \"#9edae5\"\n)\ndef mapping = (countries zip colors).toMap\nval u:DataConnectedWidget[String] = ul(20)\ndef updateLegend(cs:List[String]) = {\n  u(mapping.filter(xs => cs contains (xs._1)).map{ case (n, c) => s\"\"\"<span style=\"color: $c\">$n</span>\"\"\"}.toSeq)\n}\nupdateLegend(countries)\ndef toGeoData(d:Array[(org.wololo.geojson.Feature, String)]) = d.map(x => (x._1, mapping(x._2)))\nval g = GeoChart(toGeoData(h), geometryField=Some(\"_1\"), fillColorField=Some(\"_2\"), sizes=(800,800), maxPoints=1000)\nval d:SingleConnectedWidget[String] = out\nval dt = new java.text.SimpleDateFormat(\"MMM YYYY\")\nval c = java.util.Calendar.getInstance\nc.set(java.util.Calendar.DATE, 1)\ndef toDate(v:Int) = {\n  val i = v.toString.take(6)\n  c.set(java.util.Calendar.YEAR, i.take(4).toInt)\n  c.set(java.util.Calendar.MONTH, i.drop(4).take(2).toInt)\n  dt.format(c.getTime)\n}\nd(\"In \" + toDate(head._1))\nval b = BarChart(List((\"US\", 0)), maxPoints=100, sizes=(300, 300))\ndef updateBars(xs:Array[String]) = b.applyOn(xs.groupBy(x=>x).map{ x => (x._1, x._2.size)}.toList)\nupdateBars(h.map(_._2))\ncontainerFluid(List(\n  List((d, 2), (u, 5), (b, 5)),\n  List((html(<div><br/><hr/><br/></div>), 12)),\n  List((g.asInstanceOf[Widget], 12))\n))",
+    "source" : "geoJsons.map(_._1).max",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Quick view: distribution of changes"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "This should give us some help to understand how the data is structured"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val minDate = geoJsons.sorted.head._1\nLineChart(geoJsons.map(_._1) zip geoJsons.map(_._1 - minDate).toList.sorted)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Here is a chart showing how often the states changed per year."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "presentation" : {
+        "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [],\n  \"rows\": [],\n  \"vals\": [],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count\",\n  \"rendererName\": \"Table\"\n}"
+      }
+    },
+    "cell_type" : "code",
+    "source" : "BarChart(geoJsons.map(_._1)\n                 .groupBy(_.toString.take(6))\n                 .toList\n                 .map(x => (x._1, x._2.size))\n                 .sortBy(_._2)\n        )",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## American Civil War"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "presentation" : {
+        "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [],\n  \"rows\": [],\n  \"vals\": [],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count\",\n  \"rendererName\": \"Table\"\n}"
+      }
+    },
+    "cell_type" : "code",
+    "source" : "val time = geoJsons .map(_._1)\n                    .map{ x => \n                      \"\" + x.toString.take(6)+\n                        (1+(x%10)*5).toString.reverse.padTo(2, \"0\").reverse.mkString\n                    }\n()",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -59,7 +115,106 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "geoJsons.tail.foreach{ x =>\n  Thread.sleep(500)\n  val dt = extractData(x._2)\n  val cs = dt.map(_._2).distinct.toList\n  countries = countries ::: (cs diff countries) \n  updateLegend(cs)\n  updateBars(dt.map(_._2))\n  val j = toGeoData(dt)\n  d(\"In \" + toDate(x._1))\n  g.applyOn(j)\n}",
+    "source" : "val `American Civil War` = time .dropWhile(!_.toString.startsWith(\"1861\"))\n                                .takeWhile(!_.toString.startsWith(\"1866\"))\nCustomC3Chart(time zip geoJsons.map(_._1),\n             chartOptions = s\"\"\"\n             { \n               data: { \n                 x: '_1',\n                 xFormat: '%Y%m%d',\n                 type: 'scatter'\n               },\n               axis: {\n                 x: { \n                   type: 'timeseries',\n                   tick: { \n                     format: '%Y-%b-%W' , \n                     rotate: 45\n                   } \n                 }\n               },\n               regions: [\n                 {\n                   axis: 'x', \n                   start: \"${`American Civil War`.head}\", \n                   end: \"${`American Civil War`.last}\", \n                   class: 'regionX'\n                 },\n               ]\n             }\n             \"\"\")\n",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# Wouldn't be great to see this live?"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Collect the data from GeoJSON."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "presentation" : {
+        "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [],\n  \"rows\": [],\n  \"vals\": [],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count\",\n  \"rendererName\": \"Table\"\n}"
+      }
+    },
+    "cell_type" : "code",
+    "source" : "val head = geoJsons.head\ndef extractData(u:String) = {\n  val h = scala.io.Source.fromURL(u).getLines.mkString\n  val fs =  GeoChart.parseGeoJSON(h) match {\n              case fc:org.wololo.geojson.FeatureCollection => fc.getFeatures\n            }\n  fs.map { f =>\n    (f, Option(f.getProperties.get(\"COUNTRY\")).map(_.toString).getOrElse(\"Disputed\"))\n  }\n  \n}\nval h = extractData(head._2)\n()",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "presentation" : {
+        "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [],\n  \"rows\": [],\n  \"vals\": [],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count\",\n  \"rendererName\": \"Table\"\n}"
+      }
+    },
+    "cell_type" : "code",
+    "source" : "var countries = h.map(_._2).distinct.toList\nval colors = List(\n  \"#1f77b4\", \"#aec7e8\", \"#ff7f0e\", \"#ffbb78\", \"#2ca02c\", \"#98df8a\", \"#d62728\", \"#ff9896\", \"#9467bd\", \"#c5b0d5\", \n  \"#8c564b\", \"#c49c94\", \"#e377c2\", \"#f7b6d2\", \"#7f7f7f\", \"#c7c7c7\", \"#bcbd22\", \"#dbdb8d\", \"#17becf\", \"#9edae5\"\n)\ndef mapping = (countries zip colors).toMap\n()",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "def colorizeCountries(cs:List[String]):List[String] = mapping .filter(xs => cs contains (xs._1))\n                                                              .map{ \n                                                                case (n, c) => s\"\"\"<span style=\"color: $c\">$n</span>\"\"\"\n                                                              }.toList\nval u:DataConnectedWidget[String] = ul(20, colorizeCountries(countries))\ndef updateLegend(cs:List[String]) = u(colorizeCountries(cs))\n()",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "def toGeoData(d:Array[(org.wololo.geojson.Feature, String)]) = d.map(x => (x._1, mapping(x._2)))\nval g = GeoChart(toGeoData(h), geometryField=Some(\"_1\"), fillColorField=Some(\"_2\"), sizes=(800,800))\n()",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val d:SingleConnectedWidget[String] = out\nval dt = new java.text.SimpleDateFormat(\"MMM YYYY\")\nval c = java.util.Calendar.getInstance\nc.set(java.util.Calendar.DATE, 1)\ndef toDate(v:Int) = {\n  val i = v.toString.take(6)\n  c.set(java.util.Calendar.YEAR, i.take(4).toInt)\n  c.set(java.util.Calendar.MONTH, i.drop(4).take(2).toInt)\n  dt.format(c.getTime)\n}\nd(\"In \" + toDate(head._1))\n()",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "val b = BarChart(h.groupBy(_._2).mapValues(_.size).toList, sizes=(200, 200))\ndef updateBars(xs:Array[String]) = b.applyOn(xs.groupBy(x=>x).map{ x => (x._1, x._2.size)}.toList)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Dashboard"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "containerFluid(List(\n  List((d, 2), (u, 5), (b, 5)),\n  List((html(<div><br/><hr/><br/></div>), 12)),\n  List((g.asInstanceOf[Widget], 12))\n))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "import scala.concurrent.Future\nimport scala.concurrent.ExecutionContext.Implicits.global\nvar msBetweenExp = 500\nFuture {\n  geoJsons.tail.foreach{ x =>\n    val dt = extractData(x._2)\n    val cs = dt.map(_._2).distinct.toList\n    countries = countries ::: (cs diff countries) \n    updateLegend(cs)\n    updateBars(dt.map(_._2))\n    val j = toGeoData(dt)\n    d(\"In \" + toDate(x._1))\n    g.applyOn(j)\n    Thread.sleep(msBetweenExp)\n  }\n}",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "msBetweenExp = 10",
     "outputs" : [ ]
   } ],
   "nbformat" : 4
