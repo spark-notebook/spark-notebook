@@ -21,14 +21,26 @@ define([
 
     grect = (n, options) ->
       options = options || {}
-      new joint.shapes.basic.Rect({
+      # new joint.shapes.basic.Rect({
+      #     position: options.position || { x: 100, y: 30 },
+      #     size: options.size || { width: 100, height: 30 },
+      #     attrs: {
+      #       rect: { fill: 'blue' },
+      #       text: { text: n||'box', fill: 'white'}
+      #     }
+      # })
+      new joint.shapes.devs.Coupled({
           position: options.position || { x: 100, y: 30 },
           size: options.size || { width: 100, height: 30 },
+          inPorts: options.inPorts || ['in'],
+          outPorts: options.outPorts || ['out'],
           attrs: {
-            rect: { fill: 'blue' },
-            text: { text: n||'box', fill: 'white'}
+            '.label': {
+              text: options.name || 'Element'
+            }
           }
       })
+
 
     glink = (options) ->
       if (options.source && options.target)
@@ -77,7 +89,7 @@ define([
       dataO([_.extend(pipeComponent, {'remove': true})])
     )
     paper.on("cell:pointerdblclick", (cellView, evt, x, y) =>
-      if (cellView.model instanceof joint.shapes.basic.Rect)
+      if (! (cellView.model instanceof joint.dia.Link) )
         cell = cellView.model
         form.cell = cell
         conf.html("")
@@ -133,7 +145,7 @@ define([
 
       addCells = _.map(toAdd, (d) =>
         if (d.tpe == "box")
-          r = grect(d.name, {position: d.position, size: d.size})
+          r = grect(d.name, d)
           r.id = d.id
           r.pipeComponent = d
           r

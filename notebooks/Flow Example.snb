@@ -32,7 +32,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "import notebook.front.widgets.{BoxPipeComponent, PipeComponent}",
+    "source" : "import notebook.front.widgets.{BoxPipeComponent, PipeComponent, CustomizableBoxPipe}",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -79,6 +79,36 @@
     },
     "cell_type" : "code",
     "source" : "val f:Flow = Flow()",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "presentation" : {
+        "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [],\n  \"rows\": [],\n  \"vals\": [],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count\",\n  \"rendererName\": \"Table\"\n}"
+      }
+    },
+    "cell_type" : "code",
+    "source" : "f.data.filter(!_.isInstanceOf[notebook.front.widgets.LinkPipe]).map(_.asInstanceOf[CustomizableBoxPipe].update(\"f\", $intp))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true
+    },
+    "cell_type" : "code",
+    "source" : "",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "// SumPipe → SumPipe → ...\nf.run {\n  case x => \n    println(x)\n    2 // init value for all \"sources\" of the pipeline\n}",
     "outputs" : [ ]
   }, {
     "metadata" : {

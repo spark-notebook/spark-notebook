@@ -34,8 +34,9 @@ abstract class LinkPipeComponent[X<:LinkPipeComponent[X]]() extends BasePipeComp
   def target:Option[String]
 }
 
-abstract class BoxPipeComponent[X<:BoxPipeComponent[X]]() extends BasePipeComponent[X]() {
+abstract class BoxPipeComponent[X<:BoxPipeComponent[X]](val inPorts:List[String]=List("in"), val outPorts:List[String]=List("ou")) extends BasePipeComponent[X]() {
   val tpe = "box"
+  def update(varName:String, i:org.apache.spark.repl.SparkIMain/*only scala 2.10...*/, s:String):Unit = ()
 }
 
 case class LinkPipe(id:String = java.util.UUID.randomUUID.toString,
@@ -88,11 +89,44 @@ case class WithParamPipe( id:String = java.util.UUID.randomUUID.toString,
   )
 }
 
+case class CustomizableBoxPipe(
+  id:String = java.util.UUID.randomUUID.toString,
+  parameters:Map[String, String] = Map(
+                                        "init" → "identity[Any] _",
+                                        "next" → "(a:Map[notebook.front.widgets.PipeComponent[_], Any])=>()"
+                                      )
+) extends BoxPipeComponent[CustomizableBoxPipe]() {
+  val name = "customizable"
+  var _init:Any=>Any = _
+  def init(a:Any):Any = _init(a)
+
+  var _next:Map[PipeComponent[_], Any]=>Any = _
+  def next(a:Map[PipeComponent[_], Any]):Any = _next(a)
+
+  def merge(j:JsValue):CustomizableBoxPipe = copy(
+    parameters = (j \ "parameters").as[Map[String, String]]
+  )
+
+  def update( varName:String,
+              i:org.apache.spark.repl.SparkIMain/*only scala 2.10...*/
+            ):Unit = {
+    i.interpret{
+      varName + s""".data.find(_.id == "$id").map{p => p.asInstanceOf[CustomizableBoxPipe]}.""" +
+        "foreach{p => p._init = { " + parameters("init") + "}.asInstanceOf[Any=>Any] }"
+    }
+    i.interpret{
+      varName + s""".data.find(_.id == "$id").map{p => p.asInstanceOf[CustomizableBoxPipe]}.""" +
+        "foreach{p => p._next = { " + parameters("next") + "}.asInstanceOf[Map[PipeComponent[_], Any]=>Any] }"
+    }
+  }
+}
+
 object Flow {
   var registeredPC:scala.collection.mutable.Map[String, ()=>BoxPipeComponent[_]] =
     scala.collection.mutable.Map(
       "log"       → (() => LogPipe()),
-      "withParam" → (() => WithParamPipe())
+      "withParam" → (() => WithParamPipe()),
+      "customizable" → (() => CustomizableBoxPipe())
     )
 
   def registerPipeComponent(name:String, creator:() => BoxPipeComponent[_]) {
@@ -208,6 +242,7 @@ case class Flow() extends JsWorld[PipeComponent[_], JsValue] {
 
         val valuesForLinksSource = linksToPc.map(s => currentData.find(_.id == s) → values.get(s))
                                             .collect{case (Some(x), Some(y)) => x.me → y }
+                                            .toMap
 
         values += (valuesForLinksSource match {
           case xs if xs.isEmpty => pc.id → pc.init(init(pc.id))
