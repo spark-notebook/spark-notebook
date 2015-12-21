@@ -41,7 +41,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "import org.apache.spark.rdd.RDD\ncase class RddFilterEvenPipeComp(\n  id:String = java.util.UUID.randomUUID.toString)\n  extends BoxPipeComponent[RddFilterEvenPipeComp]() {\n    \n  val name = \"filterEvenPipe\"\n\n  val parameters = Map.empty[String, String]\n  \n  def init(a:Any):Any = a match {\n    case rdd:RDD[Int] => rdd.filter(_ % 2 == 0)\n  }\n  def next(a:Map[PipeComponent[_], Any]):Any = {\n    val vs = a.toList.map { \n      case (_, rdd:RDD[Int]) => rdd.filter(_ % 2 == 0)\n    }\n    sparkContext.union(vs)\n  }\n  \n  def merge(j:play.api.libs.json.JsValue):RddFilterEvenPipeComp = this\n  \n  override val toString = toJSON.toString\n}",
+    "source" : "case class SumPipeComp(id:String = java.util.UUID.randomUUID.toString,\n                      mult:String=\"1\") \n  extends BoxPipeComponent[SumPipeComp]() {\n    \n  val name = \"sumPipe\"\n\n  val parameters = Map(\"mult\" → mult)\n  \n  def extractMult:Int = parameters(\"mult\").toInt\n    \n  def init(a: Map[String,Any]): Map[String,Any] = {\n    a(\"in\") match {\n      case i:Int => Map(\"out\" → (extractMult * i))\n      case _     => ???\n    }\n  }\n  def next(a: Map[String,Any]): Map[String,Any] = {\n    a(\"in\") match {\n      case i:Int => Map(\"out\" → (extractMult * i))\n      case _ => ???\n    }\n  }\n\n  def merge(j:play.api.libs.json.JsValue):SumPipeComp = copy(\n    mult = (j \\ \"parameters\" \\ \"mult\").as[String]\n  )\n  \n  override val toString = toJSON.toString\n}",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -50,25 +50,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "import org.apache.spark.rdd.RDD\ncase class RddCollectEvenPipeComp(\n  id:String = java.util.UUID.randomUUID.toString)\n  extends BoxPipeComponent[RddCollectEvenPipeComp]() {\n    \n  val name = \"collectPipe\"\n\n  val parameters = Map.empty[String, String]\n  \n  def init(a:Any):Any = a match {\n    case rdd:RDD[Int] => rdd.collect\n  }\n  def next(a:Map[PipeComponent[_], Any]):Any = {\n    val vs = a.toList.map { \n      case (_, rdd:RDD[Int]) => rdd.collect\n    }\n    vs.flatten\n  }\n  \n  def merge(j:play.api.libs.json.JsValue):RddCollectEvenPipeComp = this\n  \n  override val toString = toJSON.toString\n}",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "case class SumPipeComp(id:String = java.util.UUID.randomUUID.toString,\n                      mult:String=\"1\") \n  extends BoxPipeComponent[SumPipeComp]() {\n    \n  val name = \"sumPipe\"\n\n  val parameters = Map(\"mult\" → mult)\n  \n  def extractMult:Int = parameters(\"mult\").toInt\n    \n  def init(a:Any):Any = {\n    a match {\n      case i:Int => extractMult * i\n    }\n  }\n  def next(a:Map[PipeComponent[_], Any]):Any = {\n    val vs = a.toList.map { \n      case (_, v:Int) => v * extractMult\n    }\n    vs.sum\n  }\n  \n  def merge(j:play.api.libs.json.JsValue):SumPipeComp = copy(\n    mult = (j \\ \"parameters\" \\ \"mult\").as[String]\n  )\n  \n  override val toString = toJSON.toString\n}",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "Flow.registerPipeComponent(\"sumPipe\", (() => SumPipeComp()))\nFlow.registerPipeComponent(\"filterEvenPipe\", (() => RddFilterEvenPipeComp()))\nFlow.registerPipeComponent(\"collectPipe\", (() => RddCollectEvenPipeComp()))",
+    "source" : "Flow.registerPipeComponent(\"sumPipe\", (() => SumPipeComp()))",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -90,17 +72,12 @@
       }
     },
     "cell_type" : "code",
-    "source" : "f.data.filter(!_.isInstanceOf[notebook.front.widgets.LinkPipe]).map(_.asInstanceOf[CustomizableBoxPipe].update(\"f\", $intp))",
+    "source" : "f.data.filter(!_.isInstanceOf[notebook.front.widgets.LinkPipe])\n      .foreach(_.asInstanceOf[CustomizableBoxPipe].update(\"f\", $intp))",
     "outputs" : [ ]
   }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : true
-    },
-    "cell_type" : "code",
-    "source" : "",
-    "outputs" : [ ]
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "We can use two cusomizable with those functions:\n```scala\n(a: Map[String, Any]) => Map(\"out\" → (a(\"in\").asInstanceOf[Int] + 2))\n```\n\n```scala\n(a: Map[String, Any]) => Map(\"out\" → (a(\"in\").asInstanceOf[Int] * 5))\n```"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -108,25 +85,20 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "// SumPipe → SumPipe → ...\nf.run {\n  case x => \n    println(x)\n    2 // init value for all \"sources\" of the pipeline\n}",
+    "source" : "// Custom \nf.run {\n  case (x, inPorts) => \n    println(x)\n    Map(\"in\" → 2) // init value for all \"sources\" of the pipeline\n}",
     "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "We can use two cusomizable with those functions:\n```scala\n(a: Map[String, Any]) => Map(\"out\" → (a(\"in\").asInstanceOf[RDD[Int]].filter(_ % 2 == 0)))\n```\n\n```scala\n(a: Map[String, Any]) => Map(\"out\" → (a(\"in\").asInstanceOf[RDD[Int]].sum))\n```"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "// SumPipe → SumPipe → ...\nf.run {\n  case x => \n    println(x)\n    2 // init value for all \"sources\" of the pipeline\n}",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : true
-    },
-    "cell_type" : "code",
-    "source" : "// filterEventPipe → CollectPipe\nf.run {\n  case x => \n    if (x.last.isDigit)\n      sparkContext.parallelize(1 to 100)\n    else\n      sparkContext.parallelize(400 to 800)\n}",
+    "source" : "// filterEventPipe → CollectPipe\nf.run {\n  case x => Map(\"in\" → sparkContext.parallelize(1 to 100))\n}",
     "outputs" : [ ]
   }, {
     "metadata" : {

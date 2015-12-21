@@ -21,14 +21,6 @@ define([
 
     grect = (n, options) ->
       options = options || {}
-      # new joint.shapes.basic.Rect({
-      #     position: options.position || { x: 100, y: 30 },
-      #     size: options.size || { width: 100, height: 30 },
-      #     attrs: {
-      #       rect: { fill: 'blue' },
-      #       text: { text: n||'box', fill: 'white'}
-      #     }
-      # })
       new joint.shapes.devs.Coupled({
           position: options.position || { x: 100, y: 30 },
           size: options.size || { width: 100, height: 30 },
@@ -43,14 +35,16 @@ define([
 
 
     glink = (options) ->
-      if (options.source && options.target)
-        new joint.dia.Link({
-          source: { id: options.source },
-          target: { id: options.target }
-        })
-      else new joint.dia.Link({
-        source:{x: 120, y: 50},
-        target:{x: 220, y: 50}
+      new joint.dia.Link({
+        source: if (options.source.id)
+                  options.source
+                else
+                  {x: 120, y: 50}
+        ,
+        target: if (options.target.id)
+                  options.target
+                else
+                  {x: 220, y: 50}
       })
 
     # get cell object, like done in get_cell_elements in notebook.js
@@ -150,26 +144,33 @@ define([
           r.pipeComponent = d
           r
         else
-          l = glink({source: d.parameters.source, target: d.parameters.target})
+          l = glink({
+                      source: { id: d.parameters.source_id, port: d.parameters.source_port },
+                      target: { id: d.parameters.target_id, port: d.parameters.target_port }
+                    })
           l.id = d.id
           l.pipeComponent = d
           l.on("remove", (l) => dataO([_.extend(l.pipeComponent, {'remove': true})]))
           l.on("change:source", (l, c) =>
             if (l.get("source").id && l.get("source").id != l.pipeComponent.parameters.source)
-              l.pipeComponent.parameters.source = l.get("source").id
+              l.pipeComponent.parameters.source_id   = l.get("source").id
+              l.pipeComponent.parameters.source_port = l.get("source").port
               dataO([l.pipeComponent])
             else
               if (l.pipeComponent.parameters.source)
-                delete l.pipeComponent.parameters.source
+                delete l.pipeComponent.parameters.source_id
+                delete l.pipeComponent.parameters.source_port
                 dataO([l.pipeComponent])
           )
           l.on("change:target", (l, c) =>
             if (l.get("target").id && l.get("target").id != l.pipeComponent.parameters.target)
-              l.pipeComponent.parameters.target = l.get("target").id
+              l.pipeComponent.parameters.target_id   = l.get("target").id
+              l.pipeComponent.parameters.target_port = l.get("target").port
               dataO([l.pipeComponent])
             else
               if (l.pipeComponent.parameters.target)
-                delete l.pipeComponent.parameters.target
+                delete l.pipeComponent.parameters.target_id
+                delete l.pipeComponent.parameters.target_port
                 dataO([l.pipeComponent])
           )
           l
