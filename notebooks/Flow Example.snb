@@ -24,7 +24,18 @@
     },
     "cell_type" : "code",
     "source" : "val t = out",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "t: notebook.front.SingleConnectedWidget[String]{implicit val codec: notebook.Codec[play.api.libs.json.JsValue,String]; lazy val toHtml: scala.xml.Elem} = <anon$2 widget>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon9f9a95807785a5be5da97ee86b3cb565&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 1
+    } ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -33,7 +44,18 @@
     },
     "cell_type" : "code",
     "source" : "import notebook.front.widgets.{BoxPipeComponent, PipeComponent, CustomizableBoxPipe}",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "import notebook.front.widgets.{BoxPipeComponent, PipeComponent, CustomizableBoxPipe}\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 2
+    } ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -41,8 +63,19 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "case class SumPipeComp(id:String = java.util.UUID.randomUUID.toString,\n                      mult:String=\"1\") \n  extends BoxPipeComponent[SumPipeComp]() {\n    \n  val name = \"sumPipe\"\n\n  val parameters = Map(\"mult\" → mult)\n  \n  def extractMult:Int = parameters(\"mult\").toInt\n    \n  def init(a: Map[String,Any]): Map[String,Any] = {\n    a(\"in\") match {\n      case i:Int => Map(\"out\" → (extractMult * i))\n      case _     => ???\n    }\n  }\n  def next(a: Map[String,Any]): Map[String,Any] = {\n    a(\"in\") match {\n      case i:Int => Map(\"out\" → (extractMult * i))\n      case _ => ???\n    }\n  }\n\n  def merge(j:play.api.libs.json.JsValue):SumPipeComp = copy(\n    mult = (j \\ \"parameters\" \\ \"mult\").as[String]\n  )\n  \n  override val toString = toJSON.toString\n}",
-    "outputs" : [ ]
+    "source" : "case class SumPipeComp(id:String = java.util.UUID.randomUUID.toString,\n                      mult:String=\"1\") \n  extends BoxPipeComponent[SumPipeComp]() {\n    \n  val name = \"sumPipe\"\n\n  val inPorts: List[String] = List(\"in\")\n  val outPorts: List[String] = List(\"out\")\n\n  val parameters = Map(\"mult\" → mult)\n  \n  def extractMult:Int = parameters(\"mult\").toInt\n\n  def next(a: Map[String,Any]): Map[String,Any] = {\n    a(\"in\") match {\n      case i:Int => Map(\"out\" → (extractMult * i))\n      case _ => ???\n    }\n  }\n\n  def merge(j:play.api.libs.json.JsValue):SumPipeComp = copy(\n    mult = (j \\ \"parameters\" \\ \"mult\").as[String]\n  )\n  \n  override val toString = toJSON.toString\n}",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "defined class SumPipeComp\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 3
+    } ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -51,7 +84,14 @@
     },
     "cell_type" : "code",
     "source" : "Flow.registerPipeComponent(\"sumPipe\", (() => SumPipeComp()))",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 4
+    } ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -61,7 +101,18 @@
     },
     "cell_type" : "code",
     "source" : "val f:Flow = Flow()",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "f: notebook.front.widgets.Flow = <Flow widget>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon2c428eea9d5d21efbae0ed413496b6a2&quot;,&quot;dataInit&quot;:[{&quot;name&quot;:&quot;customizable&quot;,&quot;id&quot;:&quot;7c28c36f-b085-4328-ace4-cc3c38642ba4&quot;,&quot;tpe&quot;:&quot;box&quot;,&quot;parameters&quot;:{&quot;next&quot;:&quot;(a:Map[String, Any])=>Map(\\&quot;out\\&quot; → (a(\\&quot;in\\&quot;).asInstanceOf[RDD[Int]].filter(_ % 2 == 1)))&quot;},&quot;inPorts&quot;:[&quot;in&quot;],&quot;outPorts&quot;:[&quot;out&quot;],&quot;remove&quot;:false,&quot;position&quot;:{&quot;x&quot;:55,&quot;y&quot;:105},&quot;size&quot;:{&quot;width&quot;:100,&quot;height&quot;:60}},{&quot;name&quot;:&quot;customizable&quot;,&quot;id&quot;:&quot;611fa0ca-fc25-4dc3-87a0-f6f617559965&quot;,&quot;tpe&quot;:&quot;box&quot;,&quot;parameters&quot;:{&quot;next&quot;:&quot;(a:Map[String, Any])=> Map(\\&quot;out\\&quot; → (a(\\&quot;left\\&quot;).asInstanceOf[RDD[Int]].zip(a(\\&quot;right\\&quot;).asInstanceOf[RDD[String]]).collect))&quot;},&quot;inPorts&quot;:[&quot;left&quot;,&quot;right&quot;],&quot;outPorts&quot;:[&quot;out&quot;],&quot;remove&quot;:false,&quot;position&quot;:{&quot;x&quot;:281,&quot;y&quot;:193},&quot;size&quot;:{&quot;width&quot;:100,&quot;height&quot;:60}},{&quot;name&quot;:&quot;log&quot;,&quot;id&quot;:&quot;81e4a23d-5775-4997-815e-85c27a3a7009&quot;,&quot;tpe&quot;:&quot;box&quot;,&quot;parameters&quot;:{},&quot;inPorts&quot;:[&quot;in&quot;],&quot;outPorts&quot;:[&quot;out&quot;],&quot;remove&quot;:false,&quot;position&quot;:{&quot;x&quot;:452,&quot;y&quot;:307},&quot;size&quot;:{&quot;width&quot;:100,&quot;height&quot;:60}},{&quot;name&quot;:&quot;link&quot;,&quot;id&quot;:&quot;bb97b5d1-b6bb-4c9f-b749-4f16e77c89a3&quot;,&quot;tpe&quot;:&quot;link&quot;,&quot;parameters&quot;:{&quot;source_id&quot;:&quot;7c28c36f-b085-4328-ace4-cc3c38642ba4&quot;,&quot;source_port&quot;:&quot;out&quot;,&quot;target_id&quot;:&quot;611fa0ca-fc25-4dc3-87a0-f6f617559965&quot;,&quot;target_port&quot;:&quot;left&quot;},&quot;remove&quot;:false},{&quot;name&quot;:&quot;link&quot;,&quot;id&quot;:&quot;0f804b67-6b3d-4ae4-9de6-43ee0f8df324&quot;,&quot;tpe&quot;:&quot;link&quot;,&quot;parameters&quot;:{&quot;source_id&quot;:&quot;611fa0ca-fc25-4dc3-87a0-f6f617559965&quot;,&quot;source_port&quot;:&quot;out&quot;,&quot;target_id&quot;:&quot;81e4a23d-5775-4997-815e-85c27a3a7009&quot;,&quot;target_port&quot;:&quot;in&quot;},&quot;remove&quot;:false},{&quot;name&quot;:&quot;customizable&quot;,&quot;id&quot;:&quot;2f17e171-3493-4d8f-a4a1-77f4edce89e8&quot;,&quot;tpe&quot;:&quot;box&quot;,&quot;parameters&quot;:{&quot;next&quot;:&quot;(a:Map[String, Any])=>Map(\\&quot;strings\\&quot; → (a(\\&quot;in\\&quot;).asInstanceOf[RDD[Int]].map(_.toString)))&quot;},&quot;inPorts&quot;:[&quot;in&quot;],&quot;outPorts&quot;:[&quot;strings&quot;],&quot;remove&quot;:false,&quot;position&quot;:{&quot;x&quot;:45,&quot;y&quot;:318},&quot;size&quot;:{&quot;width&quot;:100,&quot;height&quot;:60}},{&quot;name&quot;:&quot;link&quot;,&quot;id&quot;:&quot;22888657-df98-42d1-8e6e-b0dc92debf18&quot;,&quot;tpe&quot;:&quot;link&quot;,&quot;parameters&quot;:{&quot;source_id&quot;:&quot;2f17e171-3493-4d8f-a4a1-77f4edce89e8&quot;,&quot;source_port&quot;:&quot;out&quot;,&quot;target_id&quot;:&quot;611fa0ca-fc25-4dc3-87a0-f6f617559965&quot;,&quot;target_port&quot;:&quot;right&quot;},&quot;remove&quot;:false}],&quot;genId&quot;:&quot;1553443462&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/flow'], \n      function(playground, _flow) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _flow,\n    \"o\": {}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div class=\"container-fluid\">\n      <div class=\"control col-md-12\">\n        <select data-bind=\"options: options, optionsText: 'text', optionsValue: 'index', value: selectedIndex, fireChange: true\">\n      <script data-this=\"{&quot;optionsId&quot;:&quot;anon58224b768a839a22e6a857350cbd187d&quot;,&quot;selectedIndexId&quot;:&quot;anon17b6e2110f6d3db152171621344fd217&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq( ['observable', 'knockout'],\n  function (O, ko) {\n    ko.applyBindings({\n      options: O.makeObservableArray(optionsId),\n      selectedIndex: O.makeObservable(selectedIndexId)\n    },\n    this);\n  }\n);/*]]>*/</script>\n    </select>\n        <button type=\"button\" class=\"btn btn-xs\" data-bind=\"click: clicked, fireChange: true\">\n      <script data-this=\"{&quot;clicksId&quot;:&quot;anon8e352e58e20c3d67916c6f9c6814df02&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq( ['observable', 'knockout'],\n  function (O, ko) {\n    ko.applyBindings({\n      clicks: O.makeObservable(clicksId),\n      clicked : function() {\n          this.clicks(Math.random());\n      }\n    },\n    this);\n  }\n);/*]]>*/</script>\n    +\n    <span></span>\n    </button>\n        <button type=\"button\" class=\"btn btn-xs\" data-bind=\"click: clicked, fireChange: true\">\n      <script data-this=\"{&quot;clicksId&quot;:&quot;anon922c558c755bb790157e7a4bfb728ad2&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq( ['observable', 'knockout'],\n  function (O, ko) {\n    ko.applyBindings({\n      clicks: O.makeObservable(clicksId),\n      clicked : function() {\n          this.clicks(Math.random());\n      }\n    },\n    this);\n  }\n);/*]]>*/</script>\n    \n    <i class=\"fa fa-arrow-right\"></i>\n    </button>\n      </div>\n      <div class=\"jointgraph col-md-9\"></div>\n      <div class=\"col-md-3\">\n        <h4>Configuration</h4>\n        <form class=\"form configure\" action=\"#\">\n          <div class=\"configuration\">\n          </div>\n          <button type=\"button\" class=\"btn btn-xs btn-danger remove\">Remove</button>\n          <button type=\"submit\" class=\"btn btn-default\">Apply</button>\n        </form>\n      </div>\n    </div></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 5
+    } ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -72,17 +123,24 @@
       }
     },
     "cell_type" : "code",
-    "source" : "f.data.filter(!_.isInstanceOf[notebook.front.widgets.LinkPipe])\n      .foreach(_.asInstanceOf[CustomizableBoxPipe].update(\"f\", $intp))",
-    "outputs" : [ ]
+    "source" : "f.data.filter(_.isInstanceOf[CustomizableBoxPipe])\n      .foreach(_.asInstanceOf[CustomizableBoxPipe].update(\"f\", $intp))",
+    "outputs" : [ {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 10
+    } ]
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "We can use two cusomizable with those functions:\n```scala\n(a: Map[String, Any]) => Map(\"out\" → (a(\"in\").asInstanceOf[Int] + 2))\n```\n\n```scala\n(a: Map[String, Any]) => Map(\"out\" → (a(\"in\").asInstanceOf[Int] * 5))\n```"
+    "source" : "\n\n\n\nWe can use two cusomizable with those functions:\n```scala\n(a: Map[String, Any]) => Map(\"out\" → (a(\"in\").asInstanceOf[Int] + 2))\n```\n\n```scala\n(a: Map[String, Any]) => Map(\"out\" → (a(\"in\").asInstanceOf[Int] * 5))\n```"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true
     },
     "cell_type" : "code",
     "source" : "// Custom \nf.run {\n  case (x, inPorts) => \n    println(x)\n    Map(\"in\" → 2) // init value for all \"sources\" of the pipeline\n}",
@@ -98,8 +156,12 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "// filterEventPipe → CollectPipe\nf.run {\n  case x => Map(\"in\" → sparkContext.parallelize(1 to 100))\n}",
-    "outputs" : [ ]
+    "source" : "// filterEventPipe → CollectPipe\nvar first = true\nf.run {\n  case x => if (first) {\n    first = false\n    Map(\"in\" → sparkContext.parallelize(1 to 100))\n  } else {\n    Map(\"in\" → sparkContext.parallelize(2 to 200 by 2))\n  }\n}",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "java.util.NoSuchElementException: key not found: right\n\tat scala.collection.MapLike$class.default(MapLike.scala:228)\n\tat scala.collection.AbstractMap.default(Map.scala:58)\n\tat scala.collection.MapLike$class.apply(MapLike.scala:141)\n\tat scala.collection.AbstractMap.apply(Map.scala:58)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$anonfun$3$$anonfun$apply$1.apply(<console>:51)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$anonfun$3$$anonfun$apply$1.apply(<console>:51)\n\tat notebook.front.widgets.CustomizableBoxPipe.next(Flow.scala:94)\n\tat notebook.front.widgets.Flow$$anonfun$24$$anonfun$apply$9.apply(Flow.scala:249)\n\tat notebook.front.widgets.Flow$$anonfun$24$$anonfun$apply$9.apply(Flow.scala:229)\n\tat scala.collection.immutable.List.foreach(List.scala:318)\n\tat notebook.front.widgets.Flow$$anonfun$24.apply(Flow.scala:229)\n\tat notebook.front.widgets.Flow$$anonfun$24.apply(Flow.scala:228)\n\tat scala.collection.TraversableLike$$anonfun$map$1.apply(TraversableLike.scala:244)\n\tat scala.collection.TraversableLike$$anonfun$map$1.apply(TraversableLike.scala:244)\n\tat scala.collection.immutable.List.foreach(List.scala:318)\n\tat scala.collection.TraversableLike$class.map(TraversableLike.scala:244)\n\tat scala.collection.AbstractTraversable.map(Traversable.scala:105)\n\tat notebook.front.widgets.Flow.run(Flow.scala:228)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:54)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:67)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:69)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:71)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:73)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:75)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:77)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:79)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:81)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:83)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:85)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:87)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:89)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:91)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:93)\n\tat $iwC$$iwC$$iwC$$iwC$$iwC.<init>(<console>:95)\n\tat $iwC$$iwC$$iwC$$iwC.<init>(<console>:97)\n\tat $iwC$$iwC$$iwC.<init>(<console>:99)\n\tat $iwC$$iwC.<init>(<console>:101)\n\tat $iwC.<init>(<console>:103)\n\tat <init>(<console>:105)\n\tat .<init>(<console>:109)\n\tat .<clinit>(<console>)\n\tat .<init>(<console>:7)\n\tat .<clinit>(<console>)\n\tat $print(<console>)\n\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\n\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n\tat java.lang.reflect.Method.invoke(Method.java:606)\n\tat org.apache.spark.repl.SparkIMain$ReadEvalPrint.call(SparkIMain.scala:1065)\n\tat org.apache.spark.repl.SparkIMain$Request.loadAndRun(SparkIMain.scala:1340)\n\tat org.apache.spark.repl.SparkIMain.loadAndRunReq$1(SparkIMain.scala:840)\n\tat org.apache.spark.repl.SparkIMain.interpret(SparkIMain.scala:871)\n\tat org.apache.spark.repl.SparkIMain.interpret(SparkIMain.scala:819)\n\tat notebook.kernel.Repl$$anonfun$3.apply(Repl.scala:173)\n\tat notebook.kernel.Repl$$anonfun$3.apply(Repl.scala:173)\n\tat scala.util.DynamicVariable.withValue(DynamicVariable.scala:57)\n\tat scala.Console$.withOut(Console.scala:126)\n\tat notebook.kernel.Repl.evaluate(Repl.scala:172)\n\tat notebook.client.ReplCalculator$$anonfun$10$$anon$1$$anonfun$24.apply(ReplCalculator.scala:364)\n\tat notebook.client.ReplCalculator$$anonfun$10$$anon$1$$anonfun$24.apply(ReplCalculator.scala:361)\n\tat scala.concurrent.impl.Future$PromiseCompletingRunnable.liftedTree1$1(Future.scala:24)\n\tat scala.concurrent.impl.Future$PromiseCompletingRunnable.run(Future.scala:24)\n\tat akka.dispatch.TaskInvocation.run(AbstractDispatcher.scala:40)\n\tat akka.dispatch.ForkJoinExecutorConfigurator$AkkaForkJoinTask.exec(AbstractDispatcher.scala:397)\n\tat scala.concurrent.forkjoin.ForkJoinTask.doExec(ForkJoinTask.java:260)\n\tat scala.concurrent.forkjoin.ForkJoinPool$WorkQueue.runTask(ForkJoinPool.java:1339)\n\tat scala.concurrent.forkjoin.ForkJoinPool.runWorker(ForkJoinPool.java:1979)\n\tat scala.concurrent.forkjoin.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:107)\n\n"
+    } ]
   }, {
     "metadata" : {
       "trusted" : true,

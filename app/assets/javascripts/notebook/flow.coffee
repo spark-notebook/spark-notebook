@@ -13,26 +13,30 @@ define([
 
     paper = new joint.dia.Paper({
         el: $(container).find(".jointgraph"),
-        width: 600,
-        height: 200,
+        width: 800,
+        height: 800,
         model: graph,
         gridSize: 1
     })
 
-    grect = (n, options) ->
-      options = options || {}
-      new joint.shapes.devs.Coupled({
-          position: options.position || { x: 100, y: 30 },
-          size: options.size || { width: 100, height: 30 },
-          inPorts: options.inPorts || ['in'],
-          outPorts: options.outPorts || ['out'],
-          attrs: {
-            '.label': {
-              text: options.name || 'Element'
-            }
-          }
-      })
+    grect = (pc, v) ->
+      options = pc || {}
 
+      v = new joint.shapes.devs.Coupled() if not v
+
+      v.set("position", options.position || { x: 100, y: 60 })
+      v.set("size", options.size || { width: 100, height: 60 })
+      v.set("inPorts", options.inPorts || ['in'])
+      v.set("outPorts", options.outPorts || ['out'])
+
+      a = v.get("attrs")
+      a[".label"] = {} if not a[".label"]
+      a[".label"]["text"] = options.name || 'Element'
+      v.set("attrs", a)
+
+      v.id = pc.id
+      v.pipeComponent = pc
+      v
 
     glink = (options) ->
       new joint.dia.Link({
@@ -71,8 +75,16 @@ define([
       newConf = form.serializeArray()
       pipeComponent = form.cell.pipeComponent
       parameters = {}
-      _.each(newConf, (e) -> parameters[e.name] = e.value)
+      _.each( newConf,
+              (e) ->
+                pr = "parameters."
+                if (e.name.startsWith(pr))
+                  parameters[e.name.substring(pr.length)] = e.value
+            )
+      pipeComponent.inPorts  = _.map(_.find(newConf, (e) -> e.name == "inPorts").value.split(","), (s) -> s.trim())
+      pipeComponent.outPorts = _.map(_.find(newConf, (e) -> e.name == "outPorts").value.split(","), (s) -> s.trim())
       pipeComponent.parameters = parameters
+      grect(pipeComponent, form.cell)
       dataO([pipeComponent])
     )
     form.find("button.remove").on("click", (e) =>
@@ -87,14 +99,46 @@ define([
         cell = cellView.model
         form.cell = cell
         conf.html("")
+
+        #in ports
+        fsi = $("<fieldset></fieldset>")
+        lgi = $("<legend>In Ports</legend>")
+        fsi.append(lgi)
+        conf.append(fsi)
+        d = $("<div class='form-group'></div>")
+        l = $("<label>ports</label>")
+        i = $("<input type='text'class='form-control' name='inPorts'/>")
+        i.val(cell.pipeComponent.inPorts.join(","))
+        d.append(l)
+        d.append(i)
+        fsi.append(d)
+
+        #out ports
+        fsi = $("<fieldset></fieldset>")
+        lgi = $("<legend>Out Ports</legend>")
+        fsi.append(lgi)
+        conf.append(fsi)
+        d = $("<div class='form-group'></div>")
+        l = $("<label>ports</label>")
+        i = $("<input type='text'class='form-control' name='outPorts'/>")
+        i.val(cell.pipeComponent.outPorts.join(","))
+        d.append(l)
+        d.append(i)
+        fsi.append(d)
+
+        #parameters
+        fsp = $("<fieldset></fieldset>")
+        lgp = $("<legend>Parameters</legend>")
+        fsp.append(lgp)
+        conf.append(fsp)
         _.each(cell.pipeComponent.parameters, (v,k) ->
           d = $("<div class='form-group'></div>")
           l = $("<label>"+k+"</label>")
-          i = $("<input type='text'class='form-control' name='"+k+"'/>")
+          i = $("<input type='text'class='form-control parameters' name='parameters."+k+"'/>")
           i.val(v)
           d.append(l)
           d.append(i)
-          conf.append(d)
+          fsp.append(d)
         )
     )
 
@@ -139,9 +183,7 @@ define([
 
       addCells = _.map(toAdd, (d) =>
         if (d.tpe == "box")
-          r = grect(d.name, d)
-          r.id = d.id
-          r.pipeComponent = d
+          r = grect(d)
           r
         else
           l = glink({

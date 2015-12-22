@@ -17,7 +17,7 @@ trait PipeComponent[X <: PipeComponent[X]] {
   def next(a:Map[String, Any]):Map[String, Any]
   def merge(j:JsValue):X
   private[front] val me:X = this.asInstanceOf[X]
-  def toJSON:JsValue = Json.obj(
+  def toJSON:JsObject = Json.obj(
     "name" → name,
     "id" → id,
     "tpe" → tpe,
@@ -34,9 +34,15 @@ abstract class LinkPipeComponent[X<:LinkPipeComponent[X]]() extends BasePipeComp
   def target:Option[(String, String)]
 }
 
-abstract class BoxPipeComponent[X<:BoxPipeComponent[X]](val inPorts:List[String]=List("in"), val outPorts:List[String]=List("ou")) extends BasePipeComponent[X]() {
+abstract class BoxPipeComponent[X<:BoxPipeComponent[X]]() extends BasePipeComponent[X]() {
   val tpe = "box"
+  def inPorts:List[String]
+  def outPorts:List[String]
   def update(varName:String, i:org.apache.spark.repl.SparkIMain/*only scala 2.10...*/, s:String):Unit = ()
+  override def toJSON:JsObject = super.toJSON ++ Json.obj(
+                                              "inPorts" → inPorts,
+                                              "outPorts" → outPorts
+                                            )
 }
 
 case class LinkPipe(id:String = java.util.UUID.randomUUID.toString,
@@ -60,35 +66,27 @@ case class LinkPipe(id:String = java.util.UUID.randomUUID.toString,
   }
 }
 
-case class LogPipe(id:String = java.util.UUID.randomUUID.toString) extends BoxPipeComponent[LogPipe]() {
+case class LogPipe(
+  id:String = java.util.UUID.randomUUID.toString,
+  inPorts:List[String] = List("in"),
+  outPorts:List[String] = List("out")
+) extends BoxPipeComponent[LogPipe]() {
   val name = "log"
   val parameters = Map.empty[String, String]
+
   def next(a:Map[String, Any]):Map[String, Any] = {
+
     println("Applying next on LogPipe with " + a)
     a
   }
   def merge(j:JsValue):LogPipe = this
 }
 
-// Example
-case class WithParamPipe( id:String = java.util.UUID.randomUUID.toString,
-                          parameters:Map[String, String] = Map("testA" → "a", "testB" → "b")
-                        ) extends BoxPipeComponent[WithParamPipe]() {
-  val name = "withParam"
-  def next(a:Map[String, Any]):Map[String, Any] = {
-    println("Applying next on WithParamPipe with " + a)
-    a
-  }
-  def merge(j:JsValue):WithParamPipe = copy(
-    parameters = (j \ "parameters").as[Map[String, String]]
-  )
-}
-
 case class CustomizableBoxPipe(
   id:String = java.util.UUID.randomUUID.toString,
-  parameters:Map[String, String] = Map(
-                                        "next" → "(a:Map[String, Any])=>a"
-                                      )
+  inPorts:List[String] = List("in"),
+  outPorts:List[String] = List("out"),
+  parameters:Map[String, String] = Map("next" → "(a:Map[String, Any])=>a")
 ) extends BoxPipeComponent[CustomizableBoxPipe]() {
   val name = "customizable"
 
@@ -96,6 +94,9 @@ case class CustomizableBoxPipe(
   def next(a:Map[String, Any]):Map[String, Any] = _next(a)
 
   def merge(j:JsValue):CustomizableBoxPipe = copy(
+    id=id,
+    inPorts = (j \ "inPorts").as[List[String]],
+    outPorts = (j \ "outPorts").as[List[String]],
     parameters = (j \ "parameters").as[Map[String, String]]
   )
 
@@ -113,7 +114,6 @@ object Flow {
   var registeredPC:scala.collection.mutable.Map[String, ()=>BoxPipeComponent[_]] =
     scala.collection.mutable.Map(
       "log"       → (() => LogPipe()),
-      "withParam" → (() => WithParamPipe()),
       "customizable" → (() => CustomizableBoxPipe())
     )
 
