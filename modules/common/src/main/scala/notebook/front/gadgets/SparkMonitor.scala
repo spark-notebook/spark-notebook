@@ -1,5 +1,7 @@
 package org.apache.spark.ui.notebook.front.gadgets
 
+import notebook.JobTracking
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.concurrent.duration._
@@ -74,10 +76,15 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends
           val completed = stageData.completedIndices.size
           val failed = stageData.numFailedTasks
           val total = s.numTasks
+
+          val jobGroupId = jobs(s.stageId)._2
+          val cellId = JobTracking.toCellId(jobGroupId)
+
           Json.obj(
             "id" → s.stageId,
             "job" → jobs(s.stageId)._1,
-            "group" → jobs(s.stageId)._2,
+            "group" → jobGroupId,
+            "cell_id" → cellId,
             "name" → s.name,
             "completed" → (completed.toDouble / total * 100),
             "time"  → (""+s.submissionTime.map(t => s.completionTime.getOrElse(System.currentTimeMillis) - t)
