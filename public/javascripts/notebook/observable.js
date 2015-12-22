@@ -1,4 +1,4 @@
-define(['jquery', 'base/js/events', 'knockout', 'equiv'], function ($, events, ko, equiv) {
+define(['jquery', 'base/js/events', 'knockout', 'equiv', 'underscore'], function ($, events, ko, equiv, _) {
 
 return new function () {
 
@@ -111,26 +111,26 @@ return new function () {
 
   };
 
-
-
   this.makeObservableHelper = function (id, kind, initialValue) {
-    if(!this.isInitialized()) {
-      // in case the Observable isn't initialized, we differ the creation of the observable
-      var args = Array.prototype.slice.call(arguments);
-      var me = this;
-      console.warn("Delaying the creation of Observable (" + args.join(",") + ") since Observable isn't initialized yet");
-      console.log("Observable not initialized:", me);
-      events.on('Observable.ready', function() {
-        me.makeObservableHelper.apply(me, args);
-      });
-      return;
-    }
     var observable = this.observables[id];
-    if (typeof observable === 'undefined') {
-    	console.log("Creating new observable (client request): " + id)
+    if (_.isUndefined(observable)) {
+      console.log("Creating new observable (client request): " + id);
       observable = ko[kind](initialValue);
-      this.register_observable(id, observable);
-    } else if (typeof initialValue !== 'undefined') {
+
+      if(!this.isInitialized()) {
+        // delay registering of this observable until Observable.ready
+        var me = this;
+        console.warn("Delaying the registration of Observable (" + id + ") since Observable isn't initialized yet");
+        console.log("Observable not registered:", observable);
+        events.on('Observable.ready', function() {
+          console.warn("Registering observable:" + id);
+          console.log("Observable:" + observable);
+          me.register_observable(id, observable);
+        });
+      } else {
+        this.register_observable(id, observable);
+      }
+    } else if (!_.isUndefined(initialValue)) {
       this.observableSetIfChanged(observable, initialValue);
     } else {
       console.error("Cannot register observable with id '" + id + "', kind '" + kind + "'" + "', initialValue '" + initialValue + "'")
@@ -153,7 +153,6 @@ return new function () {
   this.makeObservableArray = function (id, initialValue) {
     return this.makeObservableHelper(id, 'observableArray', initialValue);
   };
-
 
   ko.observable.fn.noEcho = function () {
     var obs = this;
@@ -266,7 +265,7 @@ return new function () {
   } else {
     console.warn("Observable init delayed because kernel id not available (IPython.notebook.kernel.id)")
     console.debug("Observable delayed, IPython object is: ", IPython)
-    events.on('app_initialized.NotebookApp', function(o) {
+    events.on('kernel_ready.Kernel', function(o) {
       if (!me.isInitialized()) {
         console.warn("Delayed observable is now starting");
         me.start(); //avoid pre-init of IPython → .kernel.id is null

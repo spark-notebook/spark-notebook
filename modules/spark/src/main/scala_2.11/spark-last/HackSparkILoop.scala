@@ -36,7 +36,9 @@ class HackSparkILoop(out:JPrintWriter) extends org.apache.spark.repl.SparkILoop(
     in = chooseReader(settings)// in0.fold(chooseReader(settings))(r => SimpleReader(r, out, interactive = true))
     val globalFuture = Future {
       intp.initializeSynchronous()
-      //loopPostInit()
+      import scala.tools.nsc.interpreter.IMain
+      import scala.tools.nsc.interpreter.StdReplTags.tagOfIMain
+      intp.quietBind(NamedParam[IMain]("$intp", intp)(tagOfIMain, classTag[IMain]))
       !intp.reporter.hasErrors
     }
     import scala.concurrent.duration._
