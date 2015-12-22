@@ -233,9 +233,6 @@ define([
         // one the 2 sources results have been merge, deal with it
         this.raw_result = filtered_results;
 
-        // if empty result return
-        if (!this.raw_result || !this.raw_result.length) return;
-
         // When there is only one completion, use it directly.
         if (this.autopick && this.raw_result.length == 1) {
             this.insert(this.raw_result[0]);
@@ -327,6 +324,12 @@ define([
             this.sel.append(opt);
         }
         this.sel.children().first().attr('selected', 'true');
+
+        // Display a warning if no matches were found
+        if (completions.length == 0){
+            var opt = $('<option disabled="disabled" />').text('No matches found').css('background-color', '#fcc');
+            this.sel.append(opt);
+        }
         this.sel.scrollTop(0);
     };
 
@@ -339,7 +342,9 @@ define([
     };
 
     Completer.prototype.pick = function () {
-        this.insert(this.raw_result[this.sel[0].selectedIndex]);
+        if (this.sel[0].selectedIndex >= 0) {
+            this.insert(this.raw_result[this.sel[0].selectedIndex]);
+        }
         this.close();
     };
 
