@@ -1,5 +1,7 @@
 package org.apache.spark.ui.notebook.front.gadgets
 
+import notebook.JobTracking
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.concurrent.duration._
@@ -59,6 +61,14 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends
       val completedStagesList = completedStages.sortBy(_.submissionTime).reverse
       val failedStagesList = failedStages.sortBy(_.submissionTime).reverse
 
+      val activeJobs = listener.activeJobs.values.toList
+      val completedJobs = listener.completedJobs.toList
+      val failedJobs = listener.failedJobs.toList
+      val jobs =  (for {
+                    j <- activeJobs ::: completedJobs ::: failedJobs
+                    stageId <- j.stageIds
+                  } yield stageId → (j.jobId, j.jobGroup)).toMap
+
       val stageExtract = (s: StageInfo) => {
         val stageDataOption = listener.stageIdToData.get((s.stageId, s.attemptId))
         stageDataOption.map { stageData =>
@@ -66,17 +76,15 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends
           val completed = stageData.completedIndices.size
           val failed = stageData.numFailedTasks
           val total = s.numTasks
-          //Json.obj(
-          //  "name" -> s.name,
-          //  "details" -> s.details,
-          //  "completed" -> completed,
-          //  "started" -> started,
-          //  "total" -> total,
-          //  "failed" -> failed,
-          //  "progress" -> s"${completed.toDouble / total * 100}"
-          //)
+
+          val jobGroupId = jobs(s.stageId)._2
+          val cellId = JobTracking.toCellId(jobGroupId)
+
           Json.obj(
             "id" → s.stageId,
+            "job" → jobs(s.stageId)._1,
+            "group" → jobGroupId,
+            "cell_id" → cellId,
             "name" → s.name,
             "completed" → (completed.toDouble / total * 100),
             "time"  → (""+s.submissionTime.map(t => s.completionTime.getOrElse(System.currentTimeMillis) - t)
@@ -86,16 +94,6 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends
         }
       }
 
-      //val mode: String = listener.schedulingMode.map(_.toString).getOrElse("Unknown")
-      //val result = Json.obj(
-      //  "duration" -> (now - sparkContext.startTime),
-      //  "mode" -> mode,
-      //  "activeNb" -> activeStages.size,
-      //  "completedNb" -> completedStages.size,
-      //  "failedNb" -> failedStages.size,
-      //  "activeStages" -> (activeStagesList map stageExtract),
-      //  "completedStages" -> (completedStagesList map stageExtract)
-      //)
       val result = activeStagesList map stageExtract toList;
       val completed = completedStages map stageExtract toList;
       (result ::: completed).collect{case Some(x) => x}

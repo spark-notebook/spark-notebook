@@ -85,7 +85,8 @@ object NBSerializer {
     input_collapsed: Option[Boolean],
     output_stream_collapsed: Option[Boolean],
     collapsed: Option[Boolean],
-    presentation: Option[JsObject]
+    presentation: Option[JsObject],
+    id: Option[String]=None
   )
 
   implicit val codeCellMetadataFormat = Json.format[CellMetadata]

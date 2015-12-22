@@ -41,7 +41,25 @@ define([
       var sum = function(items){ return _.reduce(items, function(memo, p){ return memo + p} , 0) };
 
       var olderProgresses = [];
+
+      function findCells(id) {
+        var f = ".cell[data-cell-id"+(id?"='"+id+"'":"")+"]";
+        var cells = $(IPython.notebook.element).find(f);
+        return _.object(_.map(cells, function(cell) {return [$(cell).data("cell-id"), cell]}));
+      }
+
+      function clearHighlightCells(cells) {
+        _.each(_.values(cells), (function(e) {$(e).removeClass("alert").removeClass("alert-info")}));
+      };
+
+      function highlightCell(cells, cell_id) {
+        $(cells[cell_id]).addClass("alert").addClass("alert-info");
+      };
+
       progress.subscribe(function(status) {
+        var cells = findCells();
+        clearHighlightCells(cells);
+
         var jobsProgress = status.jobsStatus;
         var sparkUi = status.sparkUi;
 
@@ -65,7 +83,12 @@ define([
         };
 
         var runningJobs = _.map(_.reject(jobsProgress, isCompleted));
-        var runningJobsInfo = _.flatten(_.map(runningJobs, function(p){
+        var runningJobsInfo = _.flatten(_.map(runningJobs, function(p) {
+          console.log("cell_id: " + p.cell_id);
+          if (p.cell_id) {
+            highlightCell(cells, p.cell_id);
+          }
+
           p.status = "Done";
           // part of stage that's still pending
           pPending = _.clone(p);

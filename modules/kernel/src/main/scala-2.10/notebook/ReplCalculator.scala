@@ -6,6 +6,7 @@ import akka.actor.{Actor, ActorRef, Props}
 import notebook.OutputTypes._
 import notebook.PresentationCompiler
 import notebook.kernel._
+import notebook.JobTracking
 import notebook.util.{CustomResolvers, Deps}
 
 import sbt._
@@ -199,11 +200,11 @@ class ReplCalculator(
           }
         }
 
-      case er@ExecuteRequest(_, code) if queue.nonEmpty =>
+      case er@ExecuteRequest(_, _, code) if queue.nonEmpty =>
         log.debug("Enqueuing execute request at: " + queue.size)
         queue = queue.enqueue((sender(), er))
 
-      case er@ExecuteRequest(_, code) =>
+      case er@ExecuteRequest(_, _, code) =>
         log.debug("Enqueuing execute request at: " + queue.size)
         queue = queue.enqueue((sender(), er))
         log.debug("Executing execute request")
@@ -361,7 +362,22 @@ class ReplCalculator(
       val result = scala.concurrent.Future {
         // this future is required to allow InterruptRequest messages to be received and process
         // so that spark jobs can be killed and the hand given back to the user to refine their tasks
-        val result = repl.evaluate(newCode, msg => thisSender ! StreamResponse(msg, "stdout"))
+        val cellId = er.cellId
+        def replEvaluate(code:String, cellId:String) = {
+          val cellResult = try {
+           repl.evaluate(s"""
+              |sparkContext.setJobGroup("${JobTracking.jobGroupId(cellId)}", "${JobTracking.jobDescription(code)}")
+              |$code
+              """.stripMargin,
+              msg => thisSender ! StreamResponse(msg, "stdout")
+            )
+          }
+          finally {
+             repl.evaluate("sparkContext.clearJobGroup()")
+          }
+          cellResult
+        }
+        val result = replEvaluate(newCode, cellId)
         val d = toCoarsest(Duration(System.currentTimeMillis - start, MILLISECONDS))
         (d, result._1)
       }
@@ -461,7 +477,7 @@ class ReplCalculator(
       msgThatShouldBeFromTheKernel match {
         case InterruptRequest => executor.forward(InterruptRequest)
 
-        case req@ExecuteRequest(_, code) => executor.forward(req)
+        case req@ExecuteRequest(_, _, code) => executor.forward(req)
 
         case CompletionRequest(line, cursorPosition) =>
           val (matched, candidates) = presentationCompiler.complete(line, cursorPosition)
