@@ -74,9 +74,6 @@ class InputBox[T](initial: T, label: String = "")
         """|req(
            | ['observable', 'knockout'],
            | function (Observable, ko) {
-           |   //console.log("-----------")
-           |   //console.dir(this);
-           |   //console.dir(valueId);
            |   var obs = Observable.makeObservable(valueId)
            |                       .extend({ rateLimit: { //throttle
            |                                   timeout: 500,
