@@ -17,8 +17,9 @@ define([
     'codemirror/lib/codemirror',
     'codemirror/addon/edit/matchbrackets',
     'codemirror/addon/edit/closebrackets',
-    'codemirror/addon/comment/comment'
-], function(IPython, $, utils, CodeMirror, cm_match, cm_closeb, cm_comment) {
+    'codemirror/addon/comment/comment',
+    'underscore'
+], function(IPython, $, utils, CodeMirror, cm_match, cm_closeb, cm_comment, _) {
     // TODO: remove IPython dependency here
     "use strict";
 
@@ -53,6 +54,15 @@ define([
             get: function() { return that._metadata; },
             set: function(value) {
                 that._metadata = value;
+                // preserve existing cell_id if not in new metadata, or set the new cell_id
+                if (_.isUndefined(value.id)) {
+                    that._metadata.id = that.cell_id;
+                } else {
+                    that.cell_id = value.id;
+                    if (that.element) {
+                        $(that.element).attr("data-cell-id", that.cell_id);
+                    }
+                }
                 if (that.celltoolbar) {
                     that.celltoolbar.rebuild();
                 }
@@ -62,7 +72,12 @@ define([
         // load this from metadata later ?
         this.user_highlight = 'auto';
         this.cm_config = config.cm_config;
-        this.cell_id = utils.uuid();
+        this.cell_id = this.cell_id || utils.uuid();
+        if (!this.metadata.id) {
+            var md = this.metadata;
+            md.id = this.cell_id;
+            this.metadata = md;
+        }
         this._options = config;
 
         // For JS VM engines optimization, attributes should be all set (even
@@ -654,6 +669,7 @@ define([
     UnrecognizedCell.prototype.create_element = function () {
         Cell.prototype.create_element.apply(this, arguments);
         var cell = this.element = $("<div>").addClass('cell unrecognized_cell');
+        cell.attr("data-cell-id", this.cell_id);
         cell.attr('tabindex','2');
 
         var prompt = $('<div/>').addClass('prompt input_prompt');

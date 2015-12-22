@@ -4,7 +4,7 @@ import notebook.util.Match
 
 sealed trait CalcRequest
 
-case class ExecuteRequest(counter: Int, code: String) extends CalcRequest
+case class ExecuteRequest(cellId:String, counter: Int, code: String) extends CalcRequest
 
 case class CompletionRequest(line: String, cursorPosition: Int) extends CalcRequest
 

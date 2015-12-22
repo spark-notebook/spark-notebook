@@ -158,6 +158,7 @@ define([
 
         var cell =  $('<div></div>').addClass('cell code_cell');
         cell.attr('tabindex','2');
+        cell.attr("data-cell-id", this.cell_id);
 
         var input = $('<div></div>').addClass('input');
         var prompt = $('<div/>').addClass('prompt input_prompt');
@@ -429,13 +430,15 @@ define([
         var callbacks = this.get_callbacks();
 
         var old_msg_id = this.last_msg_id;
+        var cell_id = this.cell_id;
         this.last_msg_id = this.kernel.execute(
           this.get_text(),
           callbacks,
           {
             silent: false,
             store_history: true,
-            stop_on_error : stop_on_error
+            stop_on_error : stop_on_error,
+            cell_id: cell_id
           }
         );
         if (old_msg_id) {
@@ -646,6 +649,7 @@ define([
         }
         var outputs = this.output_area.toJSON();
         data.outputs = outputs;
+        data.metadata.id = this.metadata.id;
         data.metadata.trusted = this.output_area.trusted;
         data.metadata.collapsed = this.output_area.collapsed;
         data.metadata.input_collapsed = this.output_area.input_collapsed;
