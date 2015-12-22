@@ -100,6 +100,8 @@ define([
         form.cell = cell
         conf.html("")
 
+        conf.append("<p><strong>"+cell.id+"<strong></p>")
+
         #in ports
         fsi = $("<fieldset></fieldset>")
         lgi = $("<legend>In Ports</legend>")
