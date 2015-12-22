@@ -74,15 +74,6 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends
           val completed = stageData.completedIndices.size
           val failed = stageData.numFailedTasks
           val total = s.numTasks
-          //Json.obj(
-          //  "name" -> s.name,
-          //  "details" -> s.details,
-          //  "completed" -> completed,
-          //  "started" -> started,
-          //  "total" -> total,
-          //  "failed" -> failed,
-          //  "progress" -> s"${completed.toDouble / total * 100}"
-          //)
           Json.obj(
             "id" → s.stageId,
             "job" → jobs(s.stageId)._1,
@@ -96,16 +87,6 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends
         }
       }
 
-      //val mode: String = listener.schedulingMode.map(_.toString).getOrElse("Unknown")
-      //val result = Json.obj(
-      //  "duration" -> (now - sparkContext.startTime),
-      //  "mode" -> mode,
-      //  "activeNb" -> activeStages.size,
-      //  "completedNb" -> completedStages.size,
-      //  "failedNb" -> failedStages.size,
-      //  "activeStages" -> (activeStagesList map stageExtract),
-      //  "completedStages" -> (completedStagesList map stageExtract)
-      //)
       val result = activeStagesList map stageExtract toList;
       val completed = completedStages map stageExtract toList;
       (result ::: completed).collect{case Some(x) => x}
