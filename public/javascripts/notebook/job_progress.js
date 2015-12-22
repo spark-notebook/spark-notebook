@@ -84,9 +84,9 @@ define([
 
         var runningJobs = _.map(_.reject(jobsProgress, isCompleted));
         var runningJobsInfo = _.flatten(_.map(runningJobs, function(p) {
-          console.log("job group: " + p.group);
-          if (p.group) {
-            highlightCell(cells, p.group.substring("cell-".length));
+          console.log("cell_id: " + p.cell_id);
+          if (p.cell_id) {
+            highlightCell(cells, p.cell_id);
           }
 
           p.status = "Done";
