@@ -54,7 +54,10 @@ define([
             get: function() { return that._metadata; },
             set: function(value) {
                 that._metadata = value;
-                if (!_.isUndefined(value.id)) {
+                // preserve existing cell_id if not in new metadata, or set the new cell_id
+                if (_.isUndefined(value.id)) {
+                    that._metadata.id = that.cell_id;
+                } else {
                     that.cell_id = value.id;
                     if (that.element) {
                         $(that.element).attr("data-cell-id", that.cell_id);
@@ -445,9 +448,6 @@ define([
      **/
     Cell.prototype.fromJSON = function (data) {
         if (data.metadata !== undefined) {
-            if (_.isUndefined(data.metadata.id)) {
-                data.metadata.id = this.cell_id;
-            }
             this.metadata = data.metadata;
             // need to rerender, as cell_width depends on metadata
             this.render();
@@ -659,9 +659,6 @@ define([
     UnrecognizedCell.prototype.fromJSON = function (data) {
         this.data = data;
         if (data.metadata !== undefined) {
-            if (_.isUndefined(data.metadata.id)) {
-                data.metadata.id = this.cell_id;
-            }
             this.metadata = data.metadata;
         } else {
             data.metadata = this.metadata;
