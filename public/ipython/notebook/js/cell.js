@@ -660,7 +660,7 @@ define([
         this.data = data;
         if (data.metadata !== undefined) {
             if (_.isUndefined(data.metadata.id)) {
-                data.metadata.id = thui.cell_id;
+                data.metadata.id = this.cell_id;
             }
             this.metadata = data.metadata;
         } else {
