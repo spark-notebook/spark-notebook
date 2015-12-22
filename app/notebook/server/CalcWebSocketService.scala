@@ -111,6 +111,11 @@ class CalcWebSocketService(
         Logger.info(s"UN-registering web-socket ($ws) in service ${this} (current count is ${wss.size})")
         wss = wss.filterNot(_ == ws)
 
+      case InterruptCell(cell_id) =>
+        // TODO: no idea what is currentSessionOperation, and why it exists.
+        currentSessionOperation.foreach { op =>
+          calculator.tell(InterruptCellRequest(cell_id), op)
+        }
       case InterruptCalculator =>
         Logger.info(s"Interrupting the computations, current is $currentSessionOperation")
         currentSessionOperation.headOption.foreach { op =>

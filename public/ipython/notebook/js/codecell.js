@@ -605,6 +605,19 @@ define([
         var prompt_html = CodeCell.input_prompt_function(this.input_prompt_number, nline);
         // This HTML call is okay because the user contents are escaped.
         this.element.find('div.input_prompt').html(prompt_html);
+
+        // if it's running currently, add a 'cancel' button
+        if (number === '*') {
+            var cell_id = this.cell_id;
+            var kernel = this.kernel;
+            var cancelBtn = $('<a>stop</a>').click(function(){
+                kernel.cancelCellJobs(cell_id);
+                $(this).unbind('click').text('stopping');
+            });
+            this.element.find('div.input_prompt')
+                .append($("<br/>"))
+                .append(cancelBtn);
+        }
     };
 
 

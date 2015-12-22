@@ -216,6 +216,17 @@ class ReplCalculator(
         log.debug("Executing execute request")
         execute(sender(), er)
 
+      case InterruptCellRequest(cellId) =>
+        // TODO: consider case when cell is still in the queue!
+        log.debug(s"Interrupting the cell: $cellId")
+        val jobGroupId = JobTracking.jobGroupId(cellId)
+        repl.evaluate(
+          s"""globalScope.sparkContext.cancelJobGroup("${jobGroupId}")""",
+          msg => {
+            sender() ! StreamResponse(s"The job was cancelled.\n$msg", "stdout")
+          }
+        )
+
       case InterruptRequest =>
         log.debug("Interrupting the spark context")
         val thisSender = sender()
@@ -481,6 +492,9 @@ class ReplCalculator(
     case msgThatShouldBeFromTheKernel =>
 
       msgThatShouldBeFromTheKernel match {
+        case req @ InterruptCellRequest(_) =>
+          executor.forward(req)
+
         case InterruptRequest =>
           executor.forward(InterruptRequest)
 

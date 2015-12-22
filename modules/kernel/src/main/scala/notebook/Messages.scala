@@ -12,6 +12,8 @@ case class ObjectInfoRequest(objName: String, position: Int) extends CalcRequest
 
 case object InterruptRequest extends CalcRequest
 
+case class InterruptCellRequest(cellId: String) extends CalcRequest
+
 sealed trait CalcResponse
 
 case class StreamResponse(data: String, name: String) extends CalcResponse

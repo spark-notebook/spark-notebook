@@ -17,3 +17,4 @@ case class Register(ws:WebSockWrapper) extends CalcServiceMessage
 
 case class SessionRequest(header: JsValue, session: JsValue, kernelRequest: CalcRequest) extends CalcServiceMessage
 case object InterruptCalculator extends CalcServiceMessage
+case class InterruptCell(cellId: String) extends CalcServiceMessage

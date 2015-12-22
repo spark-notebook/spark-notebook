@@ -68,6 +68,9 @@ class WebSocketKernelActor(
               "extension" → "scala"
             )
           )
+        case JsString("interrupt_cell_request") =>
+          val JsString(cellId) = content \ "cell_id"
+          calcService.calcActor ! InterruptCell(cellId)
         case JsString("interrupt_request") =>
           calcService.calcActor ! InterruptCalculator
         case JsString("execute_request") =>
