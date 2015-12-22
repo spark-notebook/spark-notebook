@@ -6,6 +6,7 @@ import akka.actor.{Actor, ActorRef, Props}
 import notebook.OutputTypes._
 import notebook.PresentationCompiler
 import notebook.kernel._
+import notebook.JobTracking
 import notebook.util.{CustomResolvers, Deps}
 
 import sbt._
@@ -365,7 +366,7 @@ class ReplCalculator(
         def replEvaluate(code:String, cellId:String) = {
           val cellResult = try {
            repl.evaluate(s"""
-              |sparkContext.setJobGroup("cell-$cellId", "Created by Spark Notebook")
+              |sparkContext.setJobGroup("${JobTracking.jobGroupId(cellId)}", "${JobTracking.jobDescription(code)}")
               |$code
               """.stripMargin,
               msg => thisSender ! StreamResponse(msg, "stdout")
