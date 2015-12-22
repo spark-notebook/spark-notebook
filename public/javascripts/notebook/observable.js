@@ -265,7 +265,7 @@ return new function () {
   } else {
     console.warn("Observable init delayed because kernel id not available (IPython.notebook.kernel.id)")
     console.debug("Observable delayed, IPython object is: ", IPython)
-    events.on('app_initialized.NotebookApp', function(o) {
+    events.on('kernel_ready.Kernel', function(o) {
       if (!me.isInitialized()) {
         console.warn("Delayed observable is now starting");
         me.start(); //avoid pre-init of IPython → .kernel.id is null
