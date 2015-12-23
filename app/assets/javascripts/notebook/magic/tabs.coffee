@@ -37,7 +37,7 @@ define([
     )
 
     saved_tab_id = get_saved_state().tab_id
-    if saved_tab_id
+    if saved_tab_id && $('a[href=' + saved_tab_id + ']').length > 0
       # console.log("selecting a saved tab", saved_tab_id)
       $('a[href=' + saved_tab_id + ']').click()
     else
