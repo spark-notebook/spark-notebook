@@ -575,6 +575,16 @@ define([
         return 'In&nbsp;[' + ns + ']:';
     };
 
+    CodeCell.input_prompt_compact = function (prompt_value, lines_number) {
+        var ns;
+        if (prompt_value === undefined || prompt_value === null) {
+            ns = "&nbsp;";
+        } else {
+            ns = encodeURIComponent(prompt_value);
+        }
+        return ns + ':';
+    };
+
     CodeCell.input_prompt_continuation = function (prompt_value, lines_number) {
         var html = [CodeCell.input_prompt_classical(prompt_value, lines_number)];
         for(var i=1; i < lines_number; i++) {
@@ -583,7 +593,7 @@ define([
         return html.join('<br/>');
     };
 
-    CodeCell.input_prompt_function = CodeCell.input_prompt_classical;
+    CodeCell.input_prompt_function = CodeCell.input_prompt_compact;
 
 
     CodeCell.prototype.set_input_prompt = function (number) {
