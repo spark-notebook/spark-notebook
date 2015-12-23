@@ -3,23 +3,21 @@ package notebook.kernel
 import java.io.{StringWriter, PrintWriter, ByteArrayOutputStream}
 import java.net.{URLDecoder, JarURLConnection}
 import java.util.ArrayList
-
 import scala.collection.JavaConversions
 import scala.collection.JavaConversions._
 import scala.xml.{NodeSeq, Text}
 import scala.util.control.NonFatal
 import scala.util.Try
-
 import tools.nsc.Settings
 import tools.nsc.interpreter._
 import tools.nsc.interpreter.Completion.{Candidates, ScalaCompleter}
 import tools.nsc.interpreter.Results.{Incomplete => ReplIncomplete, Success => ReplSuccess, Error}
-
 import _root_.jline.console.completer.{ArgumentCompleter, Completer}
 import scala.tools.nsc.interpreter.jline.JLineDelimiter
-
 import notebook.front.Widget
 import notebook.util.Match
+import org.apache.spark.SparkConf
+
 
 class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
   val LOG = org.slf4j.LoggerFactory.getLogger(classOf[Repl])
@@ -63,6 +61,17 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     settings.embeddedDefaults[Repl]
 
     if (!compilerOpts.isEmpty) settings.processArguments(compilerOpts, false)
+    
+    val conf = new SparkConf()
+
+    val tmp = System.getProperty("java.io.tmpdir")
+    val rootDir = conf.get("spark.repl.classdir", tmp)
+    val outputDir = org.apache.spark.Boot.createTempDir(rootDir, "spark-notebook-repl")
+   
+   
+   
+    
+    settings.processArguments(List("-Yrepl-class-based", "-Yrepl-outdir", s"${outputDir.getAbsolutePath}", "-Yrepl-sync"), true)
 
     // fix for #52
     settings.usejavacp.value = false
@@ -103,8 +112,9 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     // debug the classpath → settings.Ylogcp.value = true
 
     //val i = new HackIMain(settings, stdout)
-    loop = new org.apache.spark.repl.HackSparkILoop(stdout)
+    loop = new org.apache.spark.repl.HackSparkILoop(stdout, outputDir)
 
+    
     jars.foreach { jar =>
       import scala.tools.nsc.util.ClassPath
       val f = scala.tools.nsc.io.File(jar).normalize
@@ -202,21 +212,26 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
                 )
                 def getModule(c:Class[_]) = c.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get(())
 
-                val o = getModule(renderedClass2)
+                val module = getModule(renderedClass2)
+                
+                val topInstance = module.getClass.getDeclaredMethod("$iw").invoke(module)
 
-                def iws(o:Any):NodeSeq = {
-                  val tryClass = o.getClass.getName+"$iw$"
-                  val o2 = Try{o.getClass.getClassLoader.loadClass(tryClass)}.toOption
+                def iws(o:Class[_], instance: Any) : NodeSeq = {
+                  val tryClass = o.getName+"$$iw"
+                  val o2 = Try{module.getClass.getClassLoader.loadClass(tryClass)}.toOption
+                  
                   o2 match {
                     case Some(o3) =>
-                      iws(getModule(o3))
+                      val inst = o.getDeclaredMethod("$iw").invoke(instance)
+                      iws(o3, inst)
                     case None =>
-                      val r = o.getClass.getDeclaredMethod("rendered").invoke(o)
+                      val r = o.getDeclaredMethod("rendered").invoke(instance)
                       val h = r.asInstanceOf[Widget].toHtml
-                      h
+                      h  
                   }
                 }
-                iws(o)
+
+                iws(module.getClass.getClassLoader.loadClass(renderedClass2.getName + "$iw"), topInstance)
               } catch {
                 case e: Throwable =>
                   e.printStackTrace

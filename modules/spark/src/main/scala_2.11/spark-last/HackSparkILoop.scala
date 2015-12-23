@@ -8,14 +8,17 @@ import scala.tools.nsc.util.ScalaClassLoader._
 import scala.reflect.api.{Mirror, TypeCreator, Universe => ApiUniverse}
 import scala.concurrent.{ ExecutionContext, Await, Future, future }
 import ExecutionContext.Implicits._
+import java.io.File
 
 
 import scala.tools.nsc.interpreter._
 
-class HackSparkILoop(out:JPrintWriter) extends org.apache.spark.repl.SparkILoop(None, out) {
+class HackSparkILoop(out:JPrintWriter, outputDir:File) extends org.apache.spark.repl.SparkILoop(None, out) {
 
+  // note:
+  // the creation of SecurityManager has to be lazy so SPARK_YARN_MODE is set if needed
   val classServer = {
-    val s = org.apache.spark.Boot.classServer
+    val s = org.apache.spark.Boot.classServer(outputDir)
     s.start
     s
   }
