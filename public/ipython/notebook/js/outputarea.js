@@ -505,7 +505,7 @@ define([
         var n = json.execution_count || ' ';
         var toinsert = this.create_output_area();
         if (this.prompt_area) {
-            toinsert.find('div.prompt').addClass('output_prompt').text('Out[' + n + ']:');
+            toinsert.find('div.prompt').addClass('output_prompt').text(n + ':');
         }
         var inserted = this.append_mime_type(json, toinsert);
         if (inserted) {
