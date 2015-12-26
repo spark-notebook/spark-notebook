@@ -12,17 +12,6 @@ define([
     chart_container = $("<div>").addClass("custom-c3-chart").attr("height", h+"px")
     chart_container.attr("id", "custom-c3-chart-"+@genId).appendTo(container)
 
-    # Prepare data for C3
-    # [[header1, header2, ..]
-    #  [col1, col2, ..]]
-    prepare_c3_data = (headers, newData) =>
-      dataRows = _.map(newData, (row) ->
-        _.map(headers, (column)->
-          row[column]
-        )
-      )
-      [headers].concat(dataRows)
-
     try
       eval(options.js) # should create the `chartOptions` var
     catch error
@@ -32,17 +21,15 @@ define([
     console.log("chartOptions", chartOptions)
     chartOptions.bindto = "#" + chart_container.attr("id")
     chartOptions.data = {} if not chartOptions.data
-    chartOptions.data.rows = []
+    chartOptions.data.json = @dataInit
+
+    chartOptions.data.keys = { value: options.headers } if not chartOptions.data.keys or not chartOptions.data.keys.value
 
     chart = c3.generate(chartOptions)
 
-    chart.load({ rows: prepare_c3_data(options.headers, @dataInit) })
-    chart.flush()
-
     dataO.subscribe( (newData) =>
-      chart.unload();
-      chart.load({
-        rows: prepare_c3_data(options.headers, newData)
-      });
+      chartOptions.data.json = newData#_.filter(newData, (obj) -> !_.findWhere(currentData, obj))
+      #chartOptions.data.unload = true
+      chart.load(chartOptions.data)
     )
 )

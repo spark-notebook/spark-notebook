@@ -1,0 +1,105 @@
+{
+  "metadata" : {
+    "name" : "Merry Xmas",
+    "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customArgs" : null,
+    "customSparkConf" : null
+  },
+  "cells" : [ {
+    "metadata" : {
+      "id" : "57F6749377DE4DA78647846DD54857D3"
+    },
+    "cell_type" : "markdown",
+    "source" : "Create line from origin to target given a density"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "FF5A744D755E416A86F859AB5CA7D87E"
+    },
+    "cell_type" : "code",
+    "source" : "def line(dens:Int)(o:(Double,Double), t:(Double,Double)):List[(Double, Double)] = {\n  val (x1,y1) = o\n  val (x2,y2) = t\n  val dir = scala.math.atan( (y2 - y1) / (x2 - x1) )\n  val dist = math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))\n  val n = dist * dens\n  val step = 1d / dens\n  (0d until n by step).toList map { i =>\n      val x = x1 + math.signum(x2-x1) * math.cos(dir)*(step * i)\n      val y = y1 + math.signum(y2-y1) * math.sin(dir)*(step * i)\n      (x,y)\n  }\n}\nval ml = line(3) _",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "id" : "759A845D75C3471F891AC99DEC2A36FB"
+    },
+    "cell_type" : "markdown",
+    "source" : "Create line and its mirror given a vertical axe"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "F68D449FDFC34E1F8B64F1085BA7389C"
+    },
+    "cell_type" : "code",
+    "source" : "val vLine = 11 \ndef mlAndMirror(o:(Double,Double), t:(Double,Double)) = {\n  def mx(d:(Double, Double)) = (2 * vLine - d._1, d._2)\n  val r = ml(o,t)\n  val m = r map mx\n  r ::: m\n}",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "id" : "069E8B513D1C45A48D501A98240720D3"
+    },
+    "cell_type" : "markdown",
+    "source" : "Starting plot"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "54E9A19F4F7C4A218B1D46E99E3F68D9"
+    },
+    "cell_type" : "code",
+    "source" : "val pine = CustomC3Chart(mlAndMirror((10, 0), (10, 4)), \n              chartOptions=\"\"\"{ \n                data: {\n                  \"type\": \"scatter\", \n                  \"colors\": { \"_2\": \"green\" },\n                  color: function (color, d) {\n                     var lights = ['#ffffcc','#ffeda0','#fed976','#feb24c','#fd8d3c','#fc4e2a','#e31a1c','#bd0026','#800026']\n                     if (d.id && d.id === '_2') {\n                        if (Math.random() <= 0.35) { \n                          return d3.rgb(color).darker(1+Math.random());\n                        } else if (Math.random() <= 0.7) { \n                          return d3.rgb(color).brighter(1+Math.random());\n                        } else {\n                          return _.sample(lights)\n                        }\n                      } else {\n                        return color;\n                      }\n                  },\n                  \"keys\": { \n                    \"x\": \"_1\", \n                    \"value\": [\"_2\"]\n                  } \n                }\n              }\"\"\",\n              sizes=(600,600),\n              maxPoints=Int.MaxValue\n          )",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "id" : "7EAB0285187A4F039DEF3105D1B2C46D"
+    },
+    "cell_type" : "markdown",
+    "source" : "Drawing the Pine"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "presentation" : {
+        "tabs_state" : "{\n  \"tab_id\": \"#tab1164626879-0\"\n}",
+        "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [],\n  \"rows\": [],\n  \"vals\": [],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count\",\n  \"rendererName\": \"Table\"\n}"
+      },
+      "id" : "8486BD8D49A149158A4E85652FD477DF"
+    },
+    "cell_type" : "code",
+    "source" : "val pineLines = (3d until 10d by 1d).toList.zipWithIndex.flatMap { case (x,i) =>\n  List(\n    ((10d, 4d+2*i), (x, 4d+2*i)),\n    ((x, 4d+2*i), (10d, 6d+2*i))\n  )\n} ::: List(((10d, 18d), (11d, 22d)))\npineLines.foreach { case (o, t) =>\n  pine.addAndApply(mlAndMirror(o, t))\n  Thread.sleep(1000)\n}",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "id" : "3EA56B6F69AA4CAA8579E4AAE52A67FB"
+    },
+    "cell_type" : "markdown",
+    "source" : "Blinking"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "3391B78FC4BE42AF81A754C0944B2DE8"
+    },
+    "cell_type" : "code",
+    "source" : "pine.applyOn(pine.currentC)",
+    "outputs" : [ ]
+  } ],
+  "nbformat" : 4
+}
