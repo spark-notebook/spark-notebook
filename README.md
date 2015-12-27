@@ -791,7 +791,7 @@ id=`dcos marathon task list /spark-notebook | tail -n 1 | tr -s ' ' | cut -d ' '
 p=`dcos marathon task show $id | jq ".ports[0]"`
 ```
 
-Hence, you can access the notebook at this URL: [http://<public-dns>:8899](http://{public-dns}:$p).
+Hence, you can access the notebook at this URL: [http://{public-dns}:$p](http://{public-dns}:$p).
 
 The newly created notebook will be created with all required Spark Configuration to access the mesos master, to declare the executor and so forth. So nothing is required on your side, you're ready to go!
 
