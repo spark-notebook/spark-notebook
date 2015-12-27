@@ -73,54 +73,8 @@ Spark Notebook
     - [Environment](#environment-3)
     - [Spark Notebook](#spark-notebook-3)
       - [Install](#install-3)
-      - [Access](#access-2)
-- [Features](#features)
-  - [Configure the environment](#configure-the-environment)
-    - [Using the Metadata](#using-the-metadata)
-      - [Set local repository](#set-local-repository)
-      - [Add remote repositories](#add-remote-repositories)
-      - [Import (download) dependencies](#import-download-dependencies)
-      - [Add Spark Packages](#add-spark-packages)
-      - [Default import statements](#default-import-statements)
-      - [Add JVM arguments](#add-jvm-arguments)
-      - [Spark Conf](#spark-conf)
-      - [Example](#example)
-        - [YARN](#yarn)
-      - [Create a preconfigured notebook](#create-a-preconfigured-notebook)
-        - [Update preconfigurations in metadata](#update-preconfigurations-in-metadata)
-    - [Use the `form`](#use-the-form)
-    - [The `reset` function](#the-reset-function)
-    - [Keep an eye on your tasks](#keep-an-eye-on-your-tasks)
-  - [Using Tachyon](#using-tachyon)
-    - [Connect to an existing cluster...](#connect-to-an-existing-cluster)
-    - [... Embedded local (default)](#-embedded-local-default)
-    - [Check using the UI](#check-using-the-ui)
-  - [Using (Spark)SQL](#using-sparksql)
-    - [Static SQL](#static-sql)
-    - [Dynamic SQL](#dynamic-sql)
-    - [Show case](#show-case)
-  - [Shell scripts `:sh`](#shell-scripts-sh)
-  - [Interacting with JavaScript](#interacting-with-javascript)
-    - [Plotting with D3](#plotting-with-d3)
-    - [WISP](#wisp)
-    - [Timeseries with  Rickshaw](#timeseries-with--rickshaw)
-    - [Dynamic update of data and plot using Scala's `Future`](#dynamic-update-of-data-and-plot-using-scalas-future)
-  - [Update _Notebook_ `ClassPath`](#update-_notebook_-classpath)
-    - [Classes required to connect to the cluster](#classes-required-to-connect-to-the-cluster)
-    - [Picked first `Classpath` declaration](#picked-first-classpath-declaration)
-  - [Update Spark dependencies (`spark.jars`)](#update-spark-dependencies-sparkjars)
-    - [Set `local-repo`](#set-local-repo)
-    - [Add `remote-repo`](#add-remote-repo)
-      - [`remote-repo` with authentication](#remote-repo-with-authentication)
-    - [Download and add dependencies](#download-and-add-dependencies)
-      - [Local only variant `:ldp`](#local-only-variant-ldp)
-- [CUSTOMIZE](#customize)
-  - [Logo](#logo)
-  - [Project Name](#project-name)
-- [TIPS AND TROUBLESHOOTING](#tips-and-troubleshooting)
-- [IMPORTANT](#important)
-- [KNOWN ISSUES](#known-issues)
-  - [`User limit of inotify watches reached`](#user-limit-of-inotify-watches-reached)
+- [sudo -u hdfs hdfs dfs -mkdir -p /user/spark](#sudo--u-hdfs-hdfs-dfs--mkdir--p-userspark)
+- [sudo -u hdfs hdfs dfs -put /usr/lib/spark/lib/spark-assembly.jar /user/spark/spark-assembly.jar](#sudo--u-hdfs-hdfs-dfs--put-usrlibsparklibspark-assemblyjar-usersparkspark-assemblyjar)
 
 <!-- /MarkdownTOC -->
 
@@ -763,11 +717,11 @@ There is not so much to do here besides following the instructions to install th
 #### Install
 It requires the DCOS CLI interface installed and configured to access your new cluster.
 
-~~So you need to add the [Mesosphere official multiverse reporsitory](https://github.com/mesosphere/multiverse) (until some work is done to have it in the universe one!) :
-```bash 
+~~So you need to add the [Mesosphere official multiverse reporsitory](https://github.com/mesosphere/multiverse) (until some work is done to have it in the universe one!) :~~
+~~ ```bash 
 dcos config prepend package.sources https://github.com/mesosphere/multiverse/archive/version-1.x.zip
 dcos package update --validate
-```~~
+``` ~~
 
 You'll need to add the current multiverse repo to your DCOS configuration (the Data Fellas fork until the PR is merged in the Mesosphere one).
 
