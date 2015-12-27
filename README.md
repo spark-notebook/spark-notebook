@@ -763,15 +763,17 @@ There is not so much to do here besides following the instructions to install th
 #### Install
 It requires the DCOS CLI interface installed and configured to access your new cluster.
 
-So you need to add the [Mesosphere official multiverse reporsitory](https://github.com/mesosphere/multiverse) (until some work is done to have it in the universe one!) :
-```
-dcos config prepend package.sources https://github.com/mesosphere/multiverse/archive/version-1.x.zip
+You'll need to add the current multiverse repo to your DCOS configuration (the Data Fellas fork until the PR is merged in the Mesosphere one).
+
+```bash
+dcos config prepend package.sources https://github.com/data-fellas/multiverse/archive/spark-notebook.zip
+
 dcos package update --validate
 ```
 
 Then, you can install the Spark Notebook, this way:
-```
-dcos package install spark-notebook
+```bash
+dcos package install --app spark-notebook --package-version=0.0.2
 ```
 
 That's it.
@@ -779,9 +781,17 @@ That's it.
 #### Access
 The Spark Notebook will be started on the public slave of the mesos cluster on the port `8899`. This should allow you to access it using the public DNS that the DCOS installation provides you at the end of the installation.
 
-But there are still some problem with this DNS, hence the easiest way to open the notebook is to use the public DNS reported in you ec2 interface, so go there and look for the node having a security group public, we'll use its DNS name (`<public-dns>`).
+But there are still some problem with this DNS, hence the easiest way to open the notebook is to use the public DNS reported in you ec2 interface, so go there and look for the node having a security group public, we'll use its DNS name (`{public-dns}`).
 
-Hence, you can access the notebook at this URL: [http://<public-dns>:8899](http://<public-dns>:8899).
+Also the port will be dynamically assigned by Marathon, however here is a way to know it easily:
+
+```bash
+id=`dcos marathon task list /spark-notebook | tail -n 1 | tr -s ' ' | cut -d ' ' -f5`
+
+p=`dcos marathon task show $id | jq ".ports[0]"`
+```
+
+Hence, you can access the notebook at this URL: [http://{public-dns}:$p](http://{public-dns}:$p).
 
 The newly created notebook will be created with all required Spark Configuration to access the mesos master, to declare the executor and so forth. So nothing is required on your side, you're ready to go!
 
