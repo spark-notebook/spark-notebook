@@ -17,14 +17,17 @@
     "customSparkConf" : null
   },
   "cells" : [ {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "val t = out",
-    "outputs" : [ ]
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "# Extensible and Reactive Flow Manager"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "This example shows the interactivity and reactivity features powered by the Spark Notebook.\n\nWe can draw default boxes and links, update them with scala code (their logic) and run the whole pipeline at the end to get the results back in a table.\n\nWe even can create personal boxes, and include them in the UI and then in a pipeline. See at the end (`SumPipeComp`).\n\nNow imagine all the possibilities:\n* porting the whole MLlib, pipeline, keystone\n* or H2O\n* or just regular scala\n* what about adding custom boxes for akka actors, using links to send messages?"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Import the components we might use (for information)."
   }, {
     "metadata" : {
       "trusted" : true,
@@ -35,31 +38,17 @@
     "source" : "import notebook.front.widgets.{BoxPipeComponent, PipeComponent, CustomizableBoxPipe}",
     "outputs" : [ ]
   }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "case class SumPipeComp(id:String = java.util.UUID.randomUUID.toString,\n                      mult:String=\"1\") \n  extends BoxPipeComponent[SumPipeComp]() {\n    \n  val name = \"sumPipe\"\n\n  val inPorts: List[String] = List(\"in\")\n  val outPorts: List[String] = List(\"out\")\n\n  val position:(Int, Int) = (100, 100)\n  val size:(Int, Int) = (100, 60)\n\n  val parameters = Map(\"mult\" → mult)\n  \n  def extractMult:Int = parameters(\"mult\").toInt\n\n  def next(a: Map[String,Any]): Map[String,Any] = {\n    a(\"in\") match {\n      case i:Int => Map(\"out\" → (extractMult * i))\n      case _ => ???\n    }\n  }\n\n  def merge(j:play.api.libs.json.JsValue):SumPipeComp = copy(\n    mult = (j \\ \"parameters\" \\ \"mult\").as[String]\n  )\n  \n  override val toString = toJSON.toString\n}",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "Flow.registerPipeComponent(\"sumPipe\", (() => SumPipeComp()))",
-    "outputs" : [ ]
-  }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "The following `Flow` instance will load some preconfiguration from the cell's metadata which combines those function together.\n\n\n```scala\n(a:Map[String, Any])=>Map(\"even\" → (a(\"in\").asInstanceOf[RDD[Int]].filter(_ % 2 == 0)).map(x=>(x.toString, x))\n```\n\n```scala\n(a:Map[String, Any])=>Map(\"square\" → (a(\"in\").asInstanceOf[RDD[Int]].map(x => (x.toString, x*x)))\n```\n\n```scala\n(a:Map[String, Any])=> Map(\"join\" → (a(\"left\").asInstanceOf[RDD[(String, Int)]].join(a(\"right\").asInstanceOf[RDD[(String, Int)]]))\n```\n\n```scala\n(a:Map[String, Any])=> Map(\"collect\" → (a(\"in\").asInstanceOf[RDD[_]].collect)\n```"
+    "source" : "## Spark Example"
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
     "source" : "Just **double click** on the boxes to see the configuration, including the **scala** code to customize the box's logic. "
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "The following `Flow` instance will load some preconfiguration from the cell's metadata which combines those functions together.\n\n\n```scala\n(a:Map[String, Any])=>Map(\"even\" → (a(\"in\").asInstanceOf[RDD[Int]].filter(_ % 2 == 0)).map(x=>(x.toString, x))\n```\n\n```scala\n(a:Map[String, Any])=>Map(\"square\" → (a(\"in\").asInstanceOf[RDD[Int]].map(x => (x.toString, x*x)))\n```\n\n```scala\n(a:Map[String, Any])=> Map(\"join\" → (a(\"left\").asInstanceOf[RDD[(String, Int)]].join(a(\"right\").asInstanceOf[RDD[(String, Int)]]))\n```\n\n```scala\n(a:Map[String, Any])=> Map(\"collect\" → (a(\"in\").asInstanceOf[RDD[_]].collect)\n```"
   }, {
     "metadata" : {
       "trusted" : true,
@@ -222,6 +211,99 @@
     },
     "cell_type" : "code",
     "source" : "val array:Array[(String, Int, Int)] = result((\"6834753e-01f9-49e7-b2ca-d6f8f84e2e2d\", \"collect\")).\n                                      asInstanceOf[Array[(String, (Int, Int))]].\n                                      map{ case (i, (j,k)) => (i,j,k) }",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "## Extending Capabilities: new box type"
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "This is an example of new box, nothing useful but interesting to check in order to create new ones."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "case class SumPipeComp(id:String = java.util.UUID.randomUUID.toString,\n                      mult:String=\"1\") \n  extends BoxPipeComponent[SumPipeComp]() {\n    \n  val name = \"sumPipe\"\n\n  val inPorts: List[String] = List(\"in\")\n  val outPorts: List[String] = List(\"out\")\n\n  val position:(Int, Int) = (100, 100)\n  val size:(Int, Int) = (100, 60)\n\n  val parameters = Map(\"mult\" → mult)\n  \n  def extractMult:Int = parameters(\"mult\").toInt\n\n  def next(a: Map[String,Any]): Map[String,Any] = {\n    a(\"in\") match {\n      case i:Int => Map(\"out\" → (extractMult * i))\n      case _ => ???\n    }\n  }\n\n  def merge(j:play.api.libs.json.JsValue):SumPipeComp = copy(\n    mult = (j \\ \"parameters\" \\ \"mult\").as[String]\n  )\n  \n  override val toString = toJSON.toString\n}",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Then register this new box so it'll appear in the Flow UI (dropdown list so far)"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false
+    },
+    "cell_type" : "code",
+    "source" : "Flow.registerPipeComponent(\"sumPipe\", (() => SumPipeComp()))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : { },
+    "cell_type" : "markdown",
+    "source" : "Now use can use `sumPipe`"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "extra" : {
+        "state" : [ {
+          "name" : "sumPipe",
+          "id" : "f64661cf-90b5-457c-aa68-816604ca5e91",
+          "tpe" : "box",
+          "parameters" : {
+            "mult" : "1"
+          },
+          "inPorts" : [ "in" ],
+          "outPorts" : [ "out" ],
+          "position" : {
+            "x" : 101,
+            "y" : 181
+          },
+          "size" : {
+            "width" : 100,
+            "height" : 60
+          },
+          "remove" : false
+        }, {
+          "name" : "sumPipe",
+          "id" : "4a644f1f-4b82-4cac-b1c2-6acae3353b42",
+          "tpe" : "box",
+          "parameters" : {
+            "mult" : "1"
+          },
+          "inPorts" : [ "in" ],
+          "outPorts" : [ "out" ],
+          "position" : {
+            "x" : 305,
+            "y" : 121
+          },
+          "size" : {
+            "width" : 100,
+            "height" : 60
+          },
+          "remove" : false
+        }, {
+          "name" : "link",
+          "id" : "febc29ef-9891-4de5-a54b-20b626553bee",
+          "tpe" : "link",
+          "parameters" : {
+            "source_id" : "f64661cf-90b5-457c-aa68-816604ca5e91",
+            "source_port" : "out",
+            "target_id" : "4a644f1f-4b82-4cac-b1c2-6acae3353b42",
+            "target_port" : "in"
+          },
+          "remove" : false
+        } ]
+      }
+    },
+    "cell_type" : "code",
+    "source" : "val f2 = Flow()",
     "outputs" : [ ]
   } ],
   "nbformat" : 4
