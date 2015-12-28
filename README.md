@@ -691,7 +691,7 @@ Locate the commented key `override` and paste:
         spark.shuffle.service.enabled: "true",
 
         spark.yarn.executor.memoryOverhead: "2201",
-        spark.yarn.historyServer.address: "${HOSTNAME}.${AWS_DEFAULT_REGION}.compute.internal:18080",
+        spark.yarn.historyServer.address: "${SPARK_LOCAL_HOSTNAME}:18080",
 
         spark.yarn.jar="/usr/lib/spark/lib/spark-assembly-1.5.2-hadoop2.6.0-amzn-2.jar"
       }
@@ -711,18 +711,19 @@ The port `9000` being already taken by Hadoop (hdfs), you'll need to run it on a
 Hence, the final launch is something like this (**check** below for how to use `screen` for persistence):
 ```
 export SPARK_LOCAL_IP=$(ec2-metadata -o | cut -d ' ' -f2)
+export SPARK_LOCAL_HOSTNAME=$(ec2-metadata -h | cut -d ' ' -f2)
 export CLASSPATH_OVERRIDES=/usr/lib/hadoop-lzo/lib/hadoop-lzo.jar:/etc/hive/conf:/etc/hadoop/conf:/usr/lib/hadoop/*:/usr/lib/hadoop-hdfs/*:/usr/lib/hadoop-yarn/*:/usr/lib/hadoop-lzo/lib/*:/usr/share/aws/aws-java-sdk/*:/usr/share/aws/emr/emrfs/conf:/usr/share/aws/emr/emrfs/lib/*:/usr/share/aws/emr/emrfs/auxlib/*
 
 source /usr/lib/spark/conf/spark-env.sh
 
-./bin/spark-notebook -Dconfig.file=./conf/application.conf -Dhttp.port=8899
+./bin/spark-notebook -Dconfig.file=./conf/application.conf -Dhttp.port=8989
 ```
 
 
 > **NOTE**: 
 > it's better to run the notebook in a `screen` for instance, so that the shell is released and you can quit your ssh connection.
 > ```
-> screen  -m -d -S "snb" bash -c 'export SPARK_LOCAL_IP=$(ec2-metadata -o | cut -d ' ' -f2) && export CLASSPATH_OVERRIDES=/usr/lib/hadoop-lzo/lib/hadoop-lzo.jar:/etc/hive/conf:/etc/hadoop/conf:/usr/lib/hadoop/*:/usr/lib/hadoop-hdfs/*:/usr/lib/hadoop-yarn/*:/usr/lib/hadoop-lzo/lib/*:/usr/share/aws/aws-java-sdk/*:/usr/share/aws/emr/emrfs/conf:/usr/share/aws/emr/emrfs/lib/*:/usr/share/aws/emr/emrfs/auxlib/* && source /usr/lib/spark/conf/spark-env.sh && ./bin/spark-notebook -Dconfig.file=./conf/application.conf -Dhttp.port=8899 >> nohup.out'
+> screen  -m -d -S "snb" bash -c "export SPARK_LOCAL_IP=$(ec2-metadata -o | cut -d ' ' -f2) && export SPARK_LOCAL_HOSTNAME=$(ec2-metadata -h | cut -d ' ' -f2) && export CLASSPATH_OVERRIDES=/usr/lib/hadoop-lzo/lib/hadoop-lzo.jar:/etc/hive/conf:/etc/hadoop/conf:/usr/lib/hadoop/*:/usr/lib/hadoop-hdfs/*:/usr/lib/hadoop-yarn/*:/usr/lib/hadoop-lzo/lib/*:/usr/share/aws/aws-java-sdk/*:/usr/share/aws/emr/emrfs/conf:/usr/share/aws/emr/emrfs/lib/*:/usr/share/aws/emr/emrfs/auxlib/* && source /usr/lib/spark/conf/spark-env.sh && ./bin/spark-notebook -Dconfig.file=./conf/application.conf -Dhttp.port=8989 >> nohup.out"
 > ```
 
 ###### Access
