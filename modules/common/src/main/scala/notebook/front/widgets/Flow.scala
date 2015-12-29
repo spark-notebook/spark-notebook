@@ -40,7 +40,7 @@ abstract class BoxPipeComponent[X<:BoxPipeComponent[X]]() extends BasePipeCompon
   def outPorts:List[String]
   def position:(Int, Int)
   def size:(Int, Int)
-  def update(varName:String, i:org.apache.spark.repl.SparkIMain/*only scala 2.10...*/, s:String):Unit = ()
+  def update(varName:String, i:notebook.util.InterpreterUtil, s:String):Unit = ()
   override def toJSON:JsObject = super.toJSON ++ Json.obj(
                                               "inPorts" → inPorts,
                                               "outPorts" → outPorts,
@@ -96,7 +96,7 @@ case class LogPipe(
 
 trait Updatable {
   def update( varName:String,
-              i:org.apache.spark.repl.SparkIMain/*only scala 2.10...*/
+              i:notebook.util.InterpreterUtil
             ):Unit
 }
 
@@ -124,9 +124,9 @@ case class CustomizableBoxPipe(
 
   override def update(
               varName:String,
-              i:org.apache.spark.repl.SparkIMain/*only scala 2.10...*/
+              i:notebook.util.InterpreterUtil
             ):Unit = {
-    i.interpret{
+    i{
       varName + s""".data.find(_.id == "$id").map{p => p.asInstanceOf[CustomizableBoxPipe]}.""" +
         "foreach{p => p._next = { " + parameters("next") + "}.asInstanceOf[Map[String, Any]=>Map[String, Any]] }"
     }
@@ -234,7 +234,7 @@ case class Flow() extends Updatable with JsWorld[PipeComponent[_], JsValue] {
 
   override def update(
               varName:String,
-              i:org.apache.spark.repl.SparkIMain/*only scala 2.10...*/
+              i:notebook.util.InterpreterUtil
             ):Unit =  data.filter(_.isInstanceOf[Updatable])
                           .foreach(_.asInstanceOf[Updatable].update(varName, i))
 
