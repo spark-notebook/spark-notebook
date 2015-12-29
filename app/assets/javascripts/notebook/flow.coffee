@@ -9,36 +9,65 @@ define([
   (dataO, container, options) ->
     gId = @genId
 
+    get_cell = () ->
+      # get cell object, like done in get_cell_elements in notebook.js
+      cell_dom_element = $(container).parents(".cell").not('.cell .cell')[0]
+      $(cell_dom_element).data("cell")
+
+    get_saved_state = () ->
+      saved_state = get_cell().metadata.extra?.state
+      saved_state || {}
+
+    save_state = (state) ->
+      get_cell().metadata.extra = {} if not get_cell().metadata.extra
+      get_cell().metadata.extra.state = state
+
+    initConfO = Observable.makeObservable(options.confId, {})
+    initConf = get_saved_state()
+    initConfO(initConf)
+
+    linkO = Observable.makeObservable(options.linkId, {})
+
     graph = new joint.dia.Graph
 
     paper = new joint.dia.Paper({
         el: $(container).find(".jointgraph"),
-        width: 600,
-        height: 200,
+        width: 800,
+        height: 800,
         model: graph,
         gridSize: 1
     })
 
-    grect = (n, options) ->
-      options = options || {}
-      new joint.shapes.basic.Rect({
-          position: options.position || { x: 100, y: 30 },
-          size: options.size || { width: 100, height: 30 },
-          attrs: {
-            rect: { fill: 'blue' },
-            text: { text: n||'box', fill: 'white'}
-          }
-      })
+    grect = (pc, v) ->
+      options = pc || {}
+
+      v = new joint.shapes.devs.Coupled() if not v
+
+      v.set("position", options.position || { x: 100, y: 60 })
+      v.set("size", options.size || { width: 100, height: 60 })
+      v.set("inPorts", options.inPorts || ['in'])
+      v.set("outPorts", options.outPorts || ['out'])
+
+      a = v.get("attrs")
+      a[".label"] = {} if not a[".label"]
+      a[".label"]["text"] = options.name || 'Element'
+      v.set("attrs", a)
+
+      v.id = pc.id
+      v.pipeComponent = pc
+      v
 
     glink = (options) ->
-      if (options.source && options.target)
-        new joint.dia.Link({
-          source: { id: options.source },
-          target: { id: options.target }
-        })
-      else new joint.dia.Link({
-        source:{x: 120, y: 50},
-        target:{x: 220, y: 50}
+      new joint.dia.Link({
+        source: if (options.source.id)
+                  options.source
+                else
+                  {x: 120, y: 50}
+        ,
+        target: if (options.target.id)
+                  options.target
+                else
+                  {x: 220, y: 50}
       })
 
     # get cell object, like done in get_cell_elements in notebook.js
@@ -65,8 +94,16 @@ define([
       newConf = form.serializeArray()
       pipeComponent = form.cell.pipeComponent
       parameters = {}
-      _.each(newConf, (e) -> parameters[e.name] = e.value)
+      _.each( newConf,
+              (e) ->
+                pr = "parameters."
+                if (e.name.startsWith(pr))
+                  parameters[e.name.substring(pr.length)] = e.value
+            )
+      pipeComponent.inPorts  = _.map(_.find(newConf, (e) -> e.name == "inPorts").value.split(","), (s) -> s.trim())
+      pipeComponent.outPorts = _.map(_.find(newConf, (e) -> e.name == "outPorts").value.split(","), (s) -> s.trim())
       pipeComponent.parameters = parameters
+      grect(pipeComponent, form.cell)
       dataO([pipeComponent])
     )
     form.find("button.remove").on("click", (e) =>
@@ -77,18 +114,52 @@ define([
       dataO([_.extend(pipeComponent, {'remove': true})])
     )
     paper.on("cell:pointerdblclick", (cellView, evt, x, y) =>
-      if (cellView.model instanceof joint.shapes.basic.Rect)
+      if (! (cellView.model instanceof joint.dia.Link) )
         cell = cellView.model
         form.cell = cell
         conf.html("")
+
+        conf.append("<p><strong>"+cell.id+"<strong></p>")
+
+        #in ports
+        fsi = $("<fieldset></fieldset>")
+        lgi = $("<legend>In Ports</legend>")
+        fsi.append(lgi)
+        conf.append(fsi)
+        d = $("<div class='form-group'></div>")
+        l = $("<label>ports</label>")
+        i = $("<input type='text'class='form-control' name='inPorts'/>")
+        i.val(cell.pipeComponent.inPorts.join(","))
+        d.append(l)
+        d.append(i)
+        fsi.append(d)
+
+        #out ports
+        fsi = $("<fieldset></fieldset>")
+        lgi = $("<legend>Out Ports</legend>")
+        fsi.append(lgi)
+        conf.append(fsi)
+        d = $("<div class='form-group'></div>")
+        l = $("<label>ports</label>")
+        i = $("<input type='text'class='form-control' name='outPorts'/>")
+        i.val(cell.pipeComponent.outPorts.join(","))
+        d.append(l)
+        d.append(i)
+        fsi.append(d)
+
+        #parameters
+        fsp = $("<fieldset></fieldset>")
+        lgp = $("<legend>Parameters</legend>")
+        fsp.append(lgp)
+        conf.append(fsp)
         _.each(cell.pipeComponent.parameters, (v,k) ->
           d = $("<div class='form-group'></div>")
           l = $("<label>"+k+"</label>")
-          i = $("<input type='text'class='form-control' name='"+k+"'/>")
+          i = $("<input type='text'class='form-control parameters' name='parameters."+k+"'/>")
           i.val(v)
           d.append(l)
           d.append(i)
-          conf.append(d)
+          fsp.append(d)
         )
     )
 
@@ -97,12 +168,15 @@ define([
       cells = graph.getCells()
       links = graph.getLinks()
       cellsLinks =  _.union(cells, links)
-      d = _.map(cellsLinks, (cl) =>
-        o = _.clone(cl.pipeComponent)
-        o.position = cl.attributes.position
-        o.size = cl.attributes.size
-        o
-      )
+      d = _.chain(cellsLinks)
+            .filter((o) => !_.isUndefined(o.pipeComponent))
+            .map((cl) =>
+              o = _.clone(cl.pipeComponent)
+              o.position = cl.attributes.position
+              o.size = cl.attributes.size
+              o
+            )
+            .value()
       o = $(html_output())
       sc = o.find("script")[0]
       dt = $(sc).attr("data-this")
@@ -111,8 +185,45 @@ define([
       s = JSON.stringify(j)
       $(sc).attr("data-this", s)
       html_output(o.prop('outerHTML'))
+      save_state(d)
 
     graph.on("change", save)
+    graph.on("add", save)
+    graph.on("remove", save)
+
+    getLink =
+      (id) =>
+        if (_.isUndefined(id))
+          _.find(graph.getCells(), (c) -> c.id == id)
+        else
+          _.find(graph.getCells(), (c) -> _.isUndefined(c.id))
+
+    bindLink = (l) =>
+      l.on("remove", (l) => dataO([_.extend(l.pipeComponent, {'remove': true})]))
+      l.on("change:source", (l, c) =>
+        if (!_.isUndefined(l.pipeComponent))
+          if (l.get("source").id && l.get("source").id != l.pipeComponent?.parameters.source)
+            l.pipeComponent.parameters.source_id   = l.get("source").id
+            l.pipeComponent.parameters.source_port = l.get("source").port
+            dataO([l.pipeComponent])
+          else
+            if (l.pipeComponent.parameters.source)
+              delete l.pipeComponent.parameters.source_id
+              delete l.pipeComponent.parameters.source_port
+              dataO([l.pipeComponent])
+      )
+      l.on("change:target", (l, c) =>
+        if (!_.isUndefined(l.pipeComponent))
+          if (l.get("target").id && l.get("target").id != l.pipeComponent?.parameters.target)
+            l.pipeComponent.parameters.target_id   = l.get("target").id
+            l.pipeComponent.parameters.target_port = l.get("target").port
+            dataO([l.pipeComponent])
+          else
+            if (l.pipeComponent.parameters.target)
+              delete l.pipeComponent.parameters.target_id
+              delete l.pipeComponent.parameters.target_port
+              dataO([l.pipeComponent])
+      )
 
     onData = (newData) =>
       cells = graph.getCells()
@@ -120,8 +231,8 @@ define([
       cellsLinks =  _.union(cells, links)
 
       _.each(newData,
-        (d) -> if (_.isUndefined(d.remove))
-          d.remove = false
+        (d) ->  if (_.isUndefined(d.remove))
+                  d.remove = false
       )
       toAdd = _.filter(newData, (d) => !d.remove && !_.contains(_.pluck(cellsLinks, "id"), d.id))
 
@@ -133,33 +244,27 @@ define([
 
       addCells = _.map(toAdd, (d) =>
         if (d.tpe == "box")
-          r = grect(d.name, {position: d.position, size: d.size})
-          r.id = d.id
-          r.pipeComponent = d
+          r = grect(d)
+          r.on( "batch:start",
+                (o) =>
+                  if (o.batchName == "add-link")
+                    o.link.pipeComponent = {}
+                    o.link.pipeComponent.id = o.link.id
+                    o.link.pipeComponent.parameters = {}
+                    o.link.pipeComponent.parameters.source_id   = o.link.get("source").id
+                    o.link.pipeComponent.parameters.source_port = o.link.get("source").port
+                    linkO(o.link.pipeComponent)
+                    bindLink(o.link)
+              )
           r
         else
-          l = glink({source: d.parameters.source, target: d.parameters.target})
+          l = glink({
+                source: { id: d.parameters.source_id, port: d.parameters.source_port },
+                target: { id: d.parameters.target_id, port: d.parameters.target_port }
+              })
           l.id = d.id
           l.pipeComponent = d
-          l.on("remove", (l) => dataO([_.extend(l.pipeComponent, {'remove': true})]))
-          l.on("change:source", (l, c) =>
-            if (l.get("source").id && l.get("source").id != l.pipeComponent.parameters.source)
-              l.pipeComponent.parameters.source = l.get("source").id
-              dataO([l.pipeComponent])
-            else
-              if (l.pipeComponent.parameters.source)
-                delete l.pipeComponent.parameters.source
-                dataO([l.pipeComponent])
-          )
-          l.on("change:target", (l, c) =>
-            if (l.get("target").id && l.get("target").id != l.pipeComponent.parameters.target)
-              l.pipeComponent.parameters.target = l.get("target").id
-              dataO([l.pipeComponent])
-            else
-              if (l.pipeComponent.parameters.target)
-                delete l.pipeComponent.parameters.target
-                dataO([l.pipeComponent])
-          )
+          bindLink(l)
           l
       )
       graph.addCells(addCells)
