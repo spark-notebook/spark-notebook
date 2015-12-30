@@ -210,14 +210,23 @@ class ReplCalculator(
         log.debug("Executing execute request")
         execute(sender(), er)
 
-      case InterruptCellRequest(cellId) =>
-        // TODO: consider case when cell is still in the queue!
-        log.debug(s"Interrupting the cell: $cellId")
-        val jobGroupId = JobTracking.jobGroupId(cellId)
+      case InterruptCellRequest(killCellId) =>
+        // kill job(s) still waiting for execution to start, if any
+        def jobToBeKilled(p: (ActorRef, ExecuteRequest)) = p match {
+          case (_, ExecuteRequest(cellIdInQueue, _, _)) =>  cellIdInQueue == killCellId
+        }
+        val jobsInQueueToKill = queue.filter(jobToBeKilled)
+        log.debug(s"Canceling $killCellId jobs still in queue (if any):\n", jobsInQueueToKill)
+        queue = queue.filterNot(jobToBeKilled)
+
+        // currently we have no idea if job is still running - just cancel it in either case
+        // this is safe in recent spark versions, see SPARK-6414
+        log.debug(s"Interrupting the cell: $killCellId")
+        val jobGroupId = JobTracking.jobGroupId(killCellId)
         repl.evaluate(
           s"""globalScope.sparkContext.cancelJobGroup("${jobGroupId}")""",
           msg => {
-            sender() ! StreamResponse(s"The job was cancelled.\n$msg", "stdout")
+            sender() ! StreamResponse(s"$msg", "stdout")
           }
         )
 

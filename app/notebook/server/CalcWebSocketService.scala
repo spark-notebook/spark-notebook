@@ -112,10 +112,12 @@ class CalcWebSocketService(
         wss = wss.filterNot(_ == ws)
 
       case InterruptCell(cell_id) =>
-        // TODO: no idea what is currentSessionOperation, and why it exists.
+        // issue cancel requests for all "current operations"
+        // FIXME: won't display any message as no cellId is tracked in currentSessionOperation
         currentSessionOperation.foreach { op =>
           calculator.tell(InterruptCellRequest(cell_id), op)
         }
+
       case InterruptCalculator =>
         Logger.info(s"Interrupting the computations, current is $currentSessionOperation")
         currentSessionOperation.headOption.foreach { op =>
