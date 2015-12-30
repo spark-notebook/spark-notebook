@@ -216,16 +216,33 @@ class ReplCalculator(
         log.debug("Executing execute request")
         execute(sender(), er)
 
-      case InterruptCellRequest(cellId) =>
-        // TODO: consider case when cell is still in the queue!
-        log.debug(s"Interrupting the cell: $cellId")
-        val jobGroupId = JobTracking.jobGroupId(cellId)
-        repl.evaluate(
-          s"""globalScope.sparkContext.cancelJobGroup("${jobGroupId}")""",
-          msg => {
-            sender() ! StreamResponse(s"The job was cancelled.\n$msg", "stdout")
-          }
-        )
+      case InterruptCellRequest(killCellId) =>
+        // kill job(s) still waiting for execution to start, if any
+        val (jobsInQueueToKill, nonAffectedJobs) = queue.partition { case (_, ExecuteRequest(cellIdInQueue, _, _)) =>
+          cellIdInQueue == killCellId
+        }
+        log.debug(s"Canceling $killCellId jobs still in queue (if any):\n $jobsInQueueToKill")
+        queue = nonAffectedJobs
+
+        // call cancelJobGroup even if job was in queue
+        // this is safe in recent spark versions, see SPARK-6414
+        log.debug(s"Interrupting the cell: $killCellId")
+        val jobGroupId = JobTracking.jobGroupId(killCellId)
+        try {
+          repl.evaluate(
+            s"""sparkContext.cancelJobGroup("${jobGroupId}")""",
+            msg => sender() ! StreamResponse(msg, "stdout")
+          )
+        } catch {
+          // need to catch exception in case sparkContext was not available yet
+          case ex: RuntimeException => log.warning(s"Exception while trying to cancel a cell $killCellId: $ex")
+        }
+
+        // StreamResponse shows error msg
+        sender() ! StreamResponse(s"The cell was cancelled.\n", "stderr")
+        // ErrorResponse to marks cell as ended
+        sender() ! ErrorResponse(s"The cell was cancelled.\n", incomplete = false)
+
 
       case InterruptRequest =>
         log.debug("Interrupting the spark context")
