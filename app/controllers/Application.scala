@@ -596,9 +596,9 @@ object Application extends Controller {
     * The notebook name to attach to Spark Context (and all related jobs)
     */
   def appNameToDisplay(metadata: Option[Metadata], notebookPath: Option[String]): String = {
-    val explicitName = metadata.map(_.name).getOrElse("Spark-notebook")
+    val explicitName = metadata.map(_.name).getOrElse("Spark notebook")
     notebookPath match {
-      case Some(path) => s"${explicitName} ($path)"
+      case Some(path) => path
       case None => explicitName
     }
   }
