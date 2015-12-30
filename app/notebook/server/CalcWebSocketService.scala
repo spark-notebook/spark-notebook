@@ -10,6 +10,8 @@ import scala.concurrent._
 import scala.collection.immutable.Queue
 import scala.concurrent.duration._
 
+case class SessionOperation(actor: ActorRef, cellId: Option[String])
+
 /**
  * Provides a web-socket interface to the Calculator
  */
@@ -36,7 +38,7 @@ class CalcWebSocketService(
   def unregister(ws: WebSockWrapper) = calcActor ! Unregister(ws)
 
   class CalcActor extends Actor with ActorLogging {
-    private var currentSessionOperation: Queue[ActorRef] = Queue.empty
+    private var currentSessionOperations: Queue[SessionOperation] = Queue.empty
     var calculator: ActorRef = null
     var wss: List[WebSockWrapper] = Nil
 
@@ -111,35 +113,42 @@ class CalcWebSocketService(
         Logger.info(s"UN-registering web-socket ($ws) in service ${this} (current count is ${wss.size})")
         wss = wss.filterNot(_ == ws)
 
+      case InterruptCell(killCellId) =>
+        currentSessionOperations
+          .filter { case SessionOperation(_, cellId) => cellId == Some(killCellId) }
+          .foreach { op => calculator.tell(InterruptCellRequest(killCellId), op.actor) }
+
       case InterruptCalculator =>
-        Logger.info(s"Interrupting the computations, current is $currentSessionOperation")
-        currentSessionOperation.headOption.foreach { op =>
+        Logger.info(s"Interrupting the computations, current is $currentSessionOperations")
+        currentSessionOperations.headOption.foreach { op =>
           //cancelling the spark jobs in the first cell
-          calculator.tell(InterruptRequest, op)
+          calculator.tell(InterruptRequest, op.actor)
         }
-        if(currentSessionOperation.tail.nonEmpty) {
+        if(currentSessionOperations.tail.nonEmpty) {
           //cleaning the other cells
-          currentSessionOperation.tail.foreach(_ ! StreamResponse("Previous cell has been interrupted", "stdout"))
+          currentSessionOperations.tail.foreach { case SessionOperation(actor, _) =>
+            actor ! StreamResponse("Previous cell has been interrupted", "stdout")
+          }
         }
-        currentSessionOperation = Queue.empty
+        currentSessionOperations = Queue.empty
 
       case req@SessionRequest(header, session, request) =>
         val operations = new SessionOperationActors(header, session)
-        val operationActor = (request: @unchecked) match {
+        val (operationActor, cellId) = (request: @unchecked) match {
           case ExecuteRequest(cellId, counter, code) =>
             ws.send(header, session, "status", "iopub", obj("execution_state" → "busy"))
             ws.send(header, session, "pyin", "iopub", obj("cell_id" → cellId, "execution_count" → counter, "code" → code))
-            operations.singleExecution(cellId, counter)
+            (operations.singleExecution(cellId, counter), Some(cellId))
 
           case _: CompletionRequest =>
-            operations.completion
+            (operations.completion, None)
 
           case _: ObjectInfoRequest =>
-            operations.objectInfo
+            (operations.objectInfo, None)
         }
         val operation = context.actorOf(operationActor)
         context.watch(operation)
-        currentSessionOperation = currentSessionOperation.enqueue(operation)
+        currentSessionOperations = currentSessionOperations.enqueue(SessionOperation(operation, cellId))
         calculator.tell(request, operation)
 
 
@@ -158,8 +167,8 @@ class CalcWebSocketService(
           )
           self ! PoisonPill
         } else {
-          if (currentSessionOperation.nonEmpty) {
-            currentSessionOperation = currentSessionOperation.dequeue._2
+          if (currentSessionOperations.nonEmpty) {
+            currentSessionOperations = currentSessionOperations.dequeue._2
           }
         }
 
