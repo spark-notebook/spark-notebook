@@ -222,14 +222,12 @@ class ReplCalculator(
         // this is safe in recent spark versions, see SPARK-6414
         log.debug(s"Interrupting the cell: $killCellId")
         val jobGroupId = JobTracking.jobGroupId(killCellId)
-        try {
+        // make sure sparkContext is already available!
+        if (repl.interp.allDefinedNames.filter(_.toString == "sparkContext").nonEmpty) {
           repl.evaluate(
             s"""sparkContext.cancelJobGroup("${jobGroupId}")""",
             msg => sender() ! StreamResponse(msg, "stdout")
           )
-        } catch {
-          // need to catch exception in case sparkContext was not available yet
-          case ex: RuntimeException => log.warning(s"Exception while trying to cancel a cell $killCellId: $ex")
         }
 
         // StreamResponse shows error msg
