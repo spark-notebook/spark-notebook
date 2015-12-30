@@ -10,7 +10,7 @@ import scala.concurrent._
 import scala.collection.immutable.Queue
 import scala.concurrent.duration._
 
-case class SessionOperation(actor: ActorRef, cellId: Option[String]) extends Serializable
+case class SessionOperation(actor: ActorRef, cellId: Option[String])
 
 /**
  * Provides a web-socket interface to the Calculator
@@ -113,12 +113,10 @@ class CalcWebSocketService(
         Logger.info(s"UN-registering web-socket ($ws) in service ${this} (current count is ${wss.size})")
         wss = wss.filterNot(_ == ws)
 
-      case InterruptCell(cell_id) =>
-        // issue cancel requests for all "current operations"
-        // FIXME: won't display any message as no cellId is tracked in currentSessionOperation
-        currentSessionOperations.foreach { op =>
-          calculator.tell(InterruptCellRequest(cell_id), op.actor)
-        }
+      case InterruptCell(killCellId) =>
+        currentSessionOperations
+          .filter { case SessionOperation(_, cellId) => cellId == Some(killCellId) }
+          .foreach { op => calculator.tell(InterruptCellRequest(killCellId), op.actor) }
 
       case InterruptCalculator =>
         Logger.info(s"Interrupting the computations, current is $currentSessionOperations")
