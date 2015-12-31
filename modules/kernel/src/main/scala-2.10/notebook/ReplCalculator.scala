@@ -397,7 +397,8 @@ class ReplCalculator(
               |sparkContext.setJobGroup("${JobTracking.jobGroupId(cellId)}", "${JobTracking.jobDescription(code)}")
               |$code
               """.stripMargin,
-              msg => thisSender ! StreamResponse(msg, "stdout")
+              msg => thisSender ! StreamResponse(msg, "stdout"),
+             (termOrType, tpe, references) => thisSender ! DefinitionResponse(termOrType, tpe, cellId, references)
             )
           }
           finally {

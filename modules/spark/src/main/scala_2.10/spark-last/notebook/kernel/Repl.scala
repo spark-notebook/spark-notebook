@@ -163,7 +163,10 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
    * @param onPrintln
    * @return result and a copy of the stdout buffer during the duration of the execution
    */
-  def evaluate(code: String, onPrintln: String => Unit = _ => ()): (EvaluationResult, String) = {
+  def evaluate( code: String,
+                onPrintln: String => Unit = _ => (),
+                reportDefinitions: (Option[Either[String, String]], List[String]) => Unit  = (_,_) => ()
+              ): (EvaluationResult, String) = {
     stdout.flush()
     stdoutBytes.reset()
 
@@ -180,10 +183,29 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
         val request:interp.Request = interp.getClass.getMethods.find(_.getName == "prevRequestList").map(_.invoke(interp)).get.asInstanceOf[List[interp.Request]].last
         //val request:Request = interp.prevRequestList.last
 
+        request.handlers.zipWithIndex.foreach { case (h, i) =>
+          LOG.debug(s"h[$i]                 => " + h)
+          LOG.debug(s"h[$i].definedNames    => " + h.definedNames)
+          LOG.debug(s"h[$i].referencedNames => " + h.referencedNames)
+        }
+        request.handlers.map { h =>
+          val l = h.definesTerm.map(_.encoded)
+          val r = h.definesType.map(_.encoded)
+          val lr = (l,r) match {
+            case (Some(l), _) => Some(Left(l))
+            case (_, Some(r)) => Some(Right(r))
+            case _ => None
+          }
+          reportDefinitions(lr,
+                            h.referencedNames.toList.map(_.encoded)
+                          )
+        }
+
         val lastHandler/*: interp.memberHandlers.MemberHandler*/ = request.handlers.last
 
         try {
-          val evalValue = if (lastHandler.definesValue) { // This is true for def's with no parameters, not sure that executing/outputting this is desirable
+          val evalValue = if (lastHandler.definesValue) {
+            // This is true for def's with no parameters, not sure that executing/outputting this is desirable
             // CY: So for whatever reason, line.evalValue attemps to call the $eval method
             // on the class...a method that does not exist. Not sure if this is a bug in the
             // REPL or some artifact of how we are calling it.

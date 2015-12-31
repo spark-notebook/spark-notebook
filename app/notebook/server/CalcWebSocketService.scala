@@ -213,6 +213,26 @@ class CalcWebSocketService(
             ws.send(header, session, "execute_reply", "shell", obj("cell_id" → cellId, "execution_count" → counter))
             context.stop(self)
 
+          case DefinitionResponse(definedTermOrType, references) =>
+            val (te, ty):(JsValue, JsValue) = definedTermOrType match {
+              case None => (JsNull, JsNull)
+              case Some(Left(l)) => (JsString(l), JsNull)
+              case Some(Right(r)) => (JsNull, JsString(r))
+            }
+            ws.send(
+              obj(
+                "session" → "ignored"
+              ),
+              JsNull,
+              "definition",
+              "iopub",
+              obj(
+                "term" → te,
+                "type" → ty,
+                "references" → references
+              )
+            )
+
           case ErrorResponse(msg, incomplete) =>
             if (incomplete) {
               ws.send(header, session, "error", "iopub", obj(
