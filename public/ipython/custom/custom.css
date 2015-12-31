@@ -98,3 +98,13 @@ table.c3-tooltip th {
 .pvtUi path.c3-shape.c3-line, .custom-c3-chart path.c3-shape.c3-line {
   fill: transparent;
 }
+
+
+/* Gridster */
+.gridster > ul {
+  list-style: none;
+}
+
+.gridster > ul > li {
+  background-color: lightgray;
+}

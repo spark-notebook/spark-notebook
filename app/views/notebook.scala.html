@@ -327,10 +327,22 @@
 <div class="lower-header-bar"></div>
 } {
   <div id="ipython-main-app">
-      <div id="notebook_panel">
-          <div id="notebook"></div>
-
-          <div id="progress-pies" class="pull-left" style="top: 150px; position: absolute; left: 0px; width: 100px; height: 100px"></div>
+      <div id="notebook_panel" class="container-fluid">
+          <div id="notebook" class="col-md-9"></div>
+          <div id="notebook-panels" class="col-md-3">
+            <div class="gridster">
+                <ul>
+                    <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
+                    </li>
+                    <li data-row="1" data-col="2" data-sizex="1" data-sizey="1">
+                    </li>
+                    <li data-row="2" data-col="1" data-sizex="2" data-sizey="2">
+                        <div id="progress-pies"</div>
+                    </li>
+                    <li data-row="3" data-col="1" data-sizex="1" data-sizey="1"></li>
+                </ul>
+            </div>
+          </div>
 
           @if(utils.AppUtils.config.tachyonInfo.isDefined) {
               <div id="notebook-tachyon-container" class="pull-right" data-bind="style: { width: tachyon.width() }, visible: tachyon.opened()" style="top: 0px; position: absolute; right: 0px; background-color: #74AFAD; color: #ECECEA">

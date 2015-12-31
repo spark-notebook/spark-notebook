@@ -12,7 +12,7 @@ define([
 
       // move progress node to body, to enable absolute positioning
       var pies = d3.select("#progress-pies")
-      $(pies.node()).appendTo("body");
+      //$(pies.node()).appendTo("body");
       $("#progress-pies").append($("<div id='progress-bars'/>")).append("<div id='spark-ui-link' />");
 
       var updateSparkUiLink = function(sparkUi){
@@ -23,7 +23,7 @@ define([
       };
 
       // setup the progress chart
-      var svg = dimple.newSvg("#progress-bars", 100, 400);
+      var svg = dimple.newSvg("#progress-bars", 275, 480); // todo resize with panel → ref to panel needed and event from panel to be listened
       var myChart = new dimple.chart(svg, []);
       var xAxis = myChart.addPctAxis("x", "completed");
       xAxis.title = "% completed";

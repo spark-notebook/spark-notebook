@@ -166,3 +166,25 @@ require([
         }
     });
 });
+
+require(["jquery", "jquery.gridster"], function($, gridster) {
+  var g = $("#notebook-panels");
+  var scrollWidth = 15;
+  var w = ($(document.body).width() - scrollWidth) * (3.0 / 12);
+  var m = 10;
+  var nbCols = 2;
+  var b = (w - (2 * nbCols)*10)/2
+
+  var ul = $("#notebook-panels .gridster > ul");
+
+  ul.gridster({
+    max_cols: nbCols,
+    widget_margins: [m, m],
+    widget_base_dimensions: [b, 250],
+    max_sizex: 2,
+    helper: 'clone',
+    resize: {
+      enabled: true
+    }
+  });
+});
