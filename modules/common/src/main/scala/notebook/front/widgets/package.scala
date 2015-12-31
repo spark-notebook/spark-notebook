@@ -416,11 +416,18 @@ package object widgets {
     originalData:C,
     override val sizes:(Int, Int)=(600, 400),
     maxPoints:Int = DEFAULT_MAX_POINTS,
-    derivedAttributes:JsObject=play.api.libs.json.Json.obj()
+    derivedAttributes:JsObject=play.api.libs.json.Json.obj(),
+    options: Map[String, String] = Map.empty
   ) extends Chart[C] {
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
 
-    override val scripts = List(Script( "magic/pivotChart", Json.obj("width" → sizes._1, "height" → sizes._2, "derivedAttributes" → derivedAttributes)))
+    protected def optionsJson = Json.obj(options.mapValues(Json.toJsFieldJsValueWrapper(_)).toSeq: _*)
+
+    override val scripts = List(Script( "magic/pivotChart", Json.obj("width" → sizes._1,
+                                                                     "height" → sizes._2,
+                                                                     "derivedAttributes" → derivedAttributes,
+                                                                     "extraOptions" → optionsJson)
+    ))
   }
 
   case class ScatterChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C] {

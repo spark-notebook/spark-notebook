@@ -78,6 +78,12 @@ define([
       }
       window.c3 = c3
 
+      if options.extraOptions.y_start_at?
+        rendererOptions.c3.axis.y = {
+          min: Number(options.extraOptions.y_start_at),
+          padding: { bottom: 0 }
+        }
+
       pivotOptions = get_saved_pivot_state()
       # console.log("saved_pivot_state=", pivotOptions)
 
