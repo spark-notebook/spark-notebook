@@ -165,7 +165,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
    */
   def evaluate( code: String,
                 onPrintln: String => Unit = _ => (),
-                reportDefinitions: (Option[Either[String, String]], List[String]) => Unit  = (_,_) => ()
+                reportDefinitions: (Option[Either[String, String]], String, List[String]) => Unit  = (_,_,_) => ()
               ): (EvaluationResult, String) = {
     stdout.flush()
     stdoutBytes.reset()
@@ -183,20 +183,20 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
         val request:interp.Request = interp.getClass.getMethods.find(_.getName == "prevRequestList").map(_.invoke(interp)).get.asInstanceOf[List[interp.Request]].last
         //val request:Request = interp.prevRequestList.last
 
-        request.handlers.zipWithIndex.foreach { case (h, i) =>
-          LOG.debug(s"h[$i]                 => " + h)
-          LOG.debug(s"h[$i].definedNames    => " + h.definedNames)
-          LOG.debug(s"h[$i].referencedNames => " + h.referencedNames)
-        }
         request.handlers.map { h =>
           val l = h.definesTerm.map(_.encoded)
           val r = h.definesType.map(_.encoded)
           val lr = (l,r) match {
-            case (Some(l), _) => Some(Left(l))
-            case (_, Some(r)) => Some(Right(r))
+            case (Some(l), _) =>
+              println(interp.symbolOfTerm(l))
+              Some((Left(l),  interp.classOfTerm(l).map(_.getName)))
+            case (_, Some(r)) =>
+              println(interp.symbolOfTerm(r))
+              Some((Right(r), interp.classOfTerm(r).map(_.getName)))
             case _ => None
           }
-          reportDefinitions(lr,
+          reportDefinitions(lr.map(_._1),
+                            lr.flatMap(_._2).getOrElse("<unknown-type>"),
                             h.referencedNames.toList.map(_.encoded)
                           )
         }

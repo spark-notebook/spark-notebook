@@ -329,17 +329,28 @@
   <div id="ipython-main-app">
       <div id="notebook_panel" class="container-fluid">
           <div id="notebook" class="col-md-9"></div>
-          <div id="notebook-panels" class="col-md-3">
-            <div class="gridster">
+
+          <div id="notebook-panels" class="col-md-3" >
+            <div id="sidebar" class="gridster">
                 <ul>
-                    <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
+                    <li data-row="1" data-col="1" data-sizex="2" data-sizey="1">
+                        <h4>Terms</h4>
+                        <div id="termDefinitions" style="overflow: auto; height: 200px"></div>
                     </li>
-                    <li data-row="1" data-col="2" data-sizex="1" data-sizey="1">
-                    </li>
-                    <li data-row="2" data-col="1" data-sizex="2" data-sizey="2">
+
+                    <li data-row="2" data-col="1" data-sizex="2" data-sizey="1">
+                        <h4>Spark (Progress)</h4>
                         <div id="progress-pies"</div>
                     </li>
-                    <li data-row="3" data-col="1" data-sizex="1" data-sizey="1"></li>
+
+                    <li data-row="3" data-col="1" data-sizex="2" data-sizey="2">
+                        <h4>Ext. Plot</h4>
+                        <div id="ext-plot"></div>
+                    </li>
+
+                    <li data-row="4" data-col="1" data-sizex="1" data-sizey="1">
+                    <li data-row="4" data-col="2" data-sizex="1" data-sizey="1">
+                    </li>
                 </ul>
             </div>
           </div>

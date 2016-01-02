@@ -177,6 +177,25 @@ require(["jquery", "jquery.gridster"], function($, gridster) {
 
   var ul = $("#notebook-panels .gridster > ul");
 
+  var site = $("#site");
+  var nb = $("#notebook");
+  var sb = $("#sidebar");
+  var hh = $("#header").height();
+  function sticky_relocate() {
+    if (nb.is(":visible")) {
+      var t = nb.offset().top;
+      if (t < 0) {
+        sb.css("top", (Math.abs(t)+hh)+"px");
+      } else if (t < hh) {
+        sb.css("top", (hh-t)+"px");
+      } else {
+        sb.css("top", "20px");
+      }
+    }
+  }
+
+  site.scroll(sticky_relocate);
+
   ul.gridster({
     max_cols: nbCols,
     widget_margins: [m, m],
@@ -187,4 +206,54 @@ require(["jquery", "jquery.gridster"], function($, gridster) {
       enabled: true
     }
   });
+});
+
+
+require(["jquery", "underscore", "base/js/events", "knockout"], function($, _, events, ko) {
+  var td = $("#termDefinitions");
+  if (!td.find("table").length) {
+    function viewModel() {
+      var self = this;
+      self.definitions = {};
+      self.definitions.data = ko.observableArray([]);
+      self.addDefinition = function(def) {
+        self.definitions.data.remove(function(e) { return e.name == def.name;});
+        self.definitions.data.push(def);
+      };
+      self.hightlightCell = function() {
+        var cell = $("div.cell[data-cell-id='"+this.cell+"']");
+        cell.addClass("alert alert-info");
+        setTimeout(function() {
+          cell.removeClass("alert alert-info")
+        }, 500);
+      };
+    };
+    var model = new viewModel();
+
+    var tbl = $('<table style="width: 100%;" class="table table-bordered table-hover">'+
+              '    <thead>'+
+              '        <tr><th>Name</th><th>Type</th></tr>'+
+              '    </thead>'+
+              '    <tbody data-bind="foreach: definitions.data">'+
+              '        <tr>'+
+              '            <td data-bind="text: name, click: $parent.hightlightCell"></td>'+
+              '            <td data-bind="text: type"></td>'+
+              '        </tr>'+
+              '    </tbody>'+
+              '</table>')
+
+    ko.applyBindings(model, tbl.get(0));
+    td.append(tbl);
+
+    events.on('kernel_ready.Kernel', function(e, c) {
+      var kernel = c.kernel;
+      console.log("kernel", kernel);
+      kernel.events.on("new.Definition", function(e, c) {
+        console.log("new def", c);
+        if (c.term || c.type) {
+          model.addDefinition({name: c.term || c.type, type: c.tpe, cell: c.cell});
+        }
+      });
+    });
+  }
 });

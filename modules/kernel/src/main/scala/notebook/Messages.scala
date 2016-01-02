@@ -18,7 +18,7 @@ sealed trait CalcResponse
 
 case class StreamResponse(data: String, name: String) extends CalcResponse
 
-case class DefinitionResponse(definedTermOrType: Option[Either[String, String]], references: List[String]) extends CalcResponse
+case class DefinitionResponse(definedTermOrType: Option[Either[String, String]], tpe:String, cell:String, references: List[String]) extends CalcResponse
 
 case class ExecuteResponse(outputType:String, content: String, time:String) extends CalcResponse
 
