@@ -213,8 +213,7 @@ class ReplCalculator(
       case er@ExecuteRequest(_, _, code) =>
         log.debug("Enqueuing execute request at: " + queue.size)
         queue = queue.enqueue((sender(), er))
-        log.debug("Executing execute request")
-        execute(sender(), er)
+        self ! "process-next"
 
       case InterruptCellRequest(killCellId) =>
         // kill job(s) still waiting for execution to start, if any
