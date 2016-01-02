@@ -229,7 +229,7 @@ class ReplCalculator(
         log.debug(s"Interrupting the cell: $killCellId")
         val jobGroupId = JobTracking.jobGroupId(killCellId)
         // make sure sparkContext is already available!
-        if (jobsInQueueToKill.isEmpty && repl.interp.allImportedNames.exists(_.toString == "sparkContext")) {
+        if (jobsInQueueToKill.isEmpty && repl.interp.allDefinedNames.exists(_.toString == "globalScope")) {
           log.info(s"Killing job Group $jobGroupId")
           val thisSender = sender()
           repl.evaluate(
@@ -414,7 +414,7 @@ class ReplCalculator(
             )
           }
           finally {
-             repl.evaluate("sparkContext.clearJobGroup()")
+             repl.evaluate("globalScope.sparkContext.clearJobGroup()")
           }
           cellResult
         }
