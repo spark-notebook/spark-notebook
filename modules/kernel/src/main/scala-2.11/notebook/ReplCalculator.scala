@@ -4,6 +4,7 @@ package client
 import java.io.{File, FileWriter}
 
 import scala.collection.immutable.Queue
+import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.{Try, Success=>TSuccess, Failure=>TFailure}
 
@@ -176,6 +177,7 @@ class ReplCalculator(
     implicit val ec = context.dispatcher
 
     private var queue:Queue[(ActorRef, ExecuteRequest)] = Queue.empty
+    private var currentlyExecutingTask: Option[Future[(String, EvaluationResult)]] = None
 
     def eval(b: => String, notify:Boolean=true)(success: => String = "", failure: String=>String=(s:String)=>"Error evaluating " + b + ": "+ s) {
       repl.evaluate(b)._1 match {
@@ -206,14 +208,15 @@ class ReplCalculator(
           execute(ref, er)
         }
 
-      case er@ExecuteRequest(_, _, code) if queue.nonEmpty =>
-        log.debug("Enqueuing execute request at: " + queue.size)
-        queue = queue.enqueue((sender(), er))
-
       case er@ExecuteRequest(_, _, code) =>
         log.debug("Enqueuing execute request at: " + queue.size)
         queue = queue.enqueue((sender(), er))
-        self ! "process-next"
+
+        // if queue contains only the new task, and no task is currently executing, execute it straight away
+        // otherwise the execution will start once the evaluation of earlier cell(s) finishes
+        if (currentlyExecutingTask.isEmpty && queue.size == 1) {
+          self ! "process-next"
+        }
 
       case InterruptCellRequest(killCellId) =>
         // kill job(s) still waiting for execution to start, if any
@@ -419,6 +422,7 @@ class ReplCalculator(
         val d = toCoarsest(Duration(System.currentTimeMillis - start, MILLISECONDS))
         (d, result._1)
       }
+      currentlyExecutingTask = Some(result)
 
       result foreach {
         case (timeToEval, Success(result)) =>
@@ -429,8 +433,9 @@ class ReplCalculator(
           thisSender ! ErrorResponse("Incomplete (hint: check the parenthesis)", incomplete = true)
       }
 
-      result onComplete {
-        _ => thisSelf ! "process-next"
+      result onComplete { _ =>
+        currentlyExecutingTask = None
+        thisSelf ! "process-next"
       }
     }
   }))
