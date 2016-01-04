@@ -612,7 +612,7 @@ define([
             var kernel = this.kernel;
             var cancelBtn = $('<a>stop</a>').click(function(){
                 kernel.cancelCellJobs(cell_id);
-                $(this).unbind('click').text('stopping');
+                $(this).text('stopping');
             });
             this.element.find('div.input_prompt')
                 .append($("<br/>"))

@@ -219,15 +219,15 @@ class ReplCalculator(
         log.debug(s"Canceling $killCellId jobs still in queue (if any):\n $jobsInQueueToKill")
         queue = nonAffectedJobs
 
-        // call cancelJobGroup even if job was in queue
-        // this is safe in recent spark versions, see SPARK-6414
         log.debug(s"Interrupting the cell: $killCellId")
         val jobGroupId = JobTracking.jobGroupId(killCellId)
         // make sure sparkContext is already available!
-        if (repl.interp.allDefinedNames.filter(_.toString == "sparkContext").nonEmpty) {
+        if (jobsInQueueToKill.isEmpty && repl.interp.allImportedNames.exists(_.toString == "sparkContext")) {
+          log.info(s"Killing job Group $jobGroupId")
+          val thisSender = sender()
           repl.evaluate(
             s"""sparkContext.cancelJobGroup("${jobGroupId}")""",
-            msg => sender() ! StreamResponse(msg, "stdout")
+            msg => thisSender ! StreamResponse(msg, "stdout")
           )
         }
 

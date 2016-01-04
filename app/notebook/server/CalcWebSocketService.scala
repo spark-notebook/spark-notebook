@@ -167,9 +167,9 @@ class CalcWebSocketService(
           )
           self ! PoisonPill
         } else {
-          if (currentSessionOperations.nonEmpty) {
-            currentSessionOperations = currentSessionOperations.dequeue._2
-          }
+          // any cell can be interrupted, so remove the relevant operation only
+          Logger.debug(s"Termination of op calculator: ${currentSessionOperations.filter(_.actor == actor)}")
+          currentSessionOperations = currentSessionOperations.filter(_.actor != actor)
         }
 
       case event:org.apache.log4j.spi.LoggingEvent =>
