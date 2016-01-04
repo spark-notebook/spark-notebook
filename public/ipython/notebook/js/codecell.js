@@ -23,6 +23,7 @@ define([
     'codemirror/mode/clike/clike',
     'codemirror/mode/python/python',
     'codemirror/mode/sql/sql',
+    'codemirror/mode/shell/shell',
     'notebook/js/codemirror-ipython'
 ], function(IPython,
     $,
@@ -36,6 +37,7 @@ define([
     CodeMirror,
     cmpython,
     cm_sql,
+    cm_shell,
     cmip
     ) {
     "use strict";
@@ -147,6 +149,7 @@ define([
             'magic_text/x-cython' :{'reg':[/^%%cython/]},
             'magic_text/x-scala'  :{'reg':[/^%%scala/]},
             'magic_text/x-sql'    :{'reg':[/^:sql/], 'open': ':'},
+            'magic_text/x-sh'     :{'reg':[/^:sh/], 'open': ':'},
         },
     };
 
