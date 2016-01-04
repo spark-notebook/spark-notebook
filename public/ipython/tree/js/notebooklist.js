@@ -304,6 +304,7 @@ define([
         if (model.type == 'file') {
             this.add_delete_button(item);
         } else if (model.type == 'notebook') {
+            this.add_view_button(model, item, path);
             if (this.sessions[path] === undefined){
                 this.add_delete_button(item);
             } else {
@@ -358,6 +359,20 @@ define([
                 return false;
             });
         item.find(".item_buttons").append(shutdown_button);
+    };
+
+    NotebookList.prototype.add_view_button = function (model, item, path) {
+        var uri_prefix = NotebookList.uri_prefixes[model.type];
+        var url = utils.url_join_encode(
+            this.base_url,
+            uri_prefix,
+            path
+        ) + '?read_only=1';
+        var view_button = $("<button/>").text("View (read-only)").addClass("btn btn-warning btn-xs").click(function (e) {
+            window.location.href = url;
+            return false;
+        });
+        item.find(".item_buttons").prepend(view_button);
     };
 
     NotebookList.prototype.add_duplicate_button = function (item) {

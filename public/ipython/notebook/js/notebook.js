@@ -2150,6 +2150,11 @@ define([
         );
     };
 
+    Notebook.prototype.is_read_only = function() {
+        var url = window.location.href;
+        return url.indexOf("read_only=1") != -1;
+    };
+
     /**
      * Success callback for loading a notebook from the server.
      *
@@ -2217,12 +2222,12 @@ define([
         }
         this.set_dirty(false);
         this.scroll_to_top();
-        this.writable = data.writable || false;
+        this.writable = data.writable && !this.is_read_only();
 
         // to save resources eagerly load the kernel only if configured-so in application.conf
         // must automatically start kernel it was requested to recompute the whole notebook immediately
         var recomputeNowRequested = window.location.href.indexOf("recompute_now") != -1;
-        var autoStartKernel = data.autoStartKernel || recomputeNowRequested || false;
+        var autoStartKernel = (data.autoStartKernel || recomputeNowRequested) && this.writable;
         console.log("autoStartKernel on load_notebook: ", autoStartKernel);
 
         var nbmodel = data.content;
