@@ -199,6 +199,8 @@ class ReplCalculator(
     def receive = {
       case "process-next" =>
         log.debug(s"Processing next asked, queue is ${queue.size} length now")
+        currentlyExecutingTask = None
+
         if (queue.nonEmpty) { //queue could be empty if InterruptRequest was asked!
           log.debug("Dequeuing execute request current size: " + queue.size)
           val (executeRequest, queueTail) = queue.dequeue
@@ -434,7 +436,6 @@ class ReplCalculator(
       }
 
       result onComplete { _ =>
-        currentlyExecutingTask = None
         thisSelf ! "process-next"
       }
     }
