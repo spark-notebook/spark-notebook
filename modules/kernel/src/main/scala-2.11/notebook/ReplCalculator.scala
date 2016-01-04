@@ -199,11 +199,11 @@ class ReplCalculator(
         log.debug(s"Processing next asked, queue is ${queue.size} length now")
         if (queue.nonEmpty) { //queue could be empty if InterruptRequest was asked!
           log.debug("Dequeuing execute request current size: " + queue.size)
-          queue = queue.dequeue._2
-          queue.headOption foreach { case (ref, er) =>
-            log.debug("About to execute request from the queue")
-            execute(ref, er)
-          }
+          val (executeRequest, queueTail) = queue.dequeue
+          queue = queueTail
+          val (ref, er) = executeRequest
+          log.debug("About to execute request from the queue")
+          execute(ref, er)
         }
 
       case er@ExecuteRequest(_, _, code) if queue.nonEmpty =>
@@ -213,8 +213,7 @@ class ReplCalculator(
       case er@ExecuteRequest(_, _, code) =>
         log.debug("Enqueuing execute request at: " + queue.size)
         queue = queue.enqueue((sender(), er))
-        log.debug("Executing execute request")
-        execute(sender(), er)
+        self ! "process-next"
 
       case InterruptCellRequest(killCellId) =>
         // kill job(s) still waiting for execution to start, if any
