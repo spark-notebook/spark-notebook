@@ -25,6 +25,7 @@ require([
     // only loaded, not used, please keep sure this is loaded last
     'custom/custom',
     'job_progress',
+    'sidebar',
     'tachyon'
 ], function(
     IPython,
