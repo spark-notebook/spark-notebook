@@ -333,15 +333,16 @@
           <div id="notebook-panels" class="col-md-3" >
             <div id="sidebar" class="gridster">
                 <ul>
-                    <li data-row="1" data-col="1" data-sizex="2" data-sizey="1">
+                    <li data-row="1" data-col="1" data-sizex="2" data-sizey="1" id="spark-job-progress-panel">
+                        <h4>Spark Job Progress</h4>
+                        <div id="progress-pies"></div>
+                    </li>
+
+                    <li data-row="2" data-col="1" data-sizex="2" data-sizey="1">
                         <h4>Terms defined</h4>
                         <div id="termDefinitions" style="overflow: auto; height: 200px"></div>
                     </li>
 
-                    <li data-row="2" data-col="1" data-sizex="2" data-sizey="1">
-                        <h4>Spark (Progress)</h4>
-                        <div id="progress-pies"></div>
-                    </li>
                     <!--
                     <li data-row="3" data-col="1" data-sizex="2" data-sizey="2">
                         <h4>Ext. Plot</h4>
