@@ -12,7 +12,6 @@ define([
 
       // move progress node to body, to enable absolute positioning
       var pies = d3.select("#progress-pies")
-      //$(pies.node()).appendTo("body");
       $("#progress-pies").append($("<div id='progress-bars'/>")).append("<div id='spark-ui-link' />");
 
       var updateSparkUiLink = function(sparkUi){
