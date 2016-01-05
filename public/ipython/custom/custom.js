@@ -155,6 +155,7 @@ require([
         if (isReportMode) {
             // make all cells fluid, and use full width
             $("#notebook-container").removeClass("container").addClass("container-fluid");
+            $("#notebook").removeClass("col-md-9").addClass("col-md-12");
         }
     });
     events.on("kernel_ready.Kernel", function(){
