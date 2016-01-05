@@ -90,7 +90,7 @@ require(["jquery", "underscore", "base/js/events", "knockout"], function($, _, e
       '    <tbody data-bind="foreach: definitions.data">'+
       '        <tr>'+
       '            <td data-bind="text: name, click: $parent.hightlightCell"></td>'+
-      '            <td data-bind="text: type"></td>'+
+      '            <td data-bind="text: type, click: $parent.hightlightCell"></td>'+
       '        </tr>'+
       '    </tbody>'+
       '</table>')
