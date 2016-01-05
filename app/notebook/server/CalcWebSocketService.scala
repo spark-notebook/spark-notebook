@@ -2,6 +2,7 @@ package notebook.server
 
 import akka.actor.{Terminated, _}
 import notebook.client._
+import notebook.kernel.repl.common.{NameDefinition, TermDefinition, TypeDefinition}
 import play.api._
 import play.api.libs.json.Json.{obj, arr}
 import play.api.libs.json._
@@ -213,11 +214,11 @@ class CalcWebSocketService(
             ws.send(header, session, "execute_reply", "shell", obj("cell_id" → cellId, "execution_count" → counter))
             context.stop(self)
 
-          case DefinitionResponse(definedTermOrType, tpe, cell, references) =>
-            val (te, ty):(JsValue, JsValue) = definedTermOrType match {
-              case None => (JsNull, JsNull)
-              case Some(Left(l)) => (JsString(l), JsNull)
-              case Some(Right(r)) => (JsNull, JsString(r))
+          case nameDefinition@NameDefinition(name, tpe, references) =>
+            val (te, ty):(JsValue, JsValue) = nameDefinition match {
+              case TermDefinition(_, _, _) => (JsString(name), JsNull)
+              case TypeDefinition(_, _, _) => (JsNull, JsString(name))
+              case _ => (JsNull, JsNull)
             }
             ws.send(
               obj(
@@ -230,7 +231,7 @@ class CalcWebSocketService(
                 "term" → te,
                 "type" → ty,
                 "tpe" → tpe,
-                "cell" → cell,
+                "cell" → cellId,
                 "references" → references
               )
             )

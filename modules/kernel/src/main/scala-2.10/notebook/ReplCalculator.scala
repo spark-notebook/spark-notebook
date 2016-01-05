@@ -398,7 +398,7 @@ class ReplCalculator(
               |$code
               """.stripMargin,
               msg => thisSender ! StreamResponse(msg, "stdout"),
-             (termOrType, tpe, references) => thisSender ! DefinitionResponse(termOrType, tpe, cellId, references)
+              nameDefinition => thisSender ! nameDefinition
             )
           }
           finally {
