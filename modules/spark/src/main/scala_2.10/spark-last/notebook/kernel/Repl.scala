@@ -183,16 +183,33 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
         val request:interp.Request = interp.getClass.getMethods.find(_.getName == "prevRequestList").map(_.invoke(interp)).get.asInstanceOf[List[interp.Request]].last
         //val request:Request = interp.prevRequestList.last
 
-        request.handlers.map { h =>
-          val l = h.definesTerm.map(_.encoded)
-          val r = h.definesType.map(_.encoded)
-          val lr = (l,r) match {
-            case (Some(l), _) =>
-              println(interp.symbolOfTerm(l))
-              Some((Left(l),  interp.classOfTerm(l).map(_.getName)))
-            case (_, Some(r)) =>
-              println(interp.symbolOfTerm(r))
-              Some((Right(r), interp.classOfTerm(r).map(_.getName)))
+        def getTermType(termName: String): Option[String] = {
+          val tpe = try {
+            interp.typeOfTerm(termName).toString
+          } catch {
+            case exc: RuntimeException =>
+              println("Unable to get symbol type", exc)
+              "<notype>"
+          }
+          tpe match {
+            case "<notype>" => // "<notype>" can be also returned by typeOfTerm
+              interp.classOfTerm(termName).map(_.getName)
+            case _ =>
+              // remove some crap
+              Some(tpe.replace("iwC$", ""))
+          }
+        }
+
+        request.handlers.foreach { h =>
+          val term = h.definesTerm.map(_.encoded)
+          val tpe = h.definesType.map(_.encoded)
+          val lr = (term, tpe) match {
+            case (Some(term), _) =>
+              println(interp.symbolOfTerm(term))
+              Some((Left(term),  getTermType(term)))
+            case (_, Some(tpe)) =>
+              println(interp.symbolOfTerm(tpe))
+              Some((Right(tpe), Some("a type")))
             case _ => None
           }
           reportDefinitions(lr.map(_._1),
