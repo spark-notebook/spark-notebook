@@ -292,20 +292,12 @@ lazy val spark = Project(id = "spark", base = file("modules/spark"))
       def folder(v:String, sv:String) = {
           val tsv = sv match { case extractVs(v,m,p) => (v.toInt,m.toInt,p.toInt) }
 
-          val s = (sourceDirectory in Compile).value / ("scala_" + v)
-          val f =  s / ("spark-" + sv)
-          if (f.exists) {
-            f
-          } else {
-            val lastSparkVersion = s.listFiles.map(_.getName.drop("spark-".size))
-                                              .filter(!_.contains("last"))
-                                              .map( _ match { case extractVs(v,m,p) => (v.toInt,m.toInt,p.toInt) })
-                                              .sorted.last
-            if (versionCompare.lt(lastSparkVersion, tsv)) {
-              s / "spark-last"
-            } else {
-              s / ("spark-" + lastSparkVersion._1 + "." + lastSparkVersion._2 + "." + lastSparkVersion._3)
-            }
+          val scalaVerDir = (sourceDirectory in Compile).value / ("scala_" + v)
+
+          tsv match {
+            // if spark.version < 1.5.0 use spark-pre1.5
+            case _ if versionCompare.lt(tsv, (1, 5, 0)) => scalaVerDir / "spark-pre1.5"
+            case _ => scalaVerDir / "spark-last"
           }
       }
       (scalaBinaryVersion.value, sparkVersion.value.takeWhile(_ != '-')) match {
