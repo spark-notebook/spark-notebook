@@ -169,7 +169,11 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
         interp.classOfTerm(termName).map(_.getName)
       case _ =>
         // remove some crap
-        Some(tpe.replace("iwC$", ""))
+        Some(
+          tpe
+          .replace("iwC$", "")
+          .replaceAll("^\\(\\)" , "") // 2.11 return types prefixed, like `()Person`
+        )
     }
   }
 
