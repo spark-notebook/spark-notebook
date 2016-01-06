@@ -23,5 +23,5 @@ script:
   - SBT_OPTS="-XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -XX:PermSize=256M -XX:MaxPermSize=512M" sbt -Dspark.version=$SPARK_VER -Dscala.version=$TRAVIS_SCALA_VERSION ++$TRAVIS_SCALA_VERSION test
 
   # Tricks to avoid unnecessary cache updates
-  - find $HOME/.sbt -name "*.lock" | xargs rm
-  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
+  - find $HOME/.sbt -name "*.lock" | xargs rm -f
+  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm -f
