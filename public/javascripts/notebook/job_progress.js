@@ -90,9 +90,6 @@ define([
           return [p, pPending]
         }), true);
 
-        myChart.data = _.flatten([runningJobsInfo, completedJobsInfo]);
-        myChart.draw();
-
         var perCellId = _.groupBy(jobsProgress, 'cell_id');
 
         _.each(perCellId, function(jobs, cell_id){
@@ -103,6 +100,10 @@ define([
             $(cells[cell_id]).find('.cell-progress-bar').css("width", Math.max(cellProgress, 5) + "%");
           }
         });
+
+        // redraw chart as last step, in case dimple didn't like some data :)
+        myChart.data = _.flatten([runningJobsInfo, completedJobsInfo]);
+        myChart.draw();
       });
     });
   });
