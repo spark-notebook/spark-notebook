@@ -83,7 +83,6 @@ define([
 
         var runningJobs = _.map(_.reject(jobsProgress, isCompleted));
         var runningJobsInfo = _.flatten(_.map(runningJobs, function(p) {
-          console.log("cell_id: " + p.cell_id);
           if (p.cell_id) {
             highlightCell(cells, p.cell_id);
           }
@@ -98,6 +97,17 @@ define([
 
         myChart.data = _.flatten([runningJobsInfo, completedJobsInfo]);
         myChart.draw();
+
+        var perCellId = _.groupBy(jobsProgress, 'cell_id');
+
+        _.each(perCellId, function(jobs, cell_id){
+          var completedTasks = sum(_.pluck(jobs, 'completed_tasks'));
+          var totalTasks = sum(_.pluck(jobs, 'total_tasks'));
+          var cellProgress = Math.floor(completedTasks * 100.0 / totalTasks);
+          if (cell_id) {
+            $(cells[cell_id]).find('.cell-progress-bar').css("width", cellProgress + "%");
+          }
+        });
       });
     });
   });
