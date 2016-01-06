@@ -111,7 +111,10 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends
         val jobGroup = jobsByStageId(j.jobId).jobGroup
         val cellId = JobTracking.toCellId(jobGroup)
         val jobDuration: Option[Long] = j.submissionTime.map(t => j.completionTime.getOrElse(System.currentTimeMillis) - t)
-        val jobDurationStr = jobDuration.map(d => s"${d}ms").getOrElse("N/A")
+        val jobDurationStr = jobDuration.map { d =>
+          s"${(d.toFloat / 1000).formatted("%.2f")}s"
+        }.getOrElse("N/A")
+
         Json.obj(
           "id" → j.jobId,
           "job" → j.jobId,
