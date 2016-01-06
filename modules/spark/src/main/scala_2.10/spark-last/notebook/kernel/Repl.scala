@@ -23,7 +23,6 @@ import notebook.front.Widget
 import notebook.util.Match
 import notebook.kernel._
 import notebook.kernel.repl.common._
-import notebook.kernel.repl.common.SparkInterpUtils.SparkInterpreterExtensions
 
 class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
   val LOG = org.slf4j.LoggerFactory.getLogger(classOf[Repl])
@@ -150,6 +149,21 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     candidates map { _.toString } toList
   }
 
+  def getTypeNameOfTerm(termName: String): Option[String] = {
+    val tpe = try {
+      interp.typeOfTerm(termName).toString
+    } catch {
+      case exc: RuntimeException => println("Unable to get symbol type", exc); "<notype>"
+    }
+    tpe match {
+      case "<notype>" => // "<notype>" can be also returned by typeOfTerm
+        interp.classOfTerm(termName).map(_.getName)
+      case _ =>
+        // remove some crap
+        Some(tpe.replace("iwC$", ""))
+    }
+  }
+
   def listDefinedTerms(request: interp.Request): List[NameDefinition] = {
     request.handlers.flatMap { h =>
       val maybeTerm = h.definesTerm.map(_.encoded)
@@ -157,7 +171,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
       val references = h.referencedNames.toList.map(_.encoded)
       (maybeTerm, maybeType) match {
         case (Some(term), _) =>
-          val termType = interp.getTypeNameOfTerm(term).getOrElse("<unknown>")
+          val termType = getTypeNameOfTerm(term).getOrElse("<unknown>")
           Some(TermDefinition(term, termType, references))
         case (_, Some(tpe)) =>
           Some(TypeDefinition(tpe, "type", references))
