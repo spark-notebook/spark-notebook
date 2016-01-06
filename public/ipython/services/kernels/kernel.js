@@ -133,6 +133,7 @@ define([
         var output_msg_types = ['stream', 'display_data', 'execute_result', 'error'];
         this._iopub_handlers = {};
         this.register_iopub_handler('status', $.proxy(this._handle_status_message, this));
+        this.register_iopub_handler('definition', $.proxy(this._handle_definition_message, this));
         this.register_iopub_handler('log', $.proxy(this._handle_log_message, this));
         this.register_iopub_handler('clear_output', $.proxy(this._handle_clear_output, this));
         this.register_iopub_handler('execute_input', $.proxy(this._handle_input_message, this));
@@ -950,7 +951,6 @@ define([
      * @function _handle_log_message
      */
     Kernel.prototype._handle_log_message = function (msg) {
-        var execution_state = msg.content.execution_state;
         var parent_id = msg.parent_header.msg_id;
 
         // dispatch status msg callbacks, if any
@@ -971,6 +971,26 @@ define([
         console[msg.content.level.toLowerCase()](
             "Server log> ["+new Date(msg.content.time_stamp)+"] [" + msg.content.logger_name + "] " + msg.content.message + st
         );
+    };
+
+
+    /**
+     * @function _handle_definition_message → for new variable definition
+     */
+    Kernel.prototype._handle_definition_message = function (msg) {
+        var parent_id = msg.parent_header.msg_id;
+
+        // dispatch definition msg callbacks, if any
+        var callbacks = this.get_callbacks_for_msg(parent_id);
+        if (callbacks && callbacks.iopub && callbacks.iopub.definition) {
+            try {
+                callbacks.iopub.definition(msg);
+            } catch (e) {
+                console.log("Exception in definition msg handler", e, e.stack);
+            }
+        }
+
+        this.events.trigger('new.Definition', msg.content);
     };
 
     /**

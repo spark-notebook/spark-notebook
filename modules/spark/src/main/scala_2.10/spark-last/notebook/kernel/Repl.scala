@@ -22,6 +22,7 @@ import org.apache.spark.repl._
 import notebook.front.Widget
 import notebook.util.Match
 import notebook.kernel._
+import notebook.kernel.repl.common._
 
 class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
   val LOG = org.slf4j.LoggerFactory.getLogger(classOf[Repl])
@@ -148,6 +149,41 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     candidates map { _.toString } toList
   }
 
+  def getTypeNameOfTerm(termName: String): Option[String] = {
+    val tpe = try {
+      interp.typeOfTerm(termName).toString
+    } catch {
+      case exc: RuntimeException => println("Unable to get symbol type", exc); "<notype>"
+    }
+    tpe match {
+      case "<notype>" => // "<notype>" can be also returned by typeOfTerm
+        interp.classOfTerm(termName).map(_.getName)
+      case _ =>
+        // remove some crap
+        Some(
+          tpe
+            .replace("iwC$", "")
+            .replaceAll("^\\(\\)" , "") // 2.11 return types prefixed, like `()Person`
+        )
+    }
+  }
+
+  def listDefinedTerms(request: interp.Request): List[NameDefinition] = {
+    request.handlers.flatMap { h =>
+      val maybeTerm = h.definesTerm.map(_.encoded)
+      val maybeType = h.definesType.map(_.encoded)
+      val references = h.referencedNames.toList.map(_.encoded)
+      (maybeTerm, maybeType) match {
+        case (Some(term), _) =>
+          val termType = getTypeNameOfTerm(term).getOrElse("<unknown>")
+          Some(TermDefinition(term, termType, references))
+        case (_, Some(tpe)) =>
+          Some(TypeDefinition(tpe, "type", references))
+        case _ => None
+      }
+    }
+  }
+
   /**
    * Evaluates the given code.  Swaps out the `println` OutputStream with a version that
    * invokes the given `onPrintln` callback everytime the given code somehow invokes a
@@ -163,7 +199,10 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
    * @param onPrintln
    * @return result and a copy of the stdout buffer during the duration of the execution
    */
-  def evaluate(code: String, onPrintln: String => Unit = _ => ()): (EvaluationResult, String) = {
+  def evaluate( code: String,
+                onPrintln: String => Unit = _ => (),
+                onNameDefinion: NameDefinition => Unit  = _ => ()
+              ): (EvaluationResult, String) = {
     stdout.flush()
     stdoutBytes.reset()
 
@@ -180,10 +219,13 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
         val request:interp.Request = interp.getClass.getMethods.find(_.getName == "prevRequestList").map(_.invoke(interp)).get.asInstanceOf[List[interp.Request]].last
         //val request:Request = interp.prevRequestList.last
 
+        listDefinedTerms(request).foreach(onNameDefinion)
+
         val lastHandler/*: interp.memberHandlers.MemberHandler*/ = request.handlers.last
 
         try {
-          val evalValue = if (lastHandler.definesValue) { // This is true for def's with no parameters, not sure that executing/outputting this is desirable
+          val evalValue = if (lastHandler.definesValue) {
+            // This is true for def's with no parameters, not sure that executing/outputting this is desirable
             // CY: So for whatever reason, line.evalValue attemps to call the $eval method
             // on the class...a method that does not exist. Not sure if this is a bug in the
             // REPL or some artifact of how we are calling it.

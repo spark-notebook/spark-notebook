@@ -327,10 +327,34 @@
 <div class="lower-header-bar"></div>
 } {
   <div id="ipython-main-app">
-      <div id="notebook_panel">
-          <div id="notebook"></div>
+      <div id="notebook_panel" class="container-fluid">
+          <div id="notebook" class="col-md-9"></div>
 
-          <div id="progress-pies" class="pull-left" style="top: 150px; position: absolute; left: 0px; width: 100px; height: 100px"></div>
+          <div id="notebook-panels" class="col-md-3" >
+            <div id="sidebar" class="gridster">
+                <ul>
+                    <li data-row="1" data-col="1" data-sizex="2" data-sizey="1" id="spark-job-progress-panel">
+                        <h4>Spark Job Progress</h4>
+                        <div id="progress-pies"></div>
+                    </li>
+
+                    <li data-row="2" data-col="1" data-sizex="2" data-sizey="1">
+                        <h4>Terms defined</h4>
+                        <div id="termDefinitions" style="overflow: auto; height: 200px"></div>
+                    </li>
+
+                    <!--
+                    <li data-row="3" data-col="1" data-sizex="2" data-sizey="2">
+                        <h4>Ext. Plot</h4>
+                        <div id="ext-plot"></div>
+                    </li>
+                    -->
+
+                    <li data-row="4" data-col="1" data-sizex="1" data-sizey="0"></li>
+                    <li data-row="4" data-col="2" data-sizex="1" data-sizey="0"></li>
+                </ul>
+            </div>
+          </div>
 
           @if(utils.AppUtils.config.tachyonInfo.isDefined) {
               <div id="notebook-tachyon-container" class="pull-right" data-bind="style: { width: tachyon.width() }, visible: tachyon.opened()" style="top: 0px; position: absolute; right: 0px; background-color: #74AFAD; color: #ECECEA">
