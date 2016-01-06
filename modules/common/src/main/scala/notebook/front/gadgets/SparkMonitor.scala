@@ -14,6 +14,12 @@ import play.api.libs.json._
 
 import notebook.util.Logging
 
+case class JobInfo(jobId: Int,
+                   completedTasks: Int,
+                   totalTasks: Int,
+                   submissionTime: Option[Long],
+                   completionTime: Option[Long])
+
 class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends Logging {
 
   val connection = notebook.JSBus.createConnection("jobsProgress")
@@ -50,6 +56,9 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends
       }
   }
 
+  def minOption(s: Iterable[Long]) = if (s.isEmpty) None else Some(s.min)
+  def maxOption(s: Iterable[Long]) = if (s.isEmpty) None else Some(s.max)
+
   def fetchMetrics = {
     listener.synchronized {
       val activeStages = listener.activeStages.values.toSeq
@@ -64,39 +73,59 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends
       val activeJobs = listener.activeJobs.values.toList
       val completedJobs = listener.completedJobs.toList
       val failedJobs = listener.failedJobs.toList
-      val jobs =  (for {
-                    j <- activeJobs ::: completedJobs ::: failedJobs
-                    stageId <- j.stageIds
-                  } yield stageId → (j.jobId, j.jobGroup)).toMap
 
-      val stageExtract = (s: StageInfo) => {
+      val jobsByStageId = (for {
+        j <- activeJobs ::: completedJobs ::: failedJobs
+        stageId <- j.stageIds
+      } yield stageId → j).toMap
+
+
+      val stageStats: Seq[JobInfo] = (activeStagesList ++ completedStages).flatMap { s: StageInfo =>
         val stageDataOption = listener.stageIdToData.get((s.stageId, s.attemptId))
         stageDataOption.map { stageData =>
-          val started = stageData.numActiveTasks
-          val completed = stageData.completedIndices.size
-          val failed = stageData.numFailedTasks
-          val total = s.numTasks
-
-          val jobGroupId = jobs(s.stageId)._2
-          val cellId = JobTracking.toCellId(jobGroupId)
-
-          Json.obj(
-            "id" → s.stageId,
-            "job" → jobs(s.stageId)._1,
-            "group" → jobGroupId,
-            "cell_id" → cellId,
-            "name" → s.name,
-            "completed" → (completed.toDouble / total * 100),
-            "time"  → (""+s.submissionTime.map(t => s.completionTime.getOrElse(System.currentTimeMillis) - t)
-                                      .map(s => s+"ms")
-                                      .getOrElse("N/A"))
+          JobInfo(
+            jobId = jobsByStageId(s.stageId).jobId,
+            completedTasks = stageData.completedIndices.size,
+            totalTasks = s.numTasks,
+            submissionTime = s.submissionTime,
+            completionTime = s.completionTime
           )
         }
       }
 
-      val result = activeStagesList map stageExtract toList;
-      val completed = completedStages map stageExtract toList;
-      (result ::: completed).collect{case Some(x) => x}
+      val jobStats: Seq[JobInfo] = stageStats
+        .groupBy(_.jobId)
+        .map { case (jobId, jobStages) =>
+          jobStages.reduce { (j1: JobInfo, j2: JobInfo) =>
+            JobInfo(
+              jobId = j1.jobId,
+              completedTasks = j1.completedTasks + j2.completedTasks,
+              totalTasks = j1.totalTasks + j2.totalTasks,
+              submissionTime = minOption(j1.submissionTime ++ j2.submissionTime),
+              completionTime = maxOption(j1.submissionTime ++ j2.submissionTime)
+            )
+          }
+        }.toSeq
+
+      jobStats.map { j =>
+        val jobGroup = jobsByStageId(j.jobId).jobGroup
+        val cellId = JobTracking.toCellId(jobGroup)
+        val jobDuration: Option[Long] = j.submissionTime.map(t => j.completionTime.getOrElse(System.currentTimeMillis) - t)
+        val jobDurationStr = jobDuration.map { d =>
+          s"${(d.toFloat / 1000).formatted("%.2f")}s"
+        }.getOrElse("N/A")
+
+        Json.obj(
+          "id" → j.jobId,
+          "job" → j.jobId,
+          "group" → jobGroup,
+          "cell_id" → cellId,
+          "name" → jobGroup,
+          "completed" → (j.completedTasks.toDouble / j.totalTasks * 100),
+          "duration_millis" → jobDuration,
+          "time" → jobDurationStr
+        )
+      }
     }
   }
 

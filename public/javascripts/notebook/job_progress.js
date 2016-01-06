@@ -76,7 +76,7 @@ define([
         var completedJobsInfo = {
           status: "Done",
           completed: 100,
-          name: nCompletedJobs + " stages",
+          name: nCompletedJobs + " jobs",
           time: "N/A",
           id: 0
         };
