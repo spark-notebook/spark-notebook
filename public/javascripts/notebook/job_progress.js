@@ -97,7 +97,13 @@ define([
           var totalTasks = sum(_.pluck(jobs, 'total_tasks'));
           var cellProgress = Math.floor(completedTasks * 100.0 / totalTasks);
           if (cell_id) {
-            $(cells[cell_id]).find('.cell-progress-bar').css("width", Math.max(cellProgress, 5) + "%");
+            var cellProgressBar = $(cells[cell_id]).find('.cell-progress-bar')
+            cellProgressBar.css("width", Math.max(cellProgress, 5) + "%");
+            if (cellProgress == 100) {
+              cellProgressBar.addClass("completed")
+            } else {
+              cellProgressBar.removeClass("completed")
+            }
           }
         });
 
