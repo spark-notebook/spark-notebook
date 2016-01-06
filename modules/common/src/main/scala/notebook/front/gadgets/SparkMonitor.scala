@@ -64,6 +64,7 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends
       val activeStages = listener.activeStages.values.toSeq
       val completedStages = listener.completedStages.reverse.toSeq
       val failedStages = listener.failedStages.reverse.toSeq
+      val pendingStages = listener.pendingStages.values.toSeq
       val now = System.currentTimeMillis
 
       val activeStagesList = activeStages.sortBy(_.submissionTime).reverse
@@ -80,7 +81,7 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends
       } yield stageId → j).toMap
 
 
-      val stageStats: Seq[JobInfo] = (activeStagesList ++ completedStages).flatMap { s: StageInfo =>
+      val stageStats: Seq[JobInfo] = (activeStagesList ++ completedStages ++ pendingStages).flatMap { s: StageInfo =>
         val stageDataOption = listener.stageIdToData.get((s.stageId, s.attemptId))
         stageDataOption.map { stageData =>
           JobInfo(
@@ -137,7 +138,7 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends
     new Thread(){
       override def run =
         while(true) {
-          Thread.sleep(1000)
+          Thread.sleep(2000)
           val m = fetchMetrics
           connection <-- notebook.Connection.just(
             JsObject(Seq(
