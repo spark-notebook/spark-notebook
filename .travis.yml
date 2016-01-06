@@ -1,4 +1,16 @@
+# Travis performance customizations based on
+# http://www.scala-sbt.org/0.13/docs/Travis-CI-with-sbt.html
+# Use faster container-based infrastructure
+sudo: false
+
 language: scala
+
+# These directories are cached to S3 at the end of the build
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+    - $HOME/.sbt/boot/
+
 scala:
   - 2.10.4
   - 2.11.7
@@ -9,3 +21,7 @@ env:
   # - SPARK_VER=1.3.1 (failing at the moment)
 script:
   - SBT_OPTS="-XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -XX:PermSize=256M -XX:MaxPermSize=512M" sbt -Dspark.version=$SPARK_VER -Dscala.version=$TRAVIS_SCALA_VERSION ++$TRAVIS_SCALA_VERSION test
+
+  # Tricks to avoid unnecessary cache updates
+  - find $HOME/.sbt -name "*.lock" | xargs rm
+  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
