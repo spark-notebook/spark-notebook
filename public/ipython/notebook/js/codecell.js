@@ -170,10 +170,18 @@ define([
         var input = $('<div></div>').addClass('input');
         var prompt = $('<div/>').addClass('prompt input_prompt');
         var inner_cell = $('<div/>').addClass('inner_cell');
+
+        var progress_bar = $('<div></div>').addClass('cell-progress-bar');
+        var progress_container = $('<div></div>')
+          .addClass('cell-progress-bar-container')
+          .append(progress_bar);
+        inner_cell.append(progress_container);
+
         this.celltoolbar = new celltoolbar.CellToolbar({
             cell: this,
             notebook: this.notebook});
         inner_cell.append(this.celltoolbar.element);
+
         var input_area = $('<div/>').addClass('input_area');
         this.code_mirror = new CodeMirror(input_area.get(0), this.cm_config);
         // In case of bugs that put the keyboard manager into an inconsistent state,

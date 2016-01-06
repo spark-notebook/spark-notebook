@@ -122,6 +122,8 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends
           "cell_id" → cellId,
           "name" → jobGroup,
           "completed" → (j.completedTasks.toDouble / j.totalTasks * 100),
+          "completed_tasks" -> j.completedTasks,
+          "total_tasks" -> j.totalTasks,
           "duration_millis" → jobDuration,
           "time" → jobDurationStr
         )
