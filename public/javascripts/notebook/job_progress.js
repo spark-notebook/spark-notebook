@@ -57,7 +57,6 @@ define([
 
       progress.subscribe(function(status) {
         var cells = findCells();
-        clearHighlightCells(cells);
 
         var jobsProgress = status.jobsStatus;
         var sparkUi = status.sparkUi;
@@ -83,10 +82,6 @@ define([
 
         var runningJobs = _.map(_.reject(jobsProgress, isCompleted));
         var runningJobsInfo = _.flatten(_.map(runningJobs, function(p) {
-          if (p.cell_id) {
-            highlightCell(cells, p.cell_id);
-          }
-
           p.status = "Done";
           // part of stage that's still pending
           pPending = _.clone(p);
@@ -105,7 +100,7 @@ define([
           var totalTasks = sum(_.pluck(jobs, 'total_tasks'));
           var cellProgress = Math.floor(completedTasks * 100.0 / totalTasks);
           if (cell_id) {
-            $(cells[cell_id]).find('.cell-progress-bar').css("width", cellProgress + "%");
+            $(cells[cell_id]).find('.cell-progress-bar').css("width", Math.max(cellProgress, 5) + "%");
           }
         });
       });
