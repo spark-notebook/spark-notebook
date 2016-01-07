@@ -16,8 +16,8 @@ define([
 
       var updateSparkUiLink = function(sparkUi){
         if (sparkUi != "") {
-          var sparkUiLink = $("<a href='" + sparkUi + "' id='spark-ui-link' target='_blank'>SparkUI</a>")
-          $("#spark-ui-link").replaceWith(sparkUiLink);
+          var sparkUiLink = $("<a href='" + sparkUi + "' id='spark-ui-link' target='_blank'>open SparkUI</a>")
+          $("#spark-ui-link-container").html(sparkUiLink);
         }
       };
 
