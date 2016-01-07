@@ -308,18 +308,6 @@ For a simple `zip` distro, you can run
 
 In order to develop on the Spark Notebook, you'll have to use the `run` command instead.
 
-###### Docker
-The docker version requires a specific `java` image on `Ubuntu/trusty`: `dockerfile/java:openjdk-7-jdk`
-
-You can build it this way:
-```
-docker build -t="dockerfile/ubuntu" github.com/dockerfile/ubuntu
-git clone https://github.com/dockerfile/java.git
-cd java
-cd openjdk-7-jdk
-docker build -t="dockerfile/java:openjdk-7-jdk" .
-```
-
 ###### Mesos in Docker
 By default, the docker distro will install mesos `0.22.0` (the current DCOS version), however this can be changed using the property `mesos.version`.
 
