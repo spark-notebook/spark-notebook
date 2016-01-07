@@ -91,7 +91,7 @@ td.pvtRendererArea {
 table.c3-tooltip {
   background-color: #ffffff;
 }
-table.c3-tooltip th {
+table.c3-tooltip th, #termDefinitions table th {
   color: #ffffff;
 }
 /* fix the black rect fill appearing in C3 Line charts (looks like a clash with something) */
