@@ -16,23 +16,22 @@ define([
 
       var updateSparkUiLink = function(sparkUi){
         if (sparkUi != "") {
-          var sparkUiLink = $("<a href='" + sparkUi + "' id='spark-ui-link' target='_blank'>SparkUI</a>")
-          $("#spark-ui-link").replaceWith(sparkUiLink);
+          var sparkUiLink = $("<a href='" + sparkUi + "' id='spark-ui-link' target='_blank'>open SparkUI</a>")
+          $("#spark-ui-link-container").html(sparkUiLink);
         }
       };
 
       // setup the progress chart
       var svg = dimple.newSvg("#progress-bars", 275, 175); // todo resize with panel → ref to panel needed and event from panel to be listened
       var myChart = new dimple.chart(svg, []);
-      var xAxis = myChart.addPctAxis("x", "completed");
+      var xAxis = myChart.addPctAxis("x", "percentage");
       xAxis.title = "% completed";
       xAxis.ticks = 2;
       xAxis.showGridlines = false;
       myChart.assignColor("Done", "#3a3", "#3a3", 1);
       myChart.assignColor("Pending", "#a33", "#a33", 1);
-      var yAxis = myChart.addCategoryAxis("y", ["id", "name", "time"]);
+      var yAxis = myChart.addCategoryAxis("y", ["fake"]);
       yAxis.hidden = true;
-      yAxis.addOrderRule("id");
       myChart.addSeries("status", dimple.plot.bar);
 
       // process the progresses and update the chart
@@ -46,14 +45,6 @@ define([
         var cells = $(IPython.notebook.element).find(f);
         return _.object(_.map(cells, function(cell) {return [$(cell).data("cell-id"), cell]}));
       }
-
-      function clearHighlightCells(cells) {
-        _.each(_.values(cells), (function(e) {$(e).removeClass("alert").removeClass("alert-info")}));
-      };
-
-      function highlightCell(cells, cell_id) {
-        $(cells[cell_id]).addClass("alert").addClass("alert-info");
-      };
 
       progress.subscribe(function(status) {
         var cells = findCells();
@@ -70,34 +61,29 @@ define([
         }
         olderProgresses = jobsProgress;
 
-        // collapse completed jobs into one bar
-        var nCompletedJobs = _.filter(jobsProgress, isCompleted).length;
+        var completedTasks = sum(_.pluck(jobsProgress, 'completed_tasks'));
+        var totalTasks = sum(_.pluck(jobsProgress, 'total_tasks'));
+
+        // collapse completed and running jobs into one bar
         var completedJobsInfo = {
           status: "Done",
-          completed: 100,
-          name: nCompletedJobs + " jobs",
-          time: "N/A",
-          id: 0
+          percentage: completedTasks,
+          fake: ""
         };
-
-        var runningJobs = _.map(_.reject(jobsProgress, isCompleted));
-        var runningJobsInfo = _.flatten(_.map(runningJobs, function(p) {
-          p.status = "Done";
-          // part of stage that's still pending
-          pPending = _.clone(p);
-          pPending.status = "Pending";
-          pPending.completed = 100 - p.completed;
-          return [p, pPending]
-        }), true);
+        var runningJobsInfo = {
+          status: "Pending",
+          percentage: totalTasks - completedTasks,
+          fake: ""
+        };
 
         var perCellId = _.groupBy(jobsProgress, 'cell_id');
 
         _.each(perCellId, function(jobs, cell_id){
           var completedTasks = sum(_.pluck(jobs, 'completed_tasks'));
           var totalTasks = sum(_.pluck(jobs, 'total_tasks'));
-          var cellProgress = Math.floor(completedTasks * 100.0 / totalTasks);
+          var cellProgress = Math.min(Math.floor(completedTasks * 100.0 / totalTasks), 100);
           if (cell_id) {
-            var cellProgressBar = $(cells[cell_id]).find('.cell-progress-bar')
+            var cellProgressBar = $(cells[cell_id]).find('.cell-progress-bar');
             cellProgressBar.css("width", Math.max(cellProgress, 5) + "%");
             if (cellProgress == 100) {
               cellProgressBar.addClass("completed")
