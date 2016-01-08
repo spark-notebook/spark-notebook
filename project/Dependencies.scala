@@ -1,7 +1,7 @@
 import sbt._
 
 object Dependencies {
-  val mesosVersion = sys.props.getOrElse("mesos.version", "0.22.0") //0.22.0 is current DCOS version
+  val mesosVersion = sys.props.getOrElse("mesos.version", "0.22.2") //0.22.0 is current DCOS version
 
   val playDeps = Seq(
     "com.typesafe.play" %% "play" % "2.3.7" withSources() excludeAll(
