@@ -66,6 +66,9 @@ require(["jquery", "underscore", "base/js/events", "knockout"], function($, _, e
       var self = this;
       self.definitions = {};
       self.definitions.data = ko.observableArray([]);
+      self.clearDefinitions = function() {
+        self.definitions.data.remove(function(e) { return true });
+      };
       self.addDefinition = function(def) {
         self.definitions.data.remove(function(e) { return e.name == def.name;});
         self.definitions.data.push(def);
@@ -101,6 +104,10 @@ require(["jquery", "underscore", "base/js/events", "knockout"], function($, _, e
     events.on('kernel_ready.Kernel', function(e, c) {
       var kernel = c.kernel;
       console.log("kernel", kernel);
+
+      // make sure definitions are reset on kernel restart
+      model.clearDefinitions();
+
       kernel.events.on("new.Definition", function(e, c) {
         console.log("new def", c);
         if (c.term || c.type) {
