@@ -1,16 +1,14 @@
 package notebook.kernel
 
-import java.io.{StringWriter, PrintWriter, ByteArrayOutputStream}
-import java.net.{URLDecoder, JarURLConnection}
+import java.io.{StringWriter, PrintWriter}
+import java.net.URLDecoder
 import java.util.ArrayList
 
-import notebook.kernel.repl.common.{TypeDefinition, TermDefinition, NameDefinition}
+import notebook.kernel.repl.common._
 
-import scala.collection.JavaConversions
 import scala.collection.JavaConversions._
 import scala.xml.{NodeSeq, Text}
 import scala.util.control.NonFatal
-import scala.util.Try
 
 import tools.nsc.Settings
 import tools.nsc.interpreter._
@@ -23,38 +21,13 @@ import org.apache.spark.repl._
 
 import notebook.front.Widget
 import notebook.util.Match
-import notebook.kernel._
 
-class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
+class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends ReplT {
   val LOG = org.slf4j.LoggerFactory.getLogger(classOf[Repl])
 
   def this() = this(Nil)
 
-  class MyOutputStream extends ByteArrayOutputStream {
-    var aop: String => Unit = x => ()
-
-    override def write(i: Int): Unit = {
-      // CY: Not used...
-      //      orig.value ! StreamResponse(i.toString, "stdout")
-      super.write(i)
-    }
-
-    override def write(bytes: Array[Byte]): Unit = {
-      // CY: Not used...
-      //      orig.value ! StreamResponse(bytes.toString, "stdout")
-      super.write(bytes)
-    }
-
-    override def write(bytes: Array[Byte], off: Int, length: Int): Unit = {
-      val data = new String(bytes, off, length)
-      aop(data)
-      //      orig.value ! StreamResponse(data, "stdout")
-      super.write(bytes, off, length)
-    }
-  }
-
-
-  private lazy val stdoutBytes = new MyOutputStream
+  private lazy val stdoutBytes = new ReplOutputStream
   private lazy val stdout = new PrintWriter(stdoutBytes)
 
   private var loop:HackSparkILoop = _
@@ -150,6 +123,22 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     candidates map { _.toString } toList
   }
 
+  private def listDefinedTerms(request: interp.Request): List[NameDefinition] = {
+    request.handlers.flatMap { h =>
+      val maybeTerm = h.definesTerm.map(_.encoded)
+      val maybeType = h.definesType.map(_.encoded)
+      val references = h.referencedNames.toList.map(_.encoded)
+      (maybeTerm, maybeType) match {
+        case (Some(term), _) =>
+          val termType = getTypeNameOfTerm(term).getOrElse("<unknown>")
+          Some(TermDefinition(term, termType, references))
+        case (_, Some(tpe)) =>
+          Some(TypeDefinition(tpe, "type", references))
+        case _ => None
+      }
+    }
+  }
+
   def getTypeNameOfTerm(termName: String): Option[String] = {
     val tpe = try {
       interp.typeOfTerm(termName).toString
@@ -166,23 +155,6 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
             .replace("iwC$", "")
             .replaceAll("^\\(\\)" , "") // 2.11 return types prefixed, like `()Person`
         )
-    }
-  }
-
-
-  def listDefinedTerms(request: interp.Request): List[NameDefinition] = {
-    request.handlers.flatMap { h =>
-      val maybeTerm = h.definesTerm.map(_.encoded)
-      val maybeType = h.definesType.map(_.encoded)
-      val references = h.referencedNames.toList.map(_.encoded)
-      (maybeTerm, maybeType) match {
-        case (Some(term), _) =>
-          val termType = getTypeNameOfTerm(term).getOrElse("<unknown>")
-          Some(TermDefinition(term, termType, references))
-        case (_, Some(tpe)) =>
-          Some(TypeDefinition(tpe, "type", references))
-        case _ => None
-      }
     }
   }
 
@@ -350,12 +322,10 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     // the thing twice does it give you the method signature (i.e. you
     // hit tab twice).  So we simulate that here... (nutty, I know)
     getCompletions(line, position)
-    val candidates = getCompletions(line, position)
+    getCompletions(line, position)
+  }
 
-    if (candidates.size >= 2 && candidates.head.isEmpty) {
-      candidates.tail
-    } else {
-      Seq.empty
-    }
+  def stop(): Unit = {
+    interp.close()
   }
 }
