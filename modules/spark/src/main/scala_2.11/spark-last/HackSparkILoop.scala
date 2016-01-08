@@ -23,11 +23,11 @@ class HackSparkILoop(out:JPrintWriter, outputDir:File) extends org.apache.spark.
     s
   }
 
-  override def initializeSpark() {
+  override def initializeSpark(): Unit = {
     // done using the metadata and init.sc
   }
 
-  override def printWelcome() {
+  override def printWelcome(): Unit = {
     //
   }
 

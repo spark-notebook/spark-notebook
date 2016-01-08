@@ -48,16 +48,16 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
     settings.embeddedDefaults[Repl]
 
     if (!compilerOpts.isEmpty) settings.processArguments(compilerOpts, false)
-    
+
     val conf = new SparkConf()
 
     val tmp = System.getProperty("java.io.tmpdir")
     val rootDir = conf.get("spark.repl.classdir", tmp)
     val outputDir = org.apache.spark.Boot.createTempDir(rootDir, "spark-notebook-repl")
-   
-   
-   
-    
+
+
+
+
     settings.processArguments(List("-Yrepl-class-based", "-Yrepl-outdir", s"${outputDir.getAbsolutePath}", "-Yrepl-sync"), true)
 
     // fix for #52
@@ -101,7 +101,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
     //val i = new HackIMain(settings, stdout)
     loop = new org.apache.spark.repl.HackSparkILoop(stdout, outputDir)
 
-    
+
     jars.foreach { jar =>
       import scala.tools.nsc.util.ClassPath
       val f = scala.tools.nsc.io.File(jar).normalize
@@ -163,7 +163,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
     val tpe = try {
       interp.typeOfTerm(termName).toString
     } catch {
-      case exc: RuntimeException => println("Unable to get symbol type", exc); "<notype>"
+      case exc: RuntimeException => println(("Unable to get symbol type", exc)); "<notype>"
     }
     tpe match {
       case "<notype>" => // "<notype>" can be also returned by typeOfTerm
@@ -209,7 +209,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
     stdout.flush()
     stdoutBytes.aop = _ => ()
 
-    val result = res match {
+    val result: EvaluationResult = res match {
       case ReplSuccess =>
         val request = interp.prevRequestList.last
         val lastHandler: interp.memberHandlers.MemberHandler = request.handlers.last
@@ -244,13 +244,13 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
                 def getModule(c:Class[_]) = c.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get(())
 
                 val module = getModule(renderedClass2)
-                
+
                 val topInstance = module.getClass.getDeclaredMethod("$iw").invoke(module)
 
-                def iws(o:Class[_], instance: Any) : NodeSeq = {
+                def iws(o:Class[_], instance: Any): NodeSeq = {
                   val tryClass = o.getName+"$$iw"
                   val o2 = Try{module.getClass.getClassLoader.loadClass(tryClass)}.toOption
-                  
+
                   o2 match {
                     case Some(o3) =>
                       val inst = o.getDeclaredMethod("$iw").invoke(instance)
@@ -258,7 +258,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
                     case None =>
                       val r = o.getDeclaredMethod("rendered").invoke(instance)
                       val h = r.asInstanceOf[Widget].toHtml
-                      h  
+                      h
                   }
                 }
 
