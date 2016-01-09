@@ -31,10 +31,21 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
 
   private lazy val stdoutBytes = new ReplOutputStream
   private lazy val stdout = new PrintWriter(stdoutBytes)
-
   private var loop:HackSparkILoop = _
+  private var _classServerUri:Option[String] = None
 
-  var classServerUri:Option[String] = None
+  private var _initFinished: Boolean = false
+  private var _evalsUntilInitFinished: Int = 0
+  private var _needsDropOnReplay: Boolean = false
+
+  def setInitFinished(): Unit = {
+    _initFinished = true
+    _needsDropOnReplay = _evalsUntilInitFinished > 0
+  }
+
+  def classServerUri: Option[String] = {
+    _classServerUri
+  }
 
   val interp:org.apache.spark.repl.SparkIMain = {
     val settings = new Settings
@@ -92,7 +103,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
       l.interpreter
     }
     //i.initializeSynchronous()
-    classServerUri = Some(i.classServerUri)
+    _classServerUri = Some(i.classServerUri)
     i.asInstanceOf[org.apache.spark.repl.SparkIMain]
   }
 
@@ -270,16 +281,18 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
       case Error          => Failure(stdoutBytes.toString)
     }
 
+    if ( !_initFinished ) {
+      _evalsUntilInitFinished = _evalsUntilInitFinished + 1
+    }
+
     (result, stdoutBytes.toString)
   }
 
   def addCp(newJars:List[String]) = {
     val requests = interp.getClass.getMethods.find(_.getName == "prevRequestList").map(_.invoke(interp)).get.asInstanceOf[List[interp.Request]]
-    val prevCode = requests.map(_.originalLine)
-    // this will close the repl class server, which is needed in order to reuse `-Dspark.replClassServer.port`!
-    interp.close()
+    var prevCode = requests.map(_.originalLine).drop( _evalsUntilInitFinished )
+    interp.close() // this will close the repl class server, which is needed in order to reuse `-Dspark.replClassServer.port`!
     val r = new Repl(compilerOpts, newJars:::jars)
-    // .dropWhile(_.trim != "\"END INIT\"")
     (r, () => prevCode foreach (c => r.evaluate(c, _ => ())))
   }
 
@@ -324,6 +337,10 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
     // hit tab twice).  So we simulate that here... (nutty, I know)
     getCompletions(line, position)
     getCompletions(line, position)
+  }
+
+  def sparkContextAvailable: Boolean = {
+    interp.allImportedNames.exists(_.toString == "sparkContext")
   }
 
   def stop(): Unit = {

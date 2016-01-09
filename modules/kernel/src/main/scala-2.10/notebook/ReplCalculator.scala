@@ -7,6 +7,7 @@ import notebook.OutputTypes._
 import notebook.PresentationCompiler
 import notebook.kernel._
 import notebook.JobTracking
+import notebook.kernel.repl.common.ReplT
 import notebook.util.{CustomResolvers, Deps}
 
 import sbt._
@@ -33,7 +34,6 @@ class ReplCalculator(
   _initScripts: List[(String, String)],
   compilerArgs: List[String]
 ) extends Actor with akka.actor.ActorLogging {
-  val initScripts = _initScripts ::: List(("end", "\"END INIT\""))
 
   private val remoteLogger = context.actorSelection("/user/remote-logger")
   remoteLogger ! remoteActor
@@ -115,9 +115,9 @@ class ReplCalculator(
 
   val ImportsScripts = ("imports", () => customImports.map(_.mkString("\n") + "\n").getOrElse("\n"))
 
-  private var _repl: Option[Repl] = None
+  private var _repl: Option[ReplT] = None
 
-  private def repl: Repl = _repl getOrElse {
+  private def repl: ReplT = _repl getOrElse {
     val r = new Repl(compilerArgs, depsJars)
     _repl = Some(r)
     r
@@ -224,7 +224,7 @@ class ReplCalculator(
         log.debug(s"Interrupting the cell: $killCellId")
         val jobGroupId = JobTracking.jobGroupId(killCellId)
         // make sure sparkContext is already available!
-        if (jobsInQueueToKill.isEmpty && repl.interp.allImportedNames.exists(_.toString == "sparkContext")) {
+        if (jobsInQueueToKill.isEmpty && repl.sparkContextAvailable) {
           log.info(s"Killing job Group $jobGroupId")
           val thisSender = sender()
           repl.evaluate(
@@ -453,7 +453,7 @@ class ReplCalculator(
       """.stripMargin
     )
 
-    def eval(script: () => String): Unit = {
+    def eval(script: () => String): Option[String] = {
       val sc = script()
       log.debug("script is :\n" + sc)
       if (sc.trim.length > 0) {
@@ -461,22 +461,28 @@ class ReplCalculator(
         result match {
           case Failure(str) =>
             log.error("Error in init script: \n%s".format(str))
+            None
           case _ =>
             if (log.isDebugEnabled) log.debug("\n" + sc)
             log.info("Init script processed successfully")
+            Some(sc)
         }
-      } else ()
+      } else None
     }
 
-    val allInitScrips: List[(String, () => String)] = dummyScript :: SparkHookScript :: depsScript :: ImportsScripts :: CustomSparkConfFromNotebookMD :: initScripts.map(
-      x => (x._1, () => x._2))
-    val pc = new PresentationCompiler(depsJars)
+    val allInitScrips: List[(String, () => String)] = dummyScript ::
+                                                      SparkHookScript ::
+                                                      depsScript ::
+                                                      ImportsScripts ::
+                                                      CustomSparkConfFromNotebookMD ::
+                                                      ( _initScripts ::: repl.endInitCommand ).map(x => (x._1, () => x._2))
     for ((name, script) <- allInitScrips) {
       log.info(s" INIT SCRIPT: $name")
-      eval(script)
-      pc.addScripts(script())
+      eval(script).map { sc =>
+        presentationCompiler.addScripts(sc)
+      }
     }
-    _presentationCompiler = Some(pc)
+    repl.setInitFinished()
   }
 
   override def preStart() {

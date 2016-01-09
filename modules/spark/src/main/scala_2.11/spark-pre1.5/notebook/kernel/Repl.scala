@@ -29,10 +29,19 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
 
   private lazy val stdoutBytes = new ReplOutputStream
   private lazy val stdout = new PrintWriter(stdoutBytes)
-
   private var loop:HackSparkILoop = _
+  private var _classServerUri:Option[String] = None
 
-  var classServerUri:Option[String] = None
+  private var _initFinished: Boolean = false
+  private var _evalsUntilInitFinished: Int = 0
+
+  def setInitFinished(): Unit = {
+    _initFinished = true
+  }
+
+  def classServerUri: Option[String] = {
+    _classServerUri
+  }
 
   val interp = {
     val settings = new Settings
@@ -92,7 +101,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
     val i = loop.intp
     ////i.initializeSynchronous()
     //classServerUri = Some(i.classServer.uri)
-    classServerUri = Some(loop.classServer.uri)
+    _classServerUri = Some(loop.classServer.uri)
     i.asInstanceOf[scala.tools.nsc.interpreter.SparkIMain]
   }
 
@@ -266,13 +275,16 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
       case Error          => Failure(stdoutBytes.toString)
     }
 
+    if ( !_initFinished ) {
+      _evalsUntilInitFinished = _evalsUntilInitFinished + 1
+    }
+
     (result, stdoutBytes.toString)
   }
 
   def addCp(newJars:List[String]) = {
-    val prevCode = interp.prevRequestList.map(_.originalLine)
-    // this will close the repl class server, which is needed in order to reuse `-Dspark.replClassServer.port`!
-    interp.close()
+    val prevCode = interp.prevRequestList.map(_.originalLine).drop( _evalsUntilInitFinished )
+    interp.close() // this will close the repl class server, which is needed in order to reuse `-Dspark.replClassServer.port`!
     val r = new Repl(compilerOpts, newJars:::jars)
     (r, () => prevCode foreach (c => r.evaluate(c, _ => ())))
   }
@@ -318,6 +330,10 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
     // hit tab twice).  So we simulate that here... (nutty, I know)
     getCompletions(line, position)
     getCompletions(line, position)
+  }
+
+  def sparkContextAvailable: Boolean = {
+    interp.allImportedNames.exists(_.toString == "sparkContext")
   }
 
   def stop(): Unit = {

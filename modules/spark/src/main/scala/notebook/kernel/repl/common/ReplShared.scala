@@ -41,21 +41,19 @@ class ReplOutputStream extends ByteArrayOutputStream {
 
 trait ReplT {
 
+  def endInitCommand: List[(String, String)] = List(("end", "\"END INIT\""))
+
   def addCp(newJars:List[String]): (ReplT, () => Unit)
-
+  def classServerUri: Option[String]
   def complete(line: String, cursorPosition: Int): (String, Seq[Match])
-
   def evaluate(code: String,
                onPrintln: String => Unit = _ => (),
                onNameDefinion: NameDefinition => Unit  = _ => ()
               ): (EvaluationResult, String)
-
   def getTypeNameOfTerm(termName: String): Option[String]
-
+  def setInitFinished(): Unit
   def objectInfo(line: String, position:Int): Seq[String]
-
+  def sparkContextAvailable: Boolean
   def stop(): Unit
-  //def restart(): Unit
-  //def start: ReplT
 
 }
