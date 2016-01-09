@@ -486,6 +486,7 @@ class ReplCalculator(
 
   override def postStop() {
     log.info("ReplCalculator postStop")
+    presentationCompiler.stop()
     super.postStop()
   }
 

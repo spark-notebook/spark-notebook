@@ -7,8 +7,7 @@ import org.specs2.runner._
 
 @RunWith(classOf[JUnitRunner])
 class PresentationCompilerTests extends Specification {
-  args(skipAll = true)
-  
+
   def complete(pc:PresentationCompiler)(s:String, i:Int) = {
     val (st, com) = pc.complete(s, i)
     (st, com.toSet)
@@ -42,10 +41,12 @@ class PresentationCompilerTests extends Specification {
         Match("toSchwarz", Map("display_text" -> "toSchwarz: Float")),
         Match("toString", Map("display_text" -> "toString: String"))
       ))
-      c(code + "\nval testAsSt$ring = test.toString()", code.size) must beEqualTo("toS", Set(
+      val r = c(code + "\nval testAsSt$ring = test.toString()", code.size) must beEqualTo("toS", Set(
         Match("toSchwarz", Map("display_text" -> "toSchwarz: Float")),
         Match("toString", Map("display_text" -> "toString: String"))
       ))
+      pc.stop()
+      r
     }
 
     "lists all overrided method versions, indicating optional parameters if any" in {
@@ -56,12 +57,14 @@ class PresentationCompilerTests extends Specification {
       pc.addScripts(cz)
       val c = complete(pc) _
 
-      c(code, code.size) must beEqualTo("testMeth", Set(
+      val r = c(code, code.size) must beEqualTo("testMeth", Set(
         Match("testMethod(a: Int, [optionalB: String])",
           Map("display_text" -> "testMethod(a: Int, [optionalB: String]): String")),
         Match("testMethod(a: String)", Map("display_text" -> "testMethod(a: String): String")),
         Match("testMethod(a: String, b: String)", Map("display_text" -> "testMethod(a: String, b: String): String"))
       ))
+      pc.stop()
+      r
     }
 
     "lists the methods inherited and the implicit methods" in {
@@ -74,7 +77,7 @@ class PresentationCompilerTests extends Specification {
       val suggestions: Set[String] = c(code1, code1.size)._2.map {case Match(s, _) => s }
       println(suggestions.map(s=> s""""${s}""""))
 
-      suggestions must containAllOf(Seq(
+      val r = suggestions must containAllOf(Seq(
         "+(other: String)",
         "clone",
         "hashCode",
@@ -83,6 +86,9 @@ class PresentationCompilerTests extends Specification {
         "isInstanceOf",
         "implicitMethod(a: Int)"
       ))
+
+      pc.stop()
+      r
     }
   }
 }
