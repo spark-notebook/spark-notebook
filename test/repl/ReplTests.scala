@@ -43,7 +43,7 @@ class ReplTests extends Specification with BeforeAllAfterAll {
           case None =>
             failure("Expected Some type name")
           case Some(typeName) =>
-            typeName must beEqualTo("ReplTestClassGetTypeName")
+            typeName must contain("ReplTestClassGetTypeName")
             success
         }
       case _ =>
@@ -92,7 +92,9 @@ class ReplTests extends Specification with BeforeAllAfterAll {
     } else {
       val privRepl = new Repl()
       privRepl.evaluate("case class MyTestClassToKeep()")
-      val newRepl = privRepl.addCp(List.empty[String])._1
+      val replInit = privRepl.addCp(List.empty[String])
+      val newRepl = replInit._1
+      replInit._2.apply() // calls the replay logic on the new repl...
       val res = newRepl.evaluate("val x = new MyTestClassToKeep") match {
         case (Success(_), _) =>
           success

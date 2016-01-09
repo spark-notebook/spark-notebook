@@ -275,13 +275,12 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
 
   def addCp(newJars:List[String]) = {
     val requests = interp.getClass.getMethods.find(_.getName == "prevRequestList").map(_.invoke(interp)).get.asInstanceOf[List[interp.Request]]
-
     val prevCode = requests.map(_.originalLine)
-    val jarList = newJars:::jars
     // this will close the repl class server, which is needed in order to reuse `-Dspark.replClassServer.port`!
     interp.close()
-    val r = new Repl(compilerOpts, jarList)
-    (r, () => prevCode.dropWhile(_.trim != "\"END INIT\"") foreach (c => r.evaluate(c, _ => ())))
+    val r = new Repl(compilerOpts, newJars:::jars)
+    // .dropWhile(_.trim != "\"END INIT\"")
+    (r, () => prevCode foreach (c => r.evaluate(c, _ => ())))
   }
 
   def complete(line: String, cursorPosition: Int): (String, Seq[Match]) = {

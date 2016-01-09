@@ -293,7 +293,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
     // this will close the repl class server, which is needed in order to reuse `-Dspark.replClassServer.port`!
     interp.close()
     val r = new Repl(compilerOpts, newJars:::jars)
-    (r, () => prevCode.drop(7/*init scripts... → UNSAFE*/) foreach (c => r.evaluate(c, _ => ())))
+    (r, () => prevCode foreach (c => r.evaluate(c, _ => ())))
   }
 
   def complete(line: String, cursorPosition: Int): (String, Seq[Match]) = {
