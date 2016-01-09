@@ -7,6 +7,8 @@ import org.specs2.runner._
 
 @RunWith(classOf[JUnitRunner])
 class PresentationCompilerTests extends Specification {
+  args(skipAll = true)
+  
   def complete(pc:PresentationCompiler)(s:String, i:Int) = {
     val (st, com) = pc.complete(s, i)
     (st, com.toSet)
