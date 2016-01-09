@@ -111,4 +111,8 @@ class PresentationCompiler(dependencies: List[String]) {
       .distinct
     (filterSnippet,returnMatches)
   }
+
+  def stop(): Unit = {
+    compiler.askShutdown()
+  }
 }

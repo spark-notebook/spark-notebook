@@ -136,6 +136,7 @@ object Dependencies {
         case hvr("2", x) if x.toInt >= 3 => "0.9.0"
         case _ => defaultJets3tVersion
       }
+      case _ => defaultJets3tVersion
     }
     "net.java.dev.jets3t" % "jets3t" % v force() excludeAll ExclusionRule()
   }
