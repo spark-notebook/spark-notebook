@@ -6,13 +6,14 @@ import notebook.util.Match
 import org.junit.runner.RunWith
 import org.specs2.mutable._
 import org.specs2.runner.JUnitRunner
+import utils.BeforeAllAfterAll
 
 @RunWith(classOf[JUnitRunner])
-class ReplTests extends Specification with BeforeAfter {
+class ReplTests extends Specification with BeforeAllAfterAll {
 
   var repl: ReplT = _
-  def before = repl = new Repl()
-  def after = repl.stop()
+  def beforeAll = repl = new Repl()
+  def afterAll = repl.stop()
 
   "fail when attempting to use undefined code" in {
     repl.evaluate("val x = new NotDefinedClass") match {
@@ -36,13 +37,13 @@ class ReplTests extends Specification with BeforeAfter {
   }
 
   "return a type name of defined term" in {
-    repl.evaluate("case class ReplTestClass(val x:Int); val x = new ReplTestClass(5)") match {
+    repl.evaluate("case class ReplTestClassGetTypeName(val x:Int); val x = new ReplTestClassGetTypeName(5)") match {
       case ( Success(_), _ ) =>
         repl.getTypeNameOfTerm("x") match {
           case None =>
             failure("Expected Some type name")
           case Some(typeName) =>
-            typeName must beEqualTo("ReplTestClass")
+            typeName must beEqualTo("ReplTestClassGetTypeName")
             success
         }
       case _ =>
@@ -53,10 +54,10 @@ class ReplTests extends Specification with BeforeAfter {
   "return object information for code" in {
     var code =
       """
-        |case class ReplTestClass(val prop:Int) {
+        |case class ReplTestClassInformation(val prop:Int) {
         |  def dummy: Int = prop
         |}
-        |val x = new ReplTestClass(5)
+        |val x = new ReplTestClassInformation(5)
       """.stripMargin
     repl.evaluate(code) match {
       case ( Success(_), _ ) =>
@@ -70,10 +71,10 @@ class ReplTests extends Specification with BeforeAfter {
   "return completed line for code" in {
     var code =
       """
-        |case class ReplTestClass(val prop:Int) {
+        |case class ReplTestClassCompletion(val prop:Int) {
         |  def dummy: Int = prop
         |}
-        |val x = new ReplTestClass(5)
+        |val x = new ReplTestClassCompletion(5)
       """.stripMargin
     repl.evaluate(code) match {
       case ( Success(_), _ ) =>
@@ -86,17 +87,21 @@ class ReplTests extends Specification with BeforeAfter {
   }
 
   "adding a jar must keep defined code intact" in {
-    val privRepl = new Repl()
-    privRepl.evaluate("case class MyTestClass()")
-    val newRepl = privRepl.addCp(List.empty[String])._1
-    val res = newRepl.evaluate("val x = new MyTestClass") match {
-      case ( Success(_), _ ) =>
-        success
-      case ex =>
-        failure(s"Expected Success from evaluation but received $ex")
+    if ( sys.env.contains("SKIP_WHEN_TRAVIS") ) {
+      skipped(": Test skipped on TravisCI, causes OOM.")
+    } else {
+      val privRepl = new Repl()
+      privRepl.evaluate("case class MyTestClassToKeep()")
+      val newRepl = privRepl.addCp(List.empty[String])._1
+      val res = newRepl.evaluate("val x = new MyTestClassToKeep") match {
+        case (Success(_), _) =>
+          success
+        case ex =>
+          failure(s"Expected Success from evaluation but received $ex")
+      }
+      newRepl.stop()
+      res
     }
-    newRepl.stop()
-    res
   }
 
 }
