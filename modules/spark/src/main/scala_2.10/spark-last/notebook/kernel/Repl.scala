@@ -24,41 +24,28 @@ import notebook.util.Match
 import notebook.kernel._
 import notebook.kernel.repl.common._
 
-class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
+class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends ReplT {
   val LOG = org.slf4j.LoggerFactory.getLogger(classOf[Repl])
 
   def this() = this(Nil)
 
-  class MyOutputStream extends ByteArrayOutputStream {
-    var aop: String => Unit = x => ()
+  private lazy val stdoutBytes = new ReplOutputStream
+  private lazy val stdout = new PrintWriter(stdoutBytes)
+  private var loop:HackSparkILoop = _
+  private var _classServerUri:Option[String] = None
 
-    override def write(i: Int): Unit = {
-      // CY: Not used...
-      //      orig.value ! StreamResponse(i.toString, "stdout")
-      super.write(i)
-    }
+  private var _initFinished: Boolean = false
+  private var _evalsUntilInitFinished: Int = 0
+  private var _needsDropOnReplay: Boolean = false
 
-    override def write(bytes: Array[Byte]): Unit = {
-      // CY: Not used...
-      //      orig.value ! StreamResponse(bytes.toString, "stdout")
-      super.write(bytes)
-    }
-
-    override def write(bytes: Array[Byte], off: Int, length: Int): Unit = {
-      val data = new String(bytes, off, length)
-      aop(data)
-      //      orig.value ! StreamResponse(data, "stdout")
-      super.write(bytes, off, length)
-    }
+  def setInitFinished(): Unit = {
+    _initFinished = true
+    _needsDropOnReplay = _evalsUntilInitFinished > 0
   }
 
-
-  private lazy val stdoutBytes = new MyOutputStream
-  private lazy val stdout = new PrintWriter(stdoutBytes)
-
-  private var loop:HackSparkILoop = _
-
-  var classServerUri:Option[String] = None
+  def classServerUri: Option[String] = {
+    _classServerUri
+  }
 
   val interp:org.apache.spark.repl.SparkIMain = {
     val settings = new Settings
@@ -116,7 +103,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
       l.interpreter
     }
     //i.initializeSynchronous()
-    classServerUri = Some(i.classServerUri)
+    _classServerUri = Some(i.classServerUri)
     i.asInstanceOf[org.apache.spark.repl.SparkIMain]
   }
 
@@ -149,6 +136,22 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     candidates map { _.toString } toList
   }
 
+  private def listDefinedTerms(request: interp.Request): List[NameDefinition] = {
+    request.handlers.flatMap { h =>
+      val maybeTerm = h.definesTerm.map(_.encoded)
+      val maybeType = h.definesType.map(_.encoded)
+      val references = h.referencedNames.toList.map(_.encoded)
+      (maybeTerm, maybeType) match {
+        case (Some(term), _) =>
+          val termType = getTypeNameOfTerm(term).getOrElse("<unknown>")
+          Some(TermDefinition(term, termType, references))
+        case (_, Some(tpe)) =>
+          Some(TypeDefinition(tpe, "type", references))
+        case _ => None
+      }
+    }
+  }
+
   def getTypeNameOfTerm(termName: String): Option[String] = {
     val tpe = try {
       interp.typeOfTerm(termName).toString
@@ -165,22 +168,6 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
             .replace("iwC$", "")
             .replaceAll("^\\(\\)" , "") // 2.11 return types prefixed, like `()Person`
         )
-    }
-  }
-
-  def listDefinedTerms(request: interp.Request): List[NameDefinition] = {
-    request.handlers.flatMap { h =>
-      val maybeTerm = h.definesTerm.map(_.encoded)
-      val maybeType = h.definesType.map(_.encoded)
-      val references = h.referencedNames.toList.map(_.encoded)
-      (maybeTerm, maybeType) match {
-        case (Some(term), _) =>
-          val termType = getTypeNameOfTerm(term).getOrElse("<unknown>")
-          Some(TermDefinition(term, termType, references))
-        case (_, Some(tpe)) =>
-          Some(TypeDefinition(tpe, "type", references))
-        case _ => None
-      }
     }
   }
 
@@ -294,18 +281,19 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
       case Error          => Failure(stdoutBytes.toString)
     }
 
+    if ( !_initFinished ) {
+      _evalsUntilInitFinished = _evalsUntilInitFinished + 1
+    }
+
     (result, stdoutBytes.toString)
   }
 
   def addCp(newJars:List[String]) = {
     val requests = interp.getClass.getMethods.find(_.getName == "prevRequestList").map(_.invoke(interp)).get.asInstanceOf[List[interp.Request]]
-
-    val prevCode = requests.map(_.originalLine)
-    val jarList = newJars:::jars
-    // this will close the repl class server, which is needed in order to reuse `-Dspark.replClassServer.port`!
-    interp.close()
-    val r = new Repl(compilerOpts, jarList)
-    (r, () => prevCode.dropWhile(_.trim != "\"END INIT\"") foreach (c => r.evaluate(c, _ => ())))
+    var prevCode = requests.map(_.originalLine).drop( _evalsUntilInitFinished )
+    interp.close() // this will close the repl class server, which is needed in order to reuse `-Dspark.replClassServer.port`!
+    val r = new Repl(compilerOpts, newJars:::jars)
+    (r, () => prevCode foreach (c => r.evaluate(c, _ => ())))
   }
 
   def complete(line: String, cursorPosition: Int): (String, Seq[Match]) = {
@@ -348,12 +336,14 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     // the thing twice does it give you the method signature (i.e. you
     // hit tab twice).  So we simulate that here... (nutty, I know)
     getCompletions(line, position)
-    val candidates = getCompletions(line, position)
+    getCompletions(line, position)
+  }
 
-    if (candidates.size >= 2 && candidates.head.isEmpty) {
-      candidates.tail
-    } else {
-      Seq.empty
-    }
+  def sparkContextAvailable: Boolean = {
+    interp.allImportedNames.exists(_.toString == "sparkContext")
+  }
+
+  def stop(): Unit = {
+    interp.close()
   }
 }
