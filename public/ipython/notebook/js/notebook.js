@@ -1132,7 +1132,7 @@ define([
             keyboard_manager: this.keyboard_manager,
             title : "Use markdown headings",
             body : $("<p/>").text(
-                'IPython no longer uses special heading cells. ' +
+                'Spark Notebook no longer uses special heading cells. ' +
                 'Instead, write your headings in Markdown cells using # characters:'
             ).append($('<pre/>').text(
                 '## This is a level 2 heading'
@@ -2030,7 +2030,7 @@ define([
      */
     Notebook.prototype.trust_notebook = function () {
         var body = $("<div>").append($("<p>")
-            .text("A trusted IPython notebook may execute hidden malicious code ")
+            .text("A trusted Spark Notebook may execute hidden malicious code ")
             .append($("<strong>")
                 .append(
                     $("<em>").text("when you open it")
@@ -2040,7 +2040,7 @@ define([
             ).append(
                 " For more information, see the "
             ).append($("<a>").attr("href", "http://ipython.org/ipython-doc/2/notebook/security.html")
-                .text("IPython security documentation")
+                .text("Spark Notebook security documentation")
             ).append(".")
         );
 
@@ -2247,7 +2247,7 @@ define([
             "current notebook format will be used.";
 
             if (nbmodel.nbformat > orig_nbformat) {
-                msg += " Older versions of IPython may not be able to read the new format.";
+                msg += " Older versions of Spark Notebook may not be able to read the new format.";
             } else {
                 msg += " Some features of the original notebook may not be available.";
             }
