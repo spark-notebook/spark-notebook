@@ -48,11 +48,11 @@ define([
                     )
                 ).append(
                     $("<p></p>").addClass('dialog').text(
-                        "This will try to install MathJax into the IPython source directory."
+                        "This will try to install MathJax into the Spark Notebook source directory."
                     )
                 ).append(
                     $("<p></p>").addClass('dialog').text(
-                        "If IPython is installed to a location that requires" +
+                        "If Spark Notebook is installed to a location that requires" +
                         " administrative privileges to write, you will need to make this call as" +
                         " an administrator, via 'sudo'."
                     )
