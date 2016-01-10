@@ -520,6 +520,19 @@ define([
                     that.session_list.load_sessions();
                 };
 
+                var on_error = function(e) {
+                    dialog.modal({
+                        title : 'Cannot upload the file',
+                        body : "The error was: " + e.xhr.responseText,
+                        buttons : {'OK' : {
+                            'class' : 'btn-primary',
+                            click: function () {
+                                item.remove();
+                            }
+                        }}
+                    });
+                }
+
                 var exists = false;
                 $.each(that.element.find('.list_item:not(.new-file)'), function(k,v){
                     if ($(v).data('name') === filename) { exists = true; return false; }
@@ -533,7 +546,7 @@ define([
                             Overwrite : {
                                 class: "btn-danger",
                                 click: function () {
-                                    that.contents.save(path, model).then(on_success);
+                                    that.contents.save(path, model).then(on_success).catch(on_error);
                                 }
                             },
                             Cancel : {
@@ -542,7 +555,7 @@ define([
                         }
                     });
                 } else {
-                    that.contents.save(path, model).then(on_success);
+                    that.contents.save(path, model).then(on_success).catch(on_error);
                 }
 
                 return false;

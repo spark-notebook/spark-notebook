@@ -517,22 +517,42 @@ object Application extends Controller {
     }
   }
 
-  def saveNotebook(p: String) = Action(parse.tolerantJson(config.maxBytesInFlight)) {
-    request =>
-      val path = URLDecoder.decode(p, UTF_8)
-      Logger.info("SAVE → " + path)
-      val notebook = NBSerializer.fromJson(request.body \ "content")
-      try {
-        val (name, savedPath) = nbm.save(path, notebook, overwrite = true)
+  def saveNotebook(p: String) = Action(parse.tolerantJson(config.maxBytesInFlight)) { request =>
+    val path = URLDecoder.decode(p, UTF_8)
+    Logger.info("SAVE → " + path)
 
-        Ok(Json.obj(
-          "type" → "notebook",
-          "name" → name,
-          "path" → savedPath
-        ))
-      } catch {
-        case _: NotebookExistsException => Conflict
+    val data = (request.body \ "content")
+    Try {
+      val notebookJsObject = data.asInstanceOf[JsObject]
+      NBSerializer.fromJson(notebookJsObject) match {
+        case Some(notebook) =>
+          Try {
+            val (name, savedPath) = nbm.save(path, notebook, overwrite = true)
+            Ok(Json.obj(
+              "type" → "notebook",
+              "name" → name,
+              "path" → savedPath
+            ))
+          } recover {
+            case _: NotebookExistsException => Conflict
+            case anyOther: Throwable =>
+              Logger.error(anyOther.getMessage)
+              InternalServerError
+          } getOrElse {
+            InternalServerError
+          }
+        case None =>
+          BadRequest("Not a valid notebook.")
       }
+    }.recover {
+      case e:ClassCastException =>
+        BadRequest("Not a notebook.")
+      case anyOther: Throwable =>
+        Logger.error(anyOther.getMessage)
+        InternalServerError
+    } getOrElse {
+      InternalServerError
+    }
   }
 
   def deleteNotebook(p: String) = Action { request =>
@@ -627,25 +647,29 @@ object Application extends Controller {
               HeaderNames.LAST_MODIFIED → lastMod
             )
           case "scala" =>
-            val nb = NBSerializer.fromJson(Json.parse(data))
-            val code = nb.cells.map { cells =>
-              val cs = cells.collect {
-                case NBSerializer.CodeCell(md, "code", i, Some("scala"), _, _) => i
-                case NBSerializer.CodeCell(md, "code", i, None, _, _) => i
-              }
-              val fc = cs.map(_.split("\n").map { s => s"  $s" }.mkString("\n")).mkString("\n\n  /* ... new cell ... */\n\n").trim
-              val code = s"""
-              |object Cells {
-              |  $fc
-              |}
-              """.stripMargin
-              code
-            }.getOrElse("//NO CELLS!")
+            NBSerializer.fromJson(Json.parse(data)) match {
+              case Some(nb) =>
+                val code = nb.cells.map { cells =>
+                  val cs = cells.collect {
+                    case NBSerializer.CodeCell(md, "code", i, Some("scala"), _, _) => i
+                    case NBSerializer.CodeCell(md, "code", i, None, _, _) => i
+                  }
+                  val fc = cs.map(_.split("\n").map { s => s"  $s" }.mkString("\n")).mkString("\n\n  /* ... new cell ... */\n\n").trim
+                  val code = s"""
+                  |object Cells {
+                  |  $fc
+                  |}
+                  """.stripMargin
+                  code
+                }.getOrElse("//NO CELLS!")
 
-            Ok(code).withHeaders(
-              HeaderNames.CONTENT_DISPOSITION → s"""attachment; filename="$name.scala" """,
-              HeaderNames.LAST_MODIFIED → lastMod
-            )
+                Ok(code).withHeaders(
+                  HeaderNames.CONTENT_DISPOSITION → s"""attachment; filename="$name.scala" """,
+                  HeaderNames.LAST_MODIFIED → lastMod
+                )
+              case None =>
+                InternalServerError(s"Notebook could not be parsed.")
+            }
           case _ => InternalServerError(s"Unsupported format $format")
         }
       }
