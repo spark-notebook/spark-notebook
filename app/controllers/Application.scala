@@ -36,6 +36,7 @@ object Application extends Controller {
   private lazy val config = AppUtils.config
   private lazy val nbm = AppUtils.nbm
   private val kernelIdToCalcService = collection.mutable.Map[String, CalcWebSocketService]()
+  private val kernelIdToObservableActor = collection.mutable.Map[String, ActorRef]()
   private val clustersActor = kernelSystem.actorOf(Props(NotebookClusters(AppUtils.clustersConf)))
 
   private implicit def kernelSystem: ActorSystem = AppUtils.kernelSystem
@@ -453,7 +454,7 @@ object Application extends Controller {
   def openKernel(kernelId: String, sessionId: String) = ImperativeWebsocket.using[JsValue](
     onOpen = channel => WebSocketKernelActor.props(channel, kernelIdToCalcService(kernelId), sessionId),
     onMessage = (msg, ref) => ref ! msg,
-    onClose = ref => {
+    onClose = (channel, ref) => {
       // try to not close the kernel to allow long live sessions
       // closeKernel(kernelId)
       Logger.info(s"Closing websockets for kernel $kernelId")
@@ -584,11 +585,21 @@ object Application extends Controller {
   }
 
   def openObservable(contextId: String) = ImperativeWebsocket.using[JsValue](
-    onOpen = channel => WebSocketObservableActor.props(channel, contextId),
+    onOpen = channel => {
+      kernelIdToObservableActor.get(contextId) match {
+        case None =>
+          val a = WebSocketObservableActor.props(channel, contextId)
+          kernelIdToObservableActor += contextId → a
+          a
+        case Some(a) =>
+          a ! ("add", channel)
+          a
+      }
+    },
     onMessage = (msg, ref) => ref ! msg,
-    onClose = ref => {
-      Logger.info(s"Closing observable $contextId")
-      ref ! akka.actor.PoisonPill
+    onClose = (channel, ref) => {
+      Logger.info(s"Closing observable sockect $channel for $contextId")
+      ref ! ("remove", channel)
     }
   )
 
@@ -679,7 +690,7 @@ object Application extends Controller {
     def using[E: WebSocket.FrameFormatter](
       onOpen: Channel[E] => ActorRef,
       onMessage: (E, ActorRef) => Unit,
-      onClose: ActorRef => Unit,
+      onClose: (Channel[E], ActorRef) => Unit,
       onError: (String, Input[E]) => Unit = (e: String, _: Input[E]) => Logger.error(e)
     ): WebSocket[E, E] = {
       implicit val sys = kernelSystem.dispatcher
@@ -691,7 +702,7 @@ object Application extends Controller {
           val ref = onOpen(channel)
           val in = Iteratee.foreach[E] { message =>
             onMessage(message, ref)
-          } map (_ => onClose(ref))
+          } map (_ => onClose(channel, ref))
           promiseIn.success(in)
         },
         onError = onError

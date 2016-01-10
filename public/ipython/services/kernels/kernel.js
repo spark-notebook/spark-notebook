@@ -1071,6 +1071,16 @@ define([
      */
     Kernel.prototype._handle_output_message = function (msg) {
         var callbacks = this.get_callbacks_for_msg(msg.parent_header.msg_id);
+        if (!callbacks && msg.content && msg.content.cell_id) {
+            // get the cell
+            var c = _.filter(this.notebook.get_cells(), function(c) { return c.cell_id == msg.content.cell_id});
+            if (c.length == 1 && c[0].get_callbacks) {
+                callbacks = c[0].get_callbacks();
+                if (callbacks.iopub && callbacks.iopub.clear_output) {
+                    callbacks.iopub.clear_output(msg);
+                }
+            }
+        }
         if (!callbacks || !callbacks.iopub) {
             // The message came from another client. Let the UI decide what to
             // do with it.
