@@ -521,9 +521,8 @@ object Application extends Controller {
     val path = URLDecoder.decode(p, UTF_8)
     Logger.info("SAVE → " + path)
 
-    val data = (request.body \ "content")
     Try {
-      val notebookJsObject = data.asInstanceOf[JsObject]
+      val notebookJsObject = (request.body \ "content").asInstanceOf[JsObject]
       NBSerializer.fromJson(notebookJsObject) match {
         case Some(notebook) =>
           Try {
