@@ -614,9 +614,9 @@ define([
     CodeCell.prototype.addCancelCellBtn = function() {
         var cell_id = this.cell_id;
         var kernel = this.kernel;
-        var cancelBtn = $('<a class="cancel-cell-btn">stop</a>').click(function(){
+        var cancelBtn = $('<a class="cancel-cell-btn">cancel</a>').click(function(){
             kernel.cancelCellJobs(cell_id);
-            $(this).text('stopping');
+            $(this).text('cancelling');
         });
         this.element.find('div.progress-bar').html(cancelBtn);
     };

@@ -61,14 +61,15 @@ define([
           var totalTasks = sum(_.pluck(jobs, 'total_tasks'));
           var cellProgress = Math.min(Math.floor(completedTasks * 100.0 / totalTasks), 100);
           if (cell_id) {
+            var cell = $(cells[cell_id]).data("cell");
             var cellProgressBar = $(cells[cell_id]).find('div.progress-bar');
             cellProgressBar.css("width", Math.max(cellProgress, 5) + "%");
             if (cellProgress == 100) {
               cellProgressBar.removeClass("active").removeClass("progress-bar-striped");
-              // cellProgressBar.find('.cancel-cell-btn').hide();
+              cell.hideCancelCellBtn();
             } else {
               cellProgressBar.addClass("active").addClass("progress-bar-striped");
-              cellProgressBar.find('.cancel-cell-btn').show();
+              cell.addCancelCellBtn();
             }
           }
         });
