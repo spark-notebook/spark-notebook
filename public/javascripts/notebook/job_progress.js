@@ -10,10 +10,6 @@ define([
     require(['observable'], function(O) {
       var progress = O.makeObservableArray("jobsProgress");
 
-      // move progress node to body, to enable absolute positioning
-      var pies = d3.select("#progress-pies")
-      $("#progress-pies").append($("<div id='progress-bars'/>")).append("<div id='spark-ui-link' />");
-
       var updateSparkUiLink = function(sparkUi){
         if (sparkUi != "") {
           var sparkUiLink = $("<a href='" + sparkUi + "' id='spark-ui-link' target='_blank'>open SparkUI</a>")
@@ -21,18 +17,16 @@ define([
         }
       };
 
-      // setup the progress chart
-      var svg = dimple.newSvg("#progress-bars", 275, 175); // todo resize with panel → ref to panel needed and event from panel to be listened
-      var myChart = new dimple.chart(svg, []);
-      var xAxis = myChart.addPctAxis("x", "percentage");
-      xAxis.title = "% completed";
-      xAxis.ticks = 2;
-      xAxis.showGridlines = false;
-      myChart.assignColor("Done", "#3a3", "#3a3", 1);
-      myChart.assignColor("Pending", "#a33", "#a33", 1);
-      var yAxis = myChart.addCategoryAxis("y", ["fake"]);
-      yAxis.hidden = true;
-      myChart.addSeries("status", dimple.plot.bar);
+      var allJobsProgressBar = $('\
+          <div class="progress">\
+            <div id="jobs-progress-done" class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="" \
+                 aria-valuemin="0" aria-valuemax="100">\
+            </div>\
+            <div id="jobs-progress-pending" class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="" \
+                 aria-valuemin="0" aria-valuemax="100">\
+            </div>\
+        </div>');
+      $('#all-jobs-progress-bar').html(allJobsProgressBar);
 
       // process the progresses and update the chart
       var isCompleted = function(p){ return p.completed == 100 };
@@ -61,23 +55,7 @@ define([
         }
         olderProgresses = jobsProgress;
 
-        var completedTasks = sum(_.pluck(jobsProgress, 'completed_tasks'));
-        var totalTasks = sum(_.pluck(jobsProgress, 'total_tasks'));
-
-        // collapse completed and running jobs into one bar
-        var completedJobsInfo = {
-          status: "Done",
-          percentage: completedTasks,
-          fake: ""
-        };
-        var runningJobsInfo = {
-          status: "Pending",
-          percentage: totalTasks - completedTasks,
-          fake: ""
-        };
-
         var perCellId = _.groupBy(jobsProgress, 'cell_id');
-
         _.each(perCellId, function(jobs, cell_id){
           var completedTasks = sum(_.pluck(jobs, 'completed_tasks'));
           var totalTasks = sum(_.pluck(jobs, 'total_tasks'));
@@ -95,9 +73,13 @@ define([
           }
         });
 
-        // redraw chart as last step, in case dimple didn't like some data :)
-        myChart.data = _.flatten([runningJobsInfo, completedJobsInfo]);
-        myChart.draw();
+        // update all jobs progress bar
+        var completedTasks = sum(_.pluck(jobsProgress, 'completed_tasks'));
+        var totalTasks = sum(_.pluck(jobsProgress, 'total_tasks'));
+        var totalProgressPercent = Math.floor(100.0 * completedTasks / Math.max(totalTasks, 1))
+
+        $('#jobs-progress-done').css('width', totalProgressPercent + '%');
+        $('#jobs-progress-pending').css('width', (100 - totalProgressPercent) + '%');
       });
     });
   });

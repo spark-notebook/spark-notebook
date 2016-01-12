@@ -127,6 +127,9 @@ div.progress-bar { text-align: left; }
 div.progress-bar a.cancel-cell-btn { font-weight: bold; color: #336699 !important; margin-left: 10px; }
 div.progress-bar.active a.cancel-cell-btn { color: #FFFFFF!important; }
 
+#all-jobs-progress-bar { margin-bottom: 20px; }
+h4#spark-jobs { margin-bottom: 0 !important; }
+
 .prompt { display: none; visibility: hidden; }
 /* new cell UI */
 div.cell.code_cell {
