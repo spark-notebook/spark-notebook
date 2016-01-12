@@ -1,0 +1,57 @@
+{
+  "metadata" : {
+    "name" : "Spark SQL syntax highlighting",
+    "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customArgs" : null,
+    "customSparkConf" : null
+  },
+  "cells" : [ {
+    "metadata" : {
+      "id" : "32420C8393D240F78CA8A1DE93A3F62E"
+    },
+    "cell_type" : "markdown",
+    "source" : "## Spark SQL query highlighting inside Scala code"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true,
+      "id" : "3184F5C1A0D340A2AD5467919EDF159F"
+    },
+    "cell_type" : "code",
+    "source" : "val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)\nimport sqlContext.implicits._",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true,
+      "id" : "4C7AFF556115478982537A3854E981A2"
+    },
+    "cell_type" : "code",
+    "source" : "val aaa = sqlContext.sql(\"\"\"\n  Select b.isbn, b.title, b.price, sales.items_sold, sales.company_nm\n  from Book b,\n    (select SUM(Items_Sold) Items_Sold, Company_Nm, ISBN\n  from Book_Sales\n  group by Company_Nm, ISBN) sales\n  WHERE sales.isbn = b.isbn\n\"\"\")\n\n\ndef abc() = {}\n()",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true,
+      "id" : "1FE126FC873B450083F34701306B9E27"
+    },
+    "cell_type" : "code",
+    "source" : "// you can combine both sql and scala-code\nval result = sqlContext.sql(\"select * from mysql_imports.some_table\").limit(10)\nresult.filter(\"abc = 'aaa'\")",
+    "outputs" : [ ]
+  } ],
+  "nbformat" : 4
+}
