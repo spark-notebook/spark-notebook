@@ -140,6 +140,7 @@ define([
 
     CodeCell.config_defaults = {
         // 'magic_' prefix makes it automatically set the mode if cell matches the given regexp
+        // and 'magically' switches between text and the other mode
         highlight_modes : {
             'magic_javascript'    :{'reg':[/^%%javascript/]},
             'magic_perl'          :{'reg':[/^%%perl/]},
