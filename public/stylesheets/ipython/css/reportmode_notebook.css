@@ -8,10 +8,11 @@
 /* hide stdout, and sidebar (progress bar etc) */
 .output_prompt, .output_stdout, #progress-pies, #sidebar { visibility: hidden !important; display: none !important; }
 
-/* hide inputs (code) */
-.input, .input_prompt { visibility: hidden !important; display: none !important; }
+/* hide inputs (code), and cell progressbar */
+.input, .input_prompt, .cell.code_cell div.progress { visibility: hidden !important; display: none !important; }
 
 /* make the selected cell look the same as others */
 .cell.selected { border: none; }
+div.cell.code_cell { border: none!important; }
 
 div:empty { display: none !important; }
