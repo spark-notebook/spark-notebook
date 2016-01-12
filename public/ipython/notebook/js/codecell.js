@@ -171,11 +171,12 @@ define([
         var prompt = $('<div/>').addClass('prompt input_prompt');
         var inner_cell = $('<div/>').addClass('inner_cell');
 
-        var progress_bar = $('<div></div>').addClass('cell-progress-bar');
-        var progress_container = $('<div></div>')
-          .addClass('cell-progress-bar-container')
-          .append(progress_bar);
-        inner_cell.append(progress_container);
+        var progress_container = $('\
+        <div class="progress">\
+          <div class="progress-bar" role="progressbar" aria-valuenow="" \
+               aria-valuemin="0" aria-valuemax="100">\
+          </div>\
+        </div>');
 
         this.celltoolbar = new celltoolbar.CellToolbar({
             cell: this,
@@ -228,7 +229,7 @@ define([
             .appendTo(widget_prompt);
 
         var output = $('<div></div>');
-        cell.append(input).append(widget_area).append(output);
+        cell.append(input).append(widget_area).append(output).append(progress_container);
         this.element = cell;
         this.output_area = new outputarea.OutputArea({
             selector: output,
@@ -610,6 +611,19 @@ define([
 
     CodeCell.input_prompt_function = CodeCell.input_prompt_compact;
 
+    CodeCell.prototype.addCancelCellBtn = function() {
+        var cell_id = this.cell_id;
+        var kernel = this.kernel;
+        var cancelBtn = $('<a class="cancel-cell-btn">stop</a>').click(function(){
+            kernel.cancelCellJobs(cell_id);
+            $(this).text('stopping');
+        });
+        this.element.find('div.progress-bar').html(cancelBtn);
+    };
+
+    CodeCell.prototype.hideCancelCellBtn = function() {
+        this.element.find('div.progress-bar').removeClass('active').css('width', '');
+    };
 
     CodeCell.prototype.set_input_prompt = function (number) {
         var nline = 1;
@@ -621,17 +635,12 @@ define([
         // This HTML call is okay because the user contents are escaped.
         this.element.find('div.input_prompt').html(prompt_html);
 
-        // if it's running currently, add a 'cancel' button
+        // if it's running currently, add a 'cancel' button inside the progress bar
         if (number === '*') {
-            var cell_id = this.cell_id;
-            var kernel = this.kernel;
-            var cancelBtn = $('<a>stop</a>').click(function(){
-                kernel.cancelCellJobs(cell_id);
-                $(this).text('stopping');
-            });
-            this.element.find('div.input_prompt')
-                .append($("<br/>"))
-                .append(cancelBtn);
+            this.addCancelCellBtn();
+        } else {
+            this.element.find('.cancel-cell-btn').hide();
+            this.hideCancelCellBtn();
         }
     };
 
