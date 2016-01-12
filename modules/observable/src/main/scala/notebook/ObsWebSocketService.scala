@@ -35,8 +35,8 @@ class ObsWebSocketService(system: ActorSystem, val channel: Concurrent.Channel[J
         //println(s"Removing channel $channel to channels $channels")
         channels = channels.filter(_ != channel)
         if (channels.isEmpty) {
-          //println(s"Killing WebSocketObservableActor since no more channels are attached")
-          sender() ! akka.actor.PoisonPill
+          println(s"WebSocketObservableActor: no more channels are attached, but not killing the actor")
+          //sender() ! akka.actor.PoisonPill
         }
 
       case msg@ObservableBrowserToVM(id, newValue) =>
