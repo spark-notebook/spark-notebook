@@ -134,14 +134,19 @@ h4#spark-jobs { margin-bottom: 0 !important; }
 /* new cell UI */
 div.cell.code_cell {
   border: 2px solid #c1c1c1;
-  border-radius: 5px;
+  border-radius: 10px;
   padding: 0;
   margin-bottom: 10px;
 }
+div.cell.code_cell.selected {
+  border-color: #3e8f3e;
+}
 
 .code_cell div.input_area {
+  border-color: #cfcfcf;
   border-right-width: 0;
   border-bottom-width: 2px;
+  border-bottom-color: #EEEEEE;
   border-top-width: 0;
   border-left-width: 5px;
   background: transparent;
