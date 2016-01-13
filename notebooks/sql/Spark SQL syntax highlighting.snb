@@ -30,7 +30,7 @@
       "id" : "3184F5C1A0D340A2AD5467919EDF159F"
     },
     "cell_type" : "code",
-    "source" : "val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)\nimport sqlContext.implicits._",
+    "source" : "val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)\nimport sqlContext.implicits._\n\n// if first line of a cell contains sqlContext.sql(\"\"\"  or sqlContext.sql(\" it will color the SQL automatically in that cell",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -40,7 +40,7 @@
       "id" : "4C7AFF556115478982537A3854E981A2"
     },
     "cell_type" : "code",
-    "source" : "val aaa = sqlContext.sql(\"\"\"\n  Select b.isbn, b.title, b.price, sales.items_sold, sales.company_nm\n  from Book b,\n    (select SUM(Items_Sold) Items_Sold, Company_Nm, ISBN\n  from Book_Sales\n  group by Company_Nm, ISBN) sales\n  WHERE sales.isbn = b.isbn\n\"\"\")\n\n\ndef abc() = {}\n()",
+    "source" : "val tableA = sqlContext.sql(\"\"\"  \n  Select b.isbn, b.title, b.price, sales.items_sold, sales.company_nm\n  from Book b,\n    (select SUM(Items_Sold) Items_Sold, Company_Nm, ISBN\n  from Book_Sales\n  group by Company_Nm, ISBN) sales\n  WHERE sales.isbn = b.isbn\n\"\"\")\n\nval tableB = sqlContext.sql(\"\"\"select * from aaa group by b\"\"\")\n\ntableA.unionAll(tableB)",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -50,7 +50,7 @@
       "id" : "1FE126FC873B450083F34701306B9E27"
     },
     "cell_type" : "code",
-    "source" : "// you can combine both sql and scala-code\nval result = sqlContext.sql(\"select * from mysql_imports.some_table\").limit(10)\nresult.filter(\"abc = 'aaa'\")",
+    "source" : "sqlContext.sql(\"select * from mysql_imports.some_table group by abc\").limit(10)\n .filter(\"abc = 'aaa'\")",
     "outputs" : [ ]
   } ],
   "nbformat" : 4
