@@ -66,10 +66,10 @@ define([
             cellProgressBar.css("width", Math.max(cellProgress, 5) + "%");
             if (cellProgress == 100) {
               cellProgressBar.removeClass("active").removeClass("progress-bar-striped");
-              cell.hideCancelCellBtn();
+              if (cell) cell.hideCancelCellBtn();
             } else {
               cellProgressBar.addClass("active").addClass("progress-bar-striped");
-              cell.addCancelCellBtn();
+              if (cell) cell.addCancelCellBtn();
             }
           }
         });
