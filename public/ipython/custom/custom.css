@@ -141,7 +141,7 @@ div.cell.code_cell {
 
 .code_cell div.input_area {
   border-right-width: 0;
-  border-bottom-width: 0;
+  border-bottom-width: 2px;
   border-top-width: 0;
   border-left-width: 5px;
   background: transparent;
