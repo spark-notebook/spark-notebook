@@ -589,18 +589,19 @@ define([
                     }
                     var open = modes[mode].open || "%%";
                     var close = modes[mode].close || "%%end";
+                    var main_mode = modes[mode].main_mode || 'text/plain';
                     var magic_mode = mode;
-                    mode = magic_mode.substr(6);
+                    var second_mode = modes[mode].spec || magic_mode.substr(6);
                     if(current_mode == magic_mode){
                         return;
                     }
-                    utils.requireCodeMirrorMode(mode, function (spec) {
+                    utils.requireCodeMirrorMode(second_mode, function (spec) {
                         // create on the fly a mode that switch between
                         // plain/text and something else, otherwise `%%` is
                         // source of some highlight issues.
                         CodeMirror.defineMode(magic_mode, function(config) {
                             return CodeMirror.multiplexingMode(
-                                CodeMirror.getMode(config, 'text/plain'),
+                                CodeMirror.getMode(config, main_mode),
                                 // always set something on close
                                 {open: open, close: close,
                                  mode: CodeMirror.getMode(config, spec),

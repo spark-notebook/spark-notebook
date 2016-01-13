@@ -140,6 +140,7 @@ define([
 
     CodeCell.config_defaults = {
         // 'magic_' prefix makes it automatically set the mode if cell matches the given regexp
+        // and 'magically' switches between text and the other mode
         highlight_modes : {
             'magic_javascript'    :{'reg':[/^%%javascript/]},
             'magic_perl'          :{'reg':[/^%%perl/]},
@@ -149,8 +150,23 @@ define([
             'magic_r'             :{'reg':[/^%%R/]},
             'magic_text/x-cython' :{'reg':[/^%%cython/]},
             'magic_text/x-scala'  :{'reg':[/^%%scala/]},
-            'magic_text/x-sql'    :{'reg':[/^:sql/], 'open': ':'},
+            'magic_text/x-mysql'    :{'reg':[/^:sql/], 'open': ':'},
             'magic_text/x-sh'     :{'reg':[/^:sh/], 'open': ':'},
+            'magic_sparksql_multiline'    :{
+                // if first line ends with hiveCtx.sql(""" or sqlContext.sql("""
+                'reg':[/(hiveCtx|sqlContext)\.sql\("""\s*$/],
+                'open': /(hiveCtx|sqlContext)\.sql\("""/,
+                'close': /"""\)/,
+                'main_mode': 'text/x-scala',
+                'spec': { mode: "text/x-mysql" }
+            },
+            'magic_sparksql_oneline'    :{
+                'reg':[/^(hiveCtx|sqlContext)\.sql\("/],
+                'open': /(hiveCtx|sqlContext)\.sql\("/,
+                'close': /"\)/,
+                'main_mode': 'text/x-scala',
+                'spec': { mode: "text/x-mysql" }
+            },
         },
     };
 
