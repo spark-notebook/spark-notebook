@@ -193,7 +193,7 @@ object Application extends Controller {
         customSparkConf,
         initScripts,
         compilerArgs,
-        kernel.remoteDeployFuture,
+        kernel,
         config.tachyonInfo,
         kernelTimeout = kernelKillTimeout
       )
@@ -449,7 +449,6 @@ object Application extends Controller {
     KernelManager.get(kernelId).foreach { k =>
       Logger.info(s"Closing kernel $kernelId")
       k.shutdown()
-      KernelManager.remove(kernelId)
     }
   }
 

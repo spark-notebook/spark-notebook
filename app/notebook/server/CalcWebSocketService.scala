@@ -2,6 +2,7 @@ package notebook.server
 
 import akka.actor.{Terminated, _}
 import notebook.client._
+import notebook.Kernel
 import notebook.kernel.repl.common.{NameDefinition, TermDefinition, TypeDefinition}
 import org.joda.time.LocalTime
 import play.api._
@@ -28,7 +29,7 @@ class CalcWebSocketService(
   customSparkConf: Option[Map[String, String]],
   initScripts: List[(String, String)],
   compilerArgs: List[String],
-  remoteDeployFuture: Future[Deploy],
+  kernel: Kernel,
   tachyonInfo: Option[notebook.server.TachyonInfo],
   kernelTimeout: Option[Long]) {
 
@@ -105,7 +106,7 @@ class CalcWebSocketService(
       }.getOrElse(Map.empty[String, String])
       val kCustomSparkConf = customSparkConf.map(_ ++ tachyon).orElse(Some(tachyon))
       val kInitScripts = initScripts
-      val remoteDeploy = Await.result(remoteDeployFuture, 2 minutes)
+      val remoteDeploy = Await.result(kernel.remoteDeployFuture, 2 minutes)
 
       calculator = context.actorOf {
         Props(
@@ -185,6 +186,8 @@ class CalcWebSocketService(
         Logger.debug("Termination of op calculator")
         if (actor == calculator) {
           Logger.error(s"Remote calculator ($calculator) has been terminated !!!!!")
+          kernel.shutdown()
+
           ws.send(
             obj(
               "session" → "ignored"
