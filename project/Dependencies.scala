@@ -4,11 +4,11 @@ object Dependencies {
   val mesosVersion = sys.props.getOrElse("mesos.version", "0.22.2") //0.22.0 is current DCOS version
 
   val playDeps = Seq(
-    "com.typesafe.play" %% "play" % "2.3.7" withSources() excludeAll(
+    "com.typesafe.play" %% "play" % "2.3.10" withSources() excludeAll(
       ExclusionRule("com.typesafe.akka"),
       ExclusionRule("com.google.guava")
       ),
-    "com.typesafe.play" %% "play-test" % "2.3.7" % "test" withSources() excludeAll(
+    "com.typesafe.play" %% "play-test" % "2.3.10" % "test" withSources() excludeAll(
       ExclusionRule("com.typesafe.akka"),
       ExclusionRule("com.google.guava")
       )
