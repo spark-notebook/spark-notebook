@@ -101,12 +101,17 @@ require(["jquery", "underscore", "base/js/events", "knockout"], function($, _, e
     ko.applyBindings(model, tbl.get(0));
     td.append(tbl);
 
+    events.on('kernel_restarting.Kernel', function(e, c) {
+      // clear sidebar on kernel restart
+      // reset term definitions
+      model.clearDefinitions();
+      // clear old progressbar & link to spark UI
+      $('#spark-ui-link-container, #all-jobs-progress-bar').html('');
+    });
+
     events.on('kernel_ready.Kernel', function(e, c) {
       var kernel = c.kernel;
       console.log("kernel", kernel);
-
-      // make sure definitions are reset on kernel restart
-      model.clearDefinitions();
 
       kernel.events.on("new.Definition", function(e, c) {
         console.log("new def", c);
