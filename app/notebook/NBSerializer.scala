@@ -227,15 +227,19 @@ object NBSerializer {
 
   implicit val notebookFormat = Json.format[Notebook]
 
-  def fromJson(json: JsValue): Notebook = {
+  def fromJson(json: JsValue): Option[Notebook] = {
     Logger.trace("\r\n**************************************\r\n")
     Logger.trace(Json.prettyPrint(json))
     Logger.trace("**************************************\r\n")
     json.validate[Notebook] match {
       case s: JsSuccess[Notebook] => {
-        val notebook: Notebook = s.get
-        val nb = notebook.cells.map { _ => notebook } getOrElse notebook.copy(cells = Some(Nil))
-        nb
+        s.get match {
+          case Notebook(None,None,None,None,None) =>
+            Logger.warn("Nothing in the notebook data.")
+            None
+          case notebook =>
+            Some( notebook.cells.map { _ => notebook } getOrElse notebook.copy(cells = Some(Nil)) )
+        }
       }
       case e: JsError => {
         val ex = new RuntimeException(Json.stringify(JsError.toFlatJson(e)))
@@ -245,11 +249,8 @@ object NBSerializer {
     }
   }
 
-  def read(s: String): Notebook = {
-    //Logger.info("Reading Notebook")
-    //Logger.info(s)
-    val json: JsValue = Json.parse(s)
-    fromJson(json)
+  def read(s: String): Option[ Notebook ] = {
+    fromJson(Json.parse(s))
   }
 
   def write(n: Notebook): String = {
