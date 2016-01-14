@@ -153,3 +153,8 @@ div.cell.code_cell.selected {
 }
 /* make defined variables lighter, so it do not disturb from final result */
 div.output_area pre { color: #666; }
+
+/* codemirror syntax highlighting tweaks */
+.cm-sql-inside-scala-mode {
+  background-color: #fffdea;
+}
