@@ -591,6 +591,7 @@ define([
                     var close = modes[mode].close || "%%end";
                     var main_mode = modes[mode].main_mode || 'text/plain';
                     var magic_mode = mode;
+                    var magic_mode_innerStyle = modes[mode].inner_style || '';
                     var second_mode = modes[mode].spec || magic_mode.substr(6);
                     if(current_mode == magic_mode){
                         return;
@@ -605,7 +606,8 @@ define([
                                 // always set something on close
                                 {open: open, close: close,
                                  mode: CodeMirror.getMode(config, spec),
-                                 delimStyle: "delimit"
+                                 delimStyle: "delimit",
+                                 innerStyle: magic_mode_innerStyle
                                 }
                             );
                         });

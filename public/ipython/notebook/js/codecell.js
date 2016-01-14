@@ -158,14 +158,16 @@ define([
                 'open': /(hiveCtx|sqlContext)\.sql\("""/,
                 'close': /"""\)/,
                 'main_mode': 'text/x-scala',
-                'spec': { mode: "text/x-mysql" }
+                'spec': { mode: "text/x-mysql" },
+                'inner_style': 'sql-inside-scala-mode'
             },
             'magic_sparksql_oneline'    :{
                 'reg':[/^(hiveCtx|sqlContext)\.sql\("/],
                 'open': /(hiveCtx|sqlContext)\.sql\("/,
                 'close': /"\)/,
                 'main_mode': 'text/x-scala',
-                'spec': { mode: "text/x-mysql" }
+                'spec': { mode: "text/x-mysql" },
+                'inner_style': 'sql-inside-scala-mode'
             },
         },
     };
