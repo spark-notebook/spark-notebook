@@ -54,16 +54,18 @@ class Kernel(
       remoteDeployPromise.success(remoteInfo.deploy)
     }
 
+    def shutdownRemote() = {
+      Option(remoteInfo).foreach(_.shutdownRemote())
+      KernelManager.remove(kernelId)
+    }
+
     override def postStop() {
-      if (remoteInfo != null)
-        remoteInfo.shutdownRemote()
+      shutdownRemote()
     }
 
     def receive = {
       case ShutdownNow =>
-        if (remoteInfo != null) {
-          remoteInfo.shutdownRemote()
-        }
+        shutdownRemote()
     }
   }
 

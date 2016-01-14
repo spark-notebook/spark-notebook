@@ -46,6 +46,7 @@ object Application extends Controller {
   val project = nbm.name
   val base_project_url = current.configuration.getString("application.context").getOrElse("/")
   val autoStartKernel = current.configuration.getBoolean("manager.kernel.autostartOnNotebookOpen").getOrElse(true)
+  val kernelKillTimeout = current.configuration.getMilliseconds("manager.kernel.killTimeout")
   val base_kernel_url = "/"
   val base_observable_url = "observable"
   val read_only = false.toString
@@ -192,8 +193,9 @@ object Application extends Controller {
         customSparkConf,
         initScripts,
         compilerArgs,
-        kernel.remoteDeployFuture,
-        config.tachyonInfo
+        kernel,
+        config.tachyonInfo,
+        kernelTimeout = kernelKillTimeout
       )
       kernelIdToCalcService += kId -> service
       (kId, kernel, service)
@@ -447,7 +449,6 @@ object Application extends Controller {
     KernelManager.get(kernelId).foreach { k =>
       Logger.info(s"Closing kernel $kernelId")
       k.shutdown()
-      KernelManager.remove(kernelId)
     }
   }
 

@@ -2,7 +2,9 @@ package notebook.server
 
 import akka.actor.{Terminated, _}
 import notebook.client._
+import notebook.Kernel
 import notebook.kernel.repl.common.{NameDefinition, TermDefinition, TypeDefinition}
+import org.joda.time.LocalTime
 import play.api._
 import play.api.libs.json.Json.{obj, arr}
 import play.api.libs.json._
@@ -27,8 +29,9 @@ class CalcWebSocketService(
   customSparkConf: Option[Map[String, String]],
   initScripts: List[(String, String)],
   compilerArgs: List[String],
-  remoteDeployFuture: Future[Deploy],
-  tachyonInfo: Option[notebook.server.TachyonInfo]) {
+  kernel: Kernel,
+  tachyonInfo: Option[notebook.server.TachyonInfo],
+  kernelTimeout: Option[Long]) {
 
   implicit val executor = system.dispatcher
 
@@ -43,6 +46,9 @@ class CalcWebSocketService(
     var calculator: ActorRef = null
     var wss: List[WebSockWrapper] = Nil
 
+    protected val notebookStartTime = LocalTime.now()
+    private var lastCellExecutionTime: Option[LocalTime] = None
+
     val ws = new {
       def send(header: JsValue, session: JsValue /*ignored*/ , msgType: String, channel: String,
         content: JsValue) = {
@@ -50,6 +56,28 @@ class CalcWebSocketService(
         wss.foreach { ws =>
           ws.send(header, ws.session, msgType, channel, content)
         }
+      }
+    }
+
+    private def markNotebookAsActive() = {
+      lastCellExecutionTime = Some(LocalTime.now)
+    }
+
+    protected def isKernelTimeouted = {
+      val lastActionTime = lastCellExecutionTime match {
+        case Some(lastExec) => lastExec
+        case None => notebookStartTime
+      }
+      kernelTimeout.exists { kernelTimeoutMillis =>
+        lastActionTime.plusMillis(kernelTimeoutMillis.toInt).isBefore(LocalTime.now())
+      }
+    }
+
+    // if no cell was being executed for configured threshold interval, kill the kernel
+    context.system.scheduler.schedule(initialDelay = 1.minutes, interval = 1.minutes) {
+      if (isKernelTimeouted) {
+        log.warning("Killing a timeouted kernel")
+        calculator ! PoisonPill
       }
     }
 
@@ -78,7 +106,7 @@ class CalcWebSocketService(
       }.getOrElse(Map.empty[String, String])
       val kCustomSparkConf = customSparkConf.map(_ ++ tachyon).orElse(Some(tachyon))
       val kInitScripts = initScripts
-      val remoteDeploy = Await.result(remoteDeployFuture, 2 minutes)
+      val remoteDeploy = Await.result(kernel.remoteDeployFuture, 2 minutes)
 
       calculator = context.actorOf {
         Props(
@@ -137,6 +165,7 @@ class CalcWebSocketService(
         val operations = new SessionOperationActors(header, session)
         val (operationActor, cellId) = (request: @unchecked) match {
           case ExecuteRequest(cellId, counter, code) =>
+            markNotebookAsActive()
             ws.send(header, session, "status", "iopub", obj("execution_state" → "busy"))
             ws.send(header, session, "pyin", "iopub", obj("cell_id" → cellId, "execution_count" → counter, "code" → code))
             (operations.singleExecution(cellId, counter), Some(cellId))
@@ -157,6 +186,8 @@ class CalcWebSocketService(
         Logger.debug("Termination of op calculator")
         if (actor == calculator) {
           Logger.error(s"Remote calculator ($calculator) has been terminated !!!!!")
+          kernel.shutdown()
+
           ws.send(
             obj(
               "session" → "ignored"
