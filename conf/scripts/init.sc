@@ -22,23 +22,7 @@ import scala.util.matching.Regex
   @transient var sparkHome = Option(System.getenv("SPARK_HOME"))
   @transient var sparkMaster = Option(System.getenv("MASTER"))
 
-
-  @transient val addedJars: Array[String] = {
-    val envJars = sys.env.get("ADD_JARS")
-    val propJars = sys.props.get("spark.jars").flatMap { p => if (p == "") None else Some(p) }
-    val jars = List(propJars, envJars).collect{case Some(j) => j}.mkString(",")
-    resolveURIs(jars).split(",").filter(_.nonEmpty)
-  }
-
-
-  @transient val uri = _5C4L4_N0T3800K_5P4RK_HOOK
-
-  @transient var conf = new SparkConf().setAll(_5C4L4_N0T3800K_5P4RK_C0NF.toList)
-
-  @transient var jars = (addedJars ++ CustomJars ++ conf.get("spark.jars", ",").split(",")).distinct
-
-  @transient var sparkContext:SparkContext = _
-
+  /* -------------------  URI Helpers -------------------------- */
   /**
     * Whether the underlying operating system is Windows.
     */
@@ -53,9 +37,6 @@ import scala.util.matching.Regex
     * Pattern for matching a Windows drive, which contains only a single alphabet character.
     */
   @transient val windowsDrive = "([a-zA-Z])".r
-
-  import org.apache.spark.ui.notebook.front.gadgets.SparkMonitor
-  @transient var sparkMonitor:Option[SparkMonitor] = _
 
   /**
     * Format a Windows path such that it can be safely passed to a URI.
@@ -106,6 +87,28 @@ import scala.util.matching.Regex
       paths.split(",").map { p => resolveURI(p, testWindows) }.mkString(",")
     }
   }
+
+  /* --------------------- end of URI Helpers ---------- */
+
+
+  @transient val addedJars: Array[String] = {
+    val envJars = sys.env.get("ADD_JARS")
+    val propJars = sys.props.get("spark.jars").flatMap { p => if (p == "") None else Some(p) }
+    val jars = List(propJars, envJars).collect{case Some(j) => j}.mkString(",")
+    resolveURIs(jars).split(",").filter(_.nonEmpty)
+  }
+
+
+  @transient val uri = _5C4L4_N0T3800K_5P4RK_HOOK
+
+  @transient var conf = new SparkConf().setAll(_5C4L4_N0T3800K_5P4RK_C0NF.toList)
+
+  @transient var jars = (addedJars ++ CustomJars ++ conf.get("spark.jars", ",").split(",")).distinct
+
+  @transient var sparkContext:SparkContext = _
+
+  import org.apache.spark.ui.notebook.front.gadgets.SparkMonitor
+  @transient var sparkMonitor:Option[SparkMonitor] = _
 
   def reset(appName:String=notebookName, lastChanges:(SparkConf=>Unit)=(_:SparkConf)=>()):Unit = {
     conf = new SparkConf()
