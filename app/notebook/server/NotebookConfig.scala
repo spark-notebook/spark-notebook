@@ -3,12 +3,13 @@ package notebook.server
 import java.io.{File, InputStream}
 import java.net.URL
 
+import scala.collection.JavaConverters._
+import scala.util.control.Exception.allCatch
+import scala.util.Try
+
 import org.apache.commons.io.FileUtils
 import play.api.libs.json._
 import play.api.{Logger, _}
-
-import scala.collection.JavaConverters._
-import scala.util.control.Exception.allCatch
 
 
 case class NotebookConfig(config: Configuration) {
@@ -20,13 +21,42 @@ case class NotebookConfig(config: Configuration) {
     Logger.debug(s"Notebooks directory in the config is referring $confDir. Does it exist? ${new File(confDir).exists}")
   }
 
-  val customConf = CustomConf.fromConfig(config.getConfig("notebooks.custom"))
+  val customConf = CustomConf.fromConfiguration(config.getConfig("notebooks.custom"))
 
-  val overrideConf = CustomConf.fromConfig(config.getConfig("notebooks.override"))
+  val overrideConf = {
+    val c = CustomConf.fromConfiguration(config.getConfig("notebooks.override"))
+    val o = sys.env.get("SPARK_HOME")
+                      .map(f => new File(f, "conf"))
+                    .orElse(
+                      sys.env.get("SPARK_CONF_DIR").map(f => new File(f))
+                    )
+                    .flatMap{ f =>
+                      val d = new File(f, "spark-defaults.conf")
+                      if (d.exists) {
+                        Logger.info("Extending `override` configuration with file content: " + d.getAbsolutePath)
+                        val t = for {
+                          p <- Try{
+                                val p = new java.util.Properties()
+                                p.load(new java.io.FileInputStream(d))
+                                p
+                              }
+                          f <- Try(com.typesafe.config.ConfigFactory.parseProperties(p).atPath("sparkConf"))
+                          g <- Try(new Configuration(f))
+                          h <- Try(CustomConf.fromConfiguration(Some(g)))
+                        } yield h
+                        t.toOption
+                      } else {
+                        None
+                      }
+                    }
+                    .getOrElse(CustomConf.empty)
+    o ++ c
+  }
 
-  val notebooksDir = config.getString("notebooks.dir").map(new File(_)).filter(_.exists)
-    .orElse(Option(new File("./notebooks"))).filter(_.exists) // ./bin/spark-notebook
-    .getOrElse(new File("../notebooks")) // ./spark-notebook
+  val notebooksDir = config.getString("notebooks.dir")
+                            .map(new File(_)).filter(_.exists)
+                            .orElse(Option(new File("./notebooks"))).filter(_.exists) // ./bin/spark-notebook
+                            .getOrElse(new File("../notebooks")) // ./spark-notebook
   Logger.info(s"Notebooks dir is $notebooksDir [at ${notebooksDir.getAbsolutePath}] ")
 
   val projectName = config.getString("name").getOrElse(notebooksDir.getPath)
@@ -64,9 +94,26 @@ case class CustomConf(
   sparkConf: Option[JsObject]
 ) {
   val sparkConfMap:Option[Map[String, String]] = sparkConf flatMap CustomConf.fromSparkConfJsonToMap
+
+  private def extendList(o1:Option[List[String]], o2:Option[List[String]]) =
+    Some(o1.getOrElse(Nil) ++ o2.getOrElse(Nil)).filter(_.nonEmpty)
+
+  def ++(other:CustomConf) = copy(
+    localRepo = localRepo orElse other.localRepo,
+    repos = extendList(repos, other.repos),
+    deps = extendList(deps, other.deps),
+    imports = extendList(imports, other.imports),
+    args = extendList(args, other.args),
+    sparkConf = Some(
+                  sparkConf.getOrElse(Json.obj()) ++
+                  other.sparkConf.getOrElse(Json.obj())
+                ).filter(_.fields.nonEmpty)
+  )
 }
 object CustomConf {
-  def fromConfig(custom:Option[Configuration]) = {
+  val empty = CustomConf(None, None, None, None, None, None)
+
+  def fromConfiguration(custom:Option[Configuration]) = {
     val localRepo = custom.flatMap(_.getString("localRepo"))
     val repos = custom.flatMap(_.getStringList("repos")).map(_.asScala.toList)
     val deps = custom.flatMap(_.getStringList("deps")).map(_.asScala.toList)

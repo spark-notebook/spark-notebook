@@ -441,7 +441,7 @@ class ReplCalculator(
     val SparkConfScript = {
       val m = customSparkConf .getOrElse(Map.empty[String, String])
       m .map { case (k, v) =>
-        "( \"" + k + "\"  → \"" + v + "\" )"
+        "( \"" + k + "\"  → \"\"\"" + v + "\"\"\" )"
       }.mkString(",")
     }
 
