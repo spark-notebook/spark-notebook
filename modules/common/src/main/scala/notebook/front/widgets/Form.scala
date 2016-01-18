@@ -11,6 +11,8 @@ trait Form[D] extends SingleConnectedWidget[Map[String, String]] {
   def initData:D
   def paramsCodec:Codec[D, Map[String, String]]
   def update:D => D
+  def includeAddButton:Boolean = false
+  def isShown:Boolean = true
 
   private[this] val htmlId = "_"+java.util.UUID.randomUUID.toString.replaceAll("\\W", "_")
 
@@ -24,30 +26,31 @@ trait Form[D] extends SingleConnectedWidget[Map[String, String]] {
 
   lazy val toHtml = <div>{
       scopedScript(
-        s"""req( ['observable', 'knockout', 'jquery'],
-                    function (Observable, ko, $$) {
-                      var value = Observable.makeObservable(valueId);
-                      var publishFormData = function(form) {
-                        var r = $$(form).serializeArray();
-                        var result = {};
-                        r.forEach(function(o) {
-                          result[o.name] = o.value;
-                        });
-                        value(result);
-                      };
-                      var addEntry = function(form) {
-                        var entry = $$(form).serializeArray()[0];
-                        $$("#$htmlId").find("button")
-                                               .before("<div class='form-group'><label for-name='"+entry.value+"'>"+entry.value+"</label><input class='form-control' name='"+entry.value+"' value=''/></div>")
-                      };
-                      ko.applyBindings({
-                        formShown:        ko.observable(false),
-                        value:            value,
-                        publishFormData:  publishFormData,
-                        addEntry:         addEntry
-                      }, this);
-                    }
-                  )""",
+        s"""req(
+          ['observable', 'knockout', 'jquery'],
+          function (Observable, ko, $$) {
+            var value = Observable.makeObservable(valueId);
+            var publishFormData = function(form) {
+              var r = $$(form).serializeArray();
+              var result = {};
+              r.forEach(function(o) {
+                result[o.name] = o.value;
+              });
+              value(result);
+            };
+            var addEntry = function(form) {
+              var entry = $$(form).serializeArray()[0];
+              $$("#$htmlId").find("button")
+                                     .before("<div class='form-group'><label for-name='"+entry.value+"'>"+entry.value+"</label><input class='form-control' name='"+entry.value+"' value=''/></div>")
+            };
+            ko.applyBindings({
+              formShown:        ko.observable($isShown),
+              value:            value,
+              publishFormData:  publishFormData,
+              addEntry:         addEntry
+            }, this);
+          }
+        )""",
         Json.obj("valueId" -> dataConnection.id)
       )
     }
@@ -64,9 +67,9 @@ trait Form[D] extends SingleConnectedWidget[Map[String, String]] {
             </div>
           }
         }
-        <button type="submit" class="btn btn-default">Change</button>
+        <button type="submit" class="btn btn-default">Apply</button>
       </form>
-      <form data-bind="submit: addEntry" role="form">
+      <form data-bind="submit: addEntry" role="form" class={if (includeAddButton) "" else "hide"}>
         <div class="form-group">
           <label for-name="add-entry">Add entry</label>
           <input name="add-entry" class="form-control" type="text" />
@@ -75,4 +78,29 @@ trait Form[D] extends SingleConnectedWidget[Map[String, String]] {
       </form>
     </div>
   </div>
+}
+
+object Form {
+  def apply[D](
+    d: D,
+    mainTitle: String,
+    paramsToData: Map[String,String] => D,
+    dataToParams: D => Map[String,String],
+    show: Boolean = true,
+    addButton:Boolean = false
+  )(onApply: D => Unit):Form[D] = new Form[D]() {
+    override val includeAddButton = addButton
+    def initData: D = d
+    override val isShown: Boolean = show
+    def paramsCodec: notebook.Codec[D,Map[String,String]] =
+      new notebook.Codec[D,Map[String,String]] {
+        def decode(x: Map[String,String]): D = paramsToData(x)
+        def encode(x: D): Map[String,String] = dataToParams(x)
+      }
+    val title: String = mainTitle
+    val update: D => D = m => {
+      onApply(m)
+      data
+    }
+  }
 }
