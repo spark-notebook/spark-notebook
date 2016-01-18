@@ -211,7 +211,7 @@ package object widgets {
   def containerFluid(conf:List[List[(Widget,Int)]]):Widget = html(
     <div class="container-fluid">{
       conf.map { rows =>
-        <div>{
+        <div class="row">{
           rows.map { case (w, i) =>
             val cl = "col-md-"+i
             <div class={cl}>{w}</div>
