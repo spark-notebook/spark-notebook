@@ -2105,17 +2105,22 @@ define([
         return name;
     };
 
+    Notebook.prototype.get_notebook_dir = function() {
+        return utils.url_path_split(this.notebook_path)[0];
+    };
+
     /**
      * Rename the notebook.
      * @param  {string} new_name
+     * @param {string} new_dir (optional), if provided will move notebook to this directory
      * @return {Promise} promise that resolves when the notebook is renamed.
      */
-    Notebook.prototype.rename = function (new_name) {
+    Notebook.prototype.rename = function (new_name, new_dir) {
         new_name = this.ensure_extension(new_name);
 
         var that = this;
-        var parent = utils.url_path_split(this.notebook_path)[0];
-        var new_path = utils.url_path_join(parent, new_name);
+        var new_parent_dir = new_dir ? new_dir : this.get_notebook_dir();
+        var new_path = utils.url_path_join(new_parent_dir, new_name);
         return this.contents.rename(this.notebook_path, new_path).then(
             function (json) {
                 that.notebook_name = json.name;

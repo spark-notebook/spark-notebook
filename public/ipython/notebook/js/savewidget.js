@@ -71,15 +71,26 @@ define([
         var that = this;
         var dialog_body = $('<div/>').append(
             $("<p/>").addClass("rename-message")
-                .text('Enter a new notebook name:')
+                .text('New notebook name:')
         ).append(
             $("<br/>")
         ).append(
-            $('<input/>').attr('type','text').attr('size','25').addClass('form-control')
+            $('<input/>').attr('type','text').attr('size','25').addClass('form-control').addClass('notebook-name')
             .val(options.notebook.get_notebook_name())
+        ).append(
+          $("<br/>")
+        ).append(
+          $("<p/>").addClass("rename-message")
+            .text('New notebook directory:')
+        ).append(
+          $("<br/>")
+        ).append(
+          $('<input/>').attr('type','text').attr('size','25').addClass('form-control').addClass('notebook-dir')
+            .val(options.notebook.get_notebook_dir())
         );
+
         var d = dialog.modal({
-            title: "Rename Notebook",
+            title: "Rename/move Notebook",
             body: dialog_body,
             notebook: options.notebook,
             keyboard_manager: this.keyboard_manager,
@@ -87,7 +98,8 @@ define([
                 "OK": {
                     class: "btn-primary",
                     click: function () {
-                        var new_name = d.find('input').val();
+                        var new_name = d.find('input.notebook-name').val();
+                        var new_dir = d.find('input.notebook-dir').val();
                         if (!options.notebook.test_notebook_name(new_name)) {
                             d.find('.rename-message').text(
                                 "Invalid notebook name. Notebook names must "+
@@ -98,7 +110,7 @@ define([
                         } else {
                             d.find('.rename-message').text("Renaming...");
                             d.find('input[type="text"]').prop('disabled', true);
-                            that.notebook.rename(new_name).then(
+                            that.notebook.rename(new_name, new_dir).then(
                                 function () {
                                     d.modal('hide');
                                 }, function (error) {
