@@ -379,14 +379,21 @@ package object widgets {
     }
 
     //val log = org.slf4j.LoggerFactory.getLogger("Chart")
-    def addAndApply(otherData:C) = apply {
-      currentC = toPoints.append(currentC, otherData)
-      currentPoints = toPoints(currentC, currentMax)
-      nrow(toPoints.count(currentC)+ " entries")
-      val d =  currentPoints map mToSeq
-      this.apply(d)
-      d
-    }
+    private[this] var first = true
+    def addAndApply(otherData:C, resetInit:Boolean=false) =
+      if (resetInit && first) {
+        first = false
+        applyOn(otherData)
+      } else {
+        apply {
+          currentC = toPoints.append(currentC, otherData)
+          currentPoints = toPoints(currentC, currentMax)
+          nrow(toPoints.count(currentC)+ " entries")
+          val d =  currentPoints map mToSeq
+          this.apply(d)
+          d
+        }
+      }
 
     override val singleCodec = jsStringAnyCodec
     override val singleToO = identity[Seq[(String, Any)]] _
