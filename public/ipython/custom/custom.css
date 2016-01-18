@@ -134,7 +134,7 @@ h4#spark-jobs { margin-bottom: 0 !important; }
 /* new cell UI */
 div.cell.code_cell {
   border: 2px solid #c1c1c1;
-  border-radius: 10px;
+  border-radius: 5px;
   padding: 0;
   margin-bottom: 10px;
 }
