@@ -11,6 +11,7 @@ trait Form[D] extends SingleConnectedWidget[Map[String, String]] {
   def initData:D
   def paramsCodec:Codec[D, Map[String, String]]
   def update:D => D
+  def includeAddButton:Boolean = false
 
   private[this] val htmlId = "_"+java.util.UUID.randomUUID.toString.replaceAll("\\W", "_")
 
@@ -66,7 +67,7 @@ trait Form[D] extends SingleConnectedWidget[Map[String, String]] {
         }
         <button type="submit" class="btn btn-default">Change</button>
       </form>
-      <form data-bind="submit: addEntry" role="form">
+      <form data-bind="submit: addEntry" role="form" class={if (includeAddButton) "" else "hide"}>
         <div class="form-group">
           <label for-name="add-entry">Add entry</label>
           <input name="add-entry" class="form-control" type="text" />
