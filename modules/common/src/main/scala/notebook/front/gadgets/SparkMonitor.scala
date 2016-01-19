@@ -80,6 +80,7 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends
         stageId <- j.stageIds
       } yield stageId → j).toMap
 
+      val jobGroupsById = jobsByStageId.values.groupBy(_.jobId).mapValues(_.head.jobGroup)
 
       val stageStats: Seq[JobInfo] = (activeStagesList ++ completedStages ++ pendingStages).flatMap { s: StageInfo =>
         val stageDataOption = listener.stageIdToData.get((s.stageId, s.attemptId))
@@ -109,7 +110,7 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends
         }.toSeq
 
       jobStats.map { j =>
-        val jobGroup = jobsByStageId(j.jobId).jobGroup
+        val jobGroup = jobGroupsById(j.jobId)
         val cellId = JobTracking.toCellId(jobGroup)
         val jobDuration: Option[Long] = j.submissionTime.map(t => j.completionTime.getOrElse(System.currentTimeMillis) - t)
         val jobDurationStr = jobDuration.map { d =>
