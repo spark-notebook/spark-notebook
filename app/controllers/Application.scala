@@ -499,13 +499,13 @@ object Application extends Controller {
   }
 
   def renameNotebook(p: String) = Action(parse.tolerantJson) { request =>
-    val path = URLDecoder.decode(p, UTF_8)
-    val notebook = (request.body \ "path").as[String]
-    Logger.info("RENAME → " + path + " to " + notebook)
+    val oldPath = URLDecoder.decode(p, UTF_8)
+    val newPath = (request.body \ "path").as[String]
+    Logger.info("RENAME → " + oldPath + " to " + newPath)
     try {
-      val (newname, newpath) = nbm.rename(path, notebook)
+      val (newname, newpath) = nbm.rename(oldPath, newPath)
 
-      KernelManager.atPath(path).foreach { case (_, kernel) =>
+      KernelManager.atPath(oldPath).foreach { case (_, kernel) =>
         kernel.moveNotebook(newpath)
       }
 
