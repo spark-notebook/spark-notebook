@@ -217,7 +217,9 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
         listDefinedTerms(request).foreach(onNameDefinion)
 
         try {
-          val evalValue = if (lastHandler.definesValue) { // This is true for def's with no parameters, not sure that executing/outputting this is desirable
+          val lastStatementReturnsValue = listDefinedTerms(request).exists(_.name.matches("res[0-9]+"))
+          val evalValue = if (lastHandler.definesValue && lastStatementReturnsValue) {
+            // This is true for def's with no parameters, not sure that executing/outputting this is desirable
             // CY: So for whatever reason, line.evalValue attemps to call the $eval method
             // on the class...a method that does not exist. Not sure if this is a bug in the
             // REPL or some artifact of how we are calling it.
