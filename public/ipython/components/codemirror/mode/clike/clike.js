@@ -11,6 +11,26 @@
 })(function(CodeMirror) {
 "use strict";
 
+function Context(indented, column, type, align, prev) {
+  this.indented = indented;
+  this.column = column;
+  this.type = type;
+  this.align = align;
+  this.prev = prev;
+}
+function pushContext(state, col, type) {
+  var indent = state.indented;
+  if (state.context && state.context.type == "statement")
+    indent = state.context.indented;
+  return state.context = new Context(indent, col, type, null, state.context);
+}
+function popContext(state) {
+  var t = state.context.type;
+  if (t == ")" || t == "]" || t == "}")
+    state.indented = state.context.indented;
+  return state.context = state.context.prev;
+}
+
 CodeMirror.defineMode("clike", function(config, parserConfig) {
   var indentUnit = config.indentUnit,
       statementIndentUnit = parserConfig.statementIndentUnit || indentUnit,
@@ -95,26 +115,6 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       maybeEnd = (ch == "*");
     }
     return "comment";
-  }
-
-  function Context(indented, column, type, align, prev) {
-    this.indented = indented;
-    this.column = column;
-    this.type = type;
-    this.align = align;
-    this.prev = prev;
-  }
-  function pushContext(state, col, type) {
-    var indent = state.indented;
-    if (state.context && state.context.type == "statement")
-      indent = state.context.indented;
-    return state.context = new Context(indent, col, type, null, state.context);
-  }
-  function popContext(state) {
-    var t = state.context.type;
-    if (t == ")" || t == "]" || t == "}")
-      state.indented = state.context.indented;
-    return state.context = state.context.prev;
   }
 
   // Interface
@@ -393,6 +393,16 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       "@": function(stream) {
         stream.eatWhile(/[\w\$_]/);
         return "meta";
+      },
+      "{": function(stream, state) {
+        // match single full line params of anonymous fn:
+        // { a =>\n
+        // { (aa: Int, bb: Int) =>\n
+        var singleLineParams = /^(\w|[:.,() ])+=>$/;
+        if (!stream.match(singleLineParams, true)) // eat the line, if matches
+          return false;
+        pushContext(state, stream.column(), "}");
+        return null;
       },
       '"': function(stream, state) {
         if (!stream.match('""')) return false;
