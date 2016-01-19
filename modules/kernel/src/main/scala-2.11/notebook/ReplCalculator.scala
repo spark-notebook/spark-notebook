@@ -409,7 +409,7 @@ class ReplCalculator(
         def replEvaluate(code:String, cellId:String) = {
           val cellResult = try {
            repl.evaluate(s"""
-              |globalScope.sparkContext.setJobGroup("${JobTracking.jobGroupId(cellId)}", "${JobTracking.jobDescription(code)}")
+              |globalScope.sparkContext.setJobGroup("${JobTracking.jobGroupId(cellId)}", "${JobTracking.jobDescription(code, start)}")
               |$code
               """.stripMargin,
               msg => thisSender ! StreamResponse(msg, "stdout"),
