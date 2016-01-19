@@ -51,6 +51,26 @@ class ReplTests extends Specification with BeforeAllAfterAll {
     }
   }
 
+  "do not render the last defined variable when cell returns nothing" in {
+    repl.evaluate("val seq = Seq(1, 2, 3)") match {
+      case ( Success(resultWidgets), _ ) =>
+        resultWidgets.size must beEqualTo(0)
+        success
+      case _ =>
+        failure("Expected not to render the last defined variable")
+    }
+  }
+
+  "render the return value of a cell (if one exists)" in {
+    repl.evaluate("Seq(1, 2, 3)") match {
+      case ( Success(resultWidgets), _ ) =>
+        resultWidgets.size must beEqualTo(1)
+        success
+      case _ =>
+        failure("Expected to render the result value")
+    }
+  }
+
   "return object information for code" in {
     var code =
       """
