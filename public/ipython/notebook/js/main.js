@@ -26,7 +26,8 @@ require([
     'custom/custom',
     'job_progress',
     'sidebar',
-    'tachyon'
+    'tachyon',
+    'chat'
 ], function(
     IPython,
     $,
@@ -51,7 +52,8 @@ require([
     // please keep sure that even if not used, this is loaded last
     custom,
     job_progress,
-    tachyon
+    tachyon,
+    chat
     ) {
     "use strict";
 

@@ -333,7 +333,7 @@
           <div id="notebook-panels" class="col-md-3" >
             <div id="sidebar" class="gridster">
                 <ul>
-                    <li data-row="2" data-col="1" data-sizex="2" data-sizey="2">
+                    <li data-row="1" data-col="1" data-sizex="2" data-sizey="2">
                         <h4 id="spark-jobs">Spark Job Progress&nbsp;&nbsp;<span id="spark-ui-link-container"></span></h4>
                         <div id="all-jobs-progress-bar"></div>
 
@@ -341,12 +341,18 @@
                         <div id="termDefinitions" style="overflow: auto; height: 200px"></div>
                     </li>
 
-                    <!--
-                    <li data-row="3" data-col="1" data-sizex="2" data-sizey="2">
-                        <h4>Ext. Plot</h4>
-                        <div id="ext-plot"></div>
+                    <li data-row="3" data-col="1" data-sizex="2" data-sizey="1">
+                        <div id="chat-room">
+                            <h4>Chat Room</h4>
+                            <input type="text" name="alias" class="form-control" data-bind="value: chat.alias, hasFocus: chat.aliasing" placeholder="Choose an alias"/>
+                            <div class="room">
+                                <ul class="chat" style="list-style:none; overflow: auto; height: 130px;" data-bind="foreach: chat.messages">
+                                    <li class="message"><strong><span data-bind="text: alias"></span>: </strong> <span data-bind="text: content, title: time"></span></li>
+                                </ul>
+                                <input type="text" name="message" class="form-control" placeholder="Type your message..." data-bind="enable: chat.joined, value: chat.new_message, hasFocus: chat.chatting"/>
+                            </div>
+                        </div>
                     </li>
-                    -->
 
                     <li data-row="4" data-col="1" data-sizex="1" data-sizey="0"></li>
                     <li data-row="4" data-col="2" data-sizex="1" data-sizey="0"></li>
