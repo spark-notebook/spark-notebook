@@ -16,7 +16,11 @@ require(["jquery", "jquery.gridster"], function($, gridster) {
     if (nb.is(":visible")) {
       var t = nb.offset().top;
       if (t < 0) {
-        sb.css("top", (Math.abs(t)+hh)+"px");
+        // allow to scroll the part of notebook which don't fit into window
+        // otherwise the sidebar would make the window scrollable forever
+        var maxOffset = Math.max(hh + nb.height() - $(window).height(), 0);
+        var offset = Math.min(maxOffset, Math.abs(t) + hh);
+        sb.css("top", offset+"px");
       } else if (t < hh) {
         sb.css("top", (hh-t)+"px");
       } else {
