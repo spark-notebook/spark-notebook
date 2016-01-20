@@ -131,6 +131,8 @@ class ReplCalculator(
     r
   }
 
+  val chat = new notebook.front.gadgets.Chat()
+
   // +/- copied of https://github.com/scala/scala/blob/v2.11.4/src%2Flibrary%2Fscala%2Fconcurrent%2Fduration%2FDuration.scala
   final def toCoarsest(d: FiniteDuration): String = {
 
