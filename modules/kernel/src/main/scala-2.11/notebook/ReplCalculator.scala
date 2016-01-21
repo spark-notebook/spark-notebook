@@ -337,12 +337,13 @@ class ReplCalculator(
 
         case shRegex(sh) =>
           val ps = "s\"\"\""+sh.replaceAll("\\s*\\|\\s*", "\" #\\| \"").replaceAll("\\s*&&\\s*", "\" #&& \"")+"\"\"\""
-
-          (`text/plain`, s"""
-             |import sys.process._
-             |$ps.!!
-              """.stripMargin.trim
-          )
+          val shCode =
+            s"""|import sys.process._
+                |println($ps.!!(ProcessLogger(out => (), err => println(err))))
+                |()
+                |""".stripMargin.trim
+          log.debug(s"Generated SH code: $shCode")
+          (`text/plain`, shCode)
 
         case sqlRegex(n, sql) =>
           log.debug(s"Received sql code: [$n] $sql")
