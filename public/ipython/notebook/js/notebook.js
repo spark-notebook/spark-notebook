@@ -142,6 +142,7 @@ define([
         this.undelete_below = false;
         this.paste_enabled = false;
         this.writable = false;
+        this.autoStartKernel = false;
         // It is important to start out in command mode to match the intial mode
         // of the KeyboardManager.
         this.mode = 'command';
@@ -254,7 +255,7 @@ define([
             that.metadata.kernelspec =
                 {name: data.name, display_name: data.spec.display_name};
             // start session if the current session isn't already correct
-            if (!(this.session && this.session.kernel && this.session.kernel.name === data.name)) {
+            if (!(that.session && that.session.kernel && that.session.kernel.name === data.name)) {
                 that.start_session(data.name);
             }
         });
@@ -1596,18 +1597,18 @@ define([
             throw new session.SessionAlreadyStarting();
         }
         this._session_starting = true;
+        var success = $.proxy(this._session_started, this);
+        var failure = $.proxy(this._session_start_failed, this);
 
         var options = {
             base_url: this.base_url,
             ws_url: this.ws_url,
+            read_only: !this.autoStartKernel,
             notebook_path: this.notebook_path,
             notebook_name: this.notebook_name,
             kernel_name: kernel_name,
             notebook: this
         };
-
-        var success = $.proxy(this._session_started, this);
-        var failure = $.proxy(this._session_start_failed, this);
 
         if (this.session !== null) {
             this.session.restart(options, success, failure);
@@ -2232,8 +2233,8 @@ define([
         // to save resources eagerly load the kernel only if configured-so in application.conf
         // must automatically start kernel it was requested to recompute the whole notebook immediately
         var recomputeNowRequested = window.location.href.indexOf("recompute_now") != -1;
-        var autoStartKernel = (data.autoStartKernel || recomputeNowRequested) && this.writable;
-        console.log("autoStartKernel on load_notebook: ", autoStartKernel);
+        this.autoStartKernel = (data.autoStartKernel || recomputeNowRequested) && this.writable;
+        console.log("autoStartKernel on load_notebook: ", this.autoStartKernel);
 
         var nbmodel = data.content;
         var orig_nbformat = nbmodel.metadata.orig_nbformat;
@@ -2283,15 +2284,13 @@ define([
             }
             if (kernel_name) {
                 // setting kernel_name here triggers start_session
-                if (autoStartKernel) {
+                if (this.autoStartKernel) {
                     this.kernel_selector.set_kernel(kernel_name);
                 }
             } else {
-                if (autoStartKernel) {
-                    // start a new session with the server's default kernel
-                    // spec_changed events will fire after kernel is loaded
-                    this.start_session();
-                }
+                // start a new session with the server's default kernel
+                // spec_changed events will fire after kernel is loaded
+                this.start_session();
             }
         }
         // load our checkpoint list

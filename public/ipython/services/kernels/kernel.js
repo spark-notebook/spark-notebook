@@ -24,8 +24,10 @@ define([
      * @param {Notebook} notebook - notebook object
      * @param {string} name - the kernel type (e.g. python3)
      */
-    var Kernel = function (kernel_service_url, base_url, ws_url, notebook, name) {
+    var Kernel = function (kernel_service_url, base_url, ws_url, notebook, name, read_only) {
         this.notebook = notebook;
+
+        this.read_only = read_only;
 
         this.events = notebook.events;
 
@@ -717,6 +719,8 @@ define([
          * arugment.  Payload handlers will be passed the corresponding
          * payload and the execute_reply message.
          */
+        if (this.read_only) return;
+
         var content = {
             code: code,
             silent: true,

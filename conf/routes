@@ -16,6 +16,7 @@ GET            /api/kernelspecs                          controllers.Application
 DELETE         /api/sessions/:kernelId                   controllers.Application.terminateKernel(kernelId:String)
 POST           /api/sessions                             controllers.Application.createSession()
 GET            /api/sessions                             controllers.Application.sessions()
+GET            /api/sessions/path/*path                  controllers.Application.getSession(path:String)
 
 POST           /api/kernels/:kernelId/interrupt          controllers.Application.terminateKernel(kernelId:String)
 POST           /api/kernels/:kernelId/restart            controllers.Application.restartKernel(kernelId:String)
