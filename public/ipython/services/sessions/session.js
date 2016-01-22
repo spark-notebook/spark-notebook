@@ -36,6 +36,7 @@ define([
 
         this.base_url = options.base_url;
         this.ws_url = options.ws_url;
+        this.read_only = options.read_only;
         this.session_service_url = utils.url_join_encode(this.base_url, 'api/sessions');
         this.session_url = null;
 
@@ -101,7 +102,7 @@ define([
                 that.kernel.name = that.kernel_model.name;
             } else {
                 var kernel_service_url = utils.url_path_join(that.base_url, "api/kernels");
-                that.kernel = new kernel.Kernel(kernel_service_url, that.base_url, that.ws_url, that.notebook, that.kernel_model.name);
+                that.kernel = new kernel.Kernel(kernel_service_url, that.base_url, that.ws_url, that.notebook, that.kernel_model.name, that.read_only);
             }
             that.events.trigger('kernel_created.Session', {session: that, kernel: that.kernel});
             that.kernel._kernel_created(data.kernel);
@@ -121,15 +122,25 @@ define([
             }
         };
 
-        $.ajax(this.session_service_url, {
+        var ops = {
             processData: false,
             cache: false,
             type: "POST",
-            data: JSON.stringify(this._get_model()),
             dataType: "json",
             success: this._on_success(on_success),
             error: this._on_error(on_error)
-        });
+        }
+
+        var url = this.session_service_url;
+        var method = "POST";
+        if (this.read_only) {
+            url = url + "/path/"+this.notebook_model.path;
+            ops.method = "GET";
+        } else {
+            ops.data = JSON.stringify(this._get_model());
+        }
+
+        $.ajax(url, ops);
     };
 
     /**

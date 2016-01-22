@@ -102,9 +102,27 @@ object Application extends Controller {
     }
   }
 
+  private[this] def kernelResponse(id:Option[String]) =
+    Json.parse(
+      s"""
+         |{
+         |"id": ${if (id.isDefined) "\""+id.get+"\"" else "null"},
+         |"name": "spark",
+         |"language_info": {
+         |  "name" : "Scala",
+         |  "file_extension" : "scala",
+         |  "codemirror_mode" : "text/x-scala"
+         |}
+         |}
+         |""".stripMargin.trim
+    )
 
-  private[this] def newSession(kernelId: Option[String] = None,
-    notebookPath: Option[String] = None) = {
+  def getSession(notebookPath:String) = Action {
+    val id = KernelManager.atPath(notebookPath).map(_._1)
+    Ok(Json.obj("kernel" → kernelResponse(id)))
+  }
+
+  private[this] def newSession(kernelId: Option[String] = None, notebookPath: Option[String] = None) = {
     val existing = for {
       path <- notebookPath
       (id, kernel) <- KernelManager.atPath(path)
@@ -202,19 +220,7 @@ object Application extends Controller {
     }
 
     // todo add MD?
-    Json.parse(
-      s"""
-         |{
-         |"id": "$kId",
-         |"name": "spark",
-         |"language_info": {
-         |  "name" : "Scala",
-         |  "file_extension" : "scala",
-         |  "codemirror_mode" : "text/x-scala"
-         |}
-         |}
-         |""".stripMargin.trim
-    )
+    kernelResponse(Some(kId))
   }
 
   def createSession() = Action(parse.tolerantJson) /* → posted as urlencoded form oO */ { request =>
