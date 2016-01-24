@@ -2,6 +2,8 @@ package notebook.kernel.repl.common
 
 import java.io.ByteArrayOutputStream
 
+import scala.concurrent.{Future, Promise}
+
 import notebook.kernel.EvaluationResult
 import notebook.util.Match
 
@@ -56,4 +58,11 @@ trait ReplT {
   def sparkContextAvailable: Boolean
   def stop(): Unit
 
+}
+
+object ReplT {
+  def create(opts:List[String], deps:List[String]):ReplT = {
+    val replClass = getClass.getClassLoader.loadClass("notebook.kernel.Repl")
+    replClass.getConstructors().head.newInstance(opts, deps).asInstanceOf[ReplT]
+  }
 }

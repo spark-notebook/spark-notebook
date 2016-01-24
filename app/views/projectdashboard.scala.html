@@ -21,49 +21,55 @@
     <div id="tab_content" class="tabbable">
       <ul id="tabs" class="nav nav-tabs">
         <li class="active"><a href="#notebooks" data-toggle="tab">Files</a></li>
-        <li><a href="#running" data-toggle="tab">Running</a></li>
-        <li><a href="#clusters" data-toggle="tab">Clusters</a></li>
+        @if(!_root_.notebook.BuildInfo.viewer) {
+          <li><a href="#running" data-toggle="tab">Running</a></li>
+          <li><a href="#clusters" data-toggle="tab">Clusters</a></li>
+        }
       </ul>
       <div class="tab-content">
         <div id="notebooks" class="tab-pane active">
           <div id="notebook_toolbar" class="row">
             <div class="col-sm-8 no-padding">
-              <form id='alternate_upload'  class='alternate_upload'>
-                <span id="notebook_list_info">
-                To import a notebook, drag the file onto the listing below or
-                <span class="input-overlay">
-                <input type="file" name="datafile" class="fileinput" multiple='multiple'>
-                click here.
-                </span>
-                </span>
-              </form>
+              @if(!_root_.notebook.BuildInfo.viewer) {
+                <form id='alternate_upload'  class='alternate_upload'>
+                  <span id="notebook_list_info">
+                  To import a notebook, drag the file onto the listing below or
+                  <span class="input-overlay">
+                  <input type="file" name="datafile" class="fileinput" multiple='multiple'>
+                  click here.
+                  </span>
+                  </span>
+                </form>
+              }
             </div>
             <div class="col-sm-4 no-padding tree-buttons">
               <div class="pull-right">
-                <div id="new-buttons" class="btn-group">
-                  <button class="dropdown-toggle btn btn-default btn-xs" data-toggle="dropdown">
-                  <span>New</span>
-                  <span class="caret"></span>
-                  </button>
-                  <ul id="new-menu" class="dropdown-menu">
-                    <!--<li role="presentation" id="new-file">
-                      <a role="menuitem" tabindex="-1" href="#">Text File</a>
-                    </li>-->
-                    <li role="presentation" id="new-folder">
-                      <a role="menuitem" tabindex="-1" href="#">Folder</a>
-                    </li>
-                    <!--
-                    <li role="presentation" id="new-terminal">
-                      <a role="menuitem" tabindex="-1" href="#">Terminal</a>
-                    </li>
-                    <li role="presentation" id="new-terminal-disabled" class="disabled">
-                      <a role="menuitem" tabindex="-1" href="#">Terminals Unavailable</a>
-                    </li>
-                    -->
-                    <li role="presentation" class="divider"></li>
-                    <li role="presentation" class="dropdown-header" id="notebook-kernels">Notebooks</li>
-                  </ul>
-                </div>
+                @if(!_root_.notebook.BuildInfo.viewer) {
+                  <div id="new-buttons" class="btn-group">
+                    <button class="dropdown-toggle btn btn-default btn-xs" data-toggle="dropdown">
+                    <span>New</span>
+                    <span class="caret"></span>
+                    </button>
+                    <ul id="new-menu" class="dropdown-menu">
+                      <!--<li role="presentation" id="new-file">
+                        <a role="menuitem" tabindex="-1" href="#">Text File</a>
+                      </li>-->
+                      <li role="presentation" id="new-folder">
+                        <a role="menuitem" tabindex="-1" href="#">Folder</a>
+                      </li>
+                      <!--
+                      <li role="presentation" id="new-terminal">
+                        <a role="menuitem" tabindex="-1" href="#">Terminal</a>
+                      </li>
+                      <li role="presentation" id="new-terminal-disabled" class="disabled">
+                        <a role="menuitem" tabindex="-1" href="#">Terminals Unavailable</a>
+                      </li>
+                      -->
+                      <li role="presentation" class="divider"></li>
+                      <li role="presentation" class="dropdown-header" id="notebook-kernels">Notebooks</li>
+                    </ul>
+                  </div>
+                }
                 <div class="btn-group">
                     <button id="refresh_notebook_list" title="Refresh notebook list" class="btn btn-default btn-xs"><i class="fa fa-refresh"></i></button>
                 </div>

@@ -596,6 +596,7 @@ object Application extends Controller {
         "read-only" → read_only,
         "base-url" → base_project_url,
         "notebook-path" → path,
+        "viewer" → BuildInfo.viewer.toString,
         "terminals-available" → terminals_available
       ),
       Breadcrumbs(

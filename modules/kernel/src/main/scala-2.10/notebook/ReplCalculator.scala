@@ -118,7 +118,7 @@ class ReplCalculator(
   private var _repl: Option[ReplT] = None
 
   private def repl: ReplT = _repl getOrElse {
-    val r = new Repl(compilerArgs, depsJars)
+    val r = ReplT.create(compilerArgs, depsJars)
     _repl = Some(r)
     r
   }

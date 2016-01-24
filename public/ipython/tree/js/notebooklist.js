@@ -29,6 +29,7 @@ define([
         this.session_list = options.session_list;
         // allow code re-use by just changing element_name in kernellist.js
         this.element_name = options.element_name || 'notebook';
+        this.viewer = (options.viewer === "true");
         this.selector = selector;
         if (this.selector !== undefined) {
             this.element = $(selector);
@@ -274,6 +275,14 @@ define([
     };
 
 
+    NotebookList.prototype.read_only_url = function(url) {
+        if (this.viewer) {
+            return  url+'?read_only=1';
+        } else {
+            return url;
+        }
+    };
+
     NotebookList.prototype.add_link = function (model, item) {
         var id = model.id,
             path = model.path,
@@ -287,10 +296,12 @@ define([
         item.find(".item_icon").addClass(icon).addClass('icon-fixed-width');
         var link = item.find("a.item_link")
             .attr('href',
-                utils.url_join_encode(
-                    this.base_url,
-                    uri_prefix,
-                    path
+                this.read_only_url(
+                    utils.url_join_encode(
+                        this.base_url,
+                        uri_prefix,
+                        path
+                    )
                 )
             );
         // directory nav doesn't open new tabs
@@ -298,12 +309,12 @@ define([
         if (model.type !== "directory") {
             link.attr('target','_blank');
         }
-        if (model.type !== 'directory') {
+        if (model.type !== 'directory' && !this.viewer) {
             this.add_duplicate_button(item);
         }
-        if (model.type == 'file') {
+        if (model.type == 'file' && !this.viewer) {
             this.add_delete_button(item);
-        } else if (model.type == 'notebook') {
+        } else if (model.type == 'notebook' && !this.viewer) {
             this.add_view_button(model, item, path);
             if (this.sessions[path] === undefined){
                 this.add_delete_button(item);
@@ -367,11 +378,9 @@ define([
             this.base_url,
             uri_prefix,
             path
-        ) + '?read_only=1';
-        var view_button = $("<button/>").text("View (read-only)").addClass("btn btn-warning btn-xs").click(function (e) {
-            window.location.href = url;
-            return false;
-        });
+        );
+        url = this.read_only_url(url)
+        var view_button = $("<a target='_blank' href="+url+"/>").html("<span class='text text-warning'>View (read-only)</span>").addClass("btn btn-default btn-xs");
         item.find(".item_buttons").prepend(view_button);
     };
 
