@@ -21,7 +21,7 @@
     <div id="tab_content" class="tabbable">
       <ul id="tabs" class="nav nav-tabs">
         <li class="active"><a href="#notebooks" data-toggle="tab">Files</a></li>
-        @if(!_root_.notebook.BuildInfo.viewer) {
+        @if(!_root_.utils.AppUtils.config.viewer) {
           <li><a href="#running" data-toggle="tab">Running</a></li>
           <li><a href="#clusters" data-toggle="tab">Clusters</a></li>
         }
@@ -30,7 +30,7 @@
         <div id="notebooks" class="tab-pane active">
           <div id="notebook_toolbar" class="row">
             <div class="col-sm-8 no-padding">
-              @if(!_root_.notebook.BuildInfo.viewer) {
+              @if(!_root_.utils.AppUtils.config.viewer) {
                 <form id='alternate_upload'  class='alternate_upload'>
                   <span id="notebook_list_info">
                   To import a notebook, drag the file onto the listing below or
@@ -44,7 +44,7 @@
             </div>
             <div class="col-sm-4 no-padding tree-buttons">
               <div class="pull-right">
-                @if(!_root_.notebook.BuildInfo.viewer) {
+                @if(!_root_.utils.AppUtils.config.viewer) {
                   <div id="new-buttons" class="btn-group">
                     <button class="dropdown-toggle btn btn-default btn-xs" data-toggle="dropdown">
                     <span>New</span>

@@ -53,7 +53,7 @@ parallelExecution in Test in ThisBuild := false
 // these java options are for the forked test JVMs
 javaOptions in ThisBuild ++= Seq("-Xmx512M", "-XX:MaxPermSize=128M")
 
-val viewerMode = Option(sys.props.getOrElse("viewer", "false")).get.toBoolean
+val viewerMode = Option(sys.props.getOrElse("manager.viewer", "false")).get.toBoolean
 
 
 /*

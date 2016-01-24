@@ -275,8 +275,8 @@ define([
     };
 
 
-    NotebookList.prototype.read_only_url = function(url) {
-        if (this.viewer) {
+    NotebookList.prototype.read_only_url = function(url, force) {
+        if (force || this.viewer) {
             return  url+'?read_only=1';
         } else {
             return url;
@@ -379,7 +379,7 @@ define([
             uri_prefix,
             path
         );
-        url = this.read_only_url(url)
+        url = this.read_only_url(url, true)
         var view_button = $("<a target='_blank' href="+url+"/>").html("<span class='text text-warning'>View (read-only)</span>").addClass("btn btn-default btn-xs");
         item.find(".item_buttons").prepend(view_button);
     };
