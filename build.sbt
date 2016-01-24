@@ -53,7 +53,7 @@ parallelExecution in Test in ThisBuild := false
 // these java options are for the forked test JVMs
 javaOptions in ThisBuild ++= Seq("-Xmx512M", "-XX:MaxPermSize=128M")
 
-val viewerMode = Option(sys.props.getOrElse("manager.viewer", "false")).get.toBoolean
+val viewerMode = Option(sys.env.getOrElse("VIEWER_MODE", "false")).get.toBoolean
 
 
 /*
@@ -129,12 +129,16 @@ scriptClasspath in batScriptReplacements := Seq("*")
 batScriptExtraDefines += {
   "set \"APP_CLASSPATH=%CLASSPATH_OVERRIDES%;%YARN_CONF_DIR%;%HADOOP_CONF_DIR%;%EXTRA_CLASSPATH%;%APP_CLASSPATH%\""
 }
+batScriptExtraDefines += {
+  "set \"VIEWER_MODE="+viewerMode+"\""
+}
 
 val ClasspathPattern = "declare -r app_classpath=\"(.*)\"\n".r
 
 bashScriptDefines := bashScriptDefines.value.map {
   case ClasspathPattern(classpath) =>
-    s"""declare -r app_classpath="$${CLASSPATH_OVERRIDES}:$${YARN_CONF_DIR}:$${HADOOP_CONF_DIR}:$${EXTRA_CLASSPATH}:${classpath}"\n"""
+    s"""declare -r app_classpath="$${CLASSPATH_OVERRIDES}:$${YARN_CONF_DIR}:$${HADOOP_CONF_DIR}:$${EXTRA_CLASSPATH}:${classpath}"\n""" +
+    s"""export VIEWER_MODE=$viewerMode"""
   case entry => entry
 }
 
