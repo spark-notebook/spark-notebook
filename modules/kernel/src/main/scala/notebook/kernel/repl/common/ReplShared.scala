@@ -63,6 +63,8 @@ trait ReplT {
 object ReplT {
   def create(opts:List[String], deps:List[String]):ReplT = {
     val replClass = getClass.getClassLoader.loadClass("notebook.kernel.Repl")
-    replClass.getConstructors().head.newInstance(opts, deps).asInstanceOf[ReplT]
+    replClass.getConstructor(classOf[List[String]], classOf[List[String]])
+              .newInstance(opts, deps)
+              .asInstanceOf[ReplT]
   }
 }

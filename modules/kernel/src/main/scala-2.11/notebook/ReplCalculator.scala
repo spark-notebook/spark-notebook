@@ -13,6 +13,7 @@ import kernel._
 
 import org.sonatype.aether.repository.RemoteRepository
 
+import notebook.kernel.repl.common.ReplT
 import notebook.OutputTypes._
 import notebook.util.{Deps, Match, Repos}
 import notebook.front._
@@ -108,31 +109,19 @@ class ReplCalculator(
   val (depsJars, depsScript):(List[String],(String, ()=>String)) = customDeps.map { d =>
     val customDeps = d.mkString("\n")
     val deps = Deps.script(customDeps, remotes, repo).toOption.getOrElse(List.empty[String])
-    (deps, ("deps", () => s"""
-                    |val CustomJars = ${ deps.mkString("Array(\"", "\",\"", "\")") }
-                    |
-                    """.stripMargin))
+    (deps, ("deps", () => {
+      s"""
+         |val CustomJars = ${deps.mkString("Array(\"", "\",\"", "\")").replace("\\","\\\\")}
+      """.stripMargin
+    }))
   }.getOrElse((List.empty[String], ("deps", () => "val CustomJars = Array.empty[String]\n")))
-
-
-
-  ("deps", () => customDeps.map { d =>
-    val customDeps = d.mkString("\n")
-
-    val deps = Deps.script(customDeps, remotes, repo).toOption.getOrElse(List.empty[String])
-
-    (deps, s"""
-    |val CustomJars = ${ deps.mkString("Array(\"", "\",\"", "\")") }
-    |
-    """.stripMargin)
-  }.getOrElse((List.empty[String], "val CustomJars = Array.empty[String]\n")))
 
   val ImportsScripts = ("imports", () => customImports.map(_.mkString("\n") + "\n").getOrElse("\n"))
 
-  private var _repl:Option[Repl] = None
+  private var _repl:Option[ReplT] = None
 
-  private def repl:Repl = _repl getOrElse {
-    val r = new Repl(compilerArgs, depsJars)
+  private def repl: ReplT = _repl getOrElse {
+    val r = ReplT.create(compilerArgs, depsJars)
     _repl = Some(r)
     r
   }
@@ -233,7 +222,7 @@ class ReplCalculator(
         log.debug(s"Interrupting the cell: $killCellId")
         val jobGroupId = JobTracking.jobGroupId(killCellId)
         // make sure sparkContext is already available!
-        if (jobsInQueueToKill.isEmpty && repl.interp.allDefinedNames.exists(_.toString == "globalScope")) {
+        if (jobsInQueueToKill.isEmpty && repl.sparkContextAvailable) {
           log.info(s"Killing job Group $jobGroupId")
           val thisSender = sender()
           repl.evaluate(
@@ -254,7 +243,7 @@ class ReplCalculator(
         log.debug("Clearing the queue of size " + queue.size)
         queue = scala.collection.immutable.Queue.empty
         repl.evaluate(
-          "sparkContext.cancelAllJobs()",
+          "globalScope.sparkContext.cancelAllJobs()",
           msg => {
             thisSender ! StreamResponse(msg, "stdout")
           }
@@ -282,7 +271,7 @@ class ReplCalculator(
           tryDeps match {
             case TSuccess(deps) =>
               eval("""
-                sparkContext.stop()
+                globalScope.sparkContext.stop()
               """)(
                 "CP reload processed successfully",
                 (str:String) => "Error in :dp: \n%s".format(str)
@@ -313,7 +302,7 @@ class ReplCalculator(
         case cpRegex(cp) =>
           val jars = cp.trim().split("\n").toList.map(_.trim()).filter(_.size > 0)
           repl.evaluate("""
-            sparkContext.stop()
+            globalScope.sparkContext.stop()
           """)._1 match {
             case Failure(str) =>
               log.error("Error in :cp: \n%s".format(str))
