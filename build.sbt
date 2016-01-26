@@ -53,6 +53,8 @@ parallelExecution in Test in ThisBuild := false
 // these java options are for the forked test JVMs
 javaOptions in ThisBuild ++= Seq("-Xmx512M", "-XX:MaxPermSize=128M")
 
+val viewerMode = Option(sys.env.getOrElse("VIEWER_MODE", "false")).get.toBoolean
+
 
 /*
   adding nightly build resolver like
@@ -127,12 +129,16 @@ scriptClasspath in batScriptReplacements := Seq("*")
 batScriptExtraDefines += {
   "set \"APP_CLASSPATH=%CLASSPATH_OVERRIDES%;%YARN_CONF_DIR%;%HADOOP_CONF_DIR%;%EXTRA_CLASSPATH%;%APP_CLASSPATH%\""
 }
+batScriptExtraDefines += {
+  "set \"VIEWER_MODE="+viewerMode+"\""
+}
 
 val ClasspathPattern = "declare -r app_classpath=\"(.*)\"\n".r
 
 bashScriptDefines := bashScriptDefines.value.map {
   case ClasspathPattern(classpath) =>
-    s"""declare -r app_classpath="$${CLASSPATH_OVERRIDES}:$${YARN_CONF_DIR}:$${HADOOP_CONF_DIR}:$${EXTRA_CLASSPATH}:${classpath}"\n"""
+    s"""declare -r app_classpath="$${CLASSPATH_OVERRIDES}:$${YARN_CONF_DIR}:$${HADOOP_CONF_DIR}:$${EXTRA_CLASSPATH}:${classpath}"\n""" +
+    s"""export VIEWER_MODE=$viewerMode"""
   case entry => entry
 }
 
@@ -173,26 +179,28 @@ libraryDependencies <++= scalaBinaryVersion {
 }
 
 lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).enablePlugins(SbtWeb)
-  .aggregate(tachyon, subprocess, observable, common, spark, kernel)
-  .dependsOn(tachyon, subprocess, observable, common, spark, kernel)
-  .settings(sharedSettings: _*)
-  .settings(
-    bashScriptExtraDefines <+= (version, scalaBinaryVersion, scalaVersion, sparkVersion, hadoopVersion, withHive, withParquet) map { (v, sbv, sv, pv, hv, wh, wp) =>
-      """export ADD_JARS="${ADD_JARS},${lib_dir}/$(ls ${lib_dir} | grep common.common | head)""""
-    },
-    mappings in Universal ++= directory("notebooks"),
-    mappings in Docker ++= directory("notebooks")
-  )
-  .settings(includeFilter in(Assets, LessKeys.less) := "*.less")
-  .settings(unmanagedSourceDirectories in Compile <<= (scalaSource in Compile)(Seq(_))) //avoid app-2.10 and co to be created
-  .settings(initialCommands += ConsoleHelpers.cleanAllOutputs)
-  .settings(
-    git.useGitDescribe := true,
-    git.baseVersion := SparkNotebookSimpleVersion
-  )
-  .settings(
-    gitStampSettings: _*
-  )
+      .aggregate(tachyon, subprocess, observable, common, kernel)
+      .aggregate((if (!viewerMode) Seq[sbt.ProjectReference](spark) else Nil): _*)
+      .dependsOn(tachyon, subprocess, observable, common, kernel)
+      .dependsOn((if (!viewerMode) List[sbt.ClasspathDep[sbt.ProjectReference]](spark) else Nil): _*)
+      .settings(sharedSettings: _*)
+      .settings(
+        bashScriptExtraDefines <+= (version, scalaBinaryVersion, scalaVersion, sparkVersion, hadoopVersion, withHive, withParquet) map { (v, sbv, sv, pv, hv, wh, wp) =>
+          """export ADD_JARS="${ADD_JARS},${lib_dir}/$(ls ${lib_dir} | grep common.common | head)""""
+        },
+        mappings in Universal ++= directory("notebooks"),
+        mappings in Docker ++= directory("notebooks")
+      )
+      .settings(includeFilter in(Assets, LessKeys.less) := "*.less")
+      .settings(unmanagedSourceDirectories in Compile <<= (scalaSource in Compile)(Seq(_))) //avoid app-2.10 and co to be created
+      .settings(initialCommands += ConsoleHelpers.cleanAllOutputs)
+      .settings(
+        git.useGitDescribe := true,
+        git.baseVersion := SparkNotebookSimpleVersion
+      )
+      .settings(
+        gitStampSettings: _*
+      )
 
 lazy val subprocess = project.in(file("modules/subprocess"))
   .settings(libraryDependencies ++= playDeps)
@@ -269,13 +277,15 @@ lazy val common = Project(id = "common", base = file("modules/common"))
                         BuildInfoKey.action("buildTime") {
                           val formatter = new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy")
                           formatter.format(new java.util.Date(System.currentTimeMillis))
-                        }
+                        },
+                        "viewer" → viewerMode
                       ),
     buildInfoPackage := "notebook"
   )
 
 lazy val spark = Project(id = "spark", base = file("modules/spark"))
   .dependsOn(common, subprocess, observable)
+  .dependsOn(kernel)
   .settings(
     libraryDependencies ++= Seq(
       akkaRemote,
@@ -315,14 +325,14 @@ lazy val tachyon = Project(id = "tachyon", base = file("modules/tachyon"))
   .settings(tachyonSettings: _*)
 
 lazy val kernel = Project(id = "kernel", base = file("modules/kernel"))
-  .dependsOn(common, subprocess, observable, spark)
-  .settings(
-    libraryDependencies ++= Seq(
-      akkaRemote,
-      akkaSlf4j,
-      slf4jLog4j,
-      commonsIO
-    ),
-    unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
-  )
-  .settings(sharedSettings: _*)
+                  .dependsOn(common, subprocess, observable)
+                  .settings(
+                    libraryDependencies ++= Seq(
+                      akkaRemote,
+                      akkaSlf4j,
+                      slf4jLog4j,
+                      commonsIO
+                    ),
+                    unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
+                  )
+                  .settings(sharedSettings: _*)

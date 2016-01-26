@@ -118,7 +118,7 @@ class ReplCalculator(
   private var _repl: Option[ReplT] = None
 
   private def repl: ReplT = _repl getOrElse {
-    val r = new Repl(compilerArgs, depsJars)
+    val r = ReplT.create(compilerArgs, depsJars)
     _repl = Some(r)
     r
   }
@@ -230,7 +230,7 @@ class ReplCalculator(
           log.info(s"Killing job Group $jobGroupId")
           val thisSender = sender()
           repl.evaluate(
-            s"""sparkContext.cancelJobGroup("${jobGroupId}")""",
+            s"""globalScope.sparkContext.cancelJobGroup("${jobGroupId}")""",
             msg => thisSender ! StreamResponse(msg, "stdout")
           )
         }
@@ -273,7 +273,7 @@ class ReplCalculator(
 
           tryDeps match {
             case TSuccess(deps) =>
-              eval( """sparkContext.stop() """)("CP reload processed successfully",
+              eval( """globalScope.sparkContext.stop() """)("CP reload processed successfully",
                 (str: String) => "Error in :dp: \n%s".format(str)
               )
               val (_r, replay) = repl.addCp(deps)
@@ -301,7 +301,7 @@ class ReplCalculator(
 
         case cpRegex(cp) =>
           val jars = cp.trim().split("\n").toList.map(_.trim()).filter(_.length > 0)
-          repl.evaluate( """sparkContext.stop()""")._1 match {
+          repl.evaluate( """globalScope.sparkContext.stop()""")._1 match {
             case Failure(str) =>
               log.error("Error in :cp: \n%s".format(str))
             case _ =>
@@ -399,7 +399,7 @@ class ReplCalculator(
         def replEvaluate(code:String, cellId:String) = {
           val cellResult = try {
            repl.evaluate(s"""
-              |sparkContext.setJobGroup("${JobTracking.jobGroupId(cellId)}", "${JobTracking.jobDescription(code, start)}")
+              |globalScope.sparkContext.setJobGroup("${JobTracking.jobGroupId(cellId)}", "${JobTracking.jobDescription(code, start)}")
               |$code
               """.stripMargin,
               msg => thisSender ! StreamResponse(msg, "stdout"),
@@ -407,7 +407,7 @@ class ReplCalculator(
             )
           }
           finally {
-             repl.evaluate("sparkContext.clearJobGroup()")
+             repl.evaluate("globalScope.sparkContext.clearJobGroup()")
           }
           cellResult
         }
