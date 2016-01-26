@@ -1187,15 +1187,12 @@ import notebook.front.third.wisp._
 
 Here is how you can draw an area chart:
 ```scala
-Plot(Seq(SummarySeries((0 to 9) zip (10 to 100 by 10), "area")))
+Plot(Seq(Pairs((0 to 9) zip (10 to 100 by 10), "area")))
 ```
 
-And a bar plot with category values
+And a simple bar plot
 ```scala
-import com.quantifind.charts.highcharts.Axis
-Plot(Seq(SummarySeries((0 to 9) zip (10 to 100 by 10), "column")),
-    xCat = Some(Seq("a", "b", "c", "d", "e", "f", "g", "h", "i", "j"))
-)
+Plot(Seq(Pairs((0 to 9) zip (10 to 100 by 10), "column")))
 ```
 
 ### Timeseries with  [Rickshaw](http://code.shutterstock.com/rickshaw/)

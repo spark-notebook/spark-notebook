@@ -186,7 +186,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "import notebook.front.third.wisp._\ndef histFor(air:String, nb:Int=100) = {\n  val airArr = arrDelaysByAerHist(air)\n  val airDep = depDelaysByAerHist(air)\n  val airDiff = diffDelaysByAerHist(air)\n  <h5>Hist</h5>++\n  Plot(Seq(\n    SummarySeries(airArr.map{ case ((m1, m2), x) => (m2.toDouble, x.toDouble)}, \"column\", _.copy(color=Some(\"red\"), name=Some(\"arrival\"))),\n    SummarySeries(airDep.map{ case ((m1, m2), x) => (m2.toDouble, x.toDouble)}, \"column\", _.copy(color=Some(\"green\"), name=Some(\"departure\")))\n  )) ++ \n  <h5>Hist of the diff</h5>++\n  Plot(Seq(\n    SummarySeries(airDiff.map{ case ((m1, m2), x) => (m2.toDouble, x.toDouble)}, \"column\", _.copy(color=Some(\"red\"), name=Some(\"arrival - departure\")))\n  ))\n}",
+    "source" : "import notebook.front.third.wisp._\n\ndef histFor(air:String, nb:Int=100) = {\n  val airArr = arrDelaysByAerHist(air)\n  val airDep = depDelaysByAerHist(air)\n  val airDiff = diffDelaysByAerHist(air)\n  <h5>Hist</h5>++\n  Plot(Seq(\n    Pairs(airArr.map{ case ((m1, m2), x) => (m2.toDouble, x.toDouble)}, \"column\"),\n    Pairs(airDep.map{ case ((m1, m2), x) => (m2.toDouble, x.toDouble)}, \"column\")\n  )) ++ \n  <h5>Hist of the diff</h5>++\n  Plot(Seq(\n    Pairs(airDiff.map{ case ((m1, m2), x) => (m2.toDouble, x.toDouble)}, \"column\")\n  ))\n}",
     "outputs" : [ ]
   }, {
     "metadata" : { },
@@ -314,7 +314,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val labelsAndPredictionsCount = labelsAndPredictions.count.toInt\nval labelsAndPredictionsSortedByLabel = labelsAndPredictions.sortBy(_._1).cache()\n\n// sampling to avoid memory or rendereing problems\nval seed = 123456L\nval takeCount = 100\nval somePredictions = labelsAndPredictions.takeSample(false, takeCount, seed)\nval somePredictionsSorted = labelsAndPredictionsSortedByLabel.takeSample(false, takeCount, seed)\n\nPlot(Seq(\n  SummarySeries((1 to takeCount) zip somePredictions.map(_._1), \"line\", _.copy(color=Some(\"darkblue\"), name=Some(\"Training\"))),\n  SummarySeries((1 to takeCount) zip somePredictions.map(_._2), \"line\", _.copy(color=Some(\"lightgreen\"), name=Some(\"Prediction\")))\n)) ++ Plot(Seq(\n  SummarySeries((1 to takeCount) zip somePredictionsSorted.map(_._1), \"line\", _.copy(color=Some(\"darkblue\"), name=Some(\"Training\"))),\n  SummarySeries((1 to takeCount) zip somePredictionsSorted.map(_._2), \"line\", _.copy(color=Some(\"lightgreen\"), name=Some(\"Prediction\")))\n))",
+    "source" : "val labelsAndPredictionsCount = labelsAndPredictions.count.toInt\nval labelsAndPredictionsSortedByLabel = labelsAndPredictions.sortBy(_._1).cache()\n\n// sampling to avoid memory or rendereing problems\nval seed = 123456L\nval takeCount = 100\nval somePredictions = labelsAndPredictions.takeSample(false, takeCount, seed)\nval somePredictionsSorted = labelsAndPredictionsSortedByLabel.takeSample(false, takeCount, seed)\n\nPlot(Seq(\n  Pairs((1 to takeCount) zip somePredictions.map(_._1), \"line\"),\n  Pairs((1 to takeCount) zip somePredictions.map(_._2), \"line\")\n)) ++ Plot(Seq(\n  Pairs((1 to takeCount) zip somePredictionsSorted.map(_._1), \"line\"),\n  Pairs((1 to takeCount) zip somePredictionsSorted.map(_._2), \"line\")\n))",
     "outputs" : [ ]
   }, {
     "metadata" : { },
