@@ -179,7 +179,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "twitterStream .window(Seconds(60), Seconds(6))  \n              . filter{ s => \n                s.getGeoLocation() != null && \n                s.getGeoLocation().getLatitude() != null && \n                s.getGeoLocation().getLongitude() != null\n              }\n              .map(s => (s.getGeoLocation().getLatitude(), s.getGeoLocation().getLongitude(), s.getText()))\n              .foreachRDD{rdd => \n                geo.applyOn(rdd.take(100))\n              }",
+    "source" : "twitterStream .window(Seconds(60), Seconds(6))  \n              . filter{ s => \n                s.getGeoLocation() != null\n              }\n              .map(s => (s.getGeoLocation().getLatitude(), s.getGeoLocation().getLongitude(), s.getText()))\n              .foreachRDD{rdd => \n                geo.applyOn(rdd.take(100))\n              }",
     "outputs" : [ ]
   }, {
     "metadata" : { },
