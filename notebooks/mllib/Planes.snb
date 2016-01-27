@@ -59,43 +59,7 @@
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
-    "source" : "For this small example, we're going to use a subset of the data, that is, only the year [2008](http://stat-computing.org/dataexpo/2009/2008.csv.bz2). Data for all available years can be found [here](http://stat-computing.org/dataexpo/2009/the-data.html).\n\n**Warning**: this data is distributed in bz2."
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "Create directory for our data to live in."
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : ":sh mkdir -p /home/noootsab/data/dataexpo_2009",
-    "outputs" : [ ]
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "Download compressed data file."
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : ":sh wget -O /home/noootsab/data/dataexpo_2009/2008.csv.bz2 http://stat-computing.org/dataexpo/2009/2008.csv.bz2",
-    "outputs" : [ ]
-  }, {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "Unzip bz2 file to CSV."
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : ":sh bunzip2 /home/noootsab/data/dataexpo_2009/2008.csv.bz2",
-    "outputs" : [ ]
+    "source" : "For this small example, we're going to use a subset of the data, that is, only the year [2008](http://stat-computing.org/dataexpo/2009/2008.csv.bz2).\n\n**Warning**: this data is distributed in bz2.\n\nData can be found [here](http://stat-computing.org/dataexpo/2009/the-data.html)"
   }, {
     "metadata" : { },
     "cell_type" : "markdown",
