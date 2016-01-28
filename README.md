@@ -46,6 +46,10 @@ the different cluster deployment options (Amazon EMR, Mesons, YARN), and to find
 
 > Spark Notebook gives us a clean, useful way to mix code and prose when we demo and explain our tech to customers. The Spark ecosystem needed this.
 
+### [Vinted.com](http://www.vinted.com)
+
+> It allows our analysts and developers (15+ users) to run ad-hoc queries, to perform complex data analysis and data visualisations, prototype machine learning pipelines. In addition, we use it to power our BI dashboards.
+
 ## Adopters
 
 |                 Name                  |                                        Logo                                              |                     URL                     |              Description                            |
