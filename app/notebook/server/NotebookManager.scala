@@ -25,10 +25,6 @@ class NotebookManager(val name: String, val notebookDir: File) {
     val basePath = notebookDir.getCanonicalPath
     val decodedPath = URLDecoder.decode(path, UTF_8)
     val nbFile = new File(basePath, decodedPath)
-    //  This check is probably not strictly necessary due to URL encoding of name
-    //  (should escape any path traversal components), but let's be safe
-    require(nbFile.getCanonicalPath.startsWith(basePath),
-      "Unable to access notebook outside of notebooks path.")
     nbFile
   }
 
