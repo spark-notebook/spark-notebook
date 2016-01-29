@@ -3,7 +3,6 @@ package notebook.front.widgets.magic
 import org.apache.spark.sql.{DataFrame, Row}
 
 import notebook.front.widgets.magic.Implicits._
-import notebook.front.widgets.magic.LimitBasedSampling
 import notebook.front.widgets.isNumber
 
 trait ExtraSamplerImplicits {
