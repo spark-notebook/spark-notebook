@@ -252,7 +252,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
                 }
                 iws(o)
               } catch {
-                case e =>
+                case NonFatal(e) =>
                   e.printStackTrace
                   LOG.error("Ooops, exception in the cell", e)
                   <span style="color:red;">Ooops, exception in the cell: {e.getMessage}</span>
@@ -260,7 +260,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
             } else {
               // a line like println(...) is technically a val, but returns null for some reason
               // so wrap it in an option in case that happens...
-              Option(line.call("$result")) map { result => Text(try { result.toString } catch { case e => "Fail to `toString` the result: " + e.getMessage }) } getOrElse NodeSeq.Empty
+              Option(line.call("$result")) map { result => Text(try { result.toString } catch { case NonFatal(e) => "Fail to `toString` the result: " + e.getMessage }) } getOrElse NodeSeq.Empty
             }
           } else {
             NodeSeq.Empty

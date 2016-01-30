@@ -12,6 +12,7 @@ import play.api.libs.json._
 import scala.concurrent._
 import scala.collection.immutable.Queue
 import scala.concurrent.duration._
+import scala.language.{postfixOps, reflectiveCalls}
 
 case class SessionOperation(actor: ActorRef, cellId: Option[String])
 

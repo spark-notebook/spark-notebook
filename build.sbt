@@ -116,7 +116,7 @@ publishMavenStyle := false
 
 javacOptions ++= Seq("-Xlint:deprecation", "-g")
 
-scalacOptions += "-deprecation"
+scalacOptions ++= Seq("-deprecation", "-feature")
 
 scalacOptions ++= Seq("-Xmax-classfile-name", "100")
 

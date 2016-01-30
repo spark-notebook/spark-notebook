@@ -264,7 +264,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
 
                 iws(module.getClass.getClassLoader.loadClass(renderedClass2.getName + "$iw"), topInstance)
               } catch {
-                case e: Throwable =>
+                case NonFatal(e) =>
                   e.printStackTrace
                   LOG.error("Ooops, exception in the cell", e)
                   <span style="color:red;">Ooops, exception in the cell: {e.getMessage}</span>
