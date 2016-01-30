@@ -46,16 +46,6 @@
     "cell_type" : "code",
     "source" : "CustomTauChart(Seq(Person(\"boris\", 10), Person(\"john\", 20), Person(\"john\", 10)),\n              \"\"\"{ type: 'line',\n    x: 'name',\n    y: 'yearsWorked',\n    color: 'yearsStudied'}\"\"\")",
     "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : true,
-      "id" : "4D480D44BA8D4302B3402D724914524C"
-    },
-    "cell_type" : "code",
-    "source" : "",
-    "outputs" : [ ]
   } ],
   "nbformat" : 4
 }
