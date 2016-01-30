@@ -14,6 +14,8 @@ version in ThisBuild <<= (scalaVersion, sparkVersion, hadoopVersion, withHive, w
   s"$SparkNotebookSimpleVersion-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "") + (if (p) "-with-parquet" else "")
 }
 
+updateOptions := updateOptions.value.withCachedResolution(true)
+
 maintainer := DockerProperties.maintainer //Docker
 
 enablePlugins(UniversalPlugin)
