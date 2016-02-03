@@ -2,14 +2,14 @@ define([
     'jquery',
     'underscore',
     'tauCharts',
-    'tauCharts_brewer',
-    'tauCharts_legend',
-    'tauCharts_annotations',
-    'tauCharts_export',
-    'tauCharts_layers',
-    'tauCharts_quickfilter',
-    'tauCharts_tooltip',
-    'tauCharts_trendline'
+    'taucharts_root/tauCharts.color-brewer',
+    'taucharts_root/plugins/tauCharts.legend',
+    'taucharts_root/plugins/tauCharts.annotations',
+    'taucharts_root/plugins/tauCharts.export',
+    'taucharts_root/plugins/tauCharts.layers',
+    'taucharts_root/plugins/tauCharts.quick-filter',
+    'taucharts_root/plugins/tauCharts.tooltip',
+    'taucharts_root/plugins/tauCharts.trendline',
 ], ($, _, tauCharts, brewer, legend, annotations, exporter, layers, filter, tip, trend) ->
   (dataO, container, options) ->
     h = options.height||400

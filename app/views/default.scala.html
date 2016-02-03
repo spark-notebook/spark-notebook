@@ -36,15 +36,8 @@
           nbextensions : '/nbextensions',
           kernelspecs : '/kernelspecs',
           underscore : '@routes.Assets.at("javascripts/third/underscore-min")',
+          taucharts_root: '@routes.Assets.at("javascripts/taucharts")',
           tauCharts : '@routes.Assets.at("javascripts/taucharts/tauCharts")',
-          tauCharts_brewer : '@routes.Assets.at("javascripts/taucharts/tauCharts.color-brewer")',
-          tauCharts_legend : '@routes.Assets.at("javascripts/taucharts/plugins/tauCharts.legend")',
-          tauCharts_annotations : '@routes.Assets.at("javascripts/taucharts/plugins/tauCharts.annotations")',
-          tauCharts_export : '@routes.Assets.at("javascripts/taucharts/plugins/tauCharts.export")',
-          tauCharts_layers : '@routes.Assets.at("javascripts/taucharts/plugins/tauCharts.layers")',
-          tauCharts_quickfilter : '@routes.Assets.at("javascripts/taucharts/plugins/tauCharts.quick-filter")',
-          tauCharts_tooltip : '@routes.Assets.at("javascripts/taucharts/plugins/tauCharts.tooltip")',
-          tauCharts_trendline : '@routes.Assets.at("javascripts/taucharts/plugins/tauCharts.trendline")',
           backbone : 'components/backbone/backbone-min',
           jquery: 'components/jquery/jquery.min',
           bootstrap: 'components/bootstrap/js/bootstrap.min',
@@ -111,8 +104,8 @@
       require.config({
         map: {
         '*':{
-             'contents': '@contents_js_source.getOrElse("services/contents")',
-            }
+          'contents': '@contents_js_source.getOrElse("services/contents")'
+        }
         }
       });
     </script>
