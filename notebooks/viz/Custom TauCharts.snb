@@ -1,0 +1,51 @@
+{
+  "metadata" : {
+    "name" : "Custom TauCharts",
+    "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customArgs" : null,
+    "customSparkConf" : null
+  },
+  "cells" : [ {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "5B7B122310AA44D3817B68DEB41538A0"
+    },
+    "cell_type" : "code",
+    "source" : "case class Person(name: String, yearsWorked: Int, yearsStudied: Int = 0)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "279832038C234EA7AD0871F17CE3DA6B"
+    },
+    "cell_type" : "code",
+    "source" : "CustomTauChart(Seq(Person(\"boris\", 10), Person(\"john\", 20), Person(\"john\", 10)),\n              \"\"\"{ type: 'line',\n    x: 'name',\n    y: 'yearsWorked',\n    color: 'yearsStudied'}\"\"\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "3ED5CE1D1EB84C01B344CDCB8CF0EF70"
+    },
+    "cell_type" : "code",
+    "source" : "CustomTauChart(Seq(Person(\"boris\", 10), Person(\"john\", 20), Person(\"john\", 10)),\n              \"\"\"{ type: 'line',\n    x: 'name',\n    y: 'yearsWorked',\n    color: 'yearsStudied'}\"\"\")",
+    "outputs" : [ ]
+  } ],
+  "nbformat" : 4
+}
