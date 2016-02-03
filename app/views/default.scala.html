@@ -15,6 +15,7 @@
 
         <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/c3.min.css")" type="text/css" />
         <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/pivot.css")" type="text/css" />
+        <link rel="stylesheet" href="@routes.Assets.at("javascripts/taucharts/tauCharts.min.css")" type="text/css" />
 
         @stylesheet
         @*<link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/bootstrap/css/bootstrap.min.css")" type="text/css" />*@
@@ -35,6 +36,8 @@
           nbextensions : '/nbextensions',
           kernelspecs : '/kernelspecs',
           underscore : '@routes.Assets.at("javascripts/third/underscore-min")',
+          taucharts_root: '@routes.Assets.at("javascripts/taucharts")',
+          tauCharts : '@routes.Assets.at("javascripts/taucharts/tauCharts")',
           backbone : 'components/backbone/backbone-min',
           jquery: 'components/jquery/jquery.min',
           bootstrap: 'components/bootstrap/js/bootstrap.min',
