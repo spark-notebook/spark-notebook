@@ -124,6 +124,7 @@ object Shared {
         .map(_.toInt) match {
           case List(1, y, z) if y <= 3 => "0.5.0"
           case List(1, 4, z) => "0.6.4"
+          case List(1, 6, z) => "0.8.2"
           case List(1, y, z) => "0.7.1"
           case _ => throw new IllegalArgumentException("Bad spark version for tachyon: " + sv)
         }
@@ -143,7 +144,7 @@ object Shared {
 
     val deps = sparkVersion { sv =>
       tachyonVersion(sv) match {
-        case x@"0.7.1"           =>
+        case x@("0.8.2"|"0.7.1")        =>
           Seq(
           "org.tachyonproject" % "tachyon-common" % x excludeAll(exludes:_*),
           "org.tachyonproject" % "tachyon-client" % x excludeAll(exludes:_*),
