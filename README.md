@@ -62,7 +62,7 @@ the different cluster deployment options (Amazon EMR, Mesons, YARN), and to find
 | Metail | ![Metail](http://metail.wpengine.com/wp-content/uploads/2013/11/Metail_Logo1.png) | [website](http://metail.com/) | The best body shape and garment fit company in the world. To create and empower everyone’s online body identity.|
 | kt NexR | ![kt NexR](http://ktnexr.com/images/main/kt_h_logo.jpg) | [website](http://ktnexr.com)| the kt NexR is one of the leading BigData company in the Korea from 2007. |
 | Skymind | ![Skymind](http://skymind.io/wp-content/uploads/2015/02/logo.png) | [website](http://www.skymind.io)| At Skymind, we’re tackling some of the most advanced problems in data analysis and machine intelligence. We offer start-of-the-art, flexible, scalable deep learning for industry. |
-| Amino | ![Amino](https://amino.com/static/img/amino-logo-300x75.png) | [website](http://www.Amino.com)| A new way to get the facts about your health care choices. |
+| Amino | ![Amino](https://amino.com/static/img/logos/amino-logo-123x30_2x.png) | [website](http://www.Amino.com)| A new way to get the facts about your health care choices. |
 | Vinted | ![Vinted](http://engineering.vinted.com/brandbook/images/logos/vinted.svg) | [website](http://www.vinted.com/)| Online marketplace and a social network focused on young women’s lifestyle. |
 | Vingle | ![Vingle](https://s3.amazonaws.com/vingle-assets/Vingle_Wordmark_Red.png) | [website](https://www.vingle.net)| Vingle is the community where you can meet someone like you. |
 | 47 Degrees | ![47 Degrees](http://www.47deg.com/assets/logo_148x148.png) | [website](http://www.47deg.com)| 47 Degrees is a global consulting firm and certified Typesafe & Databricks Partner specializing in Scala & Spark. |
