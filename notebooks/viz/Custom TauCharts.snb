@@ -1,0 +1,93 @@
+{
+  "metadata" : {
+    "name" : "Custom TauCharts",
+    "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customArgs" : null,
+    "customSparkConf" : null
+  },
+  "cells" : [ {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "5B7B122310AA44D3817B68DEB41538A0"
+    },
+    "cell_type" : "code",
+    "source" : "case class Person(name: String, yearsWorked: Int, yearsStudied: Int = 0)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "defined class Person\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 2
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "279832038C234EA7AD0871F17CE3DA6B"
+    },
+    "cell_type" : "code",
+    "source" : "CustomTauChart(Seq(Person(\"boris\", 10), Person(\"john\", 20), Person(\"john\", 10)), \n              \"\"\"{ type: 'bar',\n    x: 'name',\n    y: 'yearsWorked',\n    color: 'yearsWorked',\n    plugins: [\n      tauCharts.api.plugins.get('legend')(),\n      tauCharts.api.plugins.get('tooltip')(),\n      tauCharts.api.plugins.get('exportTo')(),\n      tauCharts.api.plugins.get('quick-filter')(),\n    ]}\"\"\")",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res5: notebook.front.widgets.CustomTauChart[Seq[Person]] = <CustomTauChart widget>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anonfd15a02762d843dc49588ca6076afefd&quot;,&quot;dataInit&quot;:[{&quot;name&quot;:&quot;boris&quot;,&quot;yearsWorked&quot;:10,&quot;yearsStudied&quot;:0},{&quot;name&quot;:&quot;john&quot;,&quot;yearsWorked&quot;:20,&quot;yearsStudied&quot;:0},{&quot;name&quot;:&quot;john&quot;,&quot;yearsWorked&quot;:10,&quot;yearsStudied&quot;:0}],&quot;genId&quot;:&quot;1606537186&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/customTauChart'], \n      function(playground, _magiccustomTauChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magiccustomTauChart,\n    \"o\": {\"js\":\"var chartOptions = { type: 'bar',\\n    x: 'name',\\n    y: 'yearsWorked',\\n    color: 'yearsWorked',\\n    plugins: [\\n      tauCharts.api.plugins.get('legend')(),\\n      tauCharts.api.plugins.get('tooltip')(),\\n      tauCharts.api.plugins.get('exportTo')(),\\n      tauCharts.api.plugins.get('quick-filter')(),\\n    ]};\",\"headers\":[\"name\",\"yearsWorked\",\"yearsStudied\"],\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n        <label for=\"input-anon9ef8a3c29385257c281f99353209fac1\">\n      Max Points\n    </label><input id=\"input-anon9ef8a3c29385257c281f99353209fac1\" type=\"number\" name=\"input-anon9ef8a3c29385257c281f99353209fac1\" data-bind=\"textInput: value, fireChange: true, valueUpdate: 'input'\">\n      <script data-selector=\"#input-anon9ef8a3c29385257c281f99353209fac1\" data-this=\"{&quot;valueId&quot;:&quot;anon9ef8a3c29385257c281f99353209fac1&quot;,&quot;valueInit&quot;:1000}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(\n ['observable', 'knockout'],\n function (Observable, ko) {\n   var obs = Observable.makeObservable(valueId)\n                       .extend({ rateLimit: { //throttle\n                                   timeout: 500,\n                                   method: \"notifyWhenChangesStop\"\n                                 }\n                               }\n                       );\n   ko.applyBindings({\n     value: obs\n   }, this);\n   obs(valueInit);\n }\n)/*]]>*/</script>\n    </input>\n        <p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon6cad014c7d2238e976ec14b13eb0c2e3&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p> <span style=\"color:red\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anonc11ec5e6290004f860f8b6ac655343e5&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p></span>\n        <div>\n        </div>\n      </div></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 3
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true,
+      "id" : "2A74BDC8E728489795ADA96D4C1149B7"
+    },
+    "cell_type" : "code",
+    "source" : "",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true,
+      "id" : "2C619562E35240A49BF1C6D1670A2CB3"
+    },
+    "cell_type" : "code",
+    "source" : "",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true,
+      "id" : "4D480D44BA8D4302B3402D724914524C"
+    },
+    "cell_type" : "code",
+    "source" : "",
+    "outputs" : [ ]
+  } ],
+  "nbformat" : 4
+}

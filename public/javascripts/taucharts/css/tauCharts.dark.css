@@ -1,0 +1,517 @@
+/* region place variables*/
+/* endregion */
+/* region map variables*/
+/* endregion */
+/* region variables for plugins */
+/* endregion */
+.graphical-report__layout {
+  line-height: 1;
+  font-family: Helvetica, Arial, sans-serif;
+}
+.graphical-report__layout text {
+  font: normal 13px Helvetica, Arial, sans-serif;
+}
+.graphical-report__chart {
+  font-family: Helvetica, Arial, sans-serif;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+}
+.graphical-report__layout {
+  display: -webkit-flexbox;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -ms-flex-align: stretch;
+  -webkit-align-items: stretch;
+  align-items: stretch;
+  -ms-flex-direction: column;
+  -webkit-flex-direction: column;
+          flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  background: #000;
+  color: #fff;
+}
+.graphical-report__layout__header {
+  -ms-flex: 0 0.1 auto;
+  -webkit-flex: 0 0.1 auto;
+          flex: 0 0.1 auto;
+}
+.graphical-report__layout__container {
+  display: -webkit-flexbox;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -ms-flex: 1 1 auto;
+  -webkit-flex: 1 1 auto;
+          flex: 1 1 auto;
+}
+.graphical-report__layout__footer {
+  -ms-flex: 0 1 auto;
+  -webkit-flex: 0 1 auto;
+          flex: 0 1 auto;
+}
+.graphical-report__layout__sidebar {
+  -ms-flex: 0 1 auto;
+  -webkit-flex: 0 1 auto;
+          flex: 0 1 auto;
+}
+.graphical-report__layout__content {
+  -ms-flex: 1 0 auto;
+  -webkit-flex: 1 0 auto;
+          flex: 1 0 auto;
+}
+.graphical-report__layout__content div {
+  overflow: auto;
+}
+.graphical-report__layout__sidebar-right {
+  position: relative;
+  -ms-flex: 0 0 auto;
+  -webkit-flex: 0 0 auto;
+          flex: 0 0 auto;
+}
+.graphical-report__layout__sidebar-right__wrap {
+  max-height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+.graphical-report__layout text {
+  fill: #fff;
+}
+.graphical-report {
+  /* region Select --------------------------------------------------*/
+}
+.graphical-report__checkbox {
+  position: relative;
+  display: block;
+}
+.graphical-report__checkbox__input {
+  position: absolute;
+  z-index: -1;
+  opacity: 0;
+}
+.graphical-report__checkbox__icon {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  top: 3px;
+  display: inline-block;
+  border: 1px solid #999;
+  border-radius: 2px;
+  background: #777;
+}
+.graphical-report__checkbox__icon:before {
+  display: none;
+  content: '';
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAMAAAAolt3jAAAAPFBMVEX///////////////////////////////////////////////////////////////////////////////8gsV51AAAAE3RSTlMAHB0eHyAhIiNAv8Dc3d7f4eLjyWil2QAAAD1JREFUeAFjoApg5WZF4rEJCHNBxbmYGdgFhflZIFxuYV5OIWE+ZpguAWFhYV4mmDaQSh4mJHM4uBjJcAsAoZwBrNc0BKUAAAAASUVORK5CYII=);
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.graphical-report__checkbox__text {
+  margin-left: 5px;
+}
+.graphical-report__checkbox__input ~ .graphical-report__checkbox__text {
+  cursor: pointer;
+}
+.graphical-report__checkbox__input:disabled ~ .graphical-report__checkbox__text {
+  cursor: default;
+  opacity: 0.3;
+}
+.graphical-report__checkbox__input:not(:disabled):focus + .graphical-report__checkbox__icon {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3), 0 0 7px 0 #52a8ec;
+  outline: none;
+}
+.graphical-report__checkbox:hover .graphical-report__checkbox__input:not(:disabled) ~ .graphical-report__checkbox__icon {
+  border-color: #c3c3c3;
+}
+.graphical-report__checkbox__input:checked + .graphical-report__checkbox__icon {
+  background: #777;
+}
+.graphical-report__checkbox__input:checked + .graphical-report__checkbox__icon:before {
+  display: block;
+}
+.graphical-report__select {
+  font-size: 13px;
+  font-family: inherit;
+  display: inline-block;
+  height: 24px;
+  line-height: 24px;
+  vertical-align: middle;
+  padding: 2px;
+  background-color: #777;
+  border: 1px solid #999;
+  border-radius: 2px;
+  color: #fff;
+}
+.graphical-report__select:focus {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3), 0 0 7px 0 #52a8ec;
+  outline: none;
+}
+.graphical-report__select[disabled] {
+  opacity: 0.3;
+  cursor: default;
+}
+.graphical-report__select[multiple] {
+  height: auto;
+}
+.graphical-report__select option[disabled] {
+  opacity: 0.6;
+}
+/* region Generate .color@{n}-@{i}  function  */
+.graphical-report__svg .color20-1 {
+  stroke: #6FA1D9;
+  fill: #6FA1D9;
+}
+.graphical-report__svg .color20-2 {
+  stroke: #DF2B59;
+  fill: #DF2B59;
+}
+.graphical-report__svg .color20-3 {
+  stroke: #66DA26;
+  fill: #66DA26;
+}
+.graphical-report__svg .color20-4 {
+  stroke: #755797;
+  fill: #755797;
+}
+.graphical-report__svg .color20-5 {
+  stroke: #E5B011;
+  fill: #E5B011;
+}
+.graphical-report__svg .color20-6 {
+  stroke: #746650;
+  fill: #746650;
+}
+.graphical-report__svg .color20-7 {
+  stroke: #CB461A;
+  fill: #CB461A;
+}
+.graphical-report__svg .color20-8 {
+  stroke: #C7CE23;
+  fill: #C7CE23;
+}
+.graphical-report__svg .color20-9 {
+  stroke: #7FCDC2;
+  fill: #7FCDC2;
+}
+.graphical-report__svg .color20-10 {
+  stroke: #CCA1C8;
+  fill: #CCA1C8;
+}
+.graphical-report__svg .color20-11 {
+  stroke: #C84CCE;
+  fill: #C84CCE;
+}
+.graphical-report__svg .color20-12 {
+  stroke: #54762E;
+  fill: #54762E;
+}
+.graphical-report__svg .color20-13 {
+  stroke: #746BC9;
+  fill: #746BC9;
+}
+.graphical-report__svg .color20-14 {
+  stroke: #A43B49;
+  fill: #A43B49;
+}
+.graphical-report__svg .color20-15 {
+  stroke: #5C7A76;
+  fill: #5C7A76;
+}
+.graphical-report__svg .color20-16 {
+  stroke: #C8BF87;
+  fill: #C8BF87;
+}
+.graphical-report__svg .color20-17 {
+  stroke: #BFC1C3;
+  fill: #BFC1C3;
+}
+.graphical-report__svg .color20-18 {
+  stroke: #AA7243;
+  fill: #AA7243;
+}
+.graphical-report__svg .color20-19 {
+  stroke: #71CE7B;
+  fill: #71CE7B;
+}
+.graphical-report__svg .color20-20 {
+  stroke: #BE478B;
+  fill: #BE478B;
+}
+.graphical-report__svg .color-default {
+  stroke: #6FA1D9;
+  fill: #6FA1D9;
+}
+/* endregion */
+/* region Generate .line-params-@{n}  function  */
+/* Generate .line-size-@{n} */
+.graphical-report__line-width-1 {
+  stroke-width: 1px;
+}
+.graphical-report__line-width-2 {
+  stroke-width: 1.5px;
+}
+.graphical-report__line-width-3 {
+  stroke-width: 2px;
+}
+.graphical-report__line-width-4 {
+  stroke-width: 2.5px;
+}
+.graphical-report__line-width-5 {
+  stroke-width: 3px;
+}
+/* Generate .line-opacity-@{n} */
+.graphical-report__line-opacity-1 {
+  stroke-opacity: 1;
+}
+.graphical-report__line-opacity-2 {
+  stroke-opacity: 0.95;
+}
+.graphical-report__line-opacity-3 {
+  stroke-opacity: 0.9;
+}
+.graphical-report__line-opacity-4 {
+  stroke-opacity: 0.85;
+}
+.graphical-report__line-opacity-5 {
+  stroke-opacity: 0.8;
+}
+/* endregion */
+/* endregion */
+.graphical-report {
+  /* Links */
+  /* Axises and Grid */
+  /* Scatterplot  */
+  /* Linechart  */
+  /*  Bar  */
+  /*  Bar  */
+  /* TODO: fix to avoid conflict on "stroke" with color brewer */
+  /* TODO: remove this when CSS for color brewer is fixed */
+  /*  PLUGINS  */
+  /*  Highlighter  */
+}
+.graphical-report a {
+  color: #3962FF;
+  border-bottom: 1px solid rgba(57, 98, 255, 0.3);
+  text-decoration: none;
+}
+.graphical-report a:hover {
+  color: #E17152;
+  border-bottom: 1px solid rgba(225, 113, 82, 0.3);
+}
+.graphical-report__d3-time-overflown .tick:nth-child(even) {
+  display: none;
+}
+.graphical-report__svg {
+  display: block;
+  overflow: hidden;
+}
+.graphical-report__svg .place {
+  fill: #fff;
+  stroke: #000;
+  stroke-opacity: 0.7;
+  stroke-width: 0.5;
+}
+.graphical-report__svg .place-label {
+  opacity: 0.7;
+  font-size: 11px;
+  color: #000000;
+  line-height: 13px;
+  text-anchor: start;
+}
+.graphical-report__svg .place-label-countries,
+.graphical-report__svg .place-label-subunits,
+.graphical-report__svg .place-label-states {
+  text-anchor: middle;
+  font-size: 10px;
+  fill: rgba(255, 255, 255, 0.5);
+  line-height: 10px;
+  text-transform: capitalize;
+}
+.graphical-report__svg .map-contour-level path {
+  stroke-opacity: 0.5;
+  stroke-linejoin: 'round';
+}
+.graphical-report__svg .map-contour-level-0 path {
+  stroke: rgba(255, 255, 255, 0.2);
+}
+.graphical-report__svg .map-contour-level-1 path {
+  stroke: rgba(255, 255, 255, 0.15);
+}
+.graphical-report__svg .map-contour-level-2 path {
+  stroke: rgba(255, 255, 255, 0.09);
+}
+.graphical-report__svg .map-contour-level-3 path {
+  stroke: rgba(255, 255, 255, 0.06);
+}
+.graphical-report__svg .map-contour-level-4 path {
+  stroke: rgba(255, 255, 255, 0.03);
+}
+.graphical-report__svg .map-contour-highlighted,
+.graphical-report__svg .map-contour:hover {
+  fill: rgba(255, 191, 0, 0.15);
+}
+.graphical-report__svg .map-contour-highlighted path,
+.graphical-report__svg .map-contour:hover path {
+  stroke: #FFBF00;
+}
+.graphical-report__svg .map-contour-highlighted text,
+.graphical-report__svg .map-contour:hover text {
+  fill: #FFBF00;
+}
+.graphical-report__svg .axis line,
+.graphical-report__svg .axis path {
+  stroke-width: 1;
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.2);
+  shape-rendering: crispEdges;
+}
+.graphical-report__svg .axis.facet-axis .tick line {
+  opacity: 0;
+}
+.graphical-report__svg .axis.facet-axis .tick line.label-ref {
+  opacity: 1;
+}
+.graphical-report__svg .axis.facet-axis .tick text {
+  font-weight: 600;
+}
+.graphical-report__svg .axis.facet-axis path.domain {
+  opacity: 0;
+}
+.graphical-report__svg .axis.facet-axis.compact .tick text {
+  font-weight: normal;
+}
+.graphical-report__svg .axis.facet-axis.compact .label {
+  font-weight: normal;
+}
+.graphical-report__svg .axis.facet-axis.compact .label .label-token {
+  font-weight: normal;
+}
+.graphical-report__svg .tick text {
+  font-size: 11px;
+}
+.graphical-report__svg .grid .grid-lines path {
+  shape-rendering: crispEdges;
+}
+.graphical-report__svg .grid .line path,
+.graphical-report__svg .grid path.line,
+.graphical-report__svg .grid path.domain {
+  fill: none;
+}
+.graphical-report__svg .grid line {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 1px;
+  shape-rendering: crispEdges;
+}
+.graphical-report__svg .grid .line path {
+  shape-rendering: auto;
+}
+.graphical-report__svg .label {
+  font-size: 12px;
+  font-weight: 600;
+}
+.graphical-report__svg .label .label-token {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.graphical-report__svg .label .label-token-1,
+.graphical-report__svg .label .label-token-2 {
+  font-weight: normal;
+}
+.graphical-report__svg .label .label-token-2 {
+  fill: gray;
+}
+.graphical-report__svg .label .label-token-delimiter {
+  font-weight: normal;
+  fill: gray;
+}
+.graphical-report__svg .label.inline .label-token {
+  font-weight: normal;
+  fill: gray;
+  text-transform: none;
+}
+.graphical-report__svg .brush .extent {
+  fill-opacity: .3;
+  stroke: #fff;
+  shape-rendering: crispEdges;
+}
+.graphical-report__svg .background {
+  stroke: #262626;
+}
+.graphical-report__svg .caption {
+  stroke-width: 0.1;
+  font-size: 11px;
+  text-anchor: middle;
+}
+.graphical-report__svg .caption.caption-left-edge,
+.graphical-report__svg .caption.caption-top-edge,
+.graphical-report__svg .caption.caption-bottom-edge {
+  text-anchor: start;
+}
+.graphical-report__svg .caption.caption-right-edge {
+  text-anchor: end;
+}
+.graphical-report__dot {
+  opacity: 0.9;
+  transition: stroke-width 0.1s ease, opacity 0.1s ease;
+  stroke-width: 0;
+}
+.graphical-report__line {
+  fill: none;
+  transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease;
+}
+.graphical-report__dot-line {
+  opacity: 1;
+  transition: stroke-opacity 0.2s ease;
+}
+.graphical-report__bar {
+  shape-rendering: crispEdges;
+  transition: opacity 0.2s ease;
+}
+.graphical-report__bar-stacked {
+  shape-rendering: crispEdges;
+  transition: opacity 0.2s ease;
+  stroke-opacity: 0.5;
+  stroke-width: 1;
+  stroke: #fff;
+}
+.graphical-report__area polygon {
+  opacity: 0.55;
+  transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease;
+}
+.graphical-report__svg .graphical-report__bar-stacked {
+  stroke: #fff;
+}
+.graphical-report__dot.graphical-report__highlighted {
+  stroke-width: 2;
+  opacity: 1;
+}
+.graphical-report__dot.graphical-report__dimmed {
+  opacity: 0.2;
+}
+.graphical-report__line.graphical-report__highlighted {
+  stroke-opacity: 1;
+  stroke-width: 3;
+}
+.graphical-report__line.graphical-report__dimmed {
+  stroke-opacity: 0.2;
+}
+.graphical-report__area.graphical-report__highlighted,
+.graphical-report__bar.graphical-report__highlighted,
+.graphical-report__bar-stacked.graphical-report__highlighted {
+  stroke-opacity: 1;
+  opacity: 1;
+}
+.graphical-report__area.graphical-report__dimmed,
+.graphical-report__bar.graphical-report__dimmed,
+.graphical-report__bar-stacked.graphical-report__dimmed {
+  opacity: 0.2;
+}

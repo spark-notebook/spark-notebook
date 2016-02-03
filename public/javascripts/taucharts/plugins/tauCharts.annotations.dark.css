@@ -1,0 +1,14 @@
+/* region place variables*/
+/* endregion */
+/* region map variables*/
+/* endregion */
+/* region variables for plugins */
+/* endregion */
+.graphical-report__annotation-line {
+  stroke-width: 2px;
+  stroke-dasharray: 1,1;
+  shape-rendering: crispEdges;
+}
+.graphical-report__annotation-area.graphical-report__area polygon {
+  opacity: 0.1;
+}

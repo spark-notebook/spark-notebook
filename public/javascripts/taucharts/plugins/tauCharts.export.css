@@ -1,0 +1,51 @@
+/* region place variables*/
+/* endregion */
+/* region map variables*/
+/* endregion */
+/* region variables for plugins */
+/* endregion */
+.graphical-report__print-block {
+  display: none;
+}
+.graphical-report__export {
+  float: right;
+  margin: 0 20px 0 0;
+  display: block;
+  background-repeat: no-repeat;
+  background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+ZXhwb3J0PC90aXRsZT48ZGVzYz5DcmVhdGVkIHdpdGggU2tldGNoLjwvZGVzYz48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiPjxwYXRoIGQ9Ik0xNyAxLjY3bC04LjMyOCA4LjM2Nkw4IDkuNSAxNi4zNTMgMUgxMlYwaDZ2NmgtMVYxLjY3eiIgb3BhY2l0eT0iLjgiLz48cGF0aCBkPSJNMCA1LjAxQzAgMy4zNDYgMS4zMzcgMiAzLjAxIDJIMTZ2MTIuOTljMCAxLjY2My0xLjMzNyAzLjAxLTMuMDEgMy4wMUgzLjAxQzEuMzQ2IDE4IDAgMTYuNjYzIDAgMTQuOTlWNS4wMXpNMTUgMTVDMTUgMTYuMTA1IDE0LjEwMyAxNyAxMi45OTQgMTdIMy4wMDZDMS44OTggMTcgMSAxNi4xMDMgMSAxNC45OTRWNS4wMDZDMSAzLjg5OCAxLjg4NyAzIDIuOTk4IDNIOVYyaDd2N2gtMXY2LjAwMnoiIG9wYWNpdHk9Ii40Ii8+PC9nPjwvZz48L3N2Zz4=);
+  width: 20px;
+  height: 20px;
+  color: transparent;
+  font-size: 1px;
+  opacity: 0.6;
+  cursor: pointer;
+  text-decoration: none;
+  position: relative;
+  z-index: 2;
+}
+.graphical-report__export:hover {
+  opacity: 1;
+  text-decoration: none;
+}
+.graphical-report__export__list {
+  font-size: 11px;
+  margin: 0;
+  padding: 0;
+}
+.graphical-report__export__item {
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.graphical-report__export__item > a {
+  display: block;
+  padding: 7px 15px;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+.graphical-report__export__item > a:hover,
+.graphical-report__export__item > a:focus {
+  background: #EAF2FC;
+  outline: none;
+  box-shadow: none;
+}
