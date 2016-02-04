@@ -271,15 +271,7 @@ package object widgets {
     def computeData(pts:Seq[MagicRenderPoint] = points) = pts.map(_.data.toSeq)
     override val data:Seq[Seq[(String, Any)]] = computeData()
 
-    val maxPointsBox = new InputBox[Int](maxPoints, "Max Points (controlling all tabs)")
-
-    maxPointsBox.currentData --> Connection.fromObserver { max:Int =>
-      pages foreach { case (s, w) =>
-        // following doesn't work because DOM don't get prg change event
-        //   w.maxPointsBox.currentData <-- Connection.just(max)
-        w.newMax(max)
-      }
-    }
+    def newMax(max: Int) = pages foreach { case (_, w) => w.newMax(max) }
 
     override val scripts = List(
       Script("magic/tabs", Json.obj())
@@ -294,9 +286,6 @@ package object widgets {
 
     override val content = Some {
       <div>
-        {
-          maxPointsBox.toHtml
-        }
         <div >
           <ul class="nav nav-tabs" id={ "ul"+id }>{
             pages.zipWithIndex map { p: ((String, Widget), Int) =>
@@ -333,7 +322,6 @@ package object widgets {
     def computeData(pts:Seq[MagicRenderPoint] = points) = pts.map(mToSeq)
     lazy val data:Seq[Seq[(String, Any)]] = computeData(points)
 
-    val maxPointsBox = new InputBox[Int](maxPoints, "Max Points")
     def sizes:(Int, Int)=(600, 400)
 
     lazy val nrow = out
@@ -354,15 +342,7 @@ package object widgets {
       }
     }
 
-    maxPointsBox.currentData --> Connection.fromObserver { max:Int =>
-      currentMax = max
-      warnMax(samplingWarning(currentMax))
-      applyOn(currentC)
-    }
-
     def newMax(max:Int) = {
-      //update javascript box
-      maxPointsBox.currentData <-- Connection.just(max)
       //update state
       currentMax = max
       warnMax(samplingWarning(currentMax))
@@ -408,9 +388,6 @@ package object widgets {
 
     override val content = Some {
       val container = <div>
-        {
-          maxPointsBox.toHtml
-        }
         {nrow.toHtml} <span style="color:red">{warnMax.toHtml}</span>
         <div>
         </div>
