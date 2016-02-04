@@ -124,5 +124,12 @@ require(["jquery", "underscore", "base/js/events", "knockout"], function($, _, e
         }
       });
     });
+
+    // hide/unhide sidebar
+    $('a#toggle-sidebar').click(function(){
+      $('#sidebar').toggleClass('hidden');
+      // expand the notebook when sidebar is hidden
+      $('#notebook').toggleClass('col-md-9').toggleClass('col-md-12');
+    });
   }
 });
