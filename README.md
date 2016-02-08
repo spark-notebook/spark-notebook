@@ -66,3 +66,4 @@ the different cluster deployment options (Amazon EMR, Mesons, YARN), and to find
 | Vinted | ![Vinted](http://engineering.vinted.com/brandbook/images/logos/vinted.svg) | [website](http://www.vinted.com/)| Online marketplace and a social network focused on young women’s lifestyle. |
 | Vingle | ![Vingle](https://s3.amazonaws.com/vingle-assets/Vingle_Wordmark_Red.png) | [website](https://www.vingle.net)| Vingle is the community where you can meet someone like you. |
 | 47 Degrees | ![47 Degrees](http://www.47deg.com/assets/logo_148x148.png) | [website](http://www.47deg.com)| 47 Degrees is a global consulting firm and certified Typesafe & Databricks Partner specializing in Scala & Spark. |
+| Barclays | ![Barclays](https://www.home.barclays/content/dam/barclayspublic/images/Site%20wide/Barclays%20logo/barclays-logo-desktop.png) | [website](http://www.barclays.com)| Barclays is a British multinational banking and financial services company headquartered in London. |
