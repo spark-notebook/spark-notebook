@@ -317,8 +317,8 @@ sbt -Dmesos.version=0.23.0 docker:publishLocal
 ```
 
 ##### Customizing your build
-If you want to change some build information like the `name` or the `organization` or even specific to `docker` for your builds. 
-Prefeably you would want to avoid having to change the source code of this project.
+If you want to change some build information like the `name` or the `organization` or even specific to `docker` for your builds.
+Preferably you would want to avoid having to change the source code of this project.
 
 You can do this by creating some hidden files being caught by the builder but kept out of git (added to `.gitignore`).
 
@@ -340,7 +340,7 @@ Check `project/MainProperties.scala` for details.
 ###### Update Docker configuration
 Sometimes you may want to change the Docker image which is the result of the `sbt ... docker:publishLocal` command.
 
-Create a file called `.docker.build.conf` next to `build.sbt`, this file is added to `.gitignore`.  
+Create a file called `.docker.build.conf` next to `build.sbt`, this file is added to `.gitignore`.
 The structure of the file is the following:
 ```
 docker {
@@ -686,7 +686,7 @@ Locate the commented key `override` and paste:
     }
 ```
 
-> _Note_: 
+> **NOTE**:
 > The spark assembly is referred locally in `spark.yarn.jar`, you can also put it `HDFS` yourself and refer its path on hdfs.
 
 
@@ -708,7 +708,7 @@ source /usr/lib/spark/conf/spark-env.sh
 ```
 
 
-> **NOTE**: 
+> **NOTE**:
 > it's better to run the notebook in a `screen` for instance, so that the shell is released and you can quit your ssh connection.
 > ```
 > screen  -m -d -S "snb" bash -c "export SPARK_LOCAL_IP=$(ec2-metadata -o | cut -d ' ' -f2) && export SPARK_LOCAL_HOSTNAME=$(ec2-metadata -h | cut -d ' ' -f2) && export CLASSPATH_OVERRIDES=/usr/lib/hadoop-lzo/lib/hadoop-lzo.jar:/etc/hive/conf:/etc/hadoop/conf:/usr/lib/hadoop/*:/usr/lib/hadoop-hdfs/*:/usr/lib/hadoop-yarn/*:/usr/lib/hadoop-lzo/lib/*:/usr/share/aws/aws-java-sdk/*:/usr/share/aws/emr/emrfs/conf:/usr/share/aws/emr/emrfs/lib/*:/usr/share/aws/emr/emrfs/auxlib/* && source /usr/lib/spark/conf/spark-env.sh && ./bin/spark-notebook -Dconfig.file=./conf/application.conf -Dhttp.port=8989 >> nohup.out"
@@ -722,7 +722,7 @@ There are several manners to access the notebook UI on the port `8989` (see abov
 * sustainable but unsecure: update/create the security group of the master node to open the `8989` port
 * intermediate: use **FoxyProxy** in Chrome (f.i.) to redirect the url to your cluster, after having prealably open a tunnel to the master (*this is described in your cluster summary page*)
 
-> **YARN UI** 
+> **YARN UI**
 >
 > It is available on the port `8088` of your **master**
 
@@ -878,6 +878,9 @@ Each notebook is actually running in a different JVM, hence you can add some par
       "-Dyarn.resourcemanager.am.max-attempts=1"
     ],
 ```
+
+> **NOTE**:
+> Don't add classpath arguments, e.g., `["-cp", "/path/to/foo.jar"]`, as this overrides the classpath, rather than adding jars to it. Use a cell with a `:cp /path/to/foo.jar` command instead.
 
 #### Spark Conf
 
