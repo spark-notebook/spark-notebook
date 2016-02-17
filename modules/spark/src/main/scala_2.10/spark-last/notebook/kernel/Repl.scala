@@ -36,6 +36,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
 
   private var _initFinished: Boolean = false
   private var _evalsUntilInitFinished: Int = 0
+  // FG: never used !
   private var _needsDropOnReplay: Boolean = false
 
   def setInitFinished(): Unit = {
@@ -291,7 +292,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
 
   def addCp(newJars:List[String]) = {
     val requests = interp.getClass.getMethods.find(_.getName == "prevRequestList").map(_.invoke(interp)).get.asInstanceOf[List[interp.Request]]
-    var prevCode = requests.map(_.originalLine).drop( _evalsUntilInitFinished )
+    val prevCode = requests.map(_.originalLine).drop( _evalsUntilInitFinished )
     interp.close() // this will close the repl class server, which is needed in order to reuse `-Dspark.replClassServer.port`!
     val r = new Repl(compilerOpts, newJars:::jars)
     (r, () => prevCode foreach (c => r.evaluate(c, _ => ())))

@@ -64,7 +64,7 @@ class ReplCalculator(
 
   // note: the resolver list is a superset of Spark's list in o.a.spark.deploy.SparkSubmit
   // except that the local ivy repo isn't included
-  var resolvers: List[Resolver] = {
+  private var resolvers: List[Resolver] = {
     val mavenLocal = Resolver.mavenLocal
     val defaultLocal = Resolver.defaultLocal
     val local = {
@@ -84,7 +84,7 @@ class ReplCalculator(
     customRepos.getOrElse(List.empty[String]).map(CustomResolvers.fromString).map(_._2) ::: defaults
   }
 
-  var repo: File =  customLocalRepo.map { x =>
+  private var repo: File =  customLocalRepo.map { x =>
                       new File(notebook.util.StringUtils.updateWithVarEnv(x))
                     }.getOrElse {
                       val tmp = new File(System.getProperty("java.io.tmpdir"))
