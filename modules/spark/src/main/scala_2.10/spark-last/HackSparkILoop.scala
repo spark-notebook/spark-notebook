@@ -135,7 +135,7 @@ class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) { loo
       import Properties.userHome
       import scala.compat.Platform.EOL
       val autorun = replProps.replAutorunCode.option flatMap (f => io.File(f).safeSlurp())
-      if (autorun.isDefined) intp.quietRun(autorun.get)
+      autorun.foreach((ar) => intp.quietRun(ar))
     })
 
     addThunk(printWelcome())

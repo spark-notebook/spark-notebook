@@ -180,12 +180,12 @@ class ReplCalculator(
       repl.evaluate(b)._1 match {
         case Failure(str) =>
           if (notify) {
-            eval( s"""""", notify = false)()
+            eval( """""", notify = false)()
           }
           log.error(failure(str))
         case _ =>
           if (notify) {
-            eval( s"""""", notify = false)()
+            eval( """""", notify = false)()
           }
           log.info(success)
       }
@@ -236,9 +236,9 @@ class ReplCalculator(
         }
 
         // StreamResponse shows error msg
-        sender() ! StreamResponse(s"The cell was cancelled.\n", "stderr")
+        sender() ! StreamResponse("The cell was cancelled.\n", "stderr")
         // ErrorResponse to marks cell as ended
-        sender() ! ErrorResponse(s"The cell was cancelled.\n", incomplete = false)
+        sender() ! ErrorResponse("The cell was cancelled.\n", incomplete = false)
 
       case InterruptRequest =>
         log.debug("Interrupting the spark context")

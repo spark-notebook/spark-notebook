@@ -106,7 +106,7 @@ object Application extends Controller {
     Json.parse(
       s"""
          |{
-         |"id": ${if (id.isDefined) "\""+id.get+"\"" else "null"},
+         |"id": ${id.map((i) => "\""+i+"\"").getOrElse("null")},
          |"name": "spark",
          |"language_info": {
          |  "name" : "Scala",
@@ -602,7 +602,7 @@ object Application extends Controller {
         "/",
         path.split("/").toList.scanLeft(("", "")) {
           case ((accPath, accName), p) => (accPath + "/" + p, p)
-        }.tail.map { case (p, x) =>
+        }.drop(1).map { case (p, x) =>
           Crumb(controllers.routes.Application.dash(p.tail).url, x)
         }
       ),
