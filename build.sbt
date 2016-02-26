@@ -138,7 +138,7 @@ bashScriptDefines := bashScriptDefines.value.map {
   case entry => entry
 }
 
-dependencyOverrides += "log4j" % "log4j" % "1.2.16"
+dependencyOverrides += log4j
 
 dependencyOverrides += guava
 

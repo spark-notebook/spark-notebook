@@ -30,8 +30,12 @@ object Dependencies {
 
   val defaultSparkVersion = sys.props.getOrElse("spark.version", "1.6.0")
   val sparkVersionTuple = defaultSparkVersion match { case extractVs(v, m, p) =>  (v.toInt, m.toInt, p.toInt)}
-  val defaultScalaVersion = sys.props.getOrElse("scala.version", "2.10.4") match {
-    case x@scala_2_1X("0") => x
+  val defaultScalaVersion = sys.props.getOrElse("scala.version", "2.10.5") match {
+    case x@scala_2_1X("0") => defaultSparkVersion match {
+      case spark_1_X(x, _) if x.toInt < 6 => "2.10.4"
+      case spark_1_X("6", _)              => "2.10.5"
+      case spark_1_X(_, _)                => x
+    }
     case x@scala_2_1X("1") => defaultSparkVersion match {
       case spark_1_X("4", "0") => x
       case spark_1_X("4", _) => "2.11.6"
