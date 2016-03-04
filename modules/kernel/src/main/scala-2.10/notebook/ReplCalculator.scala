@@ -64,7 +64,7 @@ class ReplCalculator(
 
   // note: the resolver list is a superset of Spark's list in o.a.spark.deploy.SparkSubmit
   // except that the local ivy repo isn't included
-  var resolvers: List[Resolver] = {
+  private var resolvers: List[Resolver] = {
     val mavenLocal = Resolver.mavenLocal
     val defaultLocal = Resolver.defaultLocal
     val local = {
@@ -84,7 +84,7 @@ class ReplCalculator(
     customRepos.getOrElse(List.empty[String]).map(CustomResolvers.fromString).map(_._2) ::: defaults
   }
 
-  var repo: File =  customLocalRepo.map { x =>
+  private var repo: File =  customLocalRepo.map { x =>
                       new File(notebook.util.StringUtils.updateWithVarEnv(x))
                     }.getOrElse {
                       val tmp = new File(System.getProperty("java.io.tmpdir"))
@@ -180,12 +180,12 @@ class ReplCalculator(
       repl.evaluate(b)._1 match {
         case Failure(str) =>
           if (notify) {
-            eval( s"""""", notify = false)()
+            eval( """""", notify = false)()
           }
           log.error(failure(str))
         case _ =>
           if (notify) {
-            eval( s"""""", notify = false)()
+            eval( """""", notify = false)()
           }
           log.info(success)
       }
@@ -236,9 +236,9 @@ class ReplCalculator(
         }
 
         // StreamResponse shows error msg
-        sender() ! StreamResponse(s"The cell was cancelled.\n", "stderr")
+        sender() ! StreamResponse("The cell was cancelled.\n", "stderr")
         // ErrorResponse to marks cell as ended
-        sender() ! ErrorResponse(s"The cell was cancelled.\n", incomplete = false)
+        sender() ! ErrorResponse("The cell was cancelled.\n", incomplete = false)
 
       case InterruptRequest =>
         log.debug("Interrupting the spark context")

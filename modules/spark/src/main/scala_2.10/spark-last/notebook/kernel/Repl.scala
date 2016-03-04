@@ -36,6 +36,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
 
   private var _initFinished: Boolean = false
   private var _evalsUntilInitFinished: Int = 0
+  // FG: never used !
   private var _needsDropOnReplay: Boolean = false
 
   def setInitFinished(): Unit = {
@@ -156,7 +157,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
     val tpe = try {
       interp.typeOfTerm(termName).toString
     } catch {
-      case exc: RuntimeException => println("Unable to get symbol type", exc); "<notype>"
+      case exc: RuntimeException => println(("Unable to get symbol type", exc)); "<notype>"
     }
     tpe match {
       case "<notype>" => // "<notype>" can be also returned by typeOfTerm
@@ -166,7 +167,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
         Some(
           tpe
             .replace("iwC$", "")
-            .replaceAll("^\\(\\)" , "") // 2.11 return types prefixed, like `()Person`
+            .stripPrefix("\\(\\)") // 2.11 return types prefixed, like `()Person`
         )
     }
   }
@@ -237,7 +238,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
                   line.pathTo("$rendered")+"$", true, classLoader
                 )
 
-                val o = renderedClass2.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get()
+                val o = renderedClass2.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get(())
 
                 def iws(o:Any):NodeSeq = {
                   val iw = o.getClass.getMethods.find(_.getName == "$iw")
@@ -291,7 +292,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
 
   def addCp(newJars:List[String]) = {
     val requests = interp.getClass.getMethods.find(_.getName == "prevRequestList").map(_.invoke(interp)).get.asInstanceOf[List[interp.Request]]
-    var prevCode = requests.map(_.originalLine).drop( _evalsUntilInitFinished )
+    val prevCode = requests.drop( _evalsUntilInitFinished ).map(_.originalLine)
     interp.close() // this will close the repl class server, which is needed in order to reuse `-Dspark.replClassServer.port`!
     val r = new Repl(compilerOpts, newJars:::jars)
     (r, () => prevCode foreach (c => r.evaluate(c, _ => ())))
@@ -324,7 +325,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
       case None =>
         val candidates = getCompletions(line, cursorPosition)
 
-        (matchedText, if (candidates.size > 0 && candidates.head.isEmpty) {
+        (matchedText, if (candidates.nonEmpty && candidates.head.isEmpty) {
           List()
         } else {
           candidates.map(Match(_))

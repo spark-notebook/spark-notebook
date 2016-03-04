@@ -414,53 +414,38 @@ package object widgets {
     ))
   }
 
-  case class ScatterChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C] {
-    val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
+  trait Sequencifiable[C] { self: Chart[C] =>
+    val fields: Option[(String, String)]
+    val (f1, f2)  = self.fields.getOrElse((headers(0), headers(1)))
 
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
-      val stripedData = t.data.toSeq.filter{case (k, v) => !fields.isDefined || f1 == k || f2 == k }
+      val stripedData = t.data.toSeq.filter{case (k, v) => !self.fields.isDefined || f1 == k || f2 == k }
       stripedData
     }
+  }
+
+  case class ScatterChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C] with Sequencifiable[C] {
 
     override val scripts = List(Script( "magic/scatterChart",
                                         Json.obj( "x" → f1.toString, "y" → f2.toString,
                                                   "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class LineChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C] {
-    val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
-
-    def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
-      val stripedData = t.data.toSeq.filter{case (k, v) => !fields.isDefined || f1 == k || f2 == k }
-      stripedData
-    }
-
+  case class LineChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C] with Sequencifiable[C] {
 
     override val scripts = List(Script( "magic/lineChart",
                                         Json.obj( "x" → f1.toString, "y" → f2.toString,
                                                   "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class BarChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C] {
-    val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
-
-    def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
-      val stripedData = t.data.toSeq.filter{case (k, v) => !fields.isDefined || f1 == k || f2 == k }
-      stripedData
-    }
+  case class BarChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C] with Sequencifiable[C] {
 
     override val scripts = List(Script( "magic/barChart",
                                         Json.obj( "x" → f1.toString, "y" → f2.toString,
                                                   "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class PieChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C] {
-    val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
-
-    def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
-      val stripedData = t.data.toSeq.filter{case (k, v) => !fields.isDefined || f1 == k || f2 == k }
-      stripedData
-    }
+  case class PieChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C] with Sequencifiable[C] {
 
     override val scripts = List(Script( "magic/pieChart",
                                         Json.obj("series" → f1.toString, "p" → f2.toString,
@@ -474,8 +459,6 @@ package object widgets {
     latLonFields:Option[(String, String)]=None,
     rField:Option[String]=None,
     colorField:Option[String]=None) extends Chart[C] {
-
-    //val (f1, f2)  = fields.getOrElse((headers(0), headers(1)))
 
     val latLong = latLonFields.getOrElse((headers(0), headers(1)))
 
