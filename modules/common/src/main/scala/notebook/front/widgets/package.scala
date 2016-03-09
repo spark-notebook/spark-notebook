@@ -378,11 +378,8 @@ package object widgets {
     override val singleCodec = jsStringAnyCodec
     override val singleToO = identity[Seq[(String, Any)]] _
 
-    lazy val firstElem = points.head
-    lazy val headers = firstElem.headers
-    lazy val members = firstElem.values
-    lazy val dataMap = firstElem.data
-    lazy val numOfFields = firstElem.numOfFields
+    lazy val headers = toPoints.headers(originalData)
+    lazy val numOfFields = headers.size
 
     val extendedContent:Option[scala.xml.Elem] = None
 
@@ -619,27 +616,33 @@ package object widgets {
   }
 
   def display[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, maxPoints:Int=DEFAULT_MAX_POINTS):Widget = {
-    val data:Seq[MagicRenderPoint] = implicitly[ToPoints[C]].apply(originalData, maxPoints)
-    val firstElem = data.head
-    val headers = firstElem.headers
-    val members = firstElem.values
-    val dataMap = firstElem.data
-
-    val numOfFields = firstElem.numOfFields
+    val dataConverter = implicitly[ToPoints[C]]
+    val data:Seq[MagicRenderPoint] = dataConverter.apply(originalData, maxPoints)
 
     val tbl = Some("table" → TableChart(originalData, maxPoints=maxPoints))
 
-    val twoFieldCharts = if(numOfFields == 2 || fields.isDefined){
-      val (f1, f2)  = fields.map{ case (f1, f2) => (dataMap(f1), dataMap(f2)) }
-                            .getOrElse((members(0), members(1)))
+    // used only if dataset is non empty
+    val twoFieldCharts = {
+      data.headOption match {
+        case None => Nil
+        case Some(firstElem) =>
+          val members = firstElem.values
+          val dataMap = firstElem.data
+          val numOfFields = firstElem.numOfFields
 
-      val scatter:Option[(String, Chart[C])] = if (isNumber(f1) && isNumber(f2)) { Some("dot-circle-o" → ScatterChart(originalData, fields,maxPoints=maxPoints)) } else None
-      val line:Option[(String, Chart[C])]    = if (isNumber(f1) && isNumber(f2)) { Some("line-chart" → LineChart(originalData, fields,maxPoints=maxPoints)) } else None
-      val bar :Option[(String, Chart[C])]    = if (isNumber(f2)) { Some("bar-chart" → BarChart(originalData, fields,maxPoints=maxPoints)) } else None
-      val pie :Option[(String, Chart[C])]    = if (!isNumber(f1)) { Some("pie-chart" → PieChart(originalData, fields,maxPoints=maxPoints)) } else None
+          if (numOfFields == 2 || fields.isDefined) {
+            val (f1, f2)  = fields.map{ case (f1, f2) => (dataMap(f1), dataMap(f2)) }
+              .getOrElse((members(0), members(1)))
 
-      scatter :: line :: bar :: pie :: Nil
-    } else Nil
+            val scatter:Option[(String, Chart[C])] = if (isNumber(f1) && isNumber(f2)) { Some("dot-circle-o" → ScatterChart(originalData, fields,maxPoints=maxPoints)) } else None
+            val line:Option[(String, Chart[C])]    = if (isNumber(f1) && isNumber(f2)) { Some("line-chart" → LineChart(originalData, fields,maxPoints=maxPoints)) } else None
+            val bar :Option[(String, Chart[C])]    = if (isNumber(f2)) { Some("bar-chart" → BarChart(originalData, fields,maxPoints=maxPoints)) } else None
+            val pie :Option[(String, Chart[C])]    = if (!isNumber(f1)) { Some("pie-chart" → PieChart(originalData, fields,maxPoints=maxPoints)) } else None
+
+            scatter :: line :: bar :: pie :: Nil
+          } else Nil
+      }
+    }
 
     val pivot = Some("cubes" → PivotChart(originalData, maxPoints=maxPoints))
 
