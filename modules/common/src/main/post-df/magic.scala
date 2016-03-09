@@ -31,11 +31,7 @@ trait ExtraMagicImplicits {
     def apply(df:DataFrame, max:Int)(implicit sampler:Sampler[DataFrame]):Seq[MagicRenderPoint] = {
       val rows = sampler(df, max).collect
       if (rows.length > 0) {
-        val points = df.schema.toList.map(_.dataType) match {
-          case List(x) if x.isInstanceOf[org.apache.spark.sql.types.StringType] => rows.map(i => StringPoint(i.asInstanceOf[String]))
-          case _                                                                => rows.map(i => DFPoint(i, df))
-        }
-
+        val points = rows.map(i => DFPoint(i, df))
         val encoded = points.zipWithIndex.map { case (point, index) => point.values match {
           case Seq(o)    if isNumber(o)   =>  AnyPoint((index, o))
           case _                          =>  point
