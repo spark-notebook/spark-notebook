@@ -65,6 +65,9 @@ define([
               show: true
             }
           },
+          data: {
+            order: null
+          },
           axis: {
             x: {
               tick: {
