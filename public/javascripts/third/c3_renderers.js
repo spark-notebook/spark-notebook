@@ -170,7 +170,6 @@
             }
           },
           data: {
-            type: chartOpts.type
           },
           tooltip: {
             grouped: false
@@ -180,6 +179,11 @@
           }
         };
         $.extend(params, opts.c3);
+
+        // allow user to provide custom params for c3.data.someUserOption
+        // overwrite data.type as it is dynamic
+        params.data.type = chartOpts.type;
+
         if (chartOpts.type === "scatter") {
           xs = {};
           numSeries = 0;
