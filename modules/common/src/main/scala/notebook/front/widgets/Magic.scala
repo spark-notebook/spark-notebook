@@ -102,6 +102,17 @@ object Implicits extends ExtraMagicImplicits {
 
   trait ToPoints[C] {
     def apply(c:C, max:Int)(implicit sampler:Sampler[C]):Seq[MagicRenderPoint]
+
+    /**
+      * Dummy implementation which tries to get the fetch schema/headers from the first element
+      * to be overriden by specific converters.
+      */
+    def headers(x: C)(implicit sampler:Sampler[C]) = {
+      apply(x, max = 1)
+        .headOption
+        .map(_.headers)
+        .getOrElse(Seq("can not display empty seq"))
+    }
     def count(x:C):Long
     def append(x:C, y:C):C
     def mkString(x:C, sep:String=""):String
@@ -109,7 +120,7 @@ object Implicits extends ExtraMagicImplicits {
 
   implicit def SeqToPoints[T] = new ToPoints[Seq[T]] {
     def apply(_x:Seq[T], max:Int)(implicit sampler:Sampler[Seq[T]]):Seq[MagicRenderPoint] =
-      if (!_x.isEmpty) {
+      if (_x.nonEmpty) {
         val x = sampler(_x, max)
         val points:Seq[MagicRenderPoint] = x.head match {
           case _:Row   => x.map(i => SqlRowPoint(i.asInstanceOf[Row]))

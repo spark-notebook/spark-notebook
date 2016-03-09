@@ -39,6 +39,7 @@ trait ExtraMagicImplicits {
         encoded
       } else Nil
     }
+    override def headers(df: DataFrame)(implicit sampler:Sampler[DataFrame]) = df.columns
     def count(x:DataFrame) = x.count()
     def append(x:DataFrame, y:DataFrame) = x unionAll y
     def mkString(x:DataFrame, sep:String=""):String = x.rdd.toDebugString
