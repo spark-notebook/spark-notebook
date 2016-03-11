@@ -6,11 +6,14 @@ import akka.actor.{Actor, ActorRef, Props}
 import notebook.OutputTypes._
 import notebook.PresentationCompiler
 import notebook.kernel._
+import notebook.JobTracking
+import notebook.kernel.repl.common.ReplT
 import notebook.util.{CustomResolvers, Deps}
 
 import sbt._
 
 import scala.collection.immutable.Queue
+import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.{Failure => TFailure, Success => TSuccess}
 
@@ -31,7 +34,6 @@ class ReplCalculator(
   _initScripts: List[(String, String)],
   compilerArgs: List[String]
 ) extends Actor with akka.actor.ActorLogging {
-  val initScripts = _initScripts ::: List(("end", "\"END INIT\""))
 
   private val remoteLogger = context.actorSelection("/user/remote-logger")
   remoteLogger ! remoteActor
@@ -62,7 +64,7 @@ class ReplCalculator(
 
   // note: the resolver list is a superset of Spark's list in o.a.spark.deploy.SparkSubmit
   // except that the local ivy repo isn't included
-  var resolvers: List[Resolver] = {
+  private var resolvers: List[Resolver] = {
     val mavenLocal = Resolver.mavenLocal
     val defaultLocal = Resolver.defaultLocal
     val local = {
@@ -82,7 +84,7 @@ class ReplCalculator(
     customRepos.getOrElse(List.empty[String]).map(CustomResolvers.fromString).map(_._2) ::: defaults
   }
 
-  var repo: File =  customLocalRepo.map { x =>
+  private var repo: File =  customLocalRepo.map { x =>
                       new File(notebook.util.StringUtils.updateWithVarEnv(x))
                     }.getOrElse {
                       val tmp = new File(System.getProperty("java.io.tmpdir"))
@@ -113,9 +115,9 @@ class ReplCalculator(
 
   val ImportsScripts = ("imports", () => customImports.map(_.mkString("\n") + "\n").getOrElse("\n"))
 
-  private var _repl: Option[Repl] = None
+  private var _repl: Option[ReplT] = None
 
-  private def repl: Repl = _repl getOrElse {
+  private def repl: ReplT = _repl getOrElse {
     val r = new Repl(compilerArgs, depsJars)
     _repl = Some(r)
     r
@@ -128,6 +130,8 @@ class ReplCalculator(
     _presentationCompiler = Some(r)
     r
   }
+
+  val chat = new notebook.front.gadgets.Chat()
 
   // +/- copied of https://github.com/scala/scala/blob/v2.11.4/src%2Flibrary%2Fscala%2Fconcurrent%2Fduration%2FDuration.scala
   final def toCoarsest(d: FiniteDuration): String = {
@@ -169,18 +173,19 @@ class ReplCalculator(
     implicit val ec = context.dispatcher
 
     private var queue: Queue[(ActorRef, ExecuteRequest)] = Queue.empty
+    private var currentlyExecutingTask: Option[Future[(String, EvaluationResult)]] = None
 
     def eval(b: => String, notify: Boolean = true)(success: => String = "",
       failure: String => String = (s: String) => "Error evaluating " + b + ": " + s) {
       repl.evaluate(b)._1 match {
         case Failure(str) =>
           if (notify) {
-            eval( s"""""", notify = false)()
+            eval( """""", notify = false)()
           }
           log.error(failure(str))
         case _ =>
           if (notify) {
-            eval( s"""""", notify = false)()
+            eval( """""", notify = false)()
           }
           log.info(success)
       }
@@ -189,25 +194,51 @@ class ReplCalculator(
     def receive = {
       case "process-next" =>
         log.debug(s"Processing next asked, queue is ${queue.size} length now")
-        if (queue.nonEmpty) {
-          //queue could be empty if InterruptRequest was asked!
+        currentlyExecutingTask = None
+
+        if (queue.nonEmpty) { //queue could be empty if InterruptRequest was asked!
           log.debug("Dequeuing execute request current size: " + queue.size)
-          queue = queue.dequeue._2
-          queue.headOption foreach { case (ref, er) =>
-            log.debug("About to execute request from the queue")
-            execute(ref, er)
-          }
+          val (executeRequest, queueTail) = queue.dequeue
+          queue = queueTail
+          val (ref, er) = executeRequest
+          log.debug("About to execute request from the queue")
+          execute(ref, er)
         }
 
-      case er@ExecuteRequest(_, code) if queue.nonEmpty =>
+      case er@ExecuteRequest(_, _, code) =>
         log.debug("Enqueuing execute request at: " + queue.size)
         queue = queue.enqueue((sender(), er))
 
-      case er@ExecuteRequest(_, code) =>
-        log.debug("Enqueuing execute request at: " + queue.size)
-        queue = queue.enqueue((sender(), er))
-        log.debug("Executing execute request")
-        execute(sender(), er)
+        // if queue contains only the new task, and no task is currently executing, execute it straight away
+        // otherwise the execution will start once the evaluation of earlier cell(s) finishes
+        if (currentlyExecutingTask.isEmpty && queue.size == 1) {
+          self ! "process-next"
+        }
+
+      case InterruptCellRequest(killCellId) =>
+        // kill job(s) still waiting for execution to start, if any
+        val (jobsInQueueToKill, nonAffectedJobs) = queue.partition { case (_, ExecuteRequest(cellIdInQueue, _, _)) =>
+          cellIdInQueue == killCellId
+        }
+        log.debug(s"Canceling $killCellId jobs still in queue (if any):\n $jobsInQueueToKill")
+        queue = nonAffectedJobs
+
+        log.debug(s"Interrupting the cell: $killCellId")
+        val jobGroupId = JobTracking.jobGroupId(killCellId)
+        // make sure sparkContext is already available!
+        if (jobsInQueueToKill.isEmpty && repl.sparkContextAvailable) {
+          log.info(s"Killing job Group $jobGroupId")
+          val thisSender = sender()
+          repl.evaluate(
+            s"""sparkContext.cancelJobGroup("${jobGroupId}")""",
+            msg => thisSender ! StreamResponse(msg, "stdout")
+          )
+        }
+
+        // StreamResponse shows error msg
+        sender() ! StreamResponse("The cell was cancelled.\n", "stderr")
+        // ErrorResponse to marks cell as ended
+        sender() ! ErrorResponse("The cell was cancelled.\n", incomplete = false)
 
       case InterruptRequest =>
         log.debug("Interrupting the spark context")
@@ -293,11 +324,14 @@ class ReplCalculator(
 
         case shRegex(sh) =>
           val ps = "s\"\"\"" + sh.replaceAll("\\s*\\|\\s*", "\" #\\| \"").replaceAll("\\s*&&\\s*", "\" #&& \"") + "\"\"\""
-          (`text/plain`, s"""
-                            |import sys.process._
-                            |$ps.!!
-              """.stripMargin.trim
-            )
+
+          val shCode =
+            s"""|import sys.process._
+                |println($ps.!!(ProcessLogger(out => (), err => println(err))))
+                |()
+                |""".stripMargin.trim
+          log.debug(s"Generated SH code: $shCode")
+          (`text/plain`, shCode)
 
         case sqlRegex(n, sql) =>
           log.debug(s"Received sql code: [$n] $sql")
@@ -361,10 +395,27 @@ class ReplCalculator(
       val result = scala.concurrent.Future {
         // this future is required to allow InterruptRequest messages to be received and process
         // so that spark jobs can be killed and the hand given back to the user to refine their tasks
-        val result = repl.evaluate(newCode, msg => thisSender ! StreamResponse(msg, "stdout"))
+        val cellId = er.cellId
+        def replEvaluate(code:String, cellId:String) = {
+          val cellResult = try {
+           repl.evaluate(s"""
+              |sparkContext.setJobGroup("${JobTracking.jobGroupId(cellId)}", "${JobTracking.jobDescription(code, start)}")
+              |$code
+              """.stripMargin,
+              msg => thisSender ! StreamResponse(msg, "stdout"),
+              nameDefinition => thisSender ! nameDefinition
+            )
+          }
+          finally {
+             repl.evaluate("sparkContext.clearJobGroup()")
+          }
+          cellResult
+        }
+        val result = replEvaluate(newCode, cellId)
         val d = toCoarsest(Duration(System.currentTimeMillis - start, MILLISECONDS))
         (d, result._1)
       }
+      currentlyExecutingTask = Some(result)
 
       result foreach {
         case (timeToEval, Success(result)) =>
@@ -390,7 +441,8 @@ class ReplCalculator(
       () => s"""@transient val _5C4L4_N0T3800K_5P4RK_HOOK = "${repl.classServerUri.get}";\n"""
       )
 
-    val nbName = notebookName.replaceAll("\"", "")
+    // Must escape last remaining '\', which could be for windows paths.
+    val nbName = notebookName.replaceAll("\"", "").replace("\\", "\\\\")
 
     val SparkConfScript = {
       val m = customSparkConf .getOrElse(Map.empty[String, String])
@@ -407,7 +459,7 @@ class ReplCalculator(
       """.stripMargin
     )
 
-    def eval(script: () => String): Unit = {
+    def eval(script: () => String): Option[String] = {
       val sc = script()
       log.debug("script is :\n" + sc)
       if (sc.trim.length > 0) {
@@ -415,22 +467,28 @@ class ReplCalculator(
         result match {
           case Failure(str) =>
             log.error("Error in init script: \n%s".format(str))
+            None
           case _ =>
             if (log.isDebugEnabled) log.debug("\n" + sc)
             log.info("Init script processed successfully")
+            Some(sc)
         }
-      } else ()
+      } else None
     }
 
-    val allInitScrips: List[(String, () => String)] = dummyScript :: SparkHookScript :: depsScript :: ImportsScripts :: CustomSparkConfFromNotebookMD :: initScripts.map(
-      x => (x._1, () => x._2))
-    val pc = new PresentationCompiler(depsJars)
+    val allInitScrips: List[(String, () => String)] = dummyScript ::
+                                                      SparkHookScript ::
+                                                      depsScript ::
+                                                      ImportsScripts ::
+                                                      CustomSparkConfFromNotebookMD ::
+                                                      ( _initScripts ::: repl.endInitCommand ).map(x => (x._1, () => x._2))
     for ((name, script) <- allInitScrips) {
       log.info(s" INIT SCRIPT: $name")
-      eval(script)
-      pc.addScripts(script())
+      eval(script).map { sc =>
+        presentationCompiler.addScripts(sc)
+      }
     }
-    _presentationCompiler = Some(pc)
+    repl.setInitFinished()
   }
 
   override def preStart() {
@@ -440,6 +498,7 @@ class ReplCalculator(
 
   override def postStop() {
     log.info("ReplCalculator postStop")
+    presentationCompiler.stop()
     super.postStop()
   }
 
@@ -459,9 +518,12 @@ class ReplCalculator(
     case msgThatShouldBeFromTheKernel =>
 
       msgThatShouldBeFromTheKernel match {
+        case req @ InterruptCellRequest(_) =>
+          executor.forward(req)
+
         case InterruptRequest => executor.forward(InterruptRequest)
 
-        case req@ExecuteRequest(_, code) => executor.forward(req)
+        case req@ExecuteRequest(_, _, code) => executor.forward(req)
 
         case CompletionRequest(line, cursorPosition) =>
           val (matched, candidates) = presentationCompiler.complete(line, cursorPosition)

@@ -24,8 +24,10 @@ define([
      * @param {Notebook} notebook - notebook object
      * @param {string} name - the kernel type (e.g. python3)
      */
-    var Kernel = function (kernel_service_url, base_url, ws_url, notebook, name) {
+    var Kernel = function (kernel_service_url, base_url, ws_url, notebook, name, read_only) {
         this.notebook = notebook;
+
+        this.read_only = read_only;
 
         this.events = notebook.events;
 
@@ -133,6 +135,7 @@ define([
         var output_msg_types = ['stream', 'display_data', 'execute_result', 'error'];
         this._iopub_handlers = {};
         this.register_iopub_handler('status', $.proxy(this._handle_status_message, this));
+        this.register_iopub_handler('definition', $.proxy(this._handle_definition_message, this));
         this.register_iopub_handler('log', $.proxy(this._handle_log_message, this));
         this.register_iopub_handler('clear_output', $.proxy(this._handle_clear_output, this));
         this.register_iopub_handler('execute_input', $.proxy(this._handle_input_message, this));
@@ -716,6 +719,8 @@ define([
          * arugment.  Payload handlers will be passed the corresponding
          * payload and the execute_reply message.
          */
+        if (this.read_only) return;
+
         var content = {
             code: code,
             silent: true,
@@ -769,6 +774,16 @@ define([
         }
         var content = {};
         return this.send_shell_message("interrupt_request", content, callbacks);
+    };
+
+    Kernel.prototype.cancelCellJobs = function (cell_id, callback) {
+        var callbacks;
+        if (callback) {
+            callbacks = {shell: {reply: callback}};
+        }
+        var content = { cell_id: cell_id };
+        console.log("sending interrupt_cell_request for:", cell_id);
+        return this.send_shell_message("interrupt_cell_request", content, callbacks);
     };
 
     /**
@@ -940,7 +955,6 @@ define([
      * @function _handle_log_message
      */
     Kernel.prototype._handle_log_message = function (msg) {
-        var execution_state = msg.content.execution_state;
         var parent_id = msg.parent_header.msg_id;
 
         // dispatch status msg callbacks, if any
@@ -961,6 +975,26 @@ define([
         console[msg.content.level.toLowerCase()](
             "Server log> ["+new Date(msg.content.time_stamp)+"] [" + msg.content.logger_name + "] " + msg.content.message + st
         );
+    };
+
+
+    /**
+     * @function _handle_definition_message → for new variable definition
+     */
+    Kernel.prototype._handle_definition_message = function (msg) {
+        var parent_id = msg.parent_header.msg_id;
+
+        // dispatch definition msg callbacks, if any
+        var callbacks = this.get_callbacks_for_msg(parent_id);
+        if (callbacks && callbacks.iopub && callbacks.iopub.definition) {
+            try {
+                callbacks.iopub.definition(msg);
+            } catch (e) {
+                console.log("Exception in definition msg handler", e, e.stack);
+            }
+        }
+
+        this.events.trigger('new.Definition', msg.content);
     };
 
     /**
@@ -1041,6 +1075,16 @@ define([
      */
     Kernel.prototype._handle_output_message = function (msg) {
         var callbacks = this.get_callbacks_for_msg(msg.parent_header.msg_id);
+        if (!callbacks && msg.content && msg.content.cell_id) {
+            // get the cell
+            var c = _.filter(this.notebook.get_cells(), function(c) { return c.cell_id == msg.content.cell_id});
+            if (c.length == 1 && c[0].get_callbacks) {
+                callbacks = c[0].get_callbacks();
+                if (callbacks.iopub && callbacks.iopub.clear_output) {
+                    callbacks.iopub.clear_output(msg);
+                }
+            }
+        }
         if (!callbacks || !callbacks.iopub) {
             // The message came from another client. Let the UI decide what to
             // do with it.

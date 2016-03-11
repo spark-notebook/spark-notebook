@@ -13,11 +13,11 @@ trait PipeComponent[X <: PipeComponent[X]] {
   def name:String
   def tpe:String
   def parameters:Map[String, String]
-  def init(a:Any):Any
-  def next(a:Map[PipeComponent[_], Any]):Any
+  // inputs (one Any per inPort String) → outputs (one Any per outPort String)
+  def next(a:Map[String, Any]):Map[String, Any]
   def merge(j:JsValue):X
   private[front] val me:X = this.asInstanceOf[X]
-  def toJSON:JsValue = Json.obj(
+  def toJSON:JsObject = Json.obj(
     "name" → name,
     "id" → id,
     "tpe" → tpe,
@@ -30,69 +30,114 @@ abstract class BasePipeComponent[X<:BasePipeComponent[X]] extends PipeComponent[
 
 abstract class LinkPipeComponent[X<:LinkPipeComponent[X]]() extends BasePipeComponent[X]() {
   val tpe = "link"
-  def source:Option[String]
-  def target:Option[String]
+  def source:Option[(String, String)]
+  def target:Option[(String, String)]
 }
 
 abstract class BoxPipeComponent[X<:BoxPipeComponent[X]]() extends BasePipeComponent[X]() {
   val tpe = "box"
+  def inPorts:List[String]
+  def outPorts:List[String]
+  def position:(Int, Int)
+  def size:(Int, Int)
+  def update(varName:String, i:notebook.util.InterpreterUtil, s:String):Unit = ()
+  override def toJSON:JsObject = super.toJSON ++ Json.obj(
+                                              "inPorts" → inPorts,
+                                              "outPorts" → outPorts,
+                                              "position" → Json.obj(
+                                                  "x" → position._1,
+                                                  "y" → position._2
+                                                ),
+                                              "size" → Json.obj(
+                                                  "width" → size._1,
+                                                  "height" → size._2
+                                                )
+                                            )
 }
 
 case class LinkPipe(id:String = java.util.UUID.randomUUID.toString,
-                    source:Option[String]=None,
-                    target:Option[String]=None) extends LinkPipeComponent[LinkPipe]() {
+                    source:Option[(String, String)]=None,
+                    target:Option[(String, String)]=None) extends LinkPipeComponent[LinkPipe]() {
   val name = "link"
-  val parameters = source.map(x => Map("source" → x)).getOrElse(Map.empty[String, String]) ++
-                   target.map(x => Map("target" → x)).getOrElse(Map.empty[String, String])
-  def init(a:Any):Any = {
-    println("Initializing with LinkPipe given " + a)
-    a
-  }
-  def next(a:Map[PipeComponent[_], Any]):Any = {
+  def goe(o:Option[String], e:String) = o.map(x => Map(e → x)).getOrElse(Map.empty[String, String])
+  val parameters = goe(source.map(_._1), "source_id") ++ goe(source.map(_._2), "source_port") ++
+                    goe(target.map(_._1), "target_id") ++ goe(target.map(_._2), "target_port")
+  def next(a:Map[String, Any]):Map[String, Any] = {
     println("Applying next on LinkPipe with " + a)
     a
   }
-  def merge(j:JsValue) = copy(source = (j \ "parameters" \ "source").asOpt[String],
-                              target = (j \ "parameters" \ "target").asOpt[String])
+  def getSource(j:JsValue, k:String) = (j \ "parameters" \ s"source_$k" ).asOpt[String]
+  def getTarget(j:JsValue, k:String) = (j \ "parameters" \ s"target_$k" ).asOpt[String]
+  def merge(j:JsValue) = {
+    copy(
+      id     = (j \ "id").as[String],
+      source = for (i <- getSource(j, "id"); p <- getSource(j, "port")) yield (i,p),
+      target = for (i <- getTarget(j, "id"); p <-getTarget(j, "port")) yield (i,p)
+    )
+  }
 }
 
-case class LogPipe(id:String = java.util.UUID.randomUUID.toString) extends BoxPipeComponent[LogPipe]() {
+case class LogPipe(
+  id:String = java.util.UUID.randomUUID.toString,
+  inPorts:List[String] = List("in"),
+  outPorts:List[String] = List("out"),
+  position:(Int, Int) = (100, 100),
+  size:(Int, Int) = (100, 60)
+) extends BoxPipeComponent[LogPipe]() {
   val name = "log"
   val parameters = Map.empty[String, String]
-  def init(a:Any):Any = {
-    println("Initializing with LogPipe given " + a)
-    a
-  }
-  def next(a:Map[PipeComponent[_], Any]):Any = {
+
+  def next(a:Map[String, Any]):Map[String, Any] = {
     println("Applying next on LogPipe with " + a)
     a
   }
   def merge(j:JsValue):LogPipe = this
 }
 
-// Example
-case class WithParamPipe( id:String = java.util.UUID.randomUUID.toString,
-                          parameters:Map[String, String] = Map("testA" → "a", "testB" → "b")
-                        ) extends BoxPipeComponent[WithParamPipe]() {
-  val name = "withParam"
-  def init(a:Any):Any = {
-    println("Initializing with WithParamPipe given " + a)
-    a
-  }
-  def next(a:Map[PipeComponent[_], Any]):Any = {
-    println("Applying next on WithParamPipe with " + a)
-    a
-  }
-  def merge(j:JsValue):WithParamPipe = copy(
+trait Updatable {
+  def update( varName:String,
+              i:notebook.util.InterpreterUtil
+            ):Unit
+}
+
+case class CustomizableBoxPipe(
+  id:String = java.util.UUID.randomUUID.toString,
+  inPorts:List[String] = List("in"),
+  outPorts:List[String] = List("out"),
+  position:(Int, Int) = (100, 100),
+  size:(Int, Int) = (100, 60),
+  parameters:Map[String, String] = Map("next" → "(a:Map[String, Any])=>a")
+) extends BoxPipeComponent[CustomizableBoxPipe]() with Updatable {
+  val name = "customizable"
+
+  var _next:Map[String, Any]=>Map[String, Any] = _
+  def next(a:Map[String, Any]):Map[String, Any] = _next(a)
+
+  def merge(j:JsValue):CustomizableBoxPipe = copy(
+    id         = (j \ "id").as[String],
+    inPorts    = (j \ "inPorts").as[List[String]],
+    outPorts   = (j \ "outPorts").as[List[String]],
+    position   = ((j \ "position" \ "x").as[Int], (j \ "position" \ "y").as[Int]),
+    size       = ((j \ "size" \ "width").as[Int], (j \ "size" \ "height").as[Int]),
     parameters = (j \ "parameters").as[Map[String, String]]
   )
+
+  override def update(
+              varName:String,
+              i:notebook.util.InterpreterUtil
+            ):Unit = {
+    i{
+      varName + s""".data.find(_.id == "$id").map{p => p.asInstanceOf[CustomizableBoxPipe]}.""" +
+        "foreach{p => p._next = { " + parameters("next") + "}.asInstanceOf[Map[String, Any]=>Map[String, Any]] }"
+    }
+  }
 }
 
 object Flow {
   var registeredPC:scala.collection.mutable.Map[String, ()=>BoxPipeComponent[_]] =
     scala.collection.mutable.Map(
       "log"       → (() => LogPipe()),
-      "withParam" → (() => WithParamPipe())
+      "customizable" → (() => CustomizableBoxPipe())
     )
 
   def registerPipeComponent(name:String, creator:() => BoxPipeComponent[_]) {
@@ -102,7 +147,7 @@ object Flow {
   def createPipeComponent(s:String):Option[PipeComponent[_]] = registeredPC.get(s).map(_())
 }
 
-case class Flow() extends JsWorld[PipeComponent[_], JsValue] {
+case class Flow() extends Updatable with JsWorld[PipeComponent[_], JsValue] {
   import notebook.JSBus._
 
   implicit val singleToO = (pc:PipeComponent[_]) => pc.toJSON
@@ -112,9 +157,39 @@ case class Flow() extends JsWorld[PipeComponent[_], JsValue] {
   override def data:Seq[PipeComponent[_]] = mutData
   private[this] var mutData:Seq[PipeComponent[_]] = Nil
 
+  val confConnection = notebook.JSBus.createConnection
+  confConnection --> Connection.fromObserver { (js:JsValue) =>
+    load(js)
+  }
+
+  val linkConnection = notebook.JSBus.createConnection
+  linkConnection --> Connection.fromObserver { (js:JsValue) =>
+    val l = new LinkPipe()
+    val u = l.merge(js)
+    addAndApply(u)
+  }
+
   override val scripts = List(
-    Script("flow", Json.obj())
+    Script("flow", Json.obj("confId" → confConnection.id, "linkId" → linkConnection.id))
   )
+
+  def load(js:JsValue) = {
+    val JsArray(array) = js
+    val pcs = array.map { j =>
+      val JsString(name) = j \ "name"
+      val pc = if (name == "link") {//hackish :-S
+        Some(new LinkPipe())
+      } else {
+        Flow.createPipeComponent(name)
+      }
+      val p = pc.map { p =>
+        val pc:PipeComponent[_] = p.merge(j).asInstanceOf[PipeComponent[_]]
+        pc
+      }
+      p
+    }.map { case Some(x) => x }
+    addAndApply(pcs)
+  }
 
   private[this] var selected:Option[String] = None
   val dl = new DropDown("---" :: Flow.registeredPC.keys.toList)
@@ -130,10 +205,6 @@ case class Flow() extends JsWorld[PipeComponent[_], JsValue] {
       s  <- selected
       pc <- Flow.createPipeComponent(s)
     } addAndApply(pc)
-  }
-  val addLink = new Button(icon=Some("arrow-right"))
-  addLink.currentData --> Connection.fromObserver { (_:Double) =>
-    addAndApply(new LinkPipe())
   }
 
   currentData --> Connection.fromObserver { (s:Seq[JsValue]) =>
@@ -153,20 +224,31 @@ case class Flow() extends JsWorld[PipeComponent[_], JsValue] {
   }
 
   def addAndApply(pc:PipeComponent[_]) {
-    mutData = mutData :+ pc
+    addAndApply(Seq[PipeComponent[_]](pc))
+  }
+
+  def addAndApply(pcs:Seq[PipeComponent[_]]) {
+    mutData = mutData ++ pcs
     apply(data)
   }
+
+  override def update(
+              varName:String,
+              i:notebook.util.InterpreterUtil
+            ):Unit =  data.filter(_.isInstanceOf[Updatable])
+                          .foreach(_.asInstanceOf[Updatable].update(varName, i))
 
   /**
    * @param init is a function that take a source box and gives it a init value
    */
-  def run(init:String => Any):scala.collection.Map[String,Any] = {
+  def run(init:(String /*BoxId*/, List[String/*InPort*/]) => Map[String/*OutPort*/, Any]):scala.collection.Map[(String, String),Any] = {
     // build tree
     val currentData:List[PipeComponent[_]] = mutData.toList
 
     val (links, boxes) = {
-      val (ls, boxes) = currentData.partition(_.isInstanceOf[LinkPipeComponent[_]])
+      val (ls, bxs) = currentData.partition(_.isInstanceOf[LinkPipeComponent[_]])
       val links = ls.map(_.asInstanceOf[LinkPipeComponent[_]])
+      val boxes = bxs.map(_.asInstanceOf[BoxPipeComponent[_]])
       (links.filter(l => l.source.isDefined && l.target.isDefined), boxes)
     }
     /**
@@ -177,7 +259,7 @@ case class Flow() extends JsWorld[PipeComponent[_], JsValue] {
      * L0       L1        L2      L3
      */
 
-    def layer(remaning:Seq[PipeComponent[_]], acc:List[Seq[PipeComponent[_]]]):List[Seq[PipeComponent[_]]] = {
+    def layer(remaning:Seq[BoxPipeComponent[_]], acc:List[Seq[BoxPipeComponent[_]]]):List[Seq[BoxPipeComponent[_]]] = {
       remaning match {
         case Nil          => acc.reverse
 
@@ -200,26 +282,39 @@ case class Flow() extends JsWorld[PipeComponent[_], JsValue] {
     }
     val layers = layer(boxes, Nil)
 
-    val values = scala.collection.mutable.Map.empty[String, Any]
+    val values = scala.collection.mutable.Map.empty[(String /*BoxID*/, String /*OutPort*/), Any]
 
     val results = layers.map { pcs =>
       pcs.foreach { pc =>
-        val linksToPc = links.filter(_.target == Some(pc.id)).map(_.source.get)
+        val linksToPc = links.map { link =>
+                                val pcid = pc.id
+                                link.target match {
+                                  case Some((`pcid`, port)) if pc.inPorts.contains(port) => Some(port → link.source.get)
+                                  case _ => None
+                                }
+                              }.collect{case Some(x) => x}
 
-        val valuesForLinksSource = linksToPc.map(s => currentData.find(_.id == s) → values.get(s))
-                                            .collect{case (Some(x), Some(y)) => x.me → y }
+        val valuesForLinksSource = linksToPc.map{ case (inPort, (srcId, outPort)) =>
+                                              for{
+                                                src <- currentData.find(_.id == srcId)
+                                                v   <- values.get((srcId, outPort))
+                                              } yield (inPort → v)
+                                            }
+                                            .collect{ case Some(x) => x }
+                                            .toMap
 
-        values += (valuesForLinksSource match {
-          case xs if xs.isEmpty => pc.id → pc.init(init(pc.id))
-          case xs               => pc.id → pc.next(xs.asInstanceOf[Map[PipeComponent[_], Any]])
-        })
+        values ++= (valuesForLinksSource match {
+          case xs if xs.isEmpty => pc.next(init(pc.id, pc.inPorts))
+          case xs               => pc.next(xs.asInstanceOf[Map[String, Any]])
+        }).map{ case (outPort, v) => (pc.id, outPort) → v}
       }
     }
     val lastPCs = boxes.filterNot { b =>
-                    links.exists(l => l.source == Some(b.id))
+                    links.exists(l => l.source.map(_._1) == Some(b.id))
                   }
 
-    values.filterKeys(k => lastPCs.exists(_.id == k))
+    val rs = values.filterKeys(k => lastPCs.exists(_.id == k._1))
+    rs
   }
 
   override def content = Some {
@@ -230,9 +325,6 @@ case class Flow() extends JsWorld[PipeComponent[_], JsValue] {
         }
         {
           addPipeComponent.toHtml
-        }
-        {
-          addLink.toHtml
         }
       </div>
       <div class="jointgraph col-md-9"></div>

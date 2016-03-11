@@ -3,6 +3,7 @@ define([
   'knockout',
   'underscore'
 ], function($, ko, _) {
+  if ($("#notebook-tachyon-container").length == 0) return;
   root = { path: '/' }
   var TachyonModel = function() {
     var self = this;
@@ -72,6 +73,7 @@ define([
   }
 
   model = new TachyonModel();
-  ko.applyBindings({ tachyon: model });
+  ko.cleanNode($("#notebook-tachyon-container").get(0));
+  ko.applyBindings({ tachyon: model }, $("#notebook-tachyon-container").get(0));
   model.list(root);
 });

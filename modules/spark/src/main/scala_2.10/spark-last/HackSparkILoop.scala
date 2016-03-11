@@ -46,7 +46,7 @@ class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) { loo
   }
 
   /** A reverse list of commands to replay if the user requests a :replay */
-  var replayCommandStack: List[String] = Nil
+  private var replayCommandStack: List[String] = Nil
 
   /** A list of commands to replay if the user requests a :replay */
   def replayCommands = replayCommandStack.reverse
@@ -74,7 +74,7 @@ class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) { loo
     echo("Spark context available as sc.")*/
   }
 
-  var in: InteractiveReader = _   // the input stream from which commands come
+  private var in: InteractiveReader = _   // the input stream from which commands come
 
   /** Tries to create a JLineReader, falling back to SimpleReader:
    *  unless settings or properties are such that it should start
@@ -135,7 +135,7 @@ class HackSparkILoop(out:JPrintWriter) extends SparkILoop(None, out, None) { loo
       import Properties.userHome
       import scala.compat.Platform.EOL
       val autorun = replProps.replAutorunCode.option flatMap (f => io.File(f).safeSlurp())
-      if (autorun.isDefined) intp.quietRun(autorun.get)
+      autorun.foreach((ar) => intp.quietRun(ar))
     })
 
     addThunk(printWelcome())

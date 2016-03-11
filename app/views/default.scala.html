@@ -11,8 +11,11 @@
         <link href='//fonts.googleapis.com/css?family=Bowlby+One+SC' rel='stylesheet' type='text/css'>
 
         <link rel="stylesheet" href="@routes.Assets.at("ipython/components/jquery-ui/themes/smoothness/jquery-ui.min.css")" type="text/css" />
+        <link rel="stylesheet" href="@routes.Assets.at("javascripts/third/jquery/css/jquery.gridster.min.css")" type="text/css" />
 
-        <link rel="stylesheet" href="//nicolas.kruchten.com/pivottable/dist/pivot.css" type="text/css" />
+        <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/c3.min.css")" type="text/css" />
+        <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/pivot.css")" type="text/css" />
+        <link rel="stylesheet" href="@routes.Assets.at("javascripts/taucharts/tauCharts.min.css")" type="text/css" />
 
         @stylesheet
         @*<link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/bootstrap/css/bootstrap.min.css")" type="text/css" />*@
@@ -25,6 +28,9 @@
 
         <script src="@routes.Assets.at("ipython/components/es6-promise/promise.min.js")" type="text/javascript" charset="utf-8"></script>
         <script src="@routes.Assets.at("ipython/components/requirejs/require.js")" type="text/javascript" charset="utf-8"></script>
+
+        <!-- needed to fix pivottable/C3 issues on chrome v48+, see https://github.com/masayuki0812/c3/issues/1566 -->
+        <script src="@routes.Assets.at("javascripts/third/pathseg-chrome-svg-fix.js")" type="text/javascript" charset="utf-8"></script>
         <script>
       require.config({
         @version_hash.map(v => s""" urlArgs: "v=$v", """)
@@ -33,6 +39,8 @@
           nbextensions : '/nbextensions',
           kernelspecs : '/kernelspecs',
           underscore : '@routes.Assets.at("javascripts/third/underscore-min")',
+          taucharts_root: '@routes.Assets.at("javascripts/taucharts")',
+          tauCharts : '@routes.Assets.at("javascripts/taucharts/tauCharts")',
           backbone : 'components/backbone/backbone-min',
           jquery: 'components/jquery/jquery.min',
           bootstrap: 'components/bootstrap/js/bootstrap.min',
@@ -63,11 +71,14 @@
           pivotD3: '@routes.Assets.at("javascripts/third/d3_renderers")',
           pivotC3: '@routes.Assets.at("javascripts/third/c3_renderers")',
           rickshaw: '@routes.Assets.at("javascripts/third/rickshaw/rickshaw")',
+          'jquery.gridster': '@routes.Assets.at("javascripts/third/jquery/js/jquery.gridster.min")',
           wizard: '@routes.Assets.at("javascripts/third/jquery/js/jquery.bootstrap.wizard.min")',
           observable: '@routes.Assets.at("javascripts/notebook/observable")',
           equiv: '@routes.Assets.at("javascripts/notebook/equiv")',
+          chat: '@routes.Assets.at("javascripts/notebook/chat")',
           tachyon: '@routes.Assets.at("javascripts/notebook/tachyon")',
-          job_progress: '@routes.Assets.at("javascripts/notebook/job_progress")'
+          job_progress: '@routes.Assets.at("javascripts/notebook/job_progress")',
+          sidebar: '@routes.Assets.at("javascripts/notebook/sidebar")',
           //'jwerty.js': '@routes.Assets.at("javascripts/third/jwerty.js")'
         },
         shim: {

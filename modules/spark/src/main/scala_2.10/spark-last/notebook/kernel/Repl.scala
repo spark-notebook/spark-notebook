@@ -22,42 +22,31 @@ import org.apache.spark.repl._
 import notebook.front.Widget
 import notebook.util.Match
 import notebook.kernel._
+import notebook.kernel.repl.common._
 
-class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
+class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends ReplT {
   val LOG = org.slf4j.LoggerFactory.getLogger(classOf[Repl])
 
   def this() = this(Nil)
 
-  class MyOutputStream extends ByteArrayOutputStream {
-    var aop: String => Unit = x => ()
+  private lazy val stdoutBytes = new ReplOutputStream
+  private lazy val stdout = new PrintWriter(stdoutBytes)
+  private var loop:HackSparkILoop = _
+  private var _classServerUri:Option[String] = None
 
-    override def write(i: Int): Unit = {
-      // CY: Not used...
-      //      orig.value ! StreamResponse(i.toString, "stdout")
-      super.write(i)
-    }
+  private var _initFinished: Boolean = false
+  private var _evalsUntilInitFinished: Int = 0
+  // FG: never used !
+  private var _needsDropOnReplay: Boolean = false
 
-    override def write(bytes: Array[Byte]): Unit = {
-      // CY: Not used...
-      //      orig.value ! StreamResponse(bytes.toString, "stdout")
-      super.write(bytes)
-    }
-
-    override def write(bytes: Array[Byte], off: Int, length: Int): Unit = {
-      val data = new String(bytes, off, length)
-      aop(data)
-      //      orig.value ! StreamResponse(data, "stdout")
-      super.write(bytes, off, length)
-    }
+  def setInitFinished(): Unit = {
+    _initFinished = true
+    _needsDropOnReplay = _evalsUntilInitFinished > 0
   }
 
-
-  private lazy val stdoutBytes = new MyOutputStream
-  private lazy val stdout = new PrintWriter(stdoutBytes)
-
-  private var loop:HackSparkILoop = _
-
-  var classServerUri:Option[String] = None
+  def classServerUri: Option[String] = {
+    _classServerUri
+  }
 
   val interp:org.apache.spark.repl.SparkIMain = {
     val settings = new Settings
@@ -115,7 +104,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
       l.interpreter
     }
     //i.initializeSynchronous()
-    classServerUri = Some(i.classServerUri)
+    _classServerUri = Some(i.classServerUri)
     i.asInstanceOf[org.apache.spark.repl.SparkIMain]
   }
 
@@ -148,6 +137,41 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     candidates map { _.toString } toList
   }
 
+  private def listDefinedTerms(request: interp.Request): List[NameDefinition] = {
+    request.handlers.flatMap { h =>
+      val maybeTerm = h.definesTerm.map(_.encoded)
+      val maybeType = h.definesType.map(_.encoded)
+      val references = h.referencedNames.toList.map(_.encoded)
+      (maybeTerm, maybeType) match {
+        case (Some(term), _) =>
+          val termType = getTypeNameOfTerm(term).getOrElse("<unknown>")
+          Some(TermDefinition(term, termType, references))
+        case (_, Some(tpe)) =>
+          Some(TypeDefinition(tpe, "type", references))
+        case _ => None
+      }
+    }
+  }
+
+  def getTypeNameOfTerm(termName: String): Option[String] = {
+    val tpe = try {
+      interp.typeOfTerm(termName).toString
+    } catch {
+      case exc: RuntimeException => println(("Unable to get symbol type", exc)); "<notype>"
+    }
+    tpe match {
+      case "<notype>" => // "<notype>" can be also returned by typeOfTerm
+        interp.classOfTerm(termName).map(_.getName)
+      case _ =>
+        // remove some crap
+        Some(
+          tpe
+            .replace("iwC$", "")
+            .stripPrefix("\\(\\)") // 2.11 return types prefixed, like `()Person`
+        )
+    }
+  }
+
   /**
    * Evaluates the given code.  Swaps out the `println` OutputStream with a version that
    * invokes the given `onPrintln` callback everytime the given code somehow invokes a
@@ -163,7 +187,10 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
    * @param onPrintln
    * @return result and a copy of the stdout buffer during the duration of the execution
    */
-  def evaluate(code: String, onPrintln: String => Unit = _ => ()): (EvaluationResult, String) = {
+  def evaluate( code: String,
+                onPrintln: String => Unit = _ => (),
+                onNameDefinion: NameDefinition => Unit  = _ => ()
+              ): (EvaluationResult, String) = {
     stdout.flush()
     stdoutBytes.reset()
 
@@ -180,10 +207,14 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
         val request:interp.Request = interp.getClass.getMethods.find(_.getName == "prevRequestList").map(_.invoke(interp)).get.asInstanceOf[List[interp.Request]].last
         //val request:Request = interp.prevRequestList.last
 
+        listDefinedTerms(request).foreach(onNameDefinion)
+
         val lastHandler/*: interp.memberHandlers.MemberHandler*/ = request.handlers.last
 
         try {
-          val evalValue = if (lastHandler.definesValue) { // This is true for def's with no parameters, not sure that executing/outputting this is desirable
+          val lastStatementReturnsValue = listDefinedTerms(request).exists(_.name.matches("res[0-9]+"))
+          val evalValue = if (lastHandler.definesValue && lastStatementReturnsValue) {
+            // This is true for def's with no parameters, not sure that executing/outputting this is desirable
             // CY: So for whatever reason, line.evalValue attemps to call the $eval method
             // on the class...a method that does not exist. Not sure if this is a bug in the
             // REPL or some artifact of how we are calling it.
@@ -207,7 +238,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
                   line.pathTo("$rendered")+"$", true, classLoader
                 )
 
-                val o = renderedClass2.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get()
+                val o = renderedClass2.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get(())
 
                 def iws(o:Any):NodeSeq = {
                   val iw = o.getClass.getMethods.find(_.getName == "$iw")
@@ -225,7 +256,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
                 }
                 iws(o)
               } catch {
-                case e =>
+                case NonFatal(e) =>
                   e.printStackTrace
                   LOG.error("Ooops, exception in the cell", e)
                   <span style="color:red;">Ooops, exception in the cell: {e.getMessage}</span>
@@ -233,7 +264,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
             } else {
               // a line like println(...) is technically a val, but returns null for some reason
               // so wrap it in an option in case that happens...
-              Option(line.call("$result")) map { result => Text(try { result.toString } catch { case e => "Fail to `toString` the result: " + e.getMessage }) } getOrElse NodeSeq.Empty
+              Option(line.call("$result")) map { result => Text(try { result.toString } catch { case NonFatal(e) => "Fail to `toString` the result: " + e.getMessage }) } getOrElse NodeSeq.Empty
             }
           } else {
             NodeSeq.Empty
@@ -252,16 +283,19 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
       case Error          => Failure(stdoutBytes.toString)
     }
 
+    if ( !_initFinished ) {
+      _evalsUntilInitFinished = _evalsUntilInitFinished + 1
+    }
+
     (result, stdoutBytes.toString)
   }
 
   def addCp(newJars:List[String]) = {
     val requests = interp.getClass.getMethods.find(_.getName == "prevRequestList").map(_.invoke(interp)).get.asInstanceOf[List[interp.Request]]
-
-    val prevCode = requests.map(_.originalLine)
-    val jarList = newJars:::jars
-    val r = new Repl(compilerOpts, jarList)
-    (r, () => prevCode.dropWhile(_.trim != "\"END INIT\"") foreach (c => r.evaluate(c, _ => ())))
+    val prevCode = requests.drop( _evalsUntilInitFinished ).map(_.originalLine)
+    interp.close() // this will close the repl class server, which is needed in order to reuse `-Dspark.replClassServer.port`!
+    val r = new Repl(compilerOpts, newJars:::jars)
+    (r, () => prevCode foreach (c => r.evaluate(c, _ => ())))
   }
 
   def complete(line: String, cursorPosition: Int): (String, Seq[Match]) = {
@@ -291,7 +325,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
       case None =>
         val candidates = getCompletions(line, cursorPosition)
 
-        (matchedText, if (candidates.size > 0 && candidates.head.isEmpty) {
+        (matchedText, if (candidates.nonEmpty && candidates.head.isEmpty) {
           List()
         } else {
           candidates.map(Match(_))
@@ -304,12 +338,14 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     // the thing twice does it give you the method signature (i.e. you
     // hit tab twice).  So we simulate that here... (nutty, I know)
     getCompletions(line, position)
-    val candidates = getCompletions(line, position)
+    getCompletions(line, position)
+  }
 
-    if (candidates.size >= 2 && candidates.head.isEmpty) {
-      candidates.tail
-    } else {
-      Seq.empty
-    }
+  def sparkContextAvailable: Boolean = {
+    interp.allImportedNames.exists(_.toString == "sparkContext")
+  }
+
+  def stop(): Unit = {
+    interp.close()
   }
 }

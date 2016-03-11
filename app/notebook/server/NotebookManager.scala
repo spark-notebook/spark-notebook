@@ -25,10 +25,6 @@ class NotebookManager(val name: String, val notebookDir: File) {
     val basePath = notebookDir.getCanonicalPath
     val decodedPath = URLDecoder.decode(path, UTF_8)
     val nbFile = new File(basePath, decodedPath)
-    //  This check is probably not strictly necessary due to URL encoding of name
-    //  (should escape any path traversal components), but let's be safe
-    require(nbFile.getCanonicalPath.startsWith(basePath),
-      "Unable to access notebook outside of notebooks path.")
     nbFile
   }
 
@@ -79,9 +75,13 @@ class NotebookManager(val name: String, val notebookDir: File) {
     nbData.map { nb =>
       val newPath = incrementFileName(nb._4.dropRight(extension.length))
       val newName = getName(newPath)
-      val oldNB = NBSerializer.read(nb._3)
-      save(newPath, Notebook(oldNB.metadata.map(_.copy(name = newName)), oldNB.cells, oldNB.worksheets, oldNB.autosaved, None), false)
-      newPath
+      NBSerializer.read(nb._3) match {
+        case Some(oldNB) =>
+          save(newPath, Notebook(oldNB.metadata.map(_.copy(name = newName)), oldNB.cells, oldNB.worksheets, oldNB.autosaved, None), false)
+          newPath
+        case None =>
+          newNotebook()
+      }
     } getOrElse newNotebook()
   }
 
@@ -138,7 +138,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
     Logger.info(s"Loading notebook at path $path")
     val file = notebookFile(path)
     if (file.exists())
-      Some(NBSerializer.read(FileUtils.readFileToString(file)))
+      NBSerializer.read(FileUtils.readFileToString(file))
     else
       None
   }

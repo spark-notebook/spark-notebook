@@ -142,6 +142,7 @@ define([
         this.undelete_below = false;
         this.paste_enabled = false;
         this.writable = false;
+        this.autoStartKernel = false;
         // It is important to start out in command mode to match the intial mode
         // of the KeyboardManager.
         this.mode = 'command';
@@ -254,7 +255,7 @@ define([
             that.metadata.kernelspec =
                 {name: data.name, display_name: data.spec.display_name};
             // start session if the current session isn't already correct
-            if (!(this.session && this.session.kernel && this.session.kernel.name === data.name)) {
+            if (!(that.session && that.session.kernel && that.session.kernel.name === data.name)) {
                 that.start_session(data.name);
             }
         });
@@ -1132,7 +1133,7 @@ define([
             keyboard_manager: this.keyboard_manager,
             title : "Use markdown headings",
             body : $("<p/>").text(
-                'IPython no longer uses special heading cells. ' +
+                'Spark Notebook no longer uses special heading cells. ' +
                 'Instead, write your headings in Markdown cells using # characters:'
             ).append($('<pre/>').text(
                 '## This is a level 2 heading'
@@ -1596,18 +1597,18 @@ define([
             throw new session.SessionAlreadyStarting();
         }
         this._session_starting = true;
+        var success = $.proxy(this._session_started, this);
+        var failure = $.proxy(this._session_start_failed, this);
 
         var options = {
             base_url: this.base_url,
             ws_url: this.ws_url,
+            read_only: !this.autoStartKernel,
             notebook_path: this.notebook_path,
             notebook_name: this.notebook_name,
             kernel_name: kernel_name,
             notebook: this
         };
-
-        var success = $.proxy(this._session_started, this);
-        var failure = $.proxy(this._session_start_failed, this);
 
         if (this.session !== null) {
             this.session.restart(options, success, failure);
@@ -2030,7 +2031,7 @@ define([
      */
     Notebook.prototype.trust_notebook = function () {
         var body = $("<div>").append($("<p>")
-            .text("A trusted IPython notebook may execute hidden malicious code ")
+            .text("A trusted Spark Notebook may execute hidden malicious code ")
             .append($("<strong>")
                 .append(
                     $("<em>").text("when you open it")
@@ -2040,7 +2041,7 @@ define([
             ).append(
                 " For more information, see the "
             ).append($("<a>").attr("href", "http://ipython.org/ipython-doc/2/notebook/security.html")
-                .text("IPython security documentation")
+                .text("Spark Notebook security documentation")
             ).append(".")
         );
 
@@ -2105,17 +2106,22 @@ define([
         return name;
     };
 
+    Notebook.prototype.get_notebook_dir = function() {
+        return utils.url_path_split(this.notebook_path)[0];
+    };
+
     /**
      * Rename the notebook.
      * @param  {string} new_name
+     * @param {string} new_dir (optional), if provided will move notebook to this directory
      * @return {Promise} promise that resolves when the notebook is renamed.
      */
-    Notebook.prototype.rename = function (new_name) {
+    Notebook.prototype.rename = function (new_name, new_dir) {
         new_name = this.ensure_extension(new_name);
 
         var that = this;
-        var parent = utils.url_path_split(this.notebook_path)[0];
-        var new_path = utils.url_path_join(parent, new_name);
+        var new_parent_dir = new_dir ? new_dir : this.get_notebook_dir();
+        var new_path = utils.url_path_join(new_parent_dir, new_name);
         return this.contents.rename(this.notebook_path, new_path).then(
             function (json) {
                 that.notebook_name = json.name;
@@ -2148,6 +2154,11 @@ define([
             $.proxy(this.load_notebook_success, this),
             $.proxy(this.load_notebook_error, this)
         );
+    };
+
+    Notebook.prototype.is_read_only = function() {
+        var url = window.location.href;
+        return url.indexOf("read_only=1") != -1;
     };
 
     /**
@@ -2217,13 +2228,13 @@ define([
         }
         this.set_dirty(false);
         this.scroll_to_top();
-        this.writable = data.writable || false;
+        this.writable = data.writable && !this.is_read_only();
 
         // to save resources eagerly load the kernel only if configured-so in application.conf
         // must automatically start kernel it was requested to recompute the whole notebook immediately
         var recomputeNowRequested = window.location.href.indexOf("recompute_now") != -1;
-        var autoStartKernel = data.autoStartKernel || recomputeNowRequested || false;
-        console.log("autoStartKernel on load_notebook: ", autoStartKernel);
+        this.autoStartKernel = (data.autoStartKernel || recomputeNowRequested) && this.writable;
+        console.log("autoStartKernel on load_notebook: ", this.autoStartKernel);
 
         var nbmodel = data.content;
         var orig_nbformat = nbmodel.metadata.orig_nbformat;
@@ -2242,7 +2253,7 @@ define([
             "current notebook format will be used.";
 
             if (nbmodel.nbformat > orig_nbformat) {
-                msg += " Older versions of IPython may not be able to read the new format.";
+                msg += " Older versions of Spark Notebook may not be able to read the new format.";
             } else {
                 msg += " Some features of the original notebook may not be available.";
             }
@@ -2273,15 +2284,13 @@ define([
             }
             if (kernel_name) {
                 // setting kernel_name here triggers start_session
-                if (autoStartKernel) {
+                if (this.autoStartKernel) {
                     this.kernel_selector.set_kernel(kernel_name);
                 }
             } else {
-                if (autoStartKernel) {
-                    // start a new session with the server's default kernel
-                    // spec_changed events will fire after kernel is loaded
-                    this.start_session();
-                }
+                // start a new session with the server's default kernel
+                // spec_changed events will fire after kernel is loaded
+                this.start_session();
             }
         }
         // load our checkpoint list

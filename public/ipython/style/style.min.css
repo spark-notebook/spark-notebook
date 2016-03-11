@@ -1381,6 +1381,10 @@ pre code {
   margin-left: auto;
   padding-left: 0px;
   padding-right: 0px;
+  width: 100%;
+}
+/*#notebook {
+  width: 80%;
 }
 @media (min-width: 768px) {
   .container {
@@ -1397,6 +1401,10 @@ pre code {
     width: 1140px;
   }
 }
+#notebook-panels {
+  margin-left: 80%;
+  width: 20%
+}*/
 .container-fluid {
   margin-right: auto;
   margin-left: auto;
@@ -10227,7 +10235,7 @@ div#notebook_panel {
   line-height: 20px;
   overflow-y: hidden;
   overflow-x: auto;
-  width: 100%;
+  /*width: 100%;*/
   /* This spaces the page away from the edge of the notebook area */
   padding-top: 20px;
   margin: 0px;

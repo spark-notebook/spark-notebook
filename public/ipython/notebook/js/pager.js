@@ -132,7 +132,7 @@ define([
                 .attr('type',"text/css")
         )
         .append(
-                $('<title>').text("IPython Pager")
+                $('<title>').text("Spark Notebook Pager")
         );
         var pager_body = $(w.document.body);
         pager_body.css('overflow','scroll');

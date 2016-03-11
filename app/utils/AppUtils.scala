@@ -26,7 +26,8 @@ object AppUtils {
       pre + ".proxyHost",
       pre + ".proxyPort",
       pre + ".proxyUser",
-      pre + ".proxyPassword"
+      pre + ".proxyPassword",
+      pre + ".nonProxyHosts"
     )
 
     def mapper = (path:String) => path → current.configuration.getString(path)

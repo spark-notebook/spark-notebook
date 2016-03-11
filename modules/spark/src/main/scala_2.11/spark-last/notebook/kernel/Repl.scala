@@ -3,59 +3,44 @@ package notebook.kernel
 import java.io.{StringWriter, PrintWriter, ByteArrayOutputStream}
 import java.net.{URLDecoder, JarURLConnection}
 import java.util.ArrayList
+import notebook.kernel.repl.common._
 
 import scala.collection.JavaConversions
 import scala.collection.JavaConversions._
 import scala.xml.{NodeSeq, Text}
 import scala.util.control.NonFatal
 import scala.util.Try
-
 import tools.nsc.Settings
 import tools.nsc.interpreter._
 import tools.nsc.interpreter.Completion.{Candidates, ScalaCompleter}
 import tools.nsc.interpreter.Results.{Incomplete => ReplIncomplete, Success => ReplSuccess, Error}
-
 import _root_.jline.console.completer.{ArgumentCompleter, Completer}
 import scala.tools.nsc.interpreter.jline.JLineDelimiter
-
 import notebook.front.Widget
 import notebook.util.Match
+import org.apache.spark.SparkConf
 
-class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
+
+class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends ReplT {
   val LOG = org.slf4j.LoggerFactory.getLogger(classOf[Repl])
 
   def this() = this(Nil)
 
-  class MyOutputStream extends ByteArrayOutputStream {
-    var aop: String => Unit = x => ()
+  private lazy val stdoutBytes = new ReplOutputStream
+  private lazy val stdout = new PrintWriter(stdoutBytes)
+  private var loop:org.apache.spark.repl.HackSparkILoop = _
+  private var _classServerUri:Option[String] = None
 
-    override def write(i: Int): Unit = {
-      // CY: Not used...
-      //      orig.value ! StreamResponse(i.toString, "stdout")
-      super.write(i)
-    }
+  private var _initFinished: Boolean = false
+  private var _evalsUntilInitFinished: Int = 0
 
-    override def write(bytes: Array[Byte]): Unit = {
-      // CY: Not used...
-      //      orig.value ! StreamResponse(bytes.toString, "stdout")
-      super.write(bytes)
-    }
-
-    override def write(bytes: Array[Byte], off: Int, length: Int): Unit = {
-      val data = new String(bytes, off, length)
-      aop(data)
-      //      orig.value ! StreamResponse(data, "stdout")
-      super.write(bytes, off, length)
-    }
+  def setInitFinished(): Unit = {
+    _initFinished = true
   }
 
-
-  private lazy val stdoutBytes = new MyOutputStream
-  private lazy val stdout = new PrintWriter(stdoutBytes)
-
-  private var loop:org.apache.spark.repl.HackSparkILoop = _
-
-  var classServerUri:Option[String] = None
+  def classServerUri: Option[String] = {
+    _classServerUri
+  }
 
   val interp = {
     val settings = new Settings
@@ -63,6 +48,17 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     settings.embeddedDefaults[Repl]
 
     if (!compilerOpts.isEmpty) settings.processArguments(compilerOpts, false)
+
+    val conf = new SparkConf()
+
+    val tmp = System.getProperty("java.io.tmpdir")
+    val rootDir = conf.get("spark.repl.classdir", tmp)
+    val outputDir = org.apache.spark.Boot.createTempDir(rootDir, "spark-notebook-repl")
+
+
+
+
+    settings.processArguments(List("-Yrepl-class-based", "-Yrepl-outdir", s"${outputDir.getAbsolutePath}", "-Yrepl-sync"), true)
 
     // fix for #52
     settings.usejavacp.value = false
@@ -103,7 +99,8 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     // debug the classpath → settings.Ylogcp.value = true
 
     //val i = new HackIMain(settings, stdout)
-    loop = new org.apache.spark.repl.HackSparkILoop(stdout)
+    loop = new org.apache.spark.repl.HackSparkILoop(stdout, outputDir)
+
 
     jars.foreach { jar =>
       import scala.tools.nsc.util.ClassPath
@@ -112,7 +109,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     }
 
     loop.process(settings)
-    classServerUri = Some(loop.classServer.uri)
+    _classServerUri = Some(loop.classServer.uri)
     loop.intp
   }
 
@@ -145,6 +142,43 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     candidates map { _.toString } toList
   }
 
+  private def listDefinedTerms(request: interp.Request): List[NameDefinition] = {
+    request.handlers.flatMap { h =>
+      val maybeTerm = h.definesTerm.map(_.encoded)
+      val maybeType = h.definesType.map(_.encoded)
+      val references = h.referencedNames.toList.map(_.encoded)
+      (maybeTerm, maybeType) match {
+        case (Some(term), _) =>
+          val termType = getTypeNameOfTerm(term).getOrElse("<unknown>")
+          Some(TermDefinition(term, termType, references))
+        case (_, Some(tpe)) =>
+          Some(TypeDefinition(tpe, "type", references))
+        case _ => None
+      }
+    }
+  }
+
+
+  def getTypeNameOfTerm(termName: String): Option[String] = {
+    val tpe = try {
+      interp.typeOfTerm(termName).toString
+    } catch {
+      case exc: RuntimeException => println(("Unable to get symbol type", exc)); "<notype>"
+    }
+    tpe match {
+      case "<notype>" => // "<notype>" can be also returned by typeOfTerm
+        interp.classOfTerm(termName).map(_.getName)
+      case _ =>
+        // remove some crap
+        Some(
+          tpe
+          .replace("iwC$", "")
+          .replaceAll("^\\(\\)" , "") // 2.11 return types prefixed, like `()Person`
+        )
+    }
+  }
+
+
   /**
    * Evaluates the given code.  Swaps out the `println` OutputStream with a version that
    * invokes the given `onPrintln` callback everytime the given code somehow invokes a
@@ -160,7 +194,10 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
    * @param onPrintln
    * @return result and a copy of the stdout buffer during the duration of the execution
    */
-  def evaluate(code: String, onPrintln: String => Unit = _ => ()): (EvaluationResult, String) = {
+  def evaluate(code: String,
+               onPrintln: String => Unit = _ => (),
+               onNameDefinion: NameDefinition => Unit  = _ => ()
+              ): (EvaluationResult, String) = {
     stdout.flush()
     stdoutBytes.reset()
 
@@ -172,13 +209,17 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     stdout.flush()
     stdoutBytes.aop = _ => ()
 
-    val result = res match {
+    val result: EvaluationResult = res match {
       case ReplSuccess =>
         val request = interp.prevRequestList.last
         val lastHandler: interp.memberHandlers.MemberHandler = request.handlers.last
 
+        listDefinedTerms(request).foreach(onNameDefinion)
+
         try {
-          val evalValue = if (lastHandler.definesValue) { // This is true for def's with no parameters, not sure that executing/outputting this is desirable
+          val lastStatementReturnsValue = listDefinedTerms(request).exists(_.name.matches("res[0-9]+"))
+          val evalValue = if (lastHandler.definesValue && lastStatementReturnsValue) {
+            // This is true for def's with no parameters, not sure that executing/outputting this is desirable
             // CY: So for whatever reason, line.evalValue attemps to call the $eval method
             // on the class...a method that does not exist. Not sure if this is a bug in the
             // REPL or some artifact of how we are calling it.
@@ -202,23 +243,28 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
                 )
                 def getModule(c:Class[_]) = c.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get(())
 
-                val o = getModule(renderedClass2)
+                val module = getModule(renderedClass2)
 
-                def iws(o:Any):NodeSeq = {
-                  val tryClass = o.getClass.getName+"$iw$"
-                  val o2 = Try{o.getClass.getClassLoader.loadClass(tryClass)}.toOption
+                val topInstance = module.getClass.getDeclaredMethod("$iw").invoke(module)
+
+                def iws(o:Class[_], instance: Any): NodeSeq = {
+                  val tryClass = o.getName+"$$iw"
+                  val o2 = Try{module.getClass.getClassLoader.loadClass(tryClass)}.toOption
+
                   o2 match {
                     case Some(o3) =>
-                      iws(getModule(o3))
+                      val inst = o.getDeclaredMethod("$iw").invoke(instance)
+                      iws(o3, inst)
                     case None =>
-                      val r = o.getClass.getDeclaredMethod("rendered").invoke(o)
+                      val r = o.getDeclaredMethod("rendered").invoke(instance)
                       val h = r.asInstanceOf[Widget].toHtml
                       h
                   }
                 }
-                iws(o)
+
+                iws(module.getClass.getClassLoader.loadClass(renderedClass2.getName + "$iw"), topInstance)
               } catch {
-                case e: Throwable =>
+                case NonFatal(e) =>
                   e.printStackTrace
                   LOG.error("Ooops, exception in the cell", e)
                   <span style="color:red;">Ooops, exception in the cell: {e.getMessage}</span>
@@ -250,13 +296,18 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
       case Error          => Failure(stdoutBytes.toString)
     }
 
+    if ( !_initFinished ) {
+      _evalsUntilInitFinished = _evalsUntilInitFinished + 1
+    }
+
     (result, stdoutBytes.toString)
   }
 
   def addCp(newJars:List[String]) = {
-    val prevCode = interp.prevRequestList.map(_.originalLine)
+    val prevCode = interp.prevRequestList.map(_.originalLine).drop( _evalsUntilInitFinished )
+    interp.close() // this will close the repl class server, which is needed in order to reuse `-Dspark.replClassServer.port`!
     val r = new Repl(compilerOpts, newJars:::jars)
-    (r, () => prevCode.drop(7/*init scripts... → UNSAFE*/) foreach (c => r.evaluate(c, _ => ())))
+    (r, () => prevCode foreach (c => r.evaluate(c, _ => ())))
   }
 
   def complete(line: String, cursorPosition: Int): (String, Seq[Match]) = {
@@ -299,12 +350,14 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) {
     // the thing twice does it give you the method signature (i.e. you
     // hit tab twice).  So we simulate that here... (nutty, I know)
     getCompletions(line, position)
-    val candidates = getCompletions(line, position)
+    getCompletions(line, position)
+  }
 
-    if (candidates.size >= 2 && candidates.head.isEmpty) {
-      candidates.tail
-    } else {
-      Seq.empty
-    }
+  def sparkContextAvailable: Boolean = {
+    interp.allImportedNames.exists(_.toString == "sparkContext")
+  }
+
+  def stop(): Unit = {
+    interp.close()
   }
 }

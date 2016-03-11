@@ -12,17 +12,26 @@ object WebSocketObservableActor {
 class WebSocketObservableActor(channel: Concurrent.Channel[JsValue], val contextId: String)
     (implicit system: ActorSystem) extends Actor {
 
-  var service: ObsWebSocketService = _
+  var service: Option[ObsWebSocketService] = None
 
   KernelManager.get(contextId) foreach { kernel =>
-    service = new ObsWebSocketService(system, channel, kernel.remoteDeployFuture)
+    service match {
+      case None => service = Some(new ObsWebSocketService(system, channel, kernel.remoteDeployFuture))
+      case Some(s) => s
+    }
   }
 
   def receive = {
+    case m@("add", channel: Concurrent.Channel[JsValue]) =>
+      service foreach (_.obsActor ! m)
+
+    case m@("remove", channel: Concurrent.Channel[JsValue]) =>
+      service foreach (_.obsActor ! m)
+
     case msg: JsValue =>
       msg.validate[ObservableBrowserToVM] match {
         case s: JsSuccess[ObservableBrowserToVM] =>
-          service.obsActor ! s.get
+          service foreach (_.obsActor ! s.get)
         case e: JsError =>
           throw new RuntimeException("Errors: " + JsError.toFlatJson(e).toString())
       }

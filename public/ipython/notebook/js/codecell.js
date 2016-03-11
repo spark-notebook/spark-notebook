@@ -22,6 +22,8 @@ define([
     'codemirror/lib/codemirror',
     'codemirror/mode/clike/clike',
     'codemirror/mode/python/python',
+    'codemirror/mode/sql/sql',
+    'codemirror/mode/shell/shell',
     'notebook/js/codemirror-ipython'
 ], function(IPython,
     $,
@@ -34,6 +36,8 @@ define([
     celltoolbar,
     CodeMirror,
     cmpython,
+    cm_sql,
+    cm_shell,
     cmip
     ) {
     "use strict";
@@ -135,6 +139,8 @@ define([
     };
 
     CodeCell.config_defaults = {
+        // 'magic_' prefix makes it automatically set the mode if cell matches the given regexp
+        // and 'magically' switches between text and the other mode
         highlight_modes : {
             'magic_javascript'    :{'reg':[/^%%javascript/]},
             'magic_perl'          :{'reg':[/^%%perl/]},
@@ -144,6 +150,25 @@ define([
             'magic_r'             :{'reg':[/^%%R/]},
             'magic_text/x-cython' :{'reg':[/^%%cython/]},
             'magic_text/x-scala'  :{'reg':[/^%%scala/]},
+            'magic_text/x-mysql'    :{'reg':[/^:sql/], 'open': ':'},
+            'magic_text/x-sh'     :{'reg':[/^:sh/], 'open': ':'},
+            'magic_sparksql_multiline'    :{
+                // if first line ends with hiveCtx.sql(""" or sqlContext.sql("""
+                'reg':[/(hiveCtx|sqlContext)\.sql\("""\s*$/],
+                'open': /(hiveCtx|sqlContext)\.sql\("""/,
+                'close': /"""\)/,
+                'main_mode': 'text/x-scala',
+                'spec': { mode: "text/x-mysql" },
+                'inner_style': 'sql-inside-scala-mode'
+            },
+            'magic_sparksql_oneline'    :{
+                'reg':[/^(hiveCtx|sqlContext)\.sql\("/],
+                'open': /(hiveCtx|sqlContext)\.sql\("/,
+                'close': /"\)/,
+                'main_mode': 'text/x-scala',
+                'spec': { mode: "text/x-mysql" },
+                'inner_style': 'sql-inside-scala-mode'
+            },
         },
     };
 
@@ -158,14 +183,24 @@ define([
 
         var cell =  $('<div></div>').addClass('cell code_cell');
         cell.attr('tabindex','2');
+        cell.attr("data-cell-id", this.cell_id);
 
         var input = $('<div></div>').addClass('input');
         var prompt = $('<div/>').addClass('prompt input_prompt');
         var inner_cell = $('<div/>').addClass('inner_cell');
+
+        var progress_container = $('\
+        <div class="progress">\
+          <div class="progress-bar" role="progressbar" aria-valuenow="" \
+               aria-valuemin="0" aria-valuemax="100">\
+          </div>\
+        </div>');
+
         this.celltoolbar = new celltoolbar.CellToolbar({
             cell: this,
             notebook: this.notebook});
         inner_cell.append(this.celltoolbar.element);
+
         var input_area = $('<div/>').addClass('input_area');
         this.code_mirror = new CodeMirror(input_area.get(0), this.cm_config);
         // In case of bugs that put the keyboard manager into an inconsistent state,
@@ -212,7 +247,7 @@ define([
             .appendTo(widget_prompt);
 
         var output = $('<div></div>');
-        cell.append(input).append(widget_area).append(output);
+        cell.append(input).append(widget_area).append(output).append(progress_container);
         this.element = cell;
         this.output_area = new outputarea.OutputArea({
             selector: output,
@@ -429,13 +464,15 @@ define([
         var callbacks = this.get_callbacks();
 
         var old_msg_id = this.last_msg_id;
+        var cell_id = this.cell_id;
         this.last_msg_id = this.kernel.execute(
           this.get_text(),
           callbacks,
           {
             silent: false,
             store_history: true,
-            stop_on_error : stop_on_error
+            stop_on_error : stop_on_error,
+            cell_id: cell_id
           }
         );
         if (old_msg_id) {
@@ -572,6 +609,16 @@ define([
         return 'In&nbsp;[' + ns + ']:';
     };
 
+    CodeCell.input_prompt_compact = function (prompt_value, lines_number) {
+        var ns;
+        if (prompt_value === undefined || prompt_value === null) {
+            ns = "&nbsp;";
+        } else {
+            ns = encodeURIComponent(prompt_value);
+        }
+        return ns + ':';
+    };
+
     CodeCell.input_prompt_continuation = function (prompt_value, lines_number) {
         var html = [CodeCell.input_prompt_classical(prompt_value, lines_number)];
         for(var i=1; i < lines_number; i++) {
@@ -580,8 +627,21 @@ define([
         return html.join('<br/>');
     };
 
-    CodeCell.input_prompt_function = CodeCell.input_prompt_classical;
+    CodeCell.input_prompt_function = CodeCell.input_prompt_compact;
 
+    CodeCell.prototype.addCancelCellBtn = function() {
+        var cell_id = this.cell_id;
+        var kernel = this.kernel;
+        var cancelBtn = $('<a class="cancel-cell-btn">cancel</a>').click(function(){
+            kernel.cancelCellJobs(cell_id);
+            $(this).text('cancelling');
+        });
+        this.element.find('div.progress-bar').html(cancelBtn);
+    };
+
+    CodeCell.prototype.hideCancelCellBtn = function() {
+        this.element.find('div.progress-bar').removeClass('active').css('width', '');
+    };
 
     CodeCell.prototype.set_input_prompt = function (number) {
         var nline = 1;
@@ -592,6 +652,14 @@ define([
         var prompt_html = CodeCell.input_prompt_function(this.input_prompt_number, nline);
         // This HTML call is okay because the user contents are escaped.
         this.element.find('div.input_prompt').html(prompt_html);
+
+        // if it's running currently, add a 'cancel' button inside the progress bar
+        if (number === '*') {
+            this.addCancelCellBtn();
+        } else {
+            this.element.find('.cancel-cell-btn').hide();
+            this.hideCancelCellBtn();
+        }
     };
 
 
@@ -646,6 +714,7 @@ define([
         }
         var outputs = this.output_area.toJSON();
         data.outputs = outputs;
+        data.metadata.id = this.metadata.id;
         data.metadata.trusted = this.output_area.trusted;
         data.metadata.collapsed = this.output_area.collapsed;
         data.metadata.input_collapsed = this.output_area.input_collapsed;

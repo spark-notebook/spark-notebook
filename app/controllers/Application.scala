@@ -36,6 +36,7 @@ object Application extends Controller {
   private lazy val config = AppUtils.config
   private lazy val nbm = AppUtils.nbm
   private val kernelIdToCalcService = collection.mutable.Map[String, CalcWebSocketService]()
+  private val kernelIdToObservableActor = collection.mutable.Map[String, ActorRef]()
   private val clustersActor = kernelSystem.actorOf(Props(NotebookClusters(AppUtils.clustersConf)))
 
   private implicit def kernelSystem: ActorSystem = AppUtils.kernelSystem
@@ -45,6 +46,7 @@ object Application extends Controller {
   val project = nbm.name
   val base_project_url = current.configuration.getString("application.context").getOrElse("/")
   val autoStartKernel = current.configuration.getBoolean("manager.kernel.autostartOnNotebookOpen").getOrElse(true)
+  val kernelKillTimeout = current.configuration.getMilliseconds("manager.kernel.killTimeout")
   val base_kernel_url = "/"
   val base_observable_url = "observable"
   val read_only = false.toString
@@ -100,9 +102,27 @@ object Application extends Controller {
     }
   }
 
+  private[this] def kernelResponse(id:Option[String]) =
+    Json.parse(
+      s"""
+         |{
+         |"id": ${id.map((i) => "\""+i+"\"").getOrElse("null")},
+         |"name": "spark",
+         |"language_info": {
+         |  "name" : "Scala",
+         |  "file_extension" : "scala",
+         |  "codemirror_mode" : "text/x-scala"
+         |}
+         |}
+         |""".stripMargin.trim
+    )
 
-  private[this] def newSession(kernelId: Option[String] = None,
-    notebookPath: Option[String] = None) = {
+  def getSession(notebookPath:String) = Action {
+    val id = KernelManager.atPath(notebookPath).map(_._1)
+    Ok(Json.obj("kernel" → kernelResponse(id)))
+  }
+
+  private[this] def newSession(kernelId: Option[String] = None, notebookPath: Option[String] = None) = {
     val existing = for {
       path <- notebookPath
       (id, kernel) <- KernelManager.atPath(path)
@@ -182,7 +202,7 @@ object Application extends Controller {
       KernelManager.add(kId, kernel)
 
       val service = new CalcWebSocketService(kernelSystem,
-        md.map(_.name).getOrElse("Spark Notebook"),
+        appNameToDisplay(md, notebookPath),
         customLocalRepo,
         customRepos,
         customDeps,
@@ -191,27 +211,16 @@ object Application extends Controller {
         customSparkConf,
         initScripts,
         compilerArgs,
-        kernel.remoteDeployFuture,
-        config.tachyonInfo
+        kernel,
+        config.tachyonInfo,
+        kernelTimeout = kernelKillTimeout
       )
       kernelIdToCalcService += kId -> service
       (kId, kernel, service)
     }
 
     // todo add MD?
-    Json.parse(
-      s"""
-         |{
-         |"id": "$kId",
-         |"name": "spark",
-         |"language_info": {
-         |  "name" : "Scala",
-         |  "file_extension" : "scala",
-         |  "codemirror_mode" : "text/x-scala"
-         |}
-         |}
-         |""".stripMargin.trim
-    )
+    kernelResponse(Some(kId))
   }
 
   def createSession() = Action(parse.tolerantJson) /* → posted as urlencoded form oO */ { request =>
@@ -446,14 +455,13 @@ object Application extends Controller {
     KernelManager.get(kernelId).foreach { k =>
       Logger.info(s"Closing kernel $kernelId")
       k.shutdown()
-      KernelManager.remove(kernelId)
     }
   }
 
   def openKernel(kernelId: String, sessionId: String) = ImperativeWebsocket.using[JsValue](
     onOpen = channel => WebSocketKernelActor.props(channel, kernelIdToCalcService(kernelId), sessionId),
     onMessage = (msg, ref) => ref ! msg,
-    onClose = ref => {
+    onClose = (channel, ref) => {
       // try to not close the kernel to allow long live sessions
       // closeKernel(kernelId)
       Logger.info(s"Closing websockets for kernel $kernelId")
@@ -497,13 +505,13 @@ object Application extends Controller {
   }
 
   def renameNotebook(p: String) = Action(parse.tolerantJson) { request =>
-    val path = URLDecoder.decode(p, UTF_8)
-    val notebook = (request.body \ "path").as[String]
-    Logger.info("RENAME → " + path + " to " + notebook)
+    val oldPath = URLDecoder.decode(p, UTF_8)
+    val newPath = (request.body \ "path").as[String]
+    Logger.info("RENAME → " + oldPath + " to " + newPath)
     try {
-      val (newname, newpath) = nbm.rename(path, notebook)
+      val (newname, newpath) = nbm.rename(oldPath, newPath)
 
-      KernelManager.atPath(path).foreach { case (_, kernel) =>
+      KernelManager.atPath(oldPath).foreach { case (_, kernel) =>
         kernel.moveNotebook(newpath)
       }
 
@@ -517,22 +525,41 @@ object Application extends Controller {
     }
   }
 
-  def saveNotebook(p: String) = Action(parse.tolerantJson(config.maxBytesInFlight)) {
-    request =>
-      val path = URLDecoder.decode(p, UTF_8)
-      Logger.info("SAVE → " + path)
-      val notebook = NBSerializer.fromJson(request.body \ "content")
-      try {
-        val (name, savedPath) = nbm.save(path, notebook, overwrite = true)
+  def saveNotebook(p: String) = Action(parse.tolerantJson(config.maxBytesInFlight)) { request =>
+    val path = URLDecoder.decode(p, UTF_8)
+    Logger.info("SAVE → " + path)
 
-        Ok(Json.obj(
-          "type" → "notebook",
-          "name" → name,
-          "path" → savedPath
-        ))
-      } catch {
-        case _: NotebookExistsException => Conflict
+    Try {
+      val notebookJsObject = (request.body \ "content").asInstanceOf[JsObject]
+      NBSerializer.fromJson(notebookJsObject) match {
+        case Some(notebook) =>
+          Try {
+            val (name, savedPath) = nbm.save(path, notebook, overwrite = true)
+            Ok(Json.obj(
+              "type" → "notebook",
+              "name" → name,
+              "path" → savedPath
+            ))
+          } recover {
+            case _: NotebookExistsException => Conflict
+            case anyOther: Throwable =>
+              Logger.error(anyOther.getMessage)
+              InternalServerError
+          } getOrElse {
+            InternalServerError
+          }
+        case None =>
+          BadRequest("Not a valid notebook.")
       }
+    }.recover {
+      case e:ClassCastException =>
+        BadRequest("Not a notebook.")
+      case anyOther: Throwable =>
+        Logger.error(anyOther.getMessage)
+        InternalServerError
+    } getOrElse {
+      InternalServerError
+    }
   }
 
   def deleteNotebook(p: String) = Action { request =>
@@ -575,7 +602,7 @@ object Application extends Controller {
         "/",
         path.split("/").toList.scanLeft(("", "")) {
           case ((accPath, accName), p) => (accPath + "/" + p, p)
-        }.tail.map { case (p, x) =>
+        }.drop(1).map { case (p, x) =>
           Crumb(controllers.routes.Application.dash(p.tail).url, x)
         }
       ),
@@ -584,13 +611,34 @@ object Application extends Controller {
   }
 
   def openObservable(contextId: String) = ImperativeWebsocket.using[JsValue](
-    onOpen = channel => WebSocketObservableActor.props(channel, contextId),
+    onOpen = channel => {
+      kernelIdToObservableActor.get(contextId) match {
+        case None =>
+          val a = WebSocketObservableActor.props(channel, contextId)
+          kernelIdToObservableActor += contextId → a
+          a
+        case Some(a) =>
+          a ! ("add", channel)
+          a
+      }
+    },
     onMessage = (msg, ref) => ref ! msg,
-    onClose = ref => {
-      Logger.info(s"Closing observable $contextId")
-      ref ! akka.actor.PoisonPill
+    onClose = (channel, ref) => {
+      Logger.info(s"Closing observable sockect $channel for $contextId")
+      ref ! ("remove", channel)
     }
   )
+
+  /**
+    * The notebook name to attach to Spark Context (and all related jobs)
+    */
+  def appNameToDisplay(metadata: Option[Metadata], notebookPath: Option[String]): String = {
+    val explicitName = metadata.map(_.name).getOrElse("Spark notebook")
+    notebookPath match {
+      case Some(path) => path
+      case None => explicitName
+    }
+  }
 
   def getNotebook(name: String, path: String, format: String, dl: Boolean = false) = {
     try {
@@ -616,25 +664,29 @@ object Application extends Controller {
               HeaderNames.LAST_MODIFIED → lastMod
             )
           case "scala" =>
-            val nb = NBSerializer.fromJson(Json.parse(data))
-            val code = nb.cells.map { cells =>
-              val cs = cells.collect {
-                case NBSerializer.CodeCell(md, "code", i, Some("scala"), _, _) => i
-                case NBSerializer.CodeCell(md, "code", i, None, _, _) => i
-              }
-              val fc = cs.map(_.split("\n").map { s => s"  $s" }.mkString("\n")).mkString("\n\n  /* ... new cell ... */\n\n").trim
-              val code = s"""
-              |object Cells {
-              |  $fc
-              |}
-              """.stripMargin
-              code
-            }.getOrElse("//NO CELLS!")
+            NBSerializer.fromJson(Json.parse(data)) match {
+              case Some(nb) =>
+                val code = nb.cells.map { cells =>
+                  val cs = cells.collect {
+                    case NBSerializer.CodeCell(md, "code", i, Some("scala"), _, _) => i
+                    case NBSerializer.CodeCell(md, "code", i, None, _, _) => i
+                  }
+                  val fc = cs.map(_.split("\n").map { s => s"  $s" }.mkString("\n")).mkString("\n\n  /* ... new cell ... */\n\n").trim
+                  val code = s"""
+                  |object Cells {
+                  |  $fc
+                  |}
+                  """.stripMargin
+                  code
+                }.getOrElse("//NO CELLS!")
 
-            Ok(code).withHeaders(
-              HeaderNames.CONTENT_DISPOSITION → s"""attachment; filename="$name.scala" """,
-              HeaderNames.LAST_MODIFIED → lastMod
-            )
+                Ok(code).withHeaders(
+                  HeaderNames.CONTENT_DISPOSITION → s"""attachment; filename="$name.scala" """,
+                  HeaderNames.LAST_MODIFIED → lastMod
+                )
+              case None =>
+                InternalServerError(s"Notebook could not be parsed.")
+            }
           case _ => InternalServerError(s"Unsupported format $format")
         }
       }
@@ -668,7 +720,7 @@ object Application extends Controller {
     def using[E: WebSocket.FrameFormatter](
       onOpen: Channel[E] => ActorRef,
       onMessage: (E, ActorRef) => Unit,
-      onClose: ActorRef => Unit,
+      onClose: (Channel[E], ActorRef) => Unit,
       onError: (String, Input[E]) => Unit = (e: String, _: Input[E]) => Logger.error(e)
     ): WebSocket[E, E] = {
       implicit val sys = kernelSystem.dispatcher
@@ -680,7 +732,7 @@ object Application extends Controller {
           val ref = onOpen(channel)
           val in = Iteratee.foreach[E] { message =>
             onMessage(message, ref)
-          } map (_ => onClose(ref))
+          } map (_ => onClose(channel, ref))
           promiseIn.success(in)
         },
         onError = onError

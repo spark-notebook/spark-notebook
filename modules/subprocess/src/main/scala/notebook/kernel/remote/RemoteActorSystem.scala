@@ -17,7 +17,7 @@ import scala.concurrent.Future
  */
 class RemoteActorProcess extends ForkableProcess {
   // http://stackoverflow.com/questions/14995834/programmatically-obtain-ephemeral-port-with-akka
-  var _system: ActorSystem = null
+  private var _system: ActorSystem = null
 
   def init(args: Seq[String]): String = {
     val configFile = args.head

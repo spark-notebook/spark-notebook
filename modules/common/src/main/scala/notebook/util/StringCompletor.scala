@@ -8,6 +8,14 @@ import play.api.libs.json._
 
 case class Match(matchedValue: String, metadata: Map[String, String]) {
   def toJson = JsString(matchedValue)
+
+  def toJsonWithDescription = {
+    JsObject(
+      Seq(
+        ("value", JsString(matchedValue)),
+        ("display_text", JsString(metadata.getOrElse("display_text", matchedValue)))
+      ))
+  }
 }
 
 object Match {

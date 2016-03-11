@@ -1,14 +1,14 @@
 import sbt._
 
 object Dependencies {
-  val mesosVersion = sys.props.getOrElse("mesos.version", "0.22.0") //0.22.0 is current DCOS version
+  val mesosVersion = sys.props.getOrElse("mesos.version", "0.22.2") //0.22.0 is current DCOS version
 
   val playDeps = Seq(
-    "com.typesafe.play" %% "play" % "2.3.7" withSources() excludeAll(
+    "com.typesafe.play" %% "play" % "2.3.10" withSources() excludeAll(
       ExclusionRule("com.typesafe.akka"),
       ExclusionRule("com.google.guava")
       ),
-    "com.typesafe.play" %% "play-test" % "2.3.7" % "test" withSources() excludeAll(
+    "com.typesafe.play" %% "play-test" % "2.3.10" % "test" withSources() excludeAll(
       ExclusionRule("com.typesafe.akka"),
       ExclusionRule("com.google.guava")
       )
@@ -28,10 +28,14 @@ object Dependencies {
   val spark_1_X = "[a-zA-Z]*1\\.([0-9]+)\\.([0-9]+).*".r
   val extractVs = "[a-zA-Z]*(\\d+)\\.(\\d+)\\.(\\d+).*".r
 
-  val defaultSparkVersion = sys.props.getOrElse("spark.version", "1.5.2")
+  val defaultSparkVersion = sys.props.getOrElse("spark.version", "1.6.0")
   val sparkVersionTuple = defaultSparkVersion match { case extractVs(v, m, p) =>  (v.toInt, m.toInt, p.toInt)}
-  val defaultScalaVersion = sys.props.getOrElse("scala.version", "2.10.4") match {
-    case x@scala_2_1X("0") => x
+  val defaultScalaVersion = sys.props.getOrElse("scala.version", "2.10.5") match {
+    case x@scala_2_1X("0") => defaultSparkVersion match {
+      case spark_1_X(x, _) if x.toInt < 6 => "2.10.4"
+      case spark_1_X("6", _)              => "2.10.5"
+      case spark_1_X(_, _)                => x
+    }
     case x@scala_2_1X("1") => defaultSparkVersion match {
       case spark_1_X("4", "0") => x
       case spark_1_X("4", _) => "2.11.6"
@@ -136,6 +140,7 @@ object Dependencies {
         case hvr("2", x) if x.toInt >= 3 => "0.9.0"
         case _ => defaultJets3tVersion
       }
+      case _ => defaultJets3tVersion
     }
     "net.java.dev.jets3t" % "jets3t" % v force() excludeAll ExclusionRule()
   }
@@ -144,7 +149,9 @@ object Dependencies {
   val commonsHttp = "org.apache.httpcomponents" % "httpclient" % "4.3.4" excludeAll ExclusionRule("com.google.guava")
   val commonsExec = "org.apache.commons" % "commons-exec" % "1.3" force()
   val commonsCodec = "commons-codec" % "commons-codec" % "1.10" force()
-  val guava = "com.google.guava" % "guava" % "14.0.1" force()
+
+  val defaultGuavaVersion = sys.props.getOrElse("guava.version", "14.0.1") // 16.0.1 for cassandra connector 1.6-M1
+  val guava = "com.google.guava" % "guava" % defaultGuavaVersion force()
   val slf4jLog4j = "org.slf4j" % "slf4j-log4j12" % "1.7.7"
   val log4j = "log4j" % "log4j" % "1.2.17"
 

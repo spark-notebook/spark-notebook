@@ -13,10 +13,10 @@ object DockerProperties extends BuildConf {
 
   private val defaultCommands: Seq[Cmd] = Seq(
     Cmd("USER", "root"),
+    Cmd("RUN", "echo \"deb http://repos.mesosphere.io/debian jessie main\" | tee /etc/apt/sources.list.d/mesosphere.list"),
     Cmd("RUN", "apt-key adv --keyserver keyserver.ubuntu.com --recv E56151BF"),
-    Cmd("RUN", "echo \"deb http://repos.mesosphere.io/ubuntu trusty main\" | tee /etc/apt/sources.list.d/mesosphere.list"),
-    Cmd("RUN", "/usr/bin/apt-get -y update --fix-missing"),
-    Cmd("RUN", s"/usr/bin/apt-get -y install mesos=$mesosVersion-1.0.ubuntu1404"), //ubuntu 14.04 is base for java:latest → https://github.com/dockerfile/ubuntu/blob/master/Dockerfile
+    Cmd("RUN", s"apt-get update --fix-missing && apt-get install -y --no-install-recommends openjdk-7-jdk mesos=$mesosVersion-0.2.62.debian81"),
+    Cmd("ENV", "JAVA_HOME /usr/lib/jvm/java-7-openjdk-amd64"),
     Cmd("ENV", s"MESOS_JAVA_NATIVE_LIBRARY /usr/local/lib/libmesos-$mesosVersion.so"),
     Cmd("ENV", s"MESOS_LOG_DIR /var/log/mesos")
   )
@@ -34,16 +34,8 @@ object DockerProperties extends BuildConf {
   }
 
   val maintainer   = getString("docker.maintainer", "Andy Petrella")
-  // java image based on ubuntu trusty rather than debian jessie (to use mesosphere distros)
-  // build it like this:
-  // ```
-  // docker build -t="dockerfile/ubuntu" github.com/dockerfile/ubuntu
-  // git clone https://github.com/dockerfile/java.git
-  // cd java
-  // cd openjdk-7-jdk
-  // docker build -t="dockerfile/java:openjdk-7-jdk" .
-  // ```
-  val baseImage    = getString("docker.baseImage", "dockerfile/java:openjdk-7-jdk")
+
+  val baseImage    = getString("docker.baseImage", "debian:jessie")
 
   val commands     = Try { asCmdSeq(cfg.getConfigList("docker.commands").asScala.toSeq) }.getOrElse( defaultCommands )
   val volumes      = Try { cfg.getStringList("docker.volumes").asScala.toSeq }.getOrElse( defaultVolumes )

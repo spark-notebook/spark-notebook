@@ -304,6 +304,7 @@ define([
         if (model.type == 'file') {
             this.add_delete_button(item);
         } else if (model.type == 'notebook') {
+            this.add_view_button(model, item, path);
             if (this.sessions[path] === undefined){
                 this.add_delete_button(item);
             } else {
@@ -358,6 +359,20 @@ define([
                 return false;
             });
         item.find(".item_buttons").append(shutdown_button);
+    };
+
+    NotebookList.prototype.add_view_button = function (model, item, path) {
+        var uri_prefix = NotebookList.uri_prefixes[model.type];
+        var url = utils.url_join_encode(
+            this.base_url,
+            uri_prefix,
+            path
+        ) + '?read_only=1';
+        var view_button = $("<button/>").text("View (read-only)").addClass("btn btn-warning btn-xs").click(function (e) {
+            window.location.href = url;
+            return false;
+        });
+        item.find(".item_buttons").prepend(view_button);
     };
 
     NotebookList.prototype.add_duplicate_button = function (item) {
@@ -505,6 +520,19 @@ define([
                     that.session_list.load_sessions();
                 };
 
+                var on_error = function(e) {
+                    dialog.modal({
+                        title : 'Cannot upload the file',
+                        body : "The error was: " + e.xhr.responseText,
+                        buttons : {'OK' : {
+                            'class' : 'btn-primary',
+                            click: function () {
+                                item.remove();
+                            }
+                        }}
+                    });
+                }
+
                 var exists = false;
                 $.each(that.element.find('.list_item:not(.new-file)'), function(k,v){
                     if ($(v).data('name') === filename) { exists = true; return false; }
@@ -518,7 +546,7 @@ define([
                             Overwrite : {
                                 class: "btn-danger",
                                 click: function () {
-                                    that.contents.save(path, model).then(on_success);
+                                    that.contents.save(path, model).then(on_success).catch(on_error);
                                 }
                             },
                             Cancel : {
@@ -527,7 +555,7 @@ define([
                         }
                     });
                 } else {
-                    that.contents.save(path, model).then(on_success);
+                    that.contents.save(path, model).then(on_success).catch(on_error);
                 }
 
                 return false;

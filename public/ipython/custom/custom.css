@@ -76,8 +76,9 @@ This will always be an empty file in IPython
 table.pivot-controls-hidden, .pivot-controls-hidden > tbody > tr, .pivot-controls-hidden > tbody > tr > td {
   border: none ! important;
 }
-.pvtUi td.pvtAxisContainer.pvtRows {
-  /* align selected dimensions on the top, so easier to control them when there are many rows in table */
+.pvtUi td.pvtAxisContainer.pvtRows, td.pvtAxisContainer.pvtUnused.pvtVertList {
+  /* align both selected and unselected dimensions on the top,
+  so it's easier to control them when there are many rows or many columns in a table */
   vertical-align: top;
 }
 /* auto-resize currently do not take account of the pivot controls.
@@ -90,10 +91,75 @@ td.pvtRendererArea {
 table.c3-tooltip {
   background-color: #ffffff;
 }
-table.c3-tooltip th {
+table.c3-tooltip th, #termDefinitions table th {
   color: #ffffff;
 }
 /* fix the black rect fill appearing in C3 Line charts (looks like a clash with something) */
 .pvtUi path.c3-shape.c3-line, .custom-c3-chart path.c3-shape.c3-line {
   fill: transparent;
+}
+
+
+/* Gridster */
+#sidebar {
+  position: absolute;
+  top: 12px;
+}
+#sidebar.hidden {
+  visibility: hidden;
+  display: none;
+}
+
+#sidebar > ul {
+  list-style: none;
+}
+
+#sidebar > ul > li {
+  background-color: #FFFFEE;
+}
+
+#sidebar li h4 {
+  color: #333333;
+  background-color: #f5f5f5;
+  border-color: #dddddd;
+  margin: 0px 0 10px 0;
+  padding: 10px 0 10px 0;
+}
+
+/* cell progress: based on http://getbootstrap.com/components/#progress-animated */
+.progress { margin: 0; }
+div.progress-bar { text-align: left; }
+div.progress-bar a.cancel-cell-btn { font-weight: bold; color: #336699 !important; margin-left: 10px; }
+div.progress-bar.active a.cancel-cell-btn { color: #FFFFFF!important; }
+
+#all-jobs-progress-bar { margin-bottom: 20px; }
+h4#spark-jobs { margin-bottom: 0 !important; }
+
+.prompt { display: none; visibility: hidden; }
+/* new cell UI */
+div.cell.code_cell {
+  border: 2px solid #c1c1c1;
+  border-radius: 5px;
+  padding: 0;
+  margin-bottom: 10px;
+}
+div.cell.code_cell.selected {
+  border-color: #3e8f3e;
+}
+
+.code_cell div.input_area {
+  border-color: #cfcfcf;
+  border-right-width: 0;
+  border-bottom-width: 2px;
+  border-bottom-color: #EEEEEE;
+  border-top-width: 0;
+  border-left-width: 5px;
+  background: transparent;
+}
+/* make defined variables lighter, so it do not disturb from final result */
+div.output_area pre { color: #666; }
+
+/* codemirror syntax highlighting tweaks */
+.cm-sql-inside-scala-mode {
+  background-color: #fffdea;
 }

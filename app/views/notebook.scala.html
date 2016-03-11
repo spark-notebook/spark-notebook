@@ -69,7 +69,7 @@
                         <li id="copy_notebook"
                             title="Open a copy of this notebook's contents and start a new kernel">
                             <a href="#">Make a Copy...</a></li>
-                        <li id="rename_notebook"><a href="#">Rename...</a></li>
+                        <li id="rename_notebook"><a href="#">Rename/move...</a></li>
                         <!--
                         <li id="save_checkpoint"><a href="#">Save and Checkpoint</a></li>
                         <hr/>
@@ -131,8 +131,17 @@
                 </li>
                 <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">View</a>
                     <ul id="view_menu" class="dropdown-menu">
+                        <li id="toggle-sidebar-menu-item">
+                            <a href="#" id="toggle-sidebar">Hide/unhide sidebar</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li id="read_only_view">
+                            <a href="?read_only=1" target="_blank">
+                                Read-only (save resources, no autosave conflicts)
+                            </a>
+                        </li>
                         <li id="report_view">
-                            <a href="?presentation=report" target="_blank">Report (results only)</a>
+                            <a href="?presentation=report&amp;read_only=1" target="_blank">Results only report (read only)</a>
                         </li>
                         <li id="report_view_auto_refresh">
                             <a href="?presentation=report&amp;recompute_now=true" target="_blank">
@@ -322,10 +331,38 @@
 <div class="lower-header-bar"></div>
 } {
   <div id="ipython-main-app">
-      <div id="notebook_panel">
-          <div id="notebook"></div>
+      <div id="notebook_panel" class="container-fluid">
+          <div id="notebook" class="col-md-9"></div>
 
-          <div id="progress-pies" class="pull-left" style="top: 150px; position: absolute; left: 0px; width: 100px; height: 100px"></div>
+          <div id="notebook-panels" class="col-md-3" >
+            <div id="sidebar" class="gridster">
+                <ul>
+                    <li data-row="1" data-col="1" data-sizex="2" data-sizey="2">
+                        <h4 id="spark-jobs">Spark Job Progress&nbsp;&nbsp;<span id="spark-ui-link-container"></span></h4>
+                        <div id="all-jobs-progress-bar"></div>
+
+                        <h4>Terms defined</h4>
+                        <div id="termDefinitions" style="overflow: auto; height: 200px"></div>
+                    </li>
+
+                    <li data-row="3" data-col="1" data-sizex="2" data-sizey="1">
+                        <div id="chat-room">
+                            <h4>Chat Room</h4>
+                            <input type="text" name="alias" class="form-control" data-bind="value: chat.alias, hasFocus: chat.aliasing" placeholder="Choose an alias"/>
+                            <div class="room">
+                                <ul class="chat" style="list-style:none; overflow: auto; height: 130px;" data-bind="foreach: chat.messages">
+                                    <li class="message"><strong><span data-bind="text: alias"></span>: </strong> <span data-bind="text: content, title: time"></span></li>
+                                </ul>
+                                <input type="text" name="message" class="form-control" placeholder="Type your message..." data-bind="enable: chat.joined, value: chat.new_message, hasFocus: chat.chatting"/>
+                            </div>
+                        </div>
+                    </li>
+
+                    <li data-row="4" data-col="1" data-sizex="1" data-sizey="0"></li>
+                    <li data-row="4" data-col="2" data-sizex="1" data-sizey="0"></li>
+                </ul>
+            </div>
+          </div>
 
           @if(utils.AppUtils.config.tachyonInfo.isDefined) {
               <div id="notebook-tachyon-container" class="pull-right" data-bind="style: { width: tachyon.width() }, visible: tachyon.opened()" style="top: 0px; position: absolute; right: 0px; background-color: #74AFAD; color: #ECECEA">

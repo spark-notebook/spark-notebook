@@ -73,9 +73,14 @@ case class Edge[I](id:I, ends:(I, I), value:Any, color:String="#999") extends Gr
                                   StringPoint(color, headers=Seq("color"))
 }
 
+sealed trait SamplingStrategy
+case class LimitBasedSampling() extends SamplingStrategy
+case class RandomSampling() extends SamplingStrategy
+
 object SamplerImplicits extends ExtraSamplerImplicits {
   trait Sampler[C] {
     def apply(c:C, max:Int):C
+    def samplingStrategy: SamplingStrategy = RandomSampling()
   }
 
   implicit def SeqSampler[T] = new Sampler[Seq[T]] {

@@ -64,7 +64,10 @@ object SpreadsheetOutput {
 
     // save as regular hadoop dir with one part-00000 file
     val temporaryDirName = s"${temporaryFileName}-tmpdir"
-    saveAsCsv(df.coalesce(1), temporaryDirName)
+
+    // df.repartition(100) needed so calculation would not happen on single node
+    // (df.coalesce(1) alone causes exception even on moderate input size)
+    saveAsCsv(df.repartition(100).coalesce(1), temporaryDirName)
 
     // merge part-00000 into a one file
     df.sqlContext.sparkContext.renameFile(s"${temporaryDirName}/part-00000", temporaryFileName)

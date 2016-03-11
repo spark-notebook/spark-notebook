@@ -2,6 +2,9 @@ package notebook.server
 
 import akka.actor.{Terminated, _}
 import notebook.client._
+import notebook.Kernel
+import notebook.kernel.repl.common.{NameDefinition, TermDefinition, TypeDefinition}
+import org.joda.time.LocalTime
 import play.api._
 import play.api.libs.json.Json.{obj, arr}
 import play.api.libs.json._
@@ -9,6 +12,9 @@ import play.api.libs.json._
 import scala.concurrent._
 import scala.collection.immutable.Queue
 import scala.concurrent.duration._
+import scala.language.{postfixOps, reflectiveCalls}
+
+case class SessionOperation(actor: ActorRef, cellId: Option[String])
 
 /**
  * Provides a web-socket interface to the Calculator
@@ -24,8 +30,9 @@ class CalcWebSocketService(
   customSparkConf: Option[Map[String, String]],
   initScripts: List[(String, String)],
   compilerArgs: List[String],
-  remoteDeployFuture: Future[Deploy],
-  tachyonInfo: Option[notebook.server.TachyonInfo]) {
+  kernel: Kernel,
+  tachyonInfo: Option[notebook.server.TachyonInfo],
+  kernelTimeout: Option[Long]) {
 
   implicit val executor = system.dispatcher
 
@@ -36,9 +43,12 @@ class CalcWebSocketService(
   def unregister(ws: WebSockWrapper) = calcActor ! Unregister(ws)
 
   class CalcActor extends Actor with ActorLogging {
-    private var currentSessionOperation: Queue[ActorRef] = Queue.empty
+    private var currentSessionOperations: Queue[SessionOperation] = Queue.empty
     var calculator: ActorRef = null
     var wss: List[WebSockWrapper] = Nil
+
+    protected val notebookStartTime = LocalTime.now()
+    private var lastCellExecutionTime: Option[LocalTime] = None
 
     val ws = new {
       def send(header: JsValue, session: JsValue /*ignored*/ , msgType: String, channel: String,
@@ -47,6 +57,28 @@ class CalcWebSocketService(
         wss.foreach { ws =>
           ws.send(header, ws.session, msgType, channel, content)
         }
+      }
+    }
+
+    private def markNotebookAsActive() = {
+      lastCellExecutionTime = Some(LocalTime.now)
+    }
+
+    protected def isKernelTimeouted = {
+      val lastActionTime = lastCellExecutionTime match {
+        case Some(lastExec) => lastExec
+        case None => notebookStartTime
+      }
+      kernelTimeout.exists { kernelTimeoutMillis =>
+        lastActionTime.plusMillis(kernelTimeoutMillis.toInt).isBefore(LocalTime.now())
+      }
+    }
+
+    // if no cell was being executed for configured threshold interval, kill the kernel
+    context.system.scheduler.schedule(initialDelay = 1.minutes, interval = 1.minutes) {
+      if (isKernelTimeouted) {
+        log.warning("Killing a timeouted kernel")
+        calculator ! PoisonPill
       }
     }
 
@@ -75,7 +107,7 @@ class CalcWebSocketService(
       }.getOrElse(Map.empty[String, String])
       val kCustomSparkConf = customSparkConf.map(_ ++ tachyon).orElse(Some(tachyon))
       val kInitScripts = initScripts
-      val remoteDeploy = Await.result(remoteDeployFuture, 2 minutes)
+      val remoteDeploy = Await.result(kernel.remoteDeployFuture, 2 minutes)
 
       calculator = context.actorOf {
         Props(
@@ -111,35 +143,43 @@ class CalcWebSocketService(
         Logger.info(s"UN-registering web-socket ($ws) in service ${this} (current count is ${wss.size})")
         wss = wss.filterNot(_ == ws)
 
+      case InterruptCell(killCellId) =>
+        currentSessionOperations
+          .filter { case SessionOperation(_, cellId) => cellId == Some(killCellId) }
+          .foreach { op => calculator.tell(InterruptCellRequest(killCellId), op.actor) }
+
       case InterruptCalculator =>
-        Logger.info(s"Interrupting the computations, current is $currentSessionOperation")
-        currentSessionOperation.headOption.foreach { op =>
+        Logger.info(s"Interrupting the computations, current is $currentSessionOperations")
+        currentSessionOperations.headOption.foreach { op =>
           //cancelling the spark jobs in the first cell
-          calculator.tell(InterruptRequest, op)
+          calculator.tell(InterruptRequest, op.actor)
         }
-        if(currentSessionOperation.tail.nonEmpty) {
+        if(currentSessionOperations.tail.nonEmpty) {
           //cleaning the other cells
-          currentSessionOperation.tail.foreach(_ ! StreamResponse("Previous cell has been interrupted", "stdout"))
+          currentSessionOperations.tail.foreach { case SessionOperation(actor, _) =>
+            actor ! StreamResponse("Previous cell has been interrupted", "stdout")
+          }
         }
-        currentSessionOperation = Queue.empty
+        currentSessionOperations = Queue.empty
 
       case req@SessionRequest(header, session, request) =>
         val operations = new SessionOperationActors(header, session)
-        val operationActor = (request: @unchecked) match {
-          case ExecuteRequest(counter, code) =>
+        val (operationActor, cellId) = (request: @unchecked) match {
+          case ExecuteRequest(cellId, counter, code) =>
+            markNotebookAsActive()
             ws.send(header, session, "status", "iopub", obj("execution_state" → "busy"))
-            ws.send(header, session, "pyin", "iopub", obj("execution_count" → counter, "code" → code))
-            operations.singleExecution(counter)
+            ws.send(header, session, "pyin", "iopub", obj("cell_id" → cellId, "execution_count" → counter, "code" → code))
+            (operations.singleExecution(cellId, counter), Some(cellId))
 
           case _: CompletionRequest =>
-            operations.completion
+            (operations.completion, None)
 
           case _: ObjectInfoRequest =>
-            operations.objectInfo
+            (operations.objectInfo, None)
         }
         val operation = context.actorOf(operationActor)
         context.watch(operation)
-        currentSessionOperation = currentSessionOperation.enqueue(operation)
+        currentSessionOperations = currentSessionOperations.enqueue(SessionOperation(operation, cellId))
         calculator.tell(request, operation)
 
 
@@ -147,6 +187,8 @@ class CalcWebSocketService(
         Logger.debug("Termination of op calculator")
         if (actor == calculator) {
           Logger.error(s"Remote calculator ($calculator) has been terminated !!!!!")
+          kernel.shutdown()
+
           ws.send(
             obj(
               "session" → "ignored"
@@ -158,9 +200,9 @@ class CalcWebSocketService(
           )
           self ! PoisonPill
         } else {
-          if (currentSessionOperation.nonEmpty) {
-            currentSessionOperation = currentSessionOperation.dequeue._2
-          }
+          // any cell can be interrupted, so remove the relevant operation only
+          Logger.debug(s"Termination of op calculator: ${currentSessionOperations.filter(_.actor == actor)}")
+          currentSessionOperations = currentSessionOperations.filter(_.actor != actor)
         }
 
       case event:org.apache.log4j.spi.LoggingEvent =>
@@ -188,20 +230,43 @@ class CalcWebSocketService(
     }
 
     class SessionOperationActors(header: JsValue, session: JsValue) {
-      def singleExecution(counter: Int) = Props(new Actor {
+      def singleExecution(cellId:String, counter: Int) = Props(new Actor {
         def receive = {
           case StreamResponse(data, name) =>
-            ws.send(header, session, "stream", "iopub", obj("text" → data, "name" → name))
+            ws.send(header, session, "stream", "iopub", obj("cell_id" → cellId, "text" → data, "name" → name))
 
           case ExecuteResponse(outputType, content, time) =>
             ws.send(header, session, "execute_result", "iopub", obj(
+              "cell_id" → cellId,
               "execution_count" → counter,
               "data" → obj(outputType → content),
               "time" → time
             ))
-            ws.send(header, session, "status", "iopub", obj("execution_state" → "idle"))
-            ws.send(header, session, "execute_reply", "shell", obj("execution_count" → counter))
+            ws.send(header, session, "status", "iopub", obj("cell_id" → cellId, "execution_state" → "idle"))
+            ws.send(header, session, "execute_reply", "shell", obj("cell_id" → cellId, "execution_count" → counter))
             context.stop(self)
+
+          case nameDefinition@NameDefinition(name, tpe, references) =>
+            val (te, ty):(JsValue, JsValue) = nameDefinition match {
+              case TermDefinition(_, _, _) => (JsString(name), JsNull)
+              case TypeDefinition(_, _, _) => (JsNull, JsString(name))
+              case _ => (JsNull, JsNull)
+            }
+            ws.send(
+              obj(
+                "session" → "ignored"
+              ),
+              JsNull,
+              "definition",
+              "iopub",
+              obj(
+                "term" → te,
+                "type" → ty,
+                "tpe" → tpe,
+                "cell" → cellId,
+                "references" → references
+              )
+            )
 
           case ErrorResponse(msg, incomplete) =>
             if (incomplete) {
@@ -227,7 +292,7 @@ class CalcWebSocketService(
           case CompletionResponse(cursorPosition, candidates, matchedText) =>
             ws.send(header, session, "complete_reply", "shell", obj(
               "matched_text" → matchedText,
-              "matches" → candidates.map(_.toJson).toList,
+              "matches" → candidates.map(_.toJsonWithDescription).toList,
               "cursor_start" → (cursorPosition - matchedText.length),
               "cursor_end" → cursorPosition))
             context.stop(self)

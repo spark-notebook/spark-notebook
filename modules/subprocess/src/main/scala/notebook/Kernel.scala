@@ -47,23 +47,25 @@ class Kernel(
 
   class ExecutionManager extends Actor with ActorLogging {
     // These get filled in before we ever receive messages
-    var remoteInfo: RemoteActorSystem = null
+    private var remoteInfo: RemoteActorSystem = null
 
     override def preStart() {
       remoteInfo = Await.result(RemoteActorSystem.spawn(config, system, "kernel", kernelId, notebookPath, customArgs), 1 minutes)
       remoteDeployPromise.success(remoteInfo.deploy)
     }
 
+    def shutdownRemote() = {
+      Option(remoteInfo).foreach(_.shutdownRemote())
+      KernelManager.remove(kernelId)
+    }
+
     override def postStop() {
-      if (remoteInfo != null)
-        remoteInfo.shutdownRemote()
+      shutdownRemote()
     }
 
     def receive = {
       case ShutdownNow =>
-        if (remoteInfo != null) {
-          remoteInfo.shutdownRemote()
-        }
+        shutdownRemote()
     }
   }
 
@@ -76,7 +78,7 @@ object KernelManager {
     }
   }
 
-  val kernels = new ConcurrentHashMap[String, Kernel]().asScala
+  private val kernels = new ConcurrentHashMap[String, Kernel]().asScala
 
   def get(id: String) = kernels.get(id)
 

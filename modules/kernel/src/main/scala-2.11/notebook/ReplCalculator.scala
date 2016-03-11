@@ -4,6 +4,7 @@ package client
 import java.io.{File, FileWriter}
 
 import scala.collection.immutable.Queue
+import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.{Try, Success=>TSuccess, Failure=>TFailure}
 
@@ -108,23 +109,10 @@ class ReplCalculator(
     val customDeps = d.mkString("\n")
     val deps = Deps.script(customDeps, remotes, repo).toOption.getOrElse(List.empty[String])
     (deps, ("deps", () => s"""
-                    |val CustomJars = ${ deps.mkString("Array(\"", "\",\"", "\")") }
+                    |val CustomJars = ${ deps.mkString("Array(\"", "\",\"", "\")").replace("\\","\\\\") }
                     |
                     """.stripMargin))
   }.getOrElse((List.empty[String], ("deps", () => "val CustomJars = Array.empty[String]\n")))
-
-
-
-  ("deps", () => customDeps.map { d =>
-    val customDeps = d.mkString("\n")
-
-    val deps = Deps.script(customDeps, remotes, repo).toOption.getOrElse(List.empty[String])
-
-    (deps, s"""
-    |val CustomJars = ${ deps.mkString("Array(\"", "\",\"", "\")") }
-    |
-    """.stripMargin)
-  }.getOrElse((List.empty[String], "val CustomJars = Array.empty[String]\n")))
 
   val ImportsScripts = ("imports", () => customImports.map(_.mkString("\n") + "\n").getOrElse("\n"))
 
@@ -135,6 +123,8 @@ class ReplCalculator(
     _repl = Some(r)
     r
   }
+
+  val chat = new notebook.front.gadgets.Chat()
 
   // +/- copied of https://github.com/scala/scala/blob/v2.11.4/src%2Flibrary%2Fscala%2Fconcurrent%2Fduration%2FDuration.scala
   final def toCoarsest(d:FiniteDuration): String = {
@@ -176,6 +166,7 @@ class ReplCalculator(
     implicit val ec = context.dispatcher
 
     private var queue:Queue[(ActorRef, ExecuteRequest)] = Queue.empty
+    private var currentlyExecutingTask: Option[Future[(String, EvaluationResult)]] = None
 
     def eval(b: => String, notify:Boolean=true)(success: => String = "", failure: String=>String=(s:String)=>"Error evaluating " + b + ": "+ s) {
       repl.evaluate(b)._1 match {
@@ -197,24 +188,52 @@ class ReplCalculator(
     def receive = {
       case "process-next" =>
         log.debug(s"Processing next asked, queue is ${queue.size} length now")
+        currentlyExecutingTask = None
+
         if (queue.nonEmpty) { //queue could be empty if InterruptRequest was asked!
           log.debug("Dequeuing execute request current size: " + queue.size)
-          queue = queue.dequeue._2
-          queue.headOption foreach { case (ref, er) =>
-            log.debug("About to execute request from the queue")
-            execute(ref, er)
-          }
+          val (executeRequest, queueTail) = queue.dequeue
+          queue = queueTail
+          val (ref, er) = executeRequest
+          log.debug("About to execute request from the queue")
+          execute(ref, er)
         }
 
-      case er@ExecuteRequest(_, code) if queue.nonEmpty =>
+      case er@ExecuteRequest(_, _, code) =>
         log.debug("Enqueuing execute request at: " + queue.size)
         queue = queue.enqueue((sender(), er))
 
-      case er@ExecuteRequest(_, code) =>
-        log.debug("Enqueuing execute request at: " + queue.size)
-        queue = queue.enqueue((sender(), er))
-        log.debug("Executing execute request")
-        execute(sender(), er)
+        // if queue contains only the new task, and no task is currently executing, execute it straight away
+        // otherwise the execution will start once the evaluation of earlier cell(s) finishes
+        if (currentlyExecutingTask.isEmpty && queue.size == 1) {
+          self ! "process-next"
+        }
+
+      case InterruptCellRequest(killCellId) =>
+        // kill job(s) still waiting for execution to start, if any
+        val (jobsInQueueToKill, nonAffectedJobs) = queue.partition { case (_, ExecuteRequest(cellIdInQueue, _, _)) =>
+          cellIdInQueue == killCellId
+        }
+        log.debug(s"Canceling $killCellId jobs still in queue (if any):\n $jobsInQueueToKill")
+        queue = nonAffectedJobs
+
+        log.debug(s"Interrupting the cell: $killCellId")
+        val jobGroupId = JobTracking.jobGroupId(killCellId)
+        // make sure sparkContext is already available!
+        if (jobsInQueueToKill.isEmpty && repl.interp.allDefinedNames.exists(_.toString == "globalScope")) {
+          log.info(s"Killing job Group $jobGroupId")
+          val thisSender = sender()
+          repl.evaluate(
+            s"""globalScope.sparkContext.cancelJobGroup("${jobGroupId}")""",
+            msg => thisSender ! StreamResponse(msg, "stdout")
+          )
+        }
+
+        // StreamResponse shows error msg
+        sender() ! StreamResponse(s"The cell was cancelled.\n", "stderr")
+        // ErrorResponse to marks cell as ended
+        sender() ! ErrorResponse(s"The cell was cancelled.\n", incomplete = false)
+
 
       case InterruptRequest =>
         log.debug("Interrupting the spark context")
@@ -305,12 +324,13 @@ class ReplCalculator(
 
         case shRegex(sh) =>
           val ps = "s\"\"\""+sh.replaceAll("\\s*\\|\\s*", "\" #\\| \"").replaceAll("\\s*&&\\s*", "\" #&& \"")+"\"\"\""
-
-          (`text/plain`, s"""
-             |import sys.process._
-             |$ps.!!
-              """.stripMargin.trim
-          )
+          val shCode =
+            s"""|import sys.process._
+                |println($ps.!!(ProcessLogger(out => (), err => println(err))))
+                |()
+                |""".stripMargin.trim
+          log.debug(s"Generated SH code: $shCode")
+          (`text/plain`, shCode)
 
         case sqlRegex(n, sql) =>
           log.debug(s"Received sql code: [$n] $sql")
@@ -375,10 +395,27 @@ class ReplCalculator(
       val result = scala.concurrent.Future {
         // this future is required to allow InterruptRequest messages to be received and process
         // so that spark jobs can be killed and the hand given back to the user to refine their tasks
-        val result = repl.evaluate(newCode, msg => thisSender ! StreamResponse(msg, "stdout"))
+        val cellId = er.cellId
+        def replEvaluate(code:String, cellId:String) = {
+          val cellResult = try {
+           repl.evaluate(s"""
+              |globalScope.sparkContext.setJobGroup("${JobTracking.jobGroupId(cellId)}", "${JobTracking.jobDescription(code, start)}")
+              |$code
+              """.stripMargin,
+              msg => thisSender ! StreamResponse(msg, "stdout"),
+              nameDefinition => thisSender ! nameDefinition
+            )
+          }
+          finally {
+             repl.evaluate("globalScope.sparkContext.clearJobGroup()")
+          }
+          cellResult
+        }
+        val result = replEvaluate(newCode, cellId)
         val d = toCoarsest(Duration(System.currentTimeMillis - start, MILLISECONDS))
         (d, result._1)
       }
+      currentlyExecutingTask = Some(result)
 
       result foreach {
         case (timeToEval, Success(result)) =>
@@ -389,8 +426,8 @@ class ReplCalculator(
           thisSender ! ErrorResponse("Incomplete (hint: check the parenthesis)", incomplete = true)
       }
 
-      result onComplete {
-        _ => thisSelf ! "process-next"
+      result onComplete { _ =>
+        thisSelf ! "process-next"
       }
     }
   }))
@@ -401,7 +438,8 @@ class ReplCalculator(
     val dummyScript = ("dummy", () => s"""val dummy = ();\n""")
     val SparkHookScript = ("class server", () => s"""@transient val _5C4L4_N0T3800K_5P4RK_HOOK = "${repl.classServerUri.get}";\n""")
 
-    val nbName = notebookName.replaceAll("\"", "")
+    // Must escape last remaining '\', which could be for windows paths.
+    val nbName = notebookName.replaceAll("\"", "").replace("\\", "\\\\")
 
     val SparkConfScript = {
       val m = customSparkConf .getOrElse(Map.empty[String, String])
@@ -466,10 +504,13 @@ class ReplCalculator(
     case msgThatShouldBeFromTheKernel =>
 
       msgThatShouldBeFromTheKernel match {
+        case req @ InterruptCellRequest(_) =>
+          executor.forward(req)
+
         case InterruptRequest =>
           executor.forward(InterruptRequest)
 
-        case req @ ExecuteRequest(_, code) => executor.forward(req)
+        case req @ ExecuteRequest(_, _, code) => executor.forward(req)
 
         case CompletionRequest(line, cursorPosition) =>
           val (matched, candidates) = repl.complete(line, cursorPosition)

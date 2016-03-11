@@ -8,23 +8,26 @@ import scala.tools.nsc.util.ScalaClassLoader._
 import scala.reflect.api.{Mirror, TypeCreator, Universe => ApiUniverse}
 import scala.concurrent.{ ExecutionContext, Await, Future, future }
 import ExecutionContext.Implicits._
+import java.io.File
 
 
 import scala.tools.nsc.interpreter._
 
-class HackSparkILoop(out:JPrintWriter) extends org.apache.spark.repl.SparkILoop(None, out) {
+class HackSparkILoop(out:JPrintWriter, outputDir:File) extends org.apache.spark.repl.SparkILoop(None, out) {
 
+  // note:
+  // the creation of SecurityManager has to be lazy so SPARK_YARN_MODE is set if needed
   val classServer = {
-    val s = org.apache.spark.Boot.classServer
+    val s = org.apache.spark.Boot.classServer(outputDir)
     s.start
     s
   }
 
-  override def initializeSpark() {
+  override def initializeSpark(): Unit = {
     // done using the metadata and init.sc
   }
 
-  override def printWelcome() {
+  override def printWelcome(): Unit = {
     //
   }
 
@@ -36,7 +39,9 @@ class HackSparkILoop(out:JPrintWriter) extends org.apache.spark.repl.SparkILoop(
     in = chooseReader(settings)// in0.fold(chooseReader(settings))(r => SimpleReader(r, out, interactive = true))
     val globalFuture = Future {
       intp.initializeSynchronous()
-      //loopPostInit()
+      import scala.tools.nsc.interpreter.IMain
+      import scala.tools.nsc.interpreter.StdReplTags.tagOfIMain
+      intp.quietBind(NamedParam[IMain]("$intp", intp)(tagOfIMain, classTag[IMain]))
       !intp.reporter.hasErrors
     }
     import scala.concurrent.duration._

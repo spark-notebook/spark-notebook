@@ -10,38 +10,39 @@ define([
     require(['observable'], function(O) {
       var progress = O.makeObservableArray("jobsProgress");
 
-      // move progress node to body, to enable absolute positioning
-      var pies = d3.select("#progress-pies")
-      $(pies.node()).appendTo("body");
-      $("#progress-pies").append($("<div id='progress-bars'/>")).append("<div id='spark-ui-link' />");
-
       var updateSparkUiLink = function(sparkUi){
         if (sparkUi != "") {
-          var sparkUiLink = $("<a href='" + sparkUi + "' id='spark-ui-link' target='_blank'>SparkUI</a>")
-          $("#spark-ui-link").replaceWith(sparkUiLink);
+          var sparkUiLink = $("<a href='" + sparkUi + "' id='spark-ui-link' target='_blank'>open SparkUI</a>")
+          $("#spark-ui-link-container").html(sparkUiLink);
         }
       };
 
-      // setup the progress chart
-      var svg = dimple.newSvg("#progress-bars", 100, 400);
-      var myChart = new dimple.chart(svg, []);
-      var xAxis = myChart.addPctAxis("x", "completed");
-      xAxis.title = "% completed";
-      xAxis.ticks = 2;
-      xAxis.showGridlines = false;
-      myChart.assignColor("Done", "#3a3", "#3a3", 1);
-      myChart.assignColor("Pending", "#a33", "#a33", 1);
-      var yAxis = myChart.addCategoryAxis("y", ["id", "name", "time"]);
-      yAxis.hidden = true;
-      yAxis.addOrderRule("id");
-      myChart.addSeries("status", dimple.plot.bar);
+      var allJobsProgressBar = $('\
+          <div class="progress">\
+            <div id="jobs-progress-done" class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="" \
+                 aria-valuemin="0" aria-valuemax="100">\
+            </div>\
+            <div id="jobs-progress-pending" class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="" \
+                 aria-valuemin="0" aria-valuemax="100">\
+            </div>\
+        </div>');
+      $('#all-jobs-progress-bar').html(allJobsProgressBar);
 
       // process the progresses and update the chart
       var isCompleted = function(p){ return p.completed == 100 };
       var sum = function(items){ return _.reduce(items, function(memo, p){ return memo + p} , 0) };
 
       var olderProgresses = [];
+
+      function findCells(id) {
+        var f = ".cell[data-cell-id"+(id?"='"+id+"'":"")+"]";
+        var cells = $(IPython.notebook.element).find(f);
+        return _.object(_.map(cells, function(cell) {return [$(cell).data("cell-id"), cell]}));
+      }
+
       progress.subscribe(function(status) {
+        var cells = findCells();
+
         var jobsProgress = status.jobsStatus;
         var sparkUi = status.sparkUi;
 
@@ -54,28 +55,32 @@ define([
         }
         olderProgresses = jobsProgress;
 
-        // collapse completed jobs into one bar
-        var nCompletedJobs = _.filter(jobsProgress, isCompleted).length;
-        var completedJobsInfo = {
-          status: "Done",
-          completed: 100,
-          name: nCompletedJobs + " stages",
-          time: "N/A",
-          id: 0
-        };
+        var perCellId = _.groupBy(jobsProgress, 'cell_id');
+        _.each(perCellId, function(jobs, cell_id){
+          var completedTasks = sum(_.pluck(jobs, 'completed_tasks'));
+          var totalTasks = sum(_.pluck(jobs, 'total_tasks'));
+          var cellProgress = Math.min(Math.floor(completedTasks * 100.0 / totalTasks), 100);
+          if (cell_id) {
+            var cell = $(cells[cell_id]).data("cell");
+            var cellProgressBar = $(cells[cell_id]).find('div.progress-bar');
+            cellProgressBar.css("width", Math.max(cellProgress, 5) + "%");
+            if (cellProgress == 100) {
+              cellProgressBar.removeClass("active").removeClass("progress-bar-striped");
+              if (cell) cell.hideCancelCellBtn();
+            } else {
+              cellProgressBar.addClass("active").addClass("progress-bar-striped");
+              if (cell) cell.addCancelCellBtn();
+            }
+          }
+        });
 
-        var runningJobs = _.map(_.reject(jobsProgress, isCompleted));
-        var runningJobsInfo = _.flatten(_.map(runningJobs, function(p){
-          p.status = "Done";
-          // part of stage that's still pending
-          pPending = _.clone(p);
-          pPending.status = "Pending";
-          pPending.completed = 100 - p.completed;
-          return [p, pPending]
-        }), true);
+        // update all jobs progress bar
+        var completedTasks = sum(_.pluck(jobsProgress, 'completed_tasks'));
+        var totalTasks = sum(_.pluck(jobsProgress, 'total_tasks'));
+        var totalProgressPercent = Math.floor(100.0 * completedTasks / Math.max(totalTasks, 1))
 
-        myChart.data = _.flatten([runningJobsInfo, completedJobsInfo]);
-        myChart.draw();
+        $('#jobs-progress-done').css('width', totalProgressPercent + '%');
+        $('#jobs-progress-pending').css('width', (100 - totalProgressPercent) + '%');
       });
     });
   });
