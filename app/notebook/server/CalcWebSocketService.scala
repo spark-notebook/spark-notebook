@@ -4,7 +4,7 @@ import akka.actor.{Terminated, _}
 import notebook.client._
 import notebook.Kernel
 import notebook.kernel.repl.common.{NameDefinition, TermDefinition, TypeDefinition}
-import org.joda.time.LocalTime
+import org.joda.time.LocalDateTime
 import play.api._
 import play.api.libs.json.Json.{obj, arr}
 import play.api.libs.json._
@@ -47,8 +47,8 @@ class CalcWebSocketService(
     var calculator: ActorRef = null
     var wss: List[WebSockWrapper] = Nil
 
-    protected val notebookStartTime = LocalTime.now()
-    private var lastCellExecutionTime: Option[LocalTime] = None
+    protected val notebookStartTime = LocalDateTime.now()
+    private var lastCellExecutionTime: Option[LocalDateTime] = None
 
     val ws = new {
       def send(header: JsValue, session: JsValue /*ignored*/ , msgType: String, channel: String,
@@ -61,16 +61,16 @@ class CalcWebSocketService(
     }
 
     private def markNotebookAsActive() = {
-      lastCellExecutionTime = Some(LocalTime.now)
+      lastCellExecutionTime = Some(LocalDateTime.now)
     }
 
     protected def isKernelTimeouted = {
-      val lastActionTime = lastCellExecutionTime match {
+      val lastActionTime: LocalDateTime = lastCellExecutionTime match {
         case Some(lastExec) => lastExec
         case None => notebookStartTime
       }
       kernelTimeout.exists { kernelTimeoutMillis =>
-        lastActionTime.plusMillis(kernelTimeoutMillis.toInt).isBefore(LocalTime.now())
+        lastActionTime.plusMillis(kernelTimeoutMillis.toInt).isBefore(LocalDateTime.now())
       }
     }
 
