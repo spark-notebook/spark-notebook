@@ -8,12 +8,16 @@ define([
     'pivot'
 ], ($, _, Observable, ko, d3, c3, pivot) ->
   (dataO, container, options) ->
-    require(['c3', 'pivotC3'],
+    # these depend on pivot/c3/d3
+    require(['c3', 'pivotC3', 'pivotExport'],
     (c3, pivotC3) =>
       h = options.height||400
 
-      derivers = $.pivotUtilities.derivers;
-      renderers = $.extend($.pivotUtilities.renderers, $.pivotUtilities.c3_renderers)
+      renderers = $.extend(
+        $.pivotUtilities.renderers,
+        $.pivotUtilities.c3_renderers,
+        $.pivotUtilities.export_renderers
+      )
       derivedAttributes = _.mapObject(options.derivedAttributes,
                                   (val, key) ->
                                     eval("var _f_ = " + val)
