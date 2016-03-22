@@ -4,6 +4,8 @@ import java.io.{StringWriter, PrintWriter, ByteArrayOutputStream}
 import java.net.{URLDecoder, JarURLConnection}
 import java.util.ArrayList
 
+import org.apache.commons.lang3.exception.ExceptionUtils
+
 import scala.collection.JavaConversions
 import scala.collection.JavaConversions._
 import scala.xml.{NodeSeq, Text}
@@ -260,6 +262,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
                   e.printStackTrace
                   LOG.error("Ooops, exception in the cell", e)
                   <span style="color:red;">Ooops, exception in the cell: {e.getMessage}</span>
+                    <pre style="color:#999;">{ExceptionUtils.getStackTrace(e)}</pre>
               }
             } else {
               // a line like println(...) is technically a val, but returns null for some reason
