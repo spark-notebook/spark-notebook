@@ -1,6 +1,6 @@
 package notebook.front.widgets
 
-import notebook.front._
+import notebook.front.Widget
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.DataFrame
@@ -8,8 +8,9 @@ import org.apache.spark.sql.DataFrame
 case class DownloadCsv(df: DataFrame, webHdfsUserName: String = "hive") extends Widget {
   val log = org.slf4j.LoggerFactory.getLogger("SparkInfo")
 
+  val link = SpreadsheetOutput.downloadCsv(df, webHdfsUserName = webHdfsUserName)
+
   lazy val toHtml = {
-    val link = SpreadsheetOutput.downloadCsv(df, webHdfsUserName = webHdfsUserName)
     <div class="download-csv">
       <a target="_blank" href={link}>Download here</a>
     </div>
