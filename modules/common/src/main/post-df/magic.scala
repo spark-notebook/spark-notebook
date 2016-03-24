@@ -21,17 +21,18 @@ trait ExtraSamplerImplicits {
 }
 
 trait ExtraMagicImplicits {
-  case class DFPoint(row:Row, df:DataFrame) extends MagicRenderPoint {
-    val headers = df.columns.toSeq
+  case class DFPoint(row:Row, columns: Seq[String]) extends MagicRenderPoint {
+    val headers = columns
     val values  = row.toSeq
   }
 
   implicit object DFToPoints extends ToPoints[DataFrame] {
     import SamplerImplicits.Sampler
     def apply(df:DataFrame, max:Int)(implicit sampler:Sampler[DataFrame]):Seq[MagicRenderPoint] = {
+      val columns = df.columns.toSeq
       val rows = sampler(df, max).collect
       if (rows.length > 0) {
-        val points = rows.map(i => DFPoint(i, df))
+        val points = rows.map(i => DFPoint(i, columns))
         val encoded = points.zipWithIndex.map { case (point, index) => point.values match {
           case Seq(o)    if isNumber(o)   =>  AnyPoint((index, o))
           case _                          =>  point
