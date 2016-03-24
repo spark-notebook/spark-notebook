@@ -68,6 +68,9 @@ This will always be an empty file in IPython
   background-color: #ee5f5b;
 }
 
+/* generic (all charts) */
+span.chart-sampling-warning p, span.chart-total-item-count p { display: inline !important; }
+
 /* pivot chart */
 .pivot-controls-hidden .pvtVals, .pivot-controls-hidden .pvtRenderer, .pivot-controls-hidden .pvtAxisContainer {
   visibility: hidden;
