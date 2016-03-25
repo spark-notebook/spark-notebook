@@ -111,7 +111,7 @@ package object widgets {
     }
   }
 
-  def out = new SingleConnectedWidget[String] {
+  def outWithInitialValue(initialValue: String) = new SingleConnectedWidget[String] {
     implicit val codec:Codec[JsValue, String] = formatToCodec(None)(Format.of[String])
 
     lazy val toHtml = <p data-bind="text: value">{
@@ -121,16 +121,36 @@ package object widgets {
             |['observable', 'knockout'],
             |function (O, ko) {
             |  ko.applyBindings({
-            |      value: O.makeObservable(valueId)
+            |      value: O.makeObservable(valueId, initialValue)
             |    },
             |    this
             |  );
             |});
         """.stripMargin,
-        Json.obj("valueId" -> dataConnection.id)
+        Json.obj("valueId" -> dataConnection.id,
+                 "initialValue" -> initialValue)
       )}</p>
   }
 
+  def out = new SingleConnectedWidget[String] {
+    implicit val codec:Codec[JsValue, String] = formatToCodec(None)(Format.of[String])
+
+    lazy val toHtml = <p data-bind="text: value">{
+      scopedScript(
+        """
+          |req(
+          |['observable', 'knockout'],
+          |function (O, ko) {
+          |  ko.applyBindings({
+          |      value: O.makeObservable(valueId)
+          |    },
+          |    this
+          |  );
+          |});
+        """.stripMargin,
+        Json.obj("valueId" -> dataConnection.id)
+      )}</p>
+  }
   import java.awt.image.BufferedImage
   import java.io.ByteArrayOutputStream
   import javax.imageio.ImageIO
