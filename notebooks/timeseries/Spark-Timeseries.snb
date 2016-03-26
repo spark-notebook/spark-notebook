@@ -10,8 +10,8 @@
     },
     "trusted" : true,
     "customLocalRepo" : null,
-    "customRepos" : null,
-    "customDeps" : null,
+    "customRepos" : [ "cloudera % default % https://repository.cloudera.com/artifactory/cloudera-repos % maven" ],
+    "customDeps" : [ "com.cloudera.sparkts % sparkts % 0.3.0" ],
     "customImports" : null,
     "customArgs" : null,
     "customSparkConf" : null
@@ -27,40 +27,22 @@
       "id" : "43FD915539E34024B7A65DD648021D46"
     },
     "cell_type" : "markdown",
-    "source" : "This Notebook implements one of the examples developed by [Sandy Ryza](https://github.com/sryza) which is very interesting for analyzing Time-Series Data with Apache Spark.\n\n[Project](https://github.com/sryza/spark-timeseries)\n\n[Cloudera Blog Post](http://blog.cloudera.com/blog/2015/12/spark-ts-a-new-library-for-analyzing-time-series-data-with-apache-spark)\n\nConcretely, it brings an example exhibiting the use of TimeSeriesRDD for loading, cleaning, and filtering stock ticker data."
+    "source" : "This Notebook implements one of the examples developed by [Sandy Ryza](https://github.com/sryza) which is very interesting for analyzing Time-Series Data with Apache Spark.\n\n[Project _spark-timeseries_ on GitHub](https://github.com/sryza/spark-timeseries)\n\n[Cloudera Blog Post](http://blog.cloudera.com/blog/2015/12/spark-ts-a-new-library-for-analyzing-time-series-data-with-apache-spark)\n\nConcretely, it brings an example exhibiting the use of TimeSeriesRDD for loading, cleaning, and filtering stock ticker data."
+  }, {
+    "metadata" : {
+      "id" : "AA0FE52A21824986B51F5E18D75D39EF"
+    },
+    "cell_type" : "markdown",
+    "source" : "<span class=\"alert alert-danger\">The following import requires **JAVA 8**!</span>"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
       "collapsed" : false,
-      "id" : "7F882FF5192241FAB5798B8A062DB88E"
+      "id" : "15663CCDE1F24E41B824317C503F042C"
     },
     "cell_type" : "code",
-    "source" : ":local-repo /tmp/repo",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "E218AF2497084C85B1FDDD4B3BB409E7"
-    },
-    "cell_type" : "code",
-    "source" : ":remote-repo \"cloudera\" % default % https://repository.cloudera.com/artifactory/cloudera-repos",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "presentation" : {
-        "tabs_state" : "{\n  \"tab_id\": \"#tab1908138754-0\"\n}",
-        "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [],\n  \"rows\": [],\n  \"vals\": [],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count\",\n  \"rendererName\": \"Table\"\n}"
-      },
-      "id" : "72E051BE091640A8B13DF4F27F4D13D4"
-    },
-    "cell_type" : "code",
-    "source" : ":dp com.cloudera.sparkts % sparkts % 0.3.0",
+    "source" : "import java.time.{LocalDateTime, ZoneId, ZonedDateTime}",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -70,7 +52,7 @@
       "id" : "55701A9AAD314C33AA228722FD7AB4A8"
     },
     "cell_type" : "code",
-    "source" : "import java.sql.Timestamp\nimport java.time.{LocalDateTime, ZoneId, ZonedDateTime}\n\nimport com.cloudera.sparkts._\nimport com.cloudera.sparkts.stats.TimeSeriesStatisticalTests\n\nimport org.apache.spark.{SparkContext, SparkConf}\nimport org.apache.spark.sql.{DataFrame, Row, SQLContext}\nimport org.apache.spark.sql.types._",
+    "source" : "import java.sql.Timestamp\n\nimport com.cloudera.sparkts._\nimport com.cloudera.sparkts.stats.TimeSeriesStatisticalTests\n\nimport org.apache.spark.{SparkContext, SparkConf}\nimport org.apache.spark.sql.{DataFrame, Row, SQLContext}\nimport org.apache.spark.sql.types._",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -86,7 +68,7 @@
       "id" : "F1576972F95846F592B555040E501B4A"
     },
     "cell_type" : "code",
-    "source" : "val sqlContext = new SQLContext(sc)",
+    "source" : "val sqlContext = new SQLContext(sc)\nimport sqlContext.implicits._\nimport org.apache.spark.sql.functions._",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -218,6 +200,12 @@
     "source" : "* Compute Durbin-Watson stats for each series"
   }, {
     "metadata" : {
+      "id" : "52BE0CD58906405E8BC21E9D11EEFFFB"
+    },
+    "cell_type" : "markdown",
+    "source" : "_Interlude ($Math$):_\n\nThe Durbin-Watson stat $d$ helps detecting the autocorrelation (LSS, _ $\\exists$ patterns in the timeseries_) of the $residuals$ from a regression analysis. \n\nSince $d$ is approximately equal to $2 * (1 − r)$ and $d \\in [0, 4]$, where $r$ is the sample autocorrelation of the residuals.\n\nRule of thumb:\n* $d << $ indicate successive error terms are **positively correlated**\n* $d < 1$, there may be cause for alarm\n* $d > 2$, successive error terms are **negatively correlated**\n\n_**Positive serial correlation**_ is serial correlation in which a positive error for one observation increases the chances of a positive error for another observation.\n\n_**Negative serial correlation** implies that a positive error for one observation increases the chance of a negative error for another observation and a negative error for one observation increases the chances of a positive error for another._\n\n> [modified] source: Wikipedia page https://en.wikipedia.org/wiki/Durbin%E2%80%93Watson_statistic"
+  }, {
+    "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
       "collapsed" : false,
@@ -232,13 +220,13 @@
       "input_collapsed" : false,
       "collapsed" : false,
       "presentation" : {
-        "tabs_state" : "{\n  \"tab_id\": \"#tab1687933852-0\"\n}",
+        "tabs_state" : "{\n  \"tab_id\": \"#tab462362486-0\"\n}",
         "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [],\n  \"rows\": [],\n  \"vals\": [],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count\",\n  \"rendererName\": \"Table\"\n}"
       },
       "id" : "5391227F775448B2965557DC23E072CB"
     },
     "cell_type" : "code",
-    "source" : "dwStats.collect",
+    "source" : "val dwStatsDF = dwStats.toDF(\"symbol\", \"d\").orderBy($\"d\".desc)\ndwStatsDF",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -246,6 +234,16 @@
       "input_collapsed" : false,
       "collapsed" : false,
       "id" : "E2D8F7CDB4494A5483E2C18900B5969C"
+    },
+    "cell_type" : "code",
+    "source" : "dwStatsDF.describe()",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "E1FD7415B3C242E781E627B057CBEB0E"
     },
     "cell_type" : "code",
     "source" : "dwStats.map(_.swap).min",
