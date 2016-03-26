@@ -14,6 +14,9 @@ import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd._
 
+import org.apache.spark.sql._
+import org.apache.spark.sql.functions._
+
 import scala.util.matching.Regex
 
 @transient val globalScope = new java.io.Serializable {
@@ -106,6 +109,7 @@ import scala.util.matching.Regex
   @transient var jars = (addedJars ++ CustomJars ++ conf.get("spark.jars", ",").split(",")).distinct
 
   @transient var sparkContext:SparkContext = _
+  @transient var sqlContext:SQLContext = _
 
   import org.apache.spark.ui.notebook.front.gadgets.SparkMonitor
   @transient var sparkMonitor:Option[SparkMonitor] = _
@@ -130,16 +134,23 @@ import scala.util.matching.Regex
     }
     sparkContext = new SparkContext(conf)
     sparkContext.hadoopConfiguration.set("fs.tachyon.impl", "tachyon.hadoop.TFS")
+
+    sqlContext = new SQLContext(sparkContext)
+
     sparkMonitor = Some(new SparkMonitor(sparkContext))
     sparkMonitor.get.start
   }
 
   def sc:SparkContext = sparkContext
 }
-
-import globalScope.{sparkContext, reset, sc}
+import globalScope.{reset}
 
 reset()
+
+import globalScope.{sparkContext, sc}
+
+@transient val tempSQLC = globalScope.sqlContext
+import tempSQLC.implicits._
 
 println("init.sc done!")
 ()

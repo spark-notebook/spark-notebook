@@ -17,113 +17,157 @@
     "customSparkConf" : null
   },
   "cells" : [ {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "31AAE9698C194653B98510ABD70F419E"
+    },
     "cell_type" : "markdown",
     "source" : "# DataFrame rendering"
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "810C5B416CFC4401ADB7D413984105E6"
+    },
     "cell_type" : "markdown",
     "source" : "## Setup the DataFrame context (sql) "
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true,
+      "id" : "53BB8BE519C94C05A640D8FE2F72FDA2"
     },
     "cell_type" : "code",
     "source" : "val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)\nimport sqlContext.implicits._",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "F4A0A72CAD7A45A2979F18B1CCD92DBB"
+    },
     "cell_type" : "markdown",
     "source" : "## Create a custom type (`Person`) "
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "57345048754F4D878C6AD8401288BB07"
     },
     "cell_type" : "code",
     "source" : "case class Person(name: String, age: Int)",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "785CB2AF641544728F83D38ABBB96B74"
+    },
     "cell_type" : "markdown",
     "source" : "## Create some abstract data"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "5BE6022FC9374665AECEB177FB243B33"
     },
     "cell_type" : "code",
     "source" : "val data = Seq.fill(100) {\n  val name = \"p\"+scala.util.Random.nextInt(10) // with duplicates, for fun\n  val age = 20+scala.util.Random.nextInt(10) //with diff ages ö_Ô\n  Person(name, age)\n}",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "4B4CB06FCE8E4D17BA8155B867A92A5C"
+    },
     "cell_type" : "markdown",
     "source" : "## Put the abstract data in Spark as DataFrame"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "A3E655FC41DE41FC802FDEAAD82D5886"
     },
     "cell_type" : "code",
     "source" : "val people = sparkContext.parallelize(data).toDF()\npeople.registerTempTable(\"people\")",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "3203F90FB93240458DFEB5F3C33A7353"
+    },
+    "cell_type" : "markdown",
+    "source" : "### Compute min age using default aggregation functions (`org.apache.spark.sql.functions`)"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "60FA3611821F405BAE5836390CF38F56"
+    },
+    "cell_type" : "code",
+    "source" : "people.agg(min(\"age\"))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "id" : "1ED629F8D846487DB97B7C6B8373A8E9"
+    },
     "cell_type" : "markdown",
     "source" : "## Render the DataFrame using default parameters"
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "B567190D912140088229BCDFDBFD32DE"
+    },
     "cell_type" : "markdown",
     "source" : "## Render the DataFrame, but only 10 points"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : true,
+      "id" : "8CB2EBAE4563417C8D2A7AAC179AC251"
     },
     "cell_type" : "code",
     "source" : "widgets.display(people, maxPoints=10)",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "6D785C9740B04929B7DAA11CA4BA94E3"
+    },
     "cell_type" : "markdown",
     "source" : "## Render the DataFrame in a Bar plot, but only 40 points"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : true,
+      "id" : "C1D25EF953FC42D4924342D0D7882DDF"
     },
     "cell_type" : "code",
     "source" : "widgets.BarChart(people, Some((\"name\", \"age\")), maxPoints=40)",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "84E280C1799A44008D0BB2033A71A338"
+    },
     "cell_type" : "markdown",
     "source" : "## Render the DataFrame in a Bar plot, but only 40 **SAMPLED** points"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : true,
+      "id" : "53060AA168674CDB8568AB0AFC2340A6"
     },
     "cell_type" : "code",
     "source" : "import notebook.front.widgets.magic.SamplerImplicits.Sampler\nimport org.apache.spark.sql.DataFrame\nimplicit val sampler = new Sampler[DataFrame] {\n  def apply(df:DataFrame, max:Int):DataFrame = {\n    val count = df.count\n    println(\"Sampling DF\")\n    df.sample(false, max/count.toDouble, 5555)\n  }\n}\nwidgets.BarChart(people, Some((\"name\", \"age\")), maxPoints=40)",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "49C77B84CB8A433981FB14B2992055EA"
+    },
     "cell_type" : "markdown",
     "source" : "## Render the DataFrame in a Pivot chart"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true,
+      "id" : "614B014D69D54CB58FFFB86586854A32"
     },
     "cell_type" : "code",
     "source" : "PivotChart(people)",
