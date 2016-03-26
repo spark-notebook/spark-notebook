@@ -3,13 +3,13 @@ package notebook.front.widgets
 import scala.concurrent.{Future, ExecutionContext}
 import scala.reflect.runtime.universe.TypeTag
 
-//import org.apache.spark.FutureAction
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SQLContext, DataFrame}
 import play.api.libs.json._
 
 import notebook._
 import notebook.front.{DataConnector, SingleConnector,Widget}
+import notebook.front.widgets.Utils
 
 /**
  * An abstract view of a dataframe.
@@ -65,8 +65,9 @@ class DataFrameWidget(
   override val data: DataFrame,
   override val pageSize: Int = 25,
   extension: String
-)
-  extends Widget with DataFrameView {
+) extends Widget
+  with DataFrameView
+  with Utils {
 
   private val js = List("dataframe", extension).map(
     x => s"'../javascripts/notebook/$x'").mkString("[", ",", "]")

@@ -60,7 +60,7 @@ define([
 
     dataO.subscribe( (newData) =>
       _.each(map._layers, (l) ->
-        map.removeLayer(l) if l instanceof L.Marker
+        map.removeLayer(l) if (l instanceof L.Marker || l instanceof L.CircleMarker)
       )
       updatePoints(newData)
     )
