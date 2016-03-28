@@ -7,8 +7,9 @@ define([
     'base/js/utils',
     './comm',
     './serialize',
-    'widgets/js/init'
-], function (IPython, $, utils, comm, serialize, widgetmanager) {
+    'widgets/js/init',
+    'underscore'
+], function (IPython, $, utils, comm, serialize, widgetmanager, _) {
     "use strict";
 
     /**
@@ -971,10 +972,20 @@ define([
         if (!_.isEmpty(msg.content.thrown)) {
             st = ". Stacktrace:\n" + msg.content.thrown.join("\n")
         }
-        // hide in console using filter: ^[^(?:Server log>)]
-        console[msg.content.level.toLowerCase()](
-            "Server log> ["+new Date(msg.content.time_stamp)+"] [" + msg.content.logger_name + "] " + msg.content.message + st
-        );
+        var lid = _.uniqueId("ui-logs-");
+        var detailedError = lid+"> ["+new Date(msg.content.time_stamp)+"] [" + msg.content.logger_name + "] " + msg.content.message + st;
+        // hide in console using filter: ^[^(?:ui-logs)]
+        console[msg.content.level.toLowerCase()](detailedError);
+        if (msg.content.level.toLowerCase() == "error") {
+            var logsPanel = $("#logsPanel");
+            var errorMsg = $("<li class='text text-danger' title='console log id: "+lid+". Click to print again'>[" +
+                                msg.content.logger_name + "] " + msg.content.message + "</li>");
+            errorMsg.click(function() {
+                console[msg.content.level.toLowerCase()](detailedError);
+            });
+            logsPanel.append(errorMsg);
+        }
+
     };
 
 

@@ -1,0 +1,95 @@
+{
+  "metadata" : {
+    "name" : "Sidebar",
+    "user_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T01:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : [ "do-not % exists % 0.0.0" ],
+    "customImports" : null,
+    "customArgs" : null,
+    "customSparkConf" : null
+  },
+  "cells" : [ {
+    "metadata" : {
+      "id" : "41BD85FB56D0400D819F92B0058E0C72"
+    },
+    "cell_type" : "markdown",
+    "source" : "# Sidebar"
+  }, {
+    "metadata" : {
+      "id" : "3FEBF691A8A14F9B87825A4E14E2D10C"
+    },
+    "cell_type" : "markdown",
+    "source" : "## Failure are visible"
+  }, {
+    "metadata" : {
+      "id" : "1E12937A25524D479CA2EF20B773E4EE"
+    },
+    "cell_type" : "markdown",
+    "source" : "In the logs panel on the right hand bar, you'll see soon printed an **SBT** or **Maven** errors message.\n\nThis is because the current notebook's metadata is referring a dependency that doesn't exists.\n\nBy default, all error logs will be assigned an **ID**, so that you can trace the full/detailed back in the console; in order to get this ID, just **hover** the error line.\n\n**IMPORTANT** you can also re-print the detailed version by **clicking** the log line in the logs panel.\n\n> NOTE:\n>\n> The console is the browser console, most of Navigators will open it using the **F12** key, otherwise some more information about majors navigators can be found [here](Major Browsers' Debugging Tools)."
+  }, {
+    "metadata" : {
+      "id" : "741485F7B7D3438F8E92BE1CF24938C4"
+    },
+    "cell_type" : "markdown",
+    "source" : "## Oh another example showing long list of variables in the terms panels..."
+  }, {
+    "metadata" : {
+      "id" : "C3DAA2578A674D2D89294E10CF67580F"
+    },
+    "cell_type" : "markdown",
+    "source" : "Execute the following cells to create a bunch of variables that will fill the terms panel. This is in order to show that the table can be scrolled.\n\nAlso **click** on a variable to access where the variable was defined!"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "5D1847C2C0564F37826D1E41E145DAF8"
+    },
+    "cell_type" : "code",
+    "source" : "val a1 = 1\nval a2 = 1\nval a3 = 1\nval a4 = 1\nval a5 = 1\nval a6 = 1\nval a7 = 1\nval a8 = 1\nval a9 = 1",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "D794EDC566D24A1EBBE150361D4AB086"
+    },
+    "cell_type" : "code",
+    "source" : "val a10 = 1\nval a11 = 1\nval a12 = 1\nval a13 = 1\nval a14 = 1\nval a15 = 1\nval a16 = 1",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "C8004D46B6AE46D998DEF6A7C2805F55"
+    },
+    "cell_type" : "code",
+    "source" : "val a17 = 1\nval a18 = 1\nval a19 = 1\nval a20 = 1\nval a21 = 1",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "presentation" : {
+        "tabs_state" : "{\n  \"tab_id\": \"#tab205877225-0\"\n}",
+        "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [],\n  \"rows\": [],\n  \"vals\": [],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count\",\n  \"rendererName\": \"Table\"\n}"
+      },
+      "id" : "2DB59892170E42ED9B5C79FC94CFBB60"
+    },
+    "cell_type" : "code",
+    "source" : "val a22 = 1\nval a23 = 1\nval a24 = 1\nval a25 = 1\nval a26 = 1\nval a27 = 1\nval a28 = 1\nval a29 = 1\nval a30 = 1",
+    "outputs" : [ ]
+  } ],
+  "nbformat" : 4
+}
