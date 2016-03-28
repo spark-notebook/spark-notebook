@@ -2,9 +2,9 @@ require(["jquery", "jquery.gridster"], function($, gridster) {
   var g = $("#notebook-panels");
   var scrollWidth = 15;
   var w = ($(document.body).width() - scrollWidth) * (3.0 / 12);
-  var m = 10;
+  var m = 0;
   var nbCols = 2;
-  var b = (w - (2 * nbCols)*10)/2
+  var b = (w - (2 * nbCols)*m) / nbCols
 
   var ul = $("#notebook-panels .gridster > ul");
 
@@ -31,16 +31,24 @@ require(["jquery", "jquery.gridster"], function($, gridster) {
 
   site.scroll(sticky_relocate);
 
-  ul.gridster({
-    max_cols: nbCols,
+  var g = ul.gridster({
     widget_margins: [m, m],
-    widget_base_dimensions: [b, 250],
-    max_sizex: 2,
+    widget_base_dimensions: [b, 50],
+    max_size_x: 2,
     helper: 'clone',
     resize: {
       enabled: true
     }
-  });
+  }).data("gridster");
+
+  var sizeContent = function(id) {
+    var td = $("#"+id);
+    var wid = td.parents(".widget:first");
+    td.height((wid.data().sizey * 50 /*compute widget height*/) - (28+2*4 /*h4*/) + "px");
+  };
+
+  sizeContent("termDefinitions");
+  sizeContent("logsPanel");
 });
 
 
@@ -65,6 +73,7 @@ require(["jquery", "underscore", "base/js/events", "knockout"], function($, _, e
   };
 
   var td = $("#termDefinitions");
+
   if (!td.find("table").length) {
     function viewModel() {
       var self = this;

@@ -115,15 +115,17 @@ table.c3-tooltip th, #termDefinitions table th {
 }
 
 #sidebar > ul > li {
-  background-color: #FFFFEE;
+  background-color: #FCFCFC;
 }
 
 #sidebar li h4 {
   color: #333333;
   background-color: #f5f5f5;
   border-color: #dddddd;
-  margin: 0px 0 10px 0;
-  padding: 10px 0 10px 0;
+  margin: 0 0 0 0;
+  line-height: 28px;
+  font-size: 14px;
+  padding: 4px 0 4px 0;
 }
 
 /* cell progress: based on http://getbootstrap.com/components/#progress-animated */
@@ -132,7 +134,7 @@ div.progress-bar { text-align: left; }
 div.progress-bar a.cancel-cell-btn { font-weight: bold; color: #336699 !important; margin-left: 10px; }
 div.progress-bar.active a.cancel-cell-btn { color: #FFFFFF!important; }
 
-#all-jobs-progress-bar { margin-bottom: 20px; }
+#all-jobs-progress-bar { margin-bottom: 0px; }
 h4#spark-jobs { margin-bottom: 0 !important; }
 
 .prompt { display: none; visibility: hidden; }
