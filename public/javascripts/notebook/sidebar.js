@@ -118,8 +118,10 @@ require(["jquery", "underscore", "base/js/events", "knockout"], function($, _, e
       // clear sidebar on kernel restart
       // reset term definitions
       model.clearDefinitions();
-      // clear old progressbar & link to spark UI
-      $('#spark-ui-link-container, #all-jobs-progress-bar').html('');
+      // clear old progressbar
+      $('#all-jobs-progress-bar').html('');
+      // disable link to Spark UI
+      $('#link-to-spark-ui').addClass('disabled').find('a').attr('href', '#');
     });
 
     events.on('kernel_ready.Kernel', function(e, c) {
