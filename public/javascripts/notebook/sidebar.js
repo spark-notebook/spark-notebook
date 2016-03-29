@@ -134,7 +134,7 @@ require(["jquery", "underscore", "base/js/events", "knockout"], function($, _, e
       });
     });
 
-    // hide/unhide sidebar
+    // toggle sidebar
     $('a#toggle-sidebar').click(function(){
       $('#sidebar').toggleClass('hidden');
       // expand the notebook when sidebar is hidden
