@@ -23,18 +23,18 @@ trait MagicRenderPoint { me =>
 case class StringPoint(string:String, headers:Seq[String]=Seq("string value")) extends MagicRenderPoint {
   val values  = Seq(string)
 }
-case class AnyPoint(any:Any) extends MagicRenderPoint {
+case class AnyPoint(any:Any, header:Option[String]=None) extends MagicRenderPoint {
   val headers = any match {
-      case null           => Seq("Null")
-      case v: Int         => Seq("Int")
-      case v: Float       => Seq("Float")
-      case v: Double      => Seq("Double")
-      case v: Long        => Seq("Long")
-      case v: BigDecimal  => Seq("BigDecimal")
-      case v: String      => Seq("String")
-      case v: Boolean     => Seq("Boolean")
-      case v: Geometry    => Seq("Geometry")
-      case v: GeoJSON     => Seq("GeoJSON")
+      case null           => Seq(header.getOrElse("Null"))
+      case v: Int         => Seq(header.getOrElse("Int"))
+      case v: Float       => Seq(header.getOrElse("Float"))
+      case v: Double      => Seq(header.getOrElse("Double"))
+      case v: Long        => Seq(header.getOrElse("Long"))
+      case v: BigDecimal  => Seq(header.getOrElse("BigDecimal"))
+      case v: String      => Seq(header.getOrElse("String"))
+      case v: Boolean     => Seq(header.getOrElse("Boolean"))
+      case v: Geometry    => Seq(header.getOrElse("Geometry"))
+      case v: GeoJSON     => Seq(header.getOrElse("GeoJSON"))
       case v: Any         => Reflector.toFieldNameArray(any)
   }
   val values  = any match {
@@ -62,8 +62,14 @@ sealed trait Graph[I] {
   def color:String
   def toPoint:MagicRenderPoint
 }
-case class Node[I](id:I, value:Any, color:String="black") extends Graph[I] {
-  def toPoint:MagicRenderPoint = AnyPoint(value) merge StringPoint(id.toString, headers=Seq("nodeId")) merge StringPoint(color, headers=Seq("color"))
+case class Node[I](id:I, value:Any, color:String="black", r:Int=5, xy:Option[(Double,Double)]=None, fixed:Boolean=false) extends Graph[I] {
+  def toPoint:MagicRenderPoint = AnyPoint(value) merge
+                                  StringPoint(id.toString, headers=Seq("nodeId")) merge
+                                  StringPoint(color, headers=Seq("color")) merge
+                                  AnyPoint(r, Some("r")) merge
+                                  AnyPoint(xy.map(_._1).getOrElse(scala.util.Random.nextDouble), Some("x")) merge
+                                  AnyPoint(xy.map(_._2).getOrElse(scala.util.Random.nextDouble), Some("y")) merge
+                                  AnyPoint(fixed, Some("fixed"))
 }
 case class Edge[I](id:I, ends:(I, I), value:Any, color:String="#999") extends Graph[I] {
   def toPoint:MagicRenderPoint = AnyPoint(value) merge
@@ -126,7 +132,7 @@ object Implicits extends ExtraMagicImplicits {
           case _:Row   => x.map(i => SqlRowPoint(i.asInstanceOf[Row]))
           case _:String   => x.map(i => StringPoint(i.asInstanceOf[String]))
           case _:Graph[_] => x.map(_.asInstanceOf[Graph[_]].toPoint)
-          case _          => x map AnyPoint
+          case _          => x map (x => AnyPoint(x))
         }
 
         val encoded = if (x.head.isInstanceOf[Graph[_]]) {
