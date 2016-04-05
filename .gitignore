@@ -9,6 +9,7 @@
 .akka-cookie
 .main.build.conf
 .docker.build.conf
+.debian.build.conf
 project/target/
 target/
 logs/
