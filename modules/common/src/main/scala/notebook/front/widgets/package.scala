@@ -17,6 +17,11 @@ import widgets.Defaults.DEFAULT_MAX_POINTS
  * This package contains primitive widgets that can be used in the child environment.
  */
 package object widgets {
+
+  type RenderableItems = Seq[MagicRenderPoint]
+
+  type JsRenderableItem = Seq[(String, Any)] // e.g. for a sql Row it is Seq[(column => value)]
+
   object Defaults {
     val DEFAULT_MAX_POINTS = 1000
   }
@@ -322,27 +327,27 @@ package object widgets {
     }
   }
 
-  abstract class OriginalDataToSeqConversions[C: ToPoints : Sampler](originalData: C, maxPoints: Int)
-    extends JsWorld[Seq[(String, Any)], Seq[(String, Any)]] {
+  abstract class DataToRenderableConverter[C: ToPoints : Sampler](originalData: C, maxPoints: Int)
+    extends JsWorld[JsRenderableItem, JsRenderableItem] {
     // conversion from any renderable format (List, Array, DataFrame),
     // into a generic Seq of items (Seq[MagicRenderPoint])
     def sampler = implicitly[Sampler[C]]
     def toPoints = implicitly[ToPoints[C]]
-    lazy val initialItems: Seq[MagicRenderPoint] = toPoints(originalData, maxPoints)
+    lazy val initialItems: RenderableItems = toPoints(originalData, maxPoints)
 
     // conversion into data format passed into javascript widgets (via observable)
-    def mToSeq(t:MagicRenderPoint):Seq[(String, Any)]
-    def computeData(pts:Seq[MagicRenderPoint]) = pts.map(mToSeq)
+    def mToSeq(t:MagicRenderPoint): JsRenderableItem
+    def computeData(pts: RenderableItems) = pts.map(mToSeq)
 
     // initial items to be displayed in JS (and later saved in notebook)
-    lazy val data: Seq[Seq[(String, Any)]] = computeData(initialItems)
+    lazy val data: Seq[JsRenderableItem] = computeData(initialItems)
 
     lazy val headers = toPoints.headers(originalData)
     lazy val numOfFields = headers.size
   }
 
   abstract class Chart[C:ToPoints:Sampler](originalData: C, maxPoints: Int)
-    extends OriginalDataToSeqConversions[C](originalData, maxPoints)
+    extends DataToRenderableConverter[C](originalData, maxPoints)
     with JsWorld[Seq[(String, Any)], Seq[(String, Any)]] {
     import notebook.JSBus._
 
