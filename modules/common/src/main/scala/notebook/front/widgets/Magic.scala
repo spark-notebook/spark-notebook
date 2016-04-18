@@ -149,11 +149,23 @@ object Implicits extends ExtraMagicImplicits {
     def append(x:Seq[T], y:Seq[T]) = x ++ y
     def mkString(x:Seq[T], sep:String="") = x.mkString(sep)
   }
+  implicit def ListToPoints[T] = new ToPoints[List[T]] {
+    def apply(x:List[T], max:Int)(implicit sampler:Sampler[List[T]]):Seq[MagicRenderPoint] = SeqToPoints(sampler(x,max), max)
+    def count(x:List[T]) = x.size.toLong
+    def append(x:List[T], y:List[T]) = x ::: y
+    def mkString(x:List[T], sep:String="") = x.mkString(sep)
+  }
   implicit def ArrayToPoints[T:scala.reflect.ClassTag] = new ToPoints[Array[T]] {
     def apply(x:Array[T], max:Int)(implicit sampler:Sampler[Array[T]]):Seq[MagicRenderPoint] = SeqToPoints(sampler(x,max).toSeq, max)
     def count(x:Array[T]) = x.size.toLong
-    def append(x:Array[T], y:Array[T]) = x ++ y
+    def append(x:Array[T], y:Array[T]) = (x ++ y).toArray
     def mkString(x:Array[T], sep:String="") = x.mkString(sep)
+  }
+  implicit def VectorToPoints[T:scala.reflect.ClassTag] = new ToPoints[Vector[T]] {
+    def apply(x:Vector[T], max:Int)(implicit sampler:Sampler[Vector[T]]):Seq[MagicRenderPoint] = SeqToPoints(sampler(x,max).toSeq, max)
+    def count(x:Vector[T]) = x.size.toLong
+    def append(x:Vector[T], y:Vector[T]) = (x ++ y)
+    def mkString(x:Vector[T], sep:String="") = x.mkString(sep)
   }
   implicit def MapToPoints[K,V] = new ToPoints[Map[K,V]] {
     def apply(x:Map[K,V], max:Int)(implicit sampler:Sampler[Map[K,V]]):Seq[MagicRenderPoint] = SeqToPoints(sampler(x,max).toSeq, max)//x.toSeq.map(e => MapPoint(e._1, e._2))
@@ -161,5 +173,4 @@ object Implicits extends ExtraMagicImplicits {
     def append(x:Map[K,V], y:Map[K,V]) = x ++ y
     def mkString(x:Map[K,V], sep:String="") = x.mkString(sep)
   }
-
 }

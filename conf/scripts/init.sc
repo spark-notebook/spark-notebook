@@ -4,6 +4,7 @@ import java.net.URI
 import notebook._
 import notebook.front._
 import notebook.front.widgets._
+import notebook.front.widgets.charts._
 import notebook.front.third.d3._
 import notebook.front.widgets.magic._
 import notebook.front.widgets.magic.Implicits._
