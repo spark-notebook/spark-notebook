@@ -119,7 +119,7 @@ abstract class Chart[C:ToPoints:Sampler](originalData: C, maxPoints: Int)
   override val content = Some {
     val container = <div>
       <span class="chart-total-item-count">{totalRowCount.toHtml} entries total</span>
-      <span class="chart-sampling-warning" style="color:red">{warnSamplingInUse.toHtml}</span>
+      <span class="chart-sampling-warning">{warnSamplingInUse.toHtml}</span>
       <div>
       </div>
     </div>
