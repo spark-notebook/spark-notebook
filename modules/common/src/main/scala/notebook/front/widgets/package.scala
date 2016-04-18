@@ -21,5 +21,4 @@ package object widgets
   with Lists
   with Layouts
   with charts.Charts {
-
 }

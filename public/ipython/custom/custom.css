@@ -70,6 +70,7 @@ This will always be an empty file in IPython
 
 /* generic (all charts) */
 span.chart-sampling-warning p, span.chart-total-item-count p { display: inline !important; }
+span.chart-sampling-warning p { color:red !important; }
 
 /* pivot chart */
 .pivot-controls-hidden .pvtVals, .pivot-controls-hidden .pvtRenderer, .pivot-controls-hidden .pvtAxisContainer {

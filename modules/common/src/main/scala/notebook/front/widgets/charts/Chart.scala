@@ -12,7 +12,7 @@ import notebook.front.widgets.magic._
 import notebook.front.widgets.magic.Implicits._
 import notebook.front.widgets.magic.SamplerImplicits._
 
-abstract class OriginalDataToSeqConversions[C: ToPoints : Sampler](originalData: C, maxPoints: Int)
+abstract class DataToRenderableConverter[C: ToPoints : Sampler](originalData: C, maxPoints: Int)
   extends JsWorld[Seq[(String, Any)], Seq[(String, Any)]] {
   // conversion from any renderable format (List, Array, DataFrame),
   // into a generic Seq of items (Seq[MagicRenderPoint])
@@ -32,7 +32,7 @@ abstract class OriginalDataToSeqConversions[C: ToPoints : Sampler](originalData:
 }
 
 abstract class Chart[C:ToPoints:Sampler](originalData: C, maxPoints: Int)
-  extends OriginalDataToSeqConversions[C](originalData, maxPoints)
+  extends DataToRenderableConverter[C](originalData, maxPoints)
   with JsWorld[Seq[(String, Any)], Seq[(String, Any)]]
   with Texts
   with Utils {
@@ -70,8 +70,6 @@ abstract class Chart[C:ToPoints:Sampler](originalData: C, maxPoints: Int)
   // initialize sampling warning on Chart initialization
   val totalRowCount = outWithInitialValue(approxTotalItemCount)
   val warnSamplingInUse = outWithInitialValue(samplingWarningMsg)
-
-
 
   // ---- Helpers to mutate the chart reactively ----
   // ------------------------------------------------

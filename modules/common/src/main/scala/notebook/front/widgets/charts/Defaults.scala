@@ -61,28 +61,28 @@ case class Tabs[C:ToPoints:Sampler](originalData:C, pages:Seq[(String, Chart[C])
 case class ScatterChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C](originalData, maxPoints) with Sequencifiable[C] {
 
   override val scripts = List(Script( "magic/scatterChart",
-                                      Json.obj( "x" → f1.toString, "y" → f2.toString,
+                                      Json.obj( "x" → f1, "y" → f2,
                                                 "width" → sizes._1, "height" → sizes._2)))
 }
 
 case class LineChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C](originalData, maxPoints) with Sequencifiable[C] {
 
   override val scripts = List(Script( "magic/lineChart",
-                                      Json.obj( "x" → f1.toString, "y" → f2.toString,
+                                      Json.obj( "x" → f1, "y" → f2,
                                                 "width" → sizes._1, "height" → sizes._2)))
 }
 
 case class BarChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C](originalData, maxPoints) with Sequencifiable[C] {
 
   override val scripts = List(Script( "magic/barChart",
-                                      Json.obj( "x" → f1.toString, "y" → f2.toString,
+                                      Json.obj( "x" → f1, "y" → f2,
                                                 "width" → sizes._1, "height" → sizes._2)))
 }
 
 case class PieChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C](originalData, maxPoints) with Sequencifiable[C] {
 
   override val scripts = List(Script( "magic/pieChart",
-                                      Json.obj("series" → f1.toString, "p" → f2.toString,
+                                      Json.obj("series" → f1, "p" → f2,
                                                 "width" → sizes._1, "height" → sizes._2)))
 }
 

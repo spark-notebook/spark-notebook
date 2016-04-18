@@ -6,7 +6,7 @@ import notebook._
 import notebook.front._
 import notebook.JsonCodec._
 import notebook.front.widgets.magic
-import notebook.front.widgets.magic._
+import magic._
 
 trait Generic {
   def html(html: NodeSeq): Widget = new SimpleWidget(html)
