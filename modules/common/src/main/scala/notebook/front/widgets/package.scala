@@ -17,6 +17,11 @@ import widgets.Defaults.DEFAULT_MAX_POINTS
  * This package contains primitive widgets that can be used in the child environment.
  */
 package object widgets {
+
+  type RenderableItems = Seq[MagicRenderPoint]
+
+  type JsRenderableItem = Seq[(String, Any)] // e.g. for a sql Row it is Seq[(column => value)]
+
   object Defaults {
     val DEFAULT_MAX_POINTS = 1000
   }
@@ -111,7 +116,7 @@ package object widgets {
     }
   }
 
-  def out = new SingleConnectedWidget[String] {
+  def outWithInitialValue(initialValue: String) = new SingleConnectedWidget[String] {
     implicit val codec:Codec[JsValue, String] = formatToCodec(None)(Format.of[String])
 
     lazy val toHtml = <p data-bind="text: value">{
@@ -121,16 +126,36 @@ package object widgets {
             |['observable', 'knockout'],
             |function (O, ko) {
             |  ko.applyBindings({
-            |      value: O.makeObservable(valueId)
+            |      value: O.makeObservable(valueId, initialValue)
             |    },
             |    this
             |  );
             |});
         """.stripMargin,
-        Json.obj("valueId" -> dataConnection.id)
+        Json.obj("valueId" -> dataConnection.id,
+                 "initialValue" -> initialValue)
       )}</p>
   }
 
+  def out = new SingleConnectedWidget[String] {
+    implicit val codec:Codec[JsValue, String] = formatToCodec(None)(Format.of[String])
+
+    lazy val toHtml = <p data-bind="text: value">{
+      scopedScript(
+        """
+          |req(
+          |['observable', 'knockout'],
+          |function (O, ko) {
+          |  ko.applyBindings({
+          |      value: O.makeObservable(valueId)
+          |    },
+          |    this
+          |  );
+          |});
+        """.stripMargin,
+        Json.obj("valueId" -> dataConnection.id)
+      )}</p>
+  }
   import java.awt.image.BufferedImage
   import java.io.ByteArrayOutputStream
   import javax.imageio.ImageIO
@@ -260,16 +285,11 @@ package object widgets {
   case class Tabs[C:ToPoints:Sampler](originalData:C, pages:Seq[(String, Chart[C])]=Nil, maxPoints:Int = DEFAULT_MAX_POINTS) extends JsWorld[Seq[(String, Any)], Seq[(String, Any)]] {
     import notebook.JSBus._
 
-    def computePoints(max:Int = maxPoints) = implicitly[ToPoints[C]].apply(originalData, max)(implicitly[Sampler[C]])
-
-    lazy val points:Seq[MagicRenderPoint] = computePoints()
-
+    // tabs widget itself send no reactive data-sets to browser.
+    // for now, we send an empty dataset; it may be refactored further
     implicit val singleToO = identity[Seq[(String, Any)]] _
-
     implicit val singleCodec = jsStringAnyCodec
-
-    def computeData(pts:Seq[MagicRenderPoint] = points) = pts.map(_.data.toSeq)
-    override val data:Seq[Seq[(String, Any)]] = computeData()
+    override val data: Seq[Seq[(String, Any)]] = Seq()
 
     def newMax(max: Int) = pages foreach { case (_, w) => w.newMax(max) }
 
@@ -307,45 +327,75 @@ package object widgets {
     }
   }
 
-  abstract class Chart[C:ToPoints:Sampler] extends JsWorld[Seq[(String, Any)], Seq[(String, Any)]] {
-    import notebook.JSBus._
-
-    def originalData:C
-    def maxPoints:Int
-
+  abstract class DataToRenderableConverter[C: ToPoints : Sampler](originalData: C, maxPoints: Int)
+    extends JsWorld[JsRenderableItem, JsRenderableItem] {
+    // conversion from any renderable format (List, Array, DataFrame),
+    // into a generic Seq of items (Seq[MagicRenderPoint])
     def sampler = implicitly[Sampler[C]]
-
     def toPoints = implicitly[ToPoints[C]]
-    lazy val points:Seq[MagicRenderPoint] = toPoints(originalData, maxPoints)
+    lazy val initialItems: RenderableItems = toPoints(originalData, maxPoints)
 
-    def mToSeq(t:MagicRenderPoint):Seq[(String, Any)]
-    def computeData(pts:Seq[MagicRenderPoint] = points) = pts.map(mToSeq)
-    lazy val data:Seq[Seq[(String, Any)]] = computeData(points)
+    // conversion into data format passed into javascript widgets (via observable)
+    def mToSeq(t:MagicRenderPoint): JsRenderableItem
+    def computeData(pts: RenderableItems) = pts.map(mToSeq)
+
+    // initial items to be displayed in JS (and later saved in notebook)
+    lazy val data: Seq[JsRenderableItem] = computeData(initialItems)
+
+    lazy val headers = toPoints.headers(originalData)
+    lazy val numOfFields = headers.size
+  }
+
+  abstract class Chart[C:ToPoints:Sampler](originalData: C, maxPoints: Int)
+    extends DataToRenderableConverter[C](originalData, maxPoints)
+    with JsWorld[Seq[(String, Any)], Seq[(String, Any)]] {
+    import notebook.JSBus._
 
     def sizes:(Int, Int)=(600, 400)
 
-    lazy val nrow = out
-    lazy val warnMax = out
-
     @volatile var currentC = originalData
-    @volatile var currentPoints = points
+    @volatile var currentPoints = initialItems
     @volatile var currentMax = maxPoints
 
-    def samplingWarning(maxEntriesLimit: Int): String = {
-      if (currentMax >= toPoints.count(currentC)) {
-        ""
-      } else {
-        sampler.samplingStrategy match {
-          case magic.LimitBasedSampling() => " (Warning: showing first "+currentMax + " rows)"
-          case _ => " (Warning: randomly sampled "+currentMax + " entries)"
-        }
+    def approxTotalItemCount(): String = {
+      sampler.samplingStrategy match {
+        // on DataFrames, do not call df.count() as it's rather expensive
+        case magic.LimitBasedSampling() =>
+          val sampledCount = currentPoints.length
+          if (currentMax > sampledCount) s"$sampledCount" else s"$sampledCount or more"
+        case _ => s"${toPoints.count(currentC)}"
       }
+    }
+
+    def samplingWarningMsg(): String = {
+      sampler.samplingStrategy match {
+          case magic.LimitBasedSampling() =>
+            if (currentMax > currentPoints.length) ""
+            else " (Warning: showing only first " + currentMax + " rows)"
+
+          case _ if currentMax <= toPoints.count(currentC) =>
+            " (Warning: randomly sampled "+currentMax + " entries)"
+
+          case _ => ""
+      }
+    }
+
+    // initialize sampling warning on Chart initialization
+    val totalRowCount = outWithInitialValue(approxTotalItemCount)
+    val warnSamplingInUse = outWithInitialValue(samplingWarningMsg)
+
+
+
+    // ---- Helpers to mutate the chart reactively ----
+    // ------------------------------------------------
+    def updateChartStatus() = {
+      warnSamplingInUse(samplingWarningMsg)
+      totalRowCount(approxTotalItemCount)
     }
 
     def newMax(max:Int) = {
       //update state
       currentMax = max
-      warnMax(samplingWarning(currentMax))
       applyOn(currentC)
     }
 
@@ -353,14 +403,14 @@ package object widgets {
       currentC = newData
       currentPoints = toPoints(newData, currentMax)
       val d = currentPoints map mToSeq
-      nrow(toPoints.count(currentC)+ " entries")
+      updateChartStatus()
       this.apply(d)
       d
     }
 
     //val log = org.slf4j.LoggerFactory.getLogger("Chart")
     private[this] var first = true
-    def addAndApply(otherData:C, resetInit:Boolean=false) =
+    def addAndApply(otherData:C, resetInit:Boolean=false) = {
       if (resetInit && first) {
         first = false
         applyOn(otherData)
@@ -368,24 +418,23 @@ package object widgets {
         apply {
           currentC = toPoints.append(currentC, otherData)
           currentPoints = toPoints(currentC, currentMax)
-          nrow(toPoints.count(currentC)+ " entries")
-          val d =  currentPoints map mToSeq
+          updateChartStatus()
+          val d = currentPoints map mToSeq
           this.apply(d)
           d
         }
       }
+    }
 
     override val singleCodec = jsStringAnyCodec
     override val singleToO = identity[Seq[(String, Any)]] _
-
-    lazy val headers = toPoints.headers(originalData)
-    lazy val numOfFields = headers.size
 
     val extendedContent:Option[scala.xml.Elem] = None
 
     override val content = Some {
       val container = <div>
-        {nrow.toHtml} <span style="color:red">{warnMax.toHtml}</span>
+        <span class="chart-total-item-count">{totalRowCount.toHtml} entries total</span>
+        <span class="chart-sampling-warning">{warnSamplingInUse.toHtml}</span>
         <div>
         </div>
       </div>
@@ -399,7 +448,7 @@ package object widgets {
     maxPoints:Int = DEFAULT_MAX_POINTS,
     derivedAttributes:JsObject=play.api.libs.json.Json.obj(),
     options: Map[String, String] = Map.empty
-  ) extends Chart[C] {
+  ) extends Chart[C](originalData, maxPoints) {
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
 
     protected def optionsJson = Json.obj(options.mapValues(Json.toJsFieldJsValueWrapper(_)).toSeq: _*)
@@ -416,33 +465,33 @@ package object widgets {
     val (f1, f2)  = self.fields.getOrElse((headers(0), headers(1)))
 
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
-      val stripedData = t.data.toSeq.filter{case (k, v) => !self.fields.isDefined || f1 == k || f2 == k }
+      val stripedData = t.data.toSeq.filter{case (k, v) => self.fields.isEmpty || f1 == k || f2 == k }
       stripedData
     }
   }
 
-  case class ScatterChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C] with Sequencifiable[C] {
+  case class ScatterChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C](originalData, maxPoints) with Sequencifiable[C] {
 
     override val scripts = List(Script( "magic/scatterChart",
                                         Json.obj( "x" → f1.toString, "y" → f2.toString,
                                                   "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class LineChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C] with Sequencifiable[C] {
+  case class LineChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C](originalData, maxPoints) with Sequencifiable[C] {
 
     override val scripts = List(Script( "magic/lineChart",
                                         Json.obj( "x" → f1.toString, "y" → f2.toString,
                                                   "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class BarChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C] with Sequencifiable[C] {
+  case class BarChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C](originalData, maxPoints) with Sequencifiable[C] {
 
     override val scripts = List(Script( "magic/barChart",
                                         Json.obj( "x" → f1.toString, "y" → f2.toString,
                                                   "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class PieChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C] with Sequencifiable[C] {
+  case class PieChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C](originalData, maxPoints) with Sequencifiable[C] {
 
     override val scripts = List(Script( "magic/pieChart",
                                         Json.obj("series" → f1.toString, "p" → f2.toString,
@@ -455,7 +504,7 @@ package object widgets {
     maxPoints:Int = DEFAULT_MAX_POINTS,
     latLonFields:Option[(String, String)]=None,
     rField:Option[String]=None,
-    colorField:Option[String]=None) extends Chart[C] {
+    colorField:Option[String]=None) extends Chart[C](originalData, maxPoints) {
 
     val latLong = latLonFields.getOrElse((headers(0), headers(1)))
 
@@ -489,7 +538,7 @@ package object widgets {
     geometryField:Option[String]=None,
     rField:Option[String]=None,
     colorField:Option[String]=None,
-    fillColorField:Option[String]=None) extends Chart[C] {
+    fillColorField:Option[String]=None) extends Chart[C](originalData, maxPoints) {
 
     val geometry = geometryField.getOrElse(headers(0))
 
@@ -525,7 +574,7 @@ package object widgets {
     }
   }
 
-  case class GraphChart[C:ToPoints:Sampler](originalData:C, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS, charge:Int= -30, linkDistance:Int=20, linkStrength:Double=1.0) extends Chart[C] {
+  case class GraphChart[C:ToPoints:Sampler](originalData:C, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS, charge:Int= -30, linkDistance:Int=20, linkStrength:Double=1.0) extends Chart[C](originalData, maxPoints) {
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
 
 
@@ -536,7 +585,7 @@ package object widgets {
     override val scripts = List(Script("magic/graphChart", opts))
   }
 
-  case class DiyChart[C:ToPoints:Sampler](originalData:C, js:String = "function(data, headers, chart) { console.log({'data': data, 'headers': headers, 'chart': chart}); }", override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C] {
+  case class DiyChart[C:ToPoints:Sampler](originalData:C, js:String = "function(data, headers, chart) { console.log({'data': data, 'headers': headers, 'chart': chart}); }", override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C](originalData, maxPoints) {
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
 
     override val scripts = List(Script( "magic/diyChart",
@@ -544,7 +593,7 @@ package object widgets {
                                                   "width" → sizes._1, "height" → sizes._2)))
   }
 
-  case class CustomC3Chart[C:ToPoints:Sampler](originalData:C, chartOptions :String = "{}", override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C] {
+  case class CustomC3Chart[C:ToPoints:Sampler](originalData:C, chartOptions :String = "{}", override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C](originalData, maxPoints) {
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
 
     override val scripts = List(Script( "magic/customC3Chart",
@@ -554,7 +603,7 @@ package object widgets {
         "height" → sizes._2)))
   }
 
-  case class CustomTauChart[C:ToPoints:Sampler](originalData:C, chartOptions :String = "{}", override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C] {
+  case class CustomTauChart[C:ToPoints:Sampler](originalData:C, chartOptions :String = "{}", override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C](originalData, maxPoints) {
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
 
     override val scripts = List(Script( "magic/customTauChart",
@@ -564,7 +613,7 @@ package object widgets {
                                           "height" → sizes._2)))
   }
 
-  case class TableChart[C:ToPoints:Sampler](originalData:C, filterCol:Option[Seq[String]]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C] {
+  case class TableChart[C:ToPoints:Sampler](originalData:C, filterCol:Option[Seq[String]]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C](originalData, maxPoints) {
     def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
       t.data.toSeq.filter{case (k, v) => filterCol.getOrElse(headers).contains(k)}
     }
@@ -617,36 +666,52 @@ package object widgets {
 
   def display[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, maxPoints:Int=DEFAULT_MAX_POINTS):Widget = {
     val dataConverter = implicitly[ToPoints[C]]
-    val data:Seq[MagicRenderPoint] = dataConverter.apply(originalData, maxPoints)
+    val initialDataToDisplay: Seq[MagicRenderPoint] = dataConverter(originalData, maxPoints)
 
-    val tbl = Some("table" → TableChart(originalData, maxPoints=maxPoints))
+    var allTabs: Seq[(String, Chart[C])] = Seq()
 
-    // used only if dataset is non empty
-    val twoFieldCharts = {
-      data.headOption match {
-        case None => Nil
-        case Some(firstElem) =>
-          val members = firstElem.values
-          val dataMap = firstElem.data
-          val numOfFields = firstElem.numOfFields
-
-          if (numOfFields == 2 || fields.isDefined) {
-            val (f1, f2)  = fields.map{ case (f1, f2) => (dataMap(f1), dataMap(f2)) }
-              .getOrElse((members(0), members(1)))
-
-            val scatter:Option[(String, Chart[C])] = if (isNumber(f1) && isNumber(f2)) { Some("dot-circle-o" → ScatterChart(originalData, fields,maxPoints=maxPoints)) } else None
-            val line:Option[(String, Chart[C])]    = if (isNumber(f1) && isNumber(f2)) { Some("line-chart" → LineChart(originalData, fields,maxPoints=maxPoints)) } else None
-            val bar :Option[(String, Chart[C])]    = if (isNumber(f2)) { Some("bar-chart" → BarChart(originalData, fields,maxPoints=maxPoints)) } else None
-            val pie :Option[(String, Chart[C])]    = if (!isNumber(f1)) { Some("pie-chart" → PieChart(originalData, fields,maxPoints=maxPoints)) } else None
-
-            scatter :: line :: bar :: pie :: Nil
-          } else Nil
-      }
+    allTabs :+= "table" → new TableChart(originalData, maxPoints=maxPoints) {
+      override lazy val initialItems = initialDataToDisplay
     }
 
-    val pivot = Some("cubes" → PivotChart(originalData, maxPoints=maxPoints))
+    // two field charts used only if dataset is non empty
+    initialDataToDisplay.headOption match {
+      case None => Nil
+      case Some(firstElem) =>
+        val members = firstElem.values
+        val dataMap = firstElem.data
+        val numOfFields = firstElem.numOfFields
 
-    val allTabs = (tbl :: twoFieldCharts ::: pivot :: Nil).collect { case Some(t) => t }
+        if (numOfFields == 2 || fields.isDefined) {
+          val (f1, f2) = fields.map { case (f1, f2) => (dataMap(f1), dataMap(f2)) }
+            .getOrElse((members(0), members(1)))
+
+          if (isNumber(f1) && isNumber(f2)) {
+            allTabs ++= Seq(
+              "dot-circle-o" → new ScatterChart(originalData, fields, maxPoints = maxPoints) {
+                override lazy val initialItems = initialDataToDisplay
+              },
+              "line-chart" → new LineChart(originalData, fields, maxPoints = maxPoints) {
+                override lazy val initialItems = initialDataToDisplay
+              })
+          }
+          if (isNumber(f2)) {
+            allTabs :+= "bar-chart" → new BarChart(originalData, fields, maxPoints = maxPoints) {
+              override lazy val initialItems = initialDataToDisplay
+            }
+          }
+
+          if (!isNumber(f1)) {
+            allTabs :+= "pie-chart" → new PieChart(originalData, fields, maxPoints = maxPoints) {
+              override lazy val initialItems = initialDataToDisplay
+            }
+          }
+        }
+    }
+
+    allTabs :+= "cubes" → new PivotChart(originalData, maxPoints=maxPoints) {
+      override lazy val initialItems = initialDataToDisplay
+    }
     tabs(originalData, allTabs)
   }
 

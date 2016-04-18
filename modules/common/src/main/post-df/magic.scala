@@ -15,7 +15,7 @@ trait ExtraSamplerImplicits {
     override def samplingStrategy = new LimitBasedSampling()
 
     def apply(df: DataFrame, max: Int): DataFrame = {
-      df.limit(max).cache()
+      df.limit(max)
     }
   }
 }
@@ -41,6 +41,7 @@ trait ExtraMagicImplicits {
       } else Nil
     }
     override def headers(df: DataFrame)(implicit sampler:Sampler[DataFrame]) = df.columns
+    //  most widgets try not to call this, as it's quite expensive operation
     def count(x:DataFrame) = x.count()
     def append(x:DataFrame, y:DataFrame) = x unionAll y
     def mkString(x:DataFrame, sep:String=""):String = x.rdd.toDebugString
