@@ -30,6 +30,8 @@ import uk.gov.hmrc.gitstamp.GitStampPlugin._
 
 import com.typesafe.sbt.SbtNativePackager.autoImport.NativePackagerHelper._
 
+import com.typesafe.sbt.packager.archetypes.ServerLoader.{SystemV, Upstart, Systemd}
+
 import com.typesafe.sbt.packager.docker._
 
 dockerBaseImage := DockerProperties.baseImage
@@ -43,6 +45,28 @@ dockerExposedPorts ++= DockerProperties.ports
 dockerRepository := DockerProperties.registry //Docker
 
 packageName in Docker := "spark-notebook"
+
+
+// DEBIAN PACKAGE
+enablePlugins(DebianPlugin)
+
+name in Debian := MainProperties.name
+
+maintainer in Debian := DebianProperties.maintainer
+
+packageSummary in Debian := "Data Fellas Spark-notebook"
+
+packageDescription := "Interactive and Reactive Data Science using Scala and Spark. http://spark-notebook.io/"
+
+debianPackageDependencies in Debian += "java7-runtime"
+
+serverLoading in Debian := DebianProperties.serverLoading
+
+daemonUser := MainProperties.name
+
+daemonGroup := (daemonUser in Debian).value
+
+version := sys.props.get("deb-version").getOrElse(version.value)
 
 ivyScala := ivyScala.value map {
   _.copy(overrideScalaVersion = true)
@@ -140,7 +164,6 @@ dependencyOverrides += log4j
 
 dependencyOverrides += guava
 
-enablePlugins(DebianPlugin)
 
 sharedSettings
 
