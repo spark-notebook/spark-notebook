@@ -9,6 +9,7 @@ import notebook.kernel._
 import notebook.JobTracking
 import notebook.kernel.repl.common.ReplT
 import notebook.util.{CustomResolvers, Deps}
+import org.joda.time.LocalDateTime
 
 import sbt._
 
@@ -419,7 +420,8 @@ class ReplCalculator(
 
       result foreach {
         case (timeToEval, Success(result)) =>
-          thisSender ! ExecuteResponse(outputType, result.toString(), timeToEval)
+          val evalTimeStats = s"Took: $timeToEval, at ${new LocalDateTime().toString("Y-M-d H:m")}"
+          thisSender ! ExecuteResponse(outputType, result.toString(), evalTimeStats)
         case (timeToEval, Failure(stackTrace)) =>
           thisSender ! ErrorResponse(stackTrace, incomplete = false)
         case (timeToEval, notebook.kernel.Incomplete) =>
