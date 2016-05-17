@@ -58,25 +58,61 @@ case class Tabs[C:ToPoints:Sampler](originalData:C, pages:Seq[(String, Chart[C])
   }
 }
 
-case class ScatterChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C](originalData, maxPoints) with Sequencifiable[C] {
+case class ScatterChart[C:ToPoints:Sampler](
+    originalData:C,
+    fields:Option[(String, String)]=None,
+    override val sizes:(Int, Int)=(600, 400),
+    maxPoints:Int = DEFAULT_MAX_POINTS,
+    groupField: Option[String]=None
+  ) extends Chart[C](originalData, maxPoints) with Sequencifiable[C] {
 
-  override val scripts = List(Script( "magic/scatterChart",
-                                      Json.obj( "x" → f1, "y" → f2,
-                                                "width" → sizes._1, "height" → sizes._2)))
+  val o = Json.obj( "x" → f1, "y" → f2, "width" → sizes._1, "height" → sizes._2) ++
+            groupField.map(g => Json.obj("g" → g)).getOrElse(Json.obj())
+
+  override val scripts = List(Script( "magic/scatterChart", o))
 }
 
-case class LineChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C](originalData, maxPoints) with Sequencifiable[C] {
+case class LineChart[C:ToPoints:Sampler](
+    originalData:C,
+    fields:Option[(String, String)]=None,
+    override val sizes:(Int, Int)=(600, 400),
+    maxPoints:Int = DEFAULT_MAX_POINTS,
+    groupField: Option[String]=None
+  ) extends Chart[C](originalData, maxPoints) with Sequencifiable[C] {
 
-  override val scripts = List(Script( "magic/lineChart",
-                                      Json.obj( "x" → f1, "y" → f2,
-                                                "width" → sizes._1, "height" → sizes._2)))
+  val o = Json.obj( "x" → f1, "y" → f2, "width" → sizes._1, "height" → sizes._2) ++
+            groupField.map(g => Json.obj("g" → g)).getOrElse(Json.obj())
+
+  override val scripts = List(Script( "magic/lineChart", o))
 }
 
-case class BarChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C](originalData, maxPoints) with Sequencifiable[C] {
+case class TimeseriesChart[C:ToPoints:Sampler](
+    originalData:C,
+    fields:Option[(String, String)]=None,
+    override val sizes:(Int, Int)=(600, 400),
+    maxPoints:Int = DEFAULT_MAX_POINTS,
+    groupField: Option[String]=None,
+    tickFormat:String = "%Y-%m-%d %H:%M:%S"
+  ) extends Chart[C](originalData, maxPoints) with Sequencifiable[C] {
 
-  override val scripts = List(Script( "magic/barChart",
-                                      Json.obj( "x" → f1, "y" → f2,
-                                                "width" → sizes._1, "height" → sizes._2)))
+  val o = Json.obj( "x" → f1, "y" → f2, "width" → sizes._1, "height" → sizes._2, "tickFormat" → tickFormat) ++
+            groupField.map(g => Json.obj("g" → g)).getOrElse(Json.obj())
+
+  override val scripts = List(Script( "magic/tsChart", o))
+}
+
+case class BarChart[C:ToPoints:Sampler](
+    originalData:C,
+    fields:Option[(String, String)]=None,
+    override val sizes:(Int, Int)=(600, 400),
+    maxPoints:Int = DEFAULT_MAX_POINTS,
+    groupField: Option[String]=None
+  ) extends Chart[C](originalData, maxPoints) with Sequencifiable[C] {
+
+  val o = Json.obj( "x" → f1, "y" → f2, "width" → sizes._1, "height" → sizes._2) ++
+            groupField.map(g => Json.obj("g" → g)).getOrElse(Json.obj())
+
+  override val scripts = List(Script( "magic/barChart", o))
 }
 
 case class PieChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C](originalData, maxPoints) with Sequencifiable[C] {
