@@ -4,6 +4,9 @@ import notebook.util.Reflector
 import notebook.front.widgets.isNumber
 import org.apache.spark.sql.{Row}
 
+import java.util.Date
+import java.sql.{Date => SqlDate}
+
 import com.vividsolutions.jts.geom.Geometry
 import org.wololo.geojson.GeoJSON
 
@@ -33,6 +36,8 @@ case class AnyPoint(any:Any, header:Option[String]=None) extends MagicRenderPoin
       case v: BigDecimal  => Seq(header.getOrElse("BigDecimal"))
       case v: String      => Seq(header.getOrElse("String"))
       case v: Boolean     => Seq(header.getOrElse("Boolean"))
+      case v: Date        => Seq(header.getOrElse("Date"))
+      case v: SqlDate     => Seq(header.getOrElse("Date"))
       case v: Geometry    => Seq(header.getOrElse("Geometry"))
       case v: GeoJSON     => Seq(header.getOrElse("GeoJSON"))
       case v: Any         => Reflector.toFieldNameArray(any)
@@ -44,6 +49,8 @@ case class AnyPoint(any:Any, header:Option[String]=None) extends MagicRenderPoin
       case v: Double      => Seq(v)
       case v: Long        => Seq(v)
       case v: BigDecimal  => Seq(v)
+      case v: Date        => Seq(v.getTime)
+      case v: SqlDate     => Seq(v.getTime)
       case v: String      => Seq(v)
       case v: Boolean     => Seq(v)
       case v: Geometry    => Seq(v)

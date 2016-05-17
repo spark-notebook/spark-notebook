@@ -11,6 +11,7 @@ import notebook.front.widgets.magic.SamplerImplicits._
 
 import notebook.util.Reflector
 import java.util.Date
+import java.sql.{Date=>SqlDate}
 
 import com.vividsolutions.jts.geom.Geometry
 import org.wololo.geojson.GeoJSON
@@ -43,26 +44,28 @@ trait Utils {
 
   def toJson(obj: Any): JsValue = {
     obj match {
-      case null => JsNull
-      case v: Int => JsNumber(v)
-      case v: Float => JsNumber(v)
-      case v: Double => JsNumber(v)
-      case v: Long => JsNumber(v)
-      case v: BigDecimal => JsNumber(v)
-      case v: String => JsString(v)
-      case v: Boolean => JsBoolean(v)
-      case v: Geometry =>
+      case null             => JsNull
+      case v: Int           => JsNumber(v)
+      case v: Float         => JsNumber(v)
+      case v: Double        => JsNumber(v)
+      case v: Long          => JsNumber(v)
+      case v: BigDecimal    => JsNumber(v)
+      case v: String        => JsString(v)
+      case v: Boolean       => JsBoolean(v)
+      case v: Date          => JsNumber(v.getTime)
+      case v: SqlDate       => JsNumber(v.getTime)
+      case v: Geometry      =>
         val json  = geometryToGeoJSON(v)
         val jsonstring = json.toString()
         Json.parse(jsonstring)
-      case v: GeoJSON =>
+      case v: GeoJSON       =>
         Json.parse(v.toString())
-      case v: Iterable[_] =>
+      case v: Iterable[_]   =>
         val it = v.map(x => toJson(x))
         JsArray(it.toSeq)
-      case v:Tuple2[_,_] =>
+      case v:Tuple2[_,_]    =>
         JsObject(Seq(("_1" → toJson(v._1)), ("_2" → toJson(v._2))))
-      case v:Tuple3[_,_,_] =>
+      case v:Tuple3[_,_,_]  =>
         JsObject(Seq(("_1" → toJson(v._1)), ("_2" → toJson(v._2)), ("_3" → toJson(v._3))))
       case v =>
         JsString(v.toString)
@@ -70,7 +73,7 @@ trait Utils {
   }
 
   def isNumber(obj: Any) = obj.isInstanceOf[Int] || obj.isInstanceOf[Float] || obj.isInstanceOf[Double] || obj.isInstanceOf[Long]
-  def isDate(obj: Any) = obj.isInstanceOf[Date]
+  def isDate(obj: Any) = obj.isInstanceOf[Date] || obj.isInstanceOf[SqlDate]
 
   def parseGeoJSON(s:String):GeoJSON = org.wololo.geojson.GeoJSONFactory.create(s)
   def geometryToGeoJSON(g:Geometry):GeoJSON = {

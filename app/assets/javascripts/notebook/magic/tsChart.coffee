@@ -12,7 +12,6 @@ define([
     chart_container.attr("id", "custom-c3-chart-"+@genId).appendTo(container)
 
     data = {
-      type: "line"
     }
 
     prepareData = (data, ds) ->
@@ -49,9 +48,9 @@ define([
       data: prepareData(data, @dataInit),
       axis: {
         x: {
-          label: options.x,
+          type: 'timeseries',
           tick: {
-              fit: false
+            format: options.tickFormat
           }
         },
         y: {
