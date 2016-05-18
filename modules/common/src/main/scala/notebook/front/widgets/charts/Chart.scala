@@ -129,10 +129,14 @@ abstract class Chart[C:ToPoints:Sampler](originalData: C, maxPoints: Int)
 
 trait Sequencifiable[C] { self: Chart[C] =>
   val fields: Option[(String, String)]
+  val groupField: Option[String]
+
   val (f1, f2)  = self.fields.getOrElse((headers(0), headers(1)))
 
   def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = {
-    val stripedData = t.data.toSeq.filter{case (k, v) => self.fields.isEmpty || f1 == k || f2 == k }
+    val stripedData = t.data.toSeq.filter{ case (k, v) =>
+                        (groupField.isDefined && groupField.get == k) || (self.fields.isEmpty || f1 == k || f2 == k)
+                      }
     stripedData
   }
 }

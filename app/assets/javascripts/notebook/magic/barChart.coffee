@@ -39,7 +39,7 @@ define([
         xs = {}
         xs[options.x] = options.x
         data.x = options.x
-        dataI = _.map(ds, (d) -> [d._1, d._2])
+        dataI = _.map(ds, (d) -> [d[options.x], d[options.y]])
         dataI.unshift([options.x, options.y])
         data.rows = dataI
       data
@@ -50,6 +50,7 @@ define([
       axis: {
         x: {
           label: options.x,
+          type: 'category'
           tick: {
               fit: false
           }

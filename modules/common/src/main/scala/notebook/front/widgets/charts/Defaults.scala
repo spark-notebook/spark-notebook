@@ -86,6 +86,24 @@ case class LineChart[C:ToPoints:Sampler](
   override val scripts = List(Script( "magic/lineChart", o))
 }
 
+case class RadarChart[C:ToPoints:Sampler](
+    originalData:C,
+    labelField:Option[String]=None,
+    override val sizes:(Int, Int)=(600, 400),
+    maxPoints:Int = DEFAULT_MAX_POINTS
+  ) extends Chart[C](originalData, maxPoints) {
+
+  val label  = labelField.getOrElse(headers(0))
+  val valuesCol = headers.filterNot(_ == label)
+
+  def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
+
+  override val scripts = List(Script( "magic/radarChart",
+                                      Json.obj( "classCol" → label,
+                                                "axisCols" → valuesCol,
+                                                "width" → sizes._1, "height" → sizes._2)))
+}
+
 case class TimeseriesChart[C:ToPoints:Sampler](
     originalData:C,
     fields:Option[(String, String)]=None,
@@ -116,7 +134,7 @@ case class BarChart[C:ToPoints:Sampler](
 }
 
 case class PieChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, String)]=None, override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C](originalData, maxPoints) with Sequencifiable[C] {
-
+  val groupField = None
   override val scripts = List(Script( "magic/pieChart",
                                       Json.obj("series" → f1, "p" → f2,
                                                 "width" → sizes._1, "height" → sizes._2)))
