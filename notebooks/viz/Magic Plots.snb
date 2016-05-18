@@ -38,7 +38,7 @@
       "input_collapsed" : false,
       "collapsed" : false,
       "presentation" : {
-        "tabs_state" : "{\n  \"tab_id\": \"#tab1778187715-0\"\n}",
+        "tabs_state" : "{\n  \"tab_id\": \"#tab1076163454-0\"\n}",
         "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [\n    \"_2\"\n  ],\n  \"rows\": [\n    \"_1\"\n  ],\n  \"vals\": [\n    \"_1\"\n  ],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count Unique Values\",\n  \"rendererName\": \"Table\"\n}"
       },
       "id" : "1E7A35EE8C394A1D8B40AC436F44000F"
@@ -58,7 +58,7 @@
       "input_collapsed" : false,
       "collapsed" : false,
       "presentation" : {
-        "tabs_state" : "{\n  \"tab_id\": \"#tab1106755541-0\"\n}",
+        "tabs_state" : "{\n  \"tab_id\": \"#tab818117191-0\"\n}",
         "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [],\n  \"rows\": [],\n  \"vals\": [],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count\",\n  \"rendererName\": \"Table\"\n}"
       },
       "id" : "D6886C716031470284074CDBA9D996E9"
@@ -78,7 +78,7 @@
       "input_collapsed" : false,
       "collapsed" : false,
       "presentation" : {
-        "tabs_state" : "{\n  \"tab_id\": \"#tab366303203-1\"\n}",
+        "tabs_state" : "{\n  \"tab_id\": \"#tab322693107-0\"\n}",
         "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [],\n  \"rows\": [],\n  \"vals\": [],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count\",\n  \"rendererName\": \"Table\"\n}"
       },
       "id" : "ABF5FEBF869A4E348412CF1CEBF9AA41"
@@ -96,15 +96,25 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false,
+      "collapsed" : true,
       "presentation" : {
-        "tabs_state" : "{\n  \"tab_id\": \"#tab331269607-0\"\n}",
+        "tabs_state" : "{\n  \"tab_id\": \"#tab1508885852-0\"\n}",
         "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [],\n  \"rows\": [],\n  \"vals\": [],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count\",\n  \"rendererName\": \"Table\"\n}"
       },
       "id" : "432629475CCA4921863E1EC776225804"
     },
     "cell_type" : "code",
-    "source" : "List((1,2,3), (4,5,6))",
+    "source" : "val tp = List((nextInt(50),nextInt(50),nextInt(50)), (nextInt(50),nextInt(50),nextInt(50)), (nextInt(50),nextInt(50),nextInt(50)))\ntp",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "59476583B23242E78C6A14D07FA2528E"
+    },
+    "cell_type" : "code",
+    "source" : "ParallelCoordChart(tp)",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -134,7 +144,7 @@
       "input_collapsed" : false,
       "collapsed" : false,
       "presentation" : {
-        "tabs_state" : "{\n  \"tab_id\": \"#tab1216648791-0\"\n}",
+        "tabs_state" : "{\n  \"tab_id\": \"#tab799611457-0\"\n}",
         "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [],\n  \"rows\": [],\n  \"vals\": [],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count\",\n  \"rendererName\": \"Table\"\n}"
       },
       "id" : "DCFE3F7A97AB40838199768D0245AE83"
@@ -174,7 +184,7 @@
       "input_collapsed" : false,
       "collapsed" : false,
       "presentation" : {
-        "tabs_state" : "{\n  \"tab_id\": \"#tab1060769433-1\"\n}",
+        "tabs_state" : "{\n  \"tab_id\": \"#tab1614947154-0\"\n}",
         "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [],\n  \"rows\": [],\n  \"vals\": [],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count\",\n  \"rendererName\": \"Table\"\n}"
       },
       "id" : "8E63CE46673B4FBE8556F93B64E54105"
@@ -210,6 +220,42 @@
     "outputs" : [ ]
   }, {
     "metadata" : {
+      "id" : "95C0F8835CD04C4581F65B6FD570354B"
+    },
+    "cell_type" : "markdown",
+    "source" : "## Parallel Coordinate"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "FE2B8F7812BF415880DDA93B526AF7A6"
+    },
+    "cell_type" : "code",
+    "source" : "case class Multi(v:Int, w:Int, x:Int, y:Int, z:Int)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "24815A24143C4B359177F0E59F3CA348"
+    },
+    "cell_type" : "code",
+    "source" : "val dataT = List.fill(50)(Multi(nextInt(5), nextInt(11), nextInt(16), nextInt(25), nextInt(2)))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "52AD77E2655D4B08A25C053BD12F9F97"
+    },
+    "cell_type" : "code",
+    "source" : "ParallelCoordChart(dataT)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
       "id" : "DE80BD2CED8741FF887B6220F9395F74"
     },
     "cell_type" : "markdown",
@@ -220,7 +266,7 @@
       "input_collapsed" : false,
       "collapsed" : false,
       "presentation" : {
-        "tabs_state" : "{\n  \"tab_id\": \"#tab501106980-0\"\n}",
+        "tabs_state" : "{\n  \"tab_id\": \"#tab1155098241-0\"\n}",
         "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [],\n  \"rows\": [],\n  \"vals\": [],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count\",\n  \"rendererName\": \"Table\"\n}"
       },
       "id" : "9C899709BFF94F2D84B535D63ECD5DAF"

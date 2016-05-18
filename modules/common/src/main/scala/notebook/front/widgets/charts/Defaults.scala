@@ -104,6 +104,21 @@ case class RadarChart[C:ToPoints:Sampler](
                                                 "width" → sizes._1, "height" → sizes._2)))
 }
 
+case class ParallelCoordChart[C:ToPoints:Sampler](
+    originalData:C,
+    override val sizes:(Int, Int)=(600, 400),
+    maxPoints:Int = DEFAULT_MAX_POINTS
+  ) extends Chart[C](originalData, maxPoints) {
+
+  def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
+
+  override val scripts = List(Script( "magic/pcChart",
+                                      Json.obj(
+                                        "headers" → headers,
+                                        "width" → sizes._1, "height" → sizes._2))
+                                      )
+}
+
 case class TimeseriesChart[C:ToPoints:Sampler](
     originalData:C,
     fields:Option[(String, String)]=None,
@@ -140,7 +155,13 @@ case class PieChart[C:ToPoints:Sampler](originalData:C, fields:Option[(String, S
                                                 "width" → sizes._1, "height" → sizes._2)))
 }
 
-case class DiyChart[C:ToPoints:Sampler](originalData:C, js:String = "function(data, headers, chart) { console.log({'data': data, 'headers': headers, 'chart': chart}); }", override val sizes:(Int, Int)=(600, 400), maxPoints:Int = DEFAULT_MAX_POINTS) extends Chart[C](originalData, maxPoints) {
+case class DiyChart[C:ToPoints:Sampler](
+  originalData:C,
+  js:String = "function(data, headers, chart) { console.log({'data': data, 'headers': headers, 'chart': chart}); }",
+  override val sizes:(Int, Int)=(600, 400),
+  maxPoints:Int = DEFAULT_MAX_POINTS
+) extends Chart[C](originalData, maxPoints) {
+
   def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
 
   override val scripts = List(Script( "magic/diyChart",
