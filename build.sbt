@@ -72,8 +72,9 @@ version := sys.props.get("deb-version").getOrElse(version.value)
 
 import DebianConstants._
 maintainerScripts in Debian := maintainerScriptsAppend((maintainerScripts in Debian).value)(
-  Postinst -> "chown -R " + MainProperties.name + ":" + MainProperties.name + " /usr/share/" + MainProperties.name + "/notebooks/"
+  Postinst -> s"chown -R ${MainProperties.name}:${MainProperties.name} /usr/share/${MainProperties.name}/notebooks/"
 )
+  // Postinst -> "chown -R " + MainProperties.name + ":" + MainProperties.name + " /usr/share/" + MainProperties.name + "/notebooks/" )
 
 
 //
