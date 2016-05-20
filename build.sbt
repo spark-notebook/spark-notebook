@@ -75,9 +75,6 @@ maintainerScripts in Debian := maintainerScriptsAppend((maintainerScripts in Deb
   Postinst -> s"chown -R ${MainProperties.name}:${MainProperties.name} /usr/share/${MainProperties.name}/notebooks/"
 )
 
-
-//
-
 ivyScala := ivyScala.value map {
   _.copy(overrideScalaVersion = true)
 }
