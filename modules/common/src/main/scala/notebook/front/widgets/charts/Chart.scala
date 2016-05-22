@@ -166,7 +166,7 @@ trait Charts extends Utils {
 
     val m = ds grouped headers.size
 
-    <table class="table" style="width: auto">
+    <table class="table" style="width: 100%">
     <thead>{
       <tr>{headers.map{ h =>
         <th>{h}</th>
