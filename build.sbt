@@ -68,6 +68,11 @@ daemonGroup := (daemonUser in Debian).value
 
 version := sys.props.get("deb-version").getOrElse(version.value)
 
+import DebianConstants._
+maintainerScripts in Debian := maintainerScriptsAppend((maintainerScripts in Debian).value)(
+  Postinst -> s"chown -R ${MainProperties.name}:${MainProperties.name} /usr/share/${MainProperties.name}/notebooks/"
+)
+
 ivyScala := ivyScala.value map {
   _.copy(overrideScalaVersion = true)
 }
