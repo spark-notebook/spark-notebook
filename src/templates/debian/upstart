@@ -17,5 +17,8 @@ end script
 
 # Start the process
 script
-    exec start-stop-daemon --start --chdir ${{chdir}} --chuid ${{daemon_user}} --exec bin/${{exec}} -- "-Dpidfile.path=/var/run/${{app_name}}/play.pid"
+    . /etc/default/${{app_name}}
+    export MESOS_NATIVE_LIBRARY
+    export SPARK_HOME
+    exec start-stop-daemon --start --chdir ${{chdir}} --chuid ${{daemon_user}} --exec bin/${{exec}} -- $JAVA_OPTS
 end script
