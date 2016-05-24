@@ -30,7 +30,8 @@ object NBSerializer {
     metadata: ExecuteResultMetadata,
     data: Map[String, String],
     output_type: String,
-    execution_count: Int
+    execution_count: Int,
+    time: Option[String]
   ) extends Output
 
   implicit val scalaExecuteResultFormat = Json.format[ScalaExecuteResult]

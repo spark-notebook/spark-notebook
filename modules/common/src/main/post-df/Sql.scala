@@ -1,15 +1,16 @@
 package notebook.front.widgets
 
-import notebook.JsonCodec._
-import notebook._
-import notebook.front._
-import org.apache.spark.sql.{DataFrame, SQLContext}
 import play.api.Logger
 import play.api.libs.json._
+import org.apache.spark.sql.{DataFrame, SQLContext}
+import notebook._
+import notebook.front._
+import notebook.JsonCodec._
+import notebook.front.widgets.Utils
 
 import scala.util._
 
-class Sql(sqlContext: SQLContext, call: String) extends Widget {
+class Sql(sqlContext: SQLContext, call: String) extends Widget with Utils {
 
   private[this] val sqlInputRegex = "(\\{[^\\}]+\\})".r
   private[this] val sqlTypedInputRegex = "^\\{([^:]+):(.*)\\}$".r

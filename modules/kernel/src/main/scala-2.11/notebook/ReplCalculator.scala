@@ -3,6 +3,8 @@ package client
 
 import java.io.{File, FileWriter}
 
+import org.joda.time.LocalDateTime
+
 import scala.collection.immutable.Queue
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -419,7 +421,8 @@ class ReplCalculator(
 
       result foreach {
         case (timeToEval, Success(result)) =>
-          thisSender ! ExecuteResponse(outputType, result.toString, timeToEval)
+          val evalTimeStats = s"Took: $timeToEval, at ${new LocalDateTime().toString("Y-M-d H:m")}"
+          thisSender ! ExecuteResponse(outputType, result.toString, evalTimeStats)
         case (timeToEval, Failure(stackTrace)) =>
           thisSender ! ErrorResponse(stackTrace, incomplete = false)
         case (timeToEval, notebook.kernel.Incomplete) =>

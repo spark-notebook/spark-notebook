@@ -132,7 +132,10 @@
                 <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">View</a>
                     <ul id="view_menu" class="dropdown-menu">
                         <li id="toggle-sidebar-menu-item">
-                            <a href="#" id="toggle-sidebar">Hide/unhide sidebar</a>
+                            <a href="#" id="toggle-sidebar">Toggle sidebar (error logs, status, etc)</a>
+                        </li>
+                        <li id="link-to-spark-ui" class="disabled">
+                            <a href="#" target="_blank">Open Spark UI</a>
                         </li>
                         <li class="divider"></li>
                         <li id="read_only_view">
@@ -332,13 +335,13 @@
 } {
   <div id="ipython-main-app">
       <div id="notebook_panel" class="container-fluid">
-          <div id="notebook" class="col-md-9"></div>
+          <div id="notebook" class="col-md-12"></div>
 
           <div id="notebook-panels" class="col-md-3" >
-            <div id="sidebar" class="gridster">
+            <div id="sidebar" class="gridster hidden">
                 <ul>
                     <li class="widget" data-row="1" data-col="1" data-sizex="2" data-sizey="1">
-                        <h4 id="spark-jobs">Spark Job Progress&nbsp;&nbsp;<span id="spark-ui-link-container"></span></h4>
+                        <h4 id="spark-jobs">Spark Job Progress</h4>
                         <div id="all-jobs-progress-bar"></div>
                     </li>
 
@@ -348,7 +351,7 @@
                     </li>
 
                     <li class="widget" data-row="10" data-col="1" data-sizex="2" data-sizey="3">
-                        <h4>Logs</h4>
+                        <h4>Error logs (see browser console for more)</h4>
                         <ul id="logsPanel" style="overflow: auto;"></ul>
                     </li>
 
