@@ -93,6 +93,7 @@ resolvers in ThisBuild ++= Seq(
   Resolver.typesafeIvyRepo("releases"),
   Resolver.typesafeIvyRepo("snapshots"),
   "cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos",
+  "mapr" at "http://repository.mapr.com/maven",
   // docker
   "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
 ) ++ ((sparkResolver, searchSparkResolver, sparkVersion.value) match {
