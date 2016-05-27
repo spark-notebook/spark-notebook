@@ -121,11 +121,16 @@ object Shared {
         .takeWhile(_ != '-' /*get rid of -SNAPSHOT, -RC or whatever*/)
         .split("\\.")
         .toList
-        .map(_.toInt) match {
+        .map(_.toInt).take(3) match {
           case List(1, y, z) if y <= 3 => "0.5.0"
           case List(1, 4, z) => "0.6.4"
           case List(1, 6, z) => "0.8.2"
           case List(1, y, z) => "0.7.1"
+          case List(2, y, z) =>
+            // need to change to use Alluxio instead...
+            // http://search.maven.org/#search|ga|1|alluxio
+            // http://www.alluxio.com/2016/04/getting-started-with-alluxio-and-spark/
+            "0.7.1"
           case _ => throw new IllegalArgumentException("Bad spark version for tachyon: " + sv)
         }
 
