@@ -67,7 +67,7 @@ class ReplCalculator(
     val id::tpe::url::remaining = r.split("%").toList
     val rest = remaining.map(_.trim) match {
       case Nil => remaining
-      case "mvn"::r => r //skip the flavor → always maven in 2.11
+      case "maven"::r => r //skip the flavor → always maven in 2.11
       case xs => xs
     }
     val (username, password):(Option[String],Option[String]) = rest.headOption.map { auth =>
