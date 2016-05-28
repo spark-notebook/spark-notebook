@@ -25,7 +25,7 @@ Spark Notebook
     - [Hard ways](#hard-ways)
       - [ZIP/TGZ](#ziptgz)
       - [Docker](#docker)
-        - [boot2docker (Mac OS X)](#boot2docker-mac-os-x)
+        - [boot2docker \(Mac OS X\)](#boot2docker-mac-os-x)
         - [DEB](#deb)
     - [From the sources](#from-the-sources)
       - [Procedure](#procedure)
@@ -33,7 +33,6 @@ Spark Notebook
         - [Launch the server](#launch-the-server)
         - [Change relevant versions](#change-relevant-versions)
         - [Create your distribution](#create-your-distribution)
-          - [Docker](#docker-1)
           - [Mesos in Docker](#mesos-in-docker)
         - [Customizing your build](#customizing-your-build)
           - [Update main configuration](#update-main-configuration)
@@ -68,18 +67,23 @@ Spark Notebook
           - [Configure](#configure-2)
           - [Run](#run-2)
           - [Access](#access-1)
+      - [Version 4.2](#version-42-1)
+        - [Environment](#environment-3)
+        - [Spark Notebook](#spark-notebook-3)
+          - [Install and Run](#install-and-run)
+          - [Access](#access-2)
   - [Mesosphere DCOS](#mesosphere-dcos)
     - [Description](#description-2)
-    - [Environment](#environment-3)
-    - [Spark Notebook](#spark-notebook-3)
+    - [Environment](#environment-4)
+    - [Spark Notebook](#spark-notebook-4)
       - [Install](#install-3)
-      - [Access](#access-2)
+      - [Access](#access-3)
 - [Features](#features)
   - [Configure the environment](#configure-the-environment)
     - [Using the Metadata](#using-the-metadata)
       - [Set local repository](#set-local-repository)
       - [Add remote repositories](#add-remote-repositories)
-      - [Import (download) dependencies](#import-download-dependencies)
+      - [Import \(download\) dependencies](#import-download-dependencies)
       - [Add Spark Packages](#add-spark-packages)
       - [Default import statements](#default-import-statements)
       - [Add JVM arguments](#add-jvm-arguments)
@@ -93,9 +97,9 @@ Spark Notebook
     - [Keep an eye on your tasks](#keep-an-eye-on-your-tasks)
   - [Using Tachyon](#using-tachyon)
     - [Connect to an existing cluster...](#connect-to-an-existing-cluster)
-    - [... Embedded local (default)](#-embedded-local-default)
+    - [... Embedded local \(default\)](#-embedded-local-default)
     - [Check using the UI](#check-using-the-ui)
-  - [Using (Spark)SQL](#using-sparksql)
+  - [Using \(Spark\)SQL](#using-sparksql)
     - [Static SQL](#static-sql)
     - [Dynamic SQL](#dynamic-sql)
     - [Show case](#show-case)
@@ -108,7 +112,7 @@ Spark Notebook
   - [Update _Notebook_ `ClassPath`](#update-_notebook_-classpath)
     - [Classes required to connect to the cluster](#classes-required-to-connect-to-the-cluster)
     - [Picked first `Classpath` declaration](#picked-first-classpath-declaration)
-  - [Update Spark dependencies (`spark.jars`)](#update-spark-dependencies-sparkjars)
+  - [Update Spark dependencies \(`spark.jars`\)](#update-spark-dependencies-sparkjars)
     - [Set `local-repo`](#set-local-repo)
     - [Add `remote-repo`](#add-remote-repo)
       - [`remote-repo` with authentication](#remote-repo-with-authentication)
@@ -713,6 +717,40 @@ source /usr/lib/spark/conf/spark-env.sh
 > ```
 > screen  -m -d -S "snb" bash -c "export SPARK_LOCAL_IP=$(ec2-metadata -o | cut -d ' ' -f2) && export SPARK_LOCAL_HOSTNAME=$(ec2-metadata -h | cut -d ' ' -f2) && export CLASSPATH_OVERRIDES=/usr/lib/hadoop-lzo/lib/hadoop-lzo.jar:/etc/hive/conf:/etc/hadoop/conf:/usr/lib/hadoop/*:/usr/lib/hadoop-hdfs/*:/usr/lib/hadoop-yarn/*:/usr/lib/hadoop-lzo/lib/*:/usr/share/aws/aws-java-sdk/*:/usr/share/aws/emr/emrfs/conf:/usr/share/aws/emr/emrfs/lib/*:/usr/share/aws/emr/emrfs/auxlib/* && source /usr/lib/spark/conf/spark-env.sh && ./bin/spark-notebook -Dconfig.file=./conf/application.conf -Dhttp.port=8989 >> nohup.out"
 > ```
+
+###### Access
+
+There are several manners to access the notebook UI on the port `8989` (see above):
+
+* easiest: `ssh -i key.pem -L 8989:localhost:8989 hadoop@<master>` then access it locally on [http://localhost:8989](http://localhost:8989)
+* sustainable but unsecure: update/create the security group of the master node to open the `8989` port
+* intermediate: use **FoxyProxy** in Chrome (f.i.) to redirect the url to your cluster, after having prealably open a tunnel to the master (*this is described in your cluster summary page*)
+
+> **YARN UI**
+>
+> It is available on the port `8088` of your **master**
+
+#### Version 4.2
+
+##### Environment
+At the writing time, the created clusters has this environmnent:
+
+* Yarn as the cluster manager
+* Hadoop 2.7.2
+* Spark 1.6.1
+* Hive 1.0.0
+* Scala 2.10.5
+
+##### Spark Notebook
+
+###### Install and Run
+And launch, connect to the **master** node and execute:
+
+```
+source <(curl https://s3-us-west-1.amazonaws.com/spark-notebook-emr/4.6/emr-4.6.sh)
+```
+
+> Note: The Spark Notebook runs in a `nohup` hence you will have to kill it using its PID.
 
 ###### Access
 
