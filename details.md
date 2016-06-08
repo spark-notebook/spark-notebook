@@ -730,7 +730,7 @@ There are several manners to access the notebook UI on the port `8989` (see abov
 >
 > It is available on the port `8088` of your **master**
 
-#### Version 4.2
+#### Version 4.6
 
 ##### Environment
 At the writing time, the created clusters has this environmnent:
