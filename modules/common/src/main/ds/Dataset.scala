@@ -4,7 +4,7 @@ import scala.concurrent.{Future, ExecutionContext}
 import scala.reflect.runtime.universe.TypeTag
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{SQLContext, DataFrame}
+import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 import play.api.libs.json._
 
 import notebook._
@@ -17,8 +17,8 @@ import notebook.front.widgets.Utils
  * The view provides connectors to view the dataframe one partition at a time.   A widget
  * may inherit this trait to provide a specific rendering.
  */
-trait DataFrameView {
-  def data: DataFrame
+trait DatasetView[T] {
+  def data: Dataset[T]
   def pageSize:Int
 
   /* paging support */
@@ -61,12 +61,12 @@ trait DataFrameView {
   }
 }
 
-class DataFrameWidget(
-  override val data: DataFrame,
+class DatasetWidget[T](
+  override val data: Dataset[T],
   override val pageSize: Int = 25,
   extension: String
 ) extends Widget
-  with DataFrameView
+  with DatasetView[T]
   with Utils {
 
   private val js = List("dataframe", extension).map(
@@ -96,21 +96,35 @@ class DataFrameWidget(
     </div>
 }
 
-object DataFrameWidget {
+object DatasetWidget {
 
-  def table(
-    data: DataFrame,
+  def table[T](
+    data: Dataset[T],
     pageSize: Int
-  ): DataFrameWidget = {
-    new DataFrameWidget(data, pageSize, "consoleDir")
+  ): DatasetWidget[T] = {
+    new DatasetWidget(data, pageSize, "consoleDir")
   }
 
   def table[A <: Product : TypeTag](
     rdd: RDD[A],
     pageSize: Int
-  ): DataFrameWidget = {
-    val sqlContext = new SQLContext(rdd.sparkContext)
-    import sqlContext.implicits._
-    table(rdd.toDF(), pageSize)
+  ): DatasetWidget[A] = {
+    val ss = SparkSession.builder().getOrCreate()
+    import ss.implicits._
+    table(rdd.toDS(), pageSize)
   }
+}
+
+
+object DataFrameWidget {
+
+  def table(
+    data: DataFrame,
+    pageSize: Int
+  ): DatasetWidget[Row] = DatasetWidget.table(data, pageSize)
+
+  def table[A <: Product : TypeTag](
+    rdd: RDD[A],
+    pageSize: Int
+  ): DatasetWidget[A] = DatasetWidget.table(rdd, pageSize)
 }
