@@ -10,11 +10,11 @@ The tool allows performing [reproducible analysis](http://simplystatistics.org/2
 
 This is achieved through an interactive web-based editor that can combine Scala code, SQL queries, Markup or even JavaScript in a collaborative manner.
 
-The Spark is available out of the box, and is simply accessed by the variable `sparkContext`.
+Spark is available out of the box, and is simply accessed by the variable `sparkContext`.
 
 ### Quick Start
 
-Want to try out Spark Notebook? Do these steps.
+Want to try out the Spark Notebook? Follow these steps.
 
 * Go to [spark-notebook.io](http://spark-notebook.io/).
 * Download one of the builds (master is the latest, but unstable).
@@ -24,7 +24,7 @@ Want to try out Spark Notebook? Do these steps.
 * Execute the command `bin/spark-notebook` (*NIX) or `bin\spark-notebook` (Windows).
 * Open your browser to [localhost:9000](http://localhost:9000).
 
-For details and cofiguration options, see [Launch](details.md#launch).
+For details and configuration options, see [Launch](details.md#launch).
 
 **Run straight from sources (for geeks)**
 
