@@ -110,7 +110,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
     }
 
     loop.process(settings)
-    _classServerUri = Some(loop.outputDir.getAbsolutePath)
+    _classServerUri = Some(loop.classServer.uri)
     loop.intp
   }
 

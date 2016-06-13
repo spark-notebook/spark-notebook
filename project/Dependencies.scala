@@ -55,12 +55,15 @@ object Dependencies {
   def sparkCore(v: String) = "org.apache.spark" %% "spark-core" % v excludeAll(
     ExclusionRule("org.apache.hadoop"),
     ExclusionRule("org.apache.ivy", "ivy")
+    //ExclusionRule("javax.servlet", "servlet-api"),
+    //ExclusionRule("javax.servlet", "javax.servlet-api")
   )
 
   def sparkYarn(v: String) = if (v == "1.2.0") {
     "org.apache.spark" %% "spark-yarn" % (v + "-adatao") excludeAll(
       ExclusionRule("org.apache.hadoop"),
       ExclusionRule("javax.servlet", "servlet-api"),
+      ExclusionRule("javax.servlet", "javax.servlet-api"),
       ExclusionRule("org.mortbay.jetty", "servlet-api"),
       ExclusionRule("org.apache.ivy", "ivy")
     )
@@ -68,6 +71,7 @@ object Dependencies {
     "org.apache.spark" %% "spark-yarn" % v excludeAll(
       ExclusionRule("org.apache.hadoop"),
       ExclusionRule("javax.servlet", "servlet-api"),
+      ExclusionRule("javax.servlet", "javax.servlet-api"),
       ExclusionRule("org.mortbay.jetty", "servlet-api"),
       ExclusionRule("org.apache.ivy", "ivy")
     )
@@ -89,6 +93,7 @@ object Dependencies {
     ExclusionRule("org.apache.hadoop"),
     ExclusionRule("org.apache.ivy", "ivy"),
     ExclusionRule("javax.servlet", "servlet-api"),
+    ExclusionRule("javax.servlet", "javax.servlet-api"),
     ExclusionRule("org.mortbay.jetty", "servlet-api")
   ) excludeAll(parquetList:_*) excludeAll(
     {
@@ -103,11 +108,16 @@ object Dependencies {
     }:_*
   )
 
-  def sparkRepl(
-    v: String) = "org.apache.spark" %% "spark-repl" % v excludeAll ExclusionRule("org.apache.hadoop")
+  def sparkRepl(v: String) = "org.apache.spark" %% "spark-repl" % v excludeAll (
+      ExclusionRule("org.apache.hadoop"),
+      ExclusionRule("javax.servlet", "servlet-api"),
+      ExclusionRule("javax.servlet", "javax.servlet-api")
+    )
 
   def sparkSQL(v: String) = "org.apache.spark" %% "spark-sql" % v excludeAll(
-    ExclusionRule("org.apache.hadoop")
+    ExclusionRule("org.apache.hadoop"),
+    ExclusionRule("javax.servlet", "servlet-api"),
+    ExclusionRule("javax.servlet", "javax.servlet-api")
   ) excludeAll(parquetList:_*)
 
   def sparkCSV: Seq[ModuleID] = {
@@ -121,6 +131,7 @@ object Dependencies {
     ExclusionRule("org.apache.commons", "commons-exec"),
     ExclusionRule("commons-codec", "commons-codec"),
     ExclusionRule("javax.servlet", "servlet-api"),
+    ExclusionRule("javax.servlet", "javax.servlet-api"),
     ExclusionRule("com.google.guava", "guava")
   )
 
@@ -128,6 +139,7 @@ object Dependencies {
       ExclusionRule("org.apache.commons", "commons-exec"),
       ExclusionRule("commons-codec", "commons-codec"),
       ExclusionRule("javax.servlet", "servlet-api"),
+      ExclusionRule("javax.servlet", "javax.servlet-api"),
       ExclusionRule("com.google.guava", "guava")
   )
 
@@ -147,7 +159,7 @@ object Dependencies {
     "net.java.dev.jets3t" % "jets3t" % v force() excludeAll ExclusionRule()
   }
 
-  val commonsIO = "org.apache.commons" % "commons-io" % "1.3.2"
+  val commonsIO = "commons-io" % "commons-io" % "2.4"
   val commonsHttp = "org.apache.httpcomponents" % "httpclient" % "4.3.4" excludeAll ExclusionRule("com.google.guava")
   val commonsExec = "org.apache.commons" % "commons-exec" % "1.3" force()
   val commonsCodec = "commons-codec" % "commons-codec" % "1.10" force()
