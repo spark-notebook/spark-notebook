@@ -9,23 +9,23 @@ Spark Notebook
 <!-- MarkdownTOC depth=6 autolink=true bracket=round -->
 
 - [Description](#description)
-  - [Quick Start Guide](#quick-start-guide)
-  - [Discussions](#discussions)
-  - [Mailing list](#mailing-list)
-    - [Spark Notebook Dev](#spark-notebook-dev)
-    - [Spark Notebook User](#spark-notebook-user)
+    - [Quick Start Guide](#quick-start-guide)
+    - [Discussions](#discussions)
+    - [Mailing list](#mailing-list)
+      - [Spark Notebook Dev](#spark-notebook-dev)
+      - [Spark Notebook User](#spark-notebook-user)
 - [In the wild](#in-the-wild)
   - [Testimonials](#testimonials)
     - [Skymind - The Deeplearning4j](#skymind---the-deeplearning4j)
   - [Adopters](#adopters)
 - [Launch](#launch)
-  - [Using a release](#using-a-release)
-    - [Requirements](#requirements)
-    - [Preferred/Simplest way](#preferredsimplest-way)
-    - [Hard ways](#hard-ways)
-      - [ZIP/TGZ](#ziptgz)
-      - [Docker](#docker)
-        - [boot2docker \(Mac OS X\)](#boot2docker-mac-os-x)
+    - [Using a release](#using-a-release)
+      - [Requirements](#requirements)
+      - [Preferred/Simplest way](#preferredsimplest-way)
+      - [Hard ways](#hard-ways)
+        - [ZIP/TGZ](#ziptgz)
+        - [Docker](#docker)
+          - [boot2docker \(Mac OS X\)](#boot2docker-mac-os-x)
         - [DEB](#deb)
     - [From the sources](#from-the-sources)
       - [Procedure](#procedure)
@@ -95,10 +95,6 @@ Spark Notebook
     - [Use the `form`](#use-the-form)
     - [The `reset` function](#the-reset-function)
     - [Keep an eye on your tasks](#keep-an-eye-on-your-tasks)
-  - [Using Tachyon](#using-tachyon)
-    - [Connect to an existing cluster...](#connect-to-an-existing-cluster)
-    - [... Embedded local \(default\)](#-embedded-local-default)
-    - [Check using the UI](#check-using-the-ui)
   - [Using \(Spark\)SQL](#using-sparksql)
     - [Static SQL](#static-sql)
     - [Dynamic SQL](#dynamic-sql)
@@ -1092,41 +1088,6 @@ This can be tuned at will, for instance for an infinte checking, one can pass th
 
 Counting the words of a [wikipedia dump](http://en.wikipedia.org/wiki/Wikipedia:Database_download) will result in
 ![Showing progress](https://raw.github.com/andypetrella/spark-notebook/master/images/spark-tracker.png)
-
-## Using Tachyon
-Tachyon is a great and clean way to share results, data or process when working with Spark. Hence the Spark Notebook enables some tighter interaction with it.
-
-### Connect to an existing cluster...
-If you have a Tachyon cluster already deployed it is best to set the  `manager.tachyon.url` conf key in the `application.conf` file with its url.
-
-Then all `SparkContext` will automatically have the tachyon configuration pointing to it and thus able to it to cache or share the results.
-
-### ... Embedded local (default)
-If no configuration is set under `manager.tachyon` conf key in the `application.conf` file (see above).
-
-An embed Tachyon local cluster will be started for you automatically.
-
-Hence, if you wanna use this feature a bit, we'd recommend to increase the memory allocated to the Spark Notebook server:
-```
-sbt -J-Xms1024m -J-Xmx5000m run
-```
-
-Or when using a distro.
-
-```
-./bin/spark-notebook -J-Xms1024m -J-Xmx5000m
-```
-
-### Check using the UI
-In all notebooks, a small UI has been added in order to browse the connected Tachyon cluster, hence you don't have to quit the notebook to look at the available data or check that the data has been cached in it.
-
-It looks like the below picture and presents some buttons:
-* ![refresh](https://raw.github.com/andypetrella/spark-notebook/master/images/tachyon-refresh.png): just refresh the current view (reloading the content of the current folder)
-* ![expand](https://raw.github.com/andypetrella/spark-notebook/master/images/tachyon-expand.png): allows the UI to expand in width 5 times before returning to a small-ish size
-* ![list](https://raw.github.com/andypetrella/spark-notebook/master/images/tachyon-list.png): browse to the related folder
-
-Preview:
-![Preview Tachyon UI](https://raw.github.com/andypetrella/spark-notebook/master/images/tachyon-ui.png)
 
 ## Using (Spark)SQL
 Spark comes with this handy and cool feature that we can write some SQL queries rather than boilerplating with

@@ -14,9 +14,6 @@ This will always be an empty file in IPython
   #site {
     overflow: visible;
   }
-  #notebook-tachyon-container {
-    display: none;
-  }
 
   .output_stream {
     display: none;

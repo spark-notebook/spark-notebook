@@ -130,7 +130,6 @@ import scala.util.matching.Regex
       sparkContext.stop()
     }
     sparkContext = new SparkContext(conf)
-    sparkContext.hadoopConfiguration.set("fs.tachyon.impl", "tachyon.hadoop.TFS")
     sparkMonitor = Some(new SparkMonitor(sparkContext))
     sparkMonitor.get.start
   }

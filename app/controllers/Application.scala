@@ -212,7 +212,6 @@ object Application extends Controller {
         initScripts,
         compilerArgs,
         kernel,
-        config.tachyonInfo,
         kernelTimeout = kernelKillTimeout
       )
       kernelIdToCalcService += kId -> service
