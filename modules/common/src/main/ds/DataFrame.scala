@@ -4,7 +4,7 @@ import scala.concurrent.{Future, ExecutionContext}
 import scala.reflect.runtime.universe.TypeTag
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
+import org.apache.spark.sql.{SQLContext, DataFrame}
 import play.api.libs.json._
 
 import notebook._
@@ -17,8 +17,8 @@ import notebook.front.widgets.Utils
  * The view provides connectors to view the dataframe one partition at a time.   A widget
  * may inherit this trait to provide a specific rendering.
  */
-trait DatasetView[T] {
-  def data: Dataset[T]
+trait DataFrameView {
+  def data: DataFrame
   def pageSize:Int
 
   /* paging support */
@@ -61,12 +61,12 @@ trait DatasetView[T] {
   }
 }
 
-class DatasetWidget[T](
-  override val data: Dataset[T],
+class DataFrameWidget(
+  override val data: DataFrame,
   override val pageSize: Int = 25,
   extension: String
 ) extends Widget
-  with DatasetView[T]
+  with DataFrameView
   with Utils {
 
   private val js = List("dataframe", extension).map(
@@ -96,35 +96,21 @@ class DatasetWidget[T](
     </div>
 }
 
-object DatasetWidget {
-
-  def table[T](
-    data: Dataset[T],
-    pageSize: Int
-  ): DatasetWidget[T] = {
-    new DatasetWidget(data, pageSize, "consoleDir")
-  }
-
-  def table[A <: Product : TypeTag](
-    rdd: RDD[A],
-    pageSize: Int
-  ): DatasetWidget[A] = {
-    val ss = SparkSession.builder().getOrCreate()
-    import ss.implicits._
-    table(rdd.toDS(), pageSize)
-  }
-}
-
-
 object DataFrameWidget {
 
   def table(
     data: DataFrame,
     pageSize: Int
-  ): DatasetWidget[Row] = DatasetWidget.table(data, pageSize)
+  ): DataFrameWidget = {
+    new DataFrameWidget(data, pageSize, "consoleDir")
+  }
 
   def table[A <: Product : TypeTag](
     rdd: RDD[A],
     pageSize: Int
-  ): DatasetWidget[A] = DatasetWidget.table(rdd, pageSize)
+  ): DataFrameWidget = {
+    val sqlContext = new SQLContext(rdd.sparkContext)
+    import sqlContext.implicits._
+    table(rdd.toDF(), pageSize)
+  }
 }
