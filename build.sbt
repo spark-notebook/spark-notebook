@@ -269,9 +269,8 @@ lazy val common = Project(id = "common", base = file("modules/common"))
     unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value),
     unmanagedSourceDirectories in Compile +=
       (sourceDirectory in Compile).value / ((sparkVersion.value.takeWhile(_ != '-').split("\\.").toList match {
-        case "1"::x::_ if x.toInt < 3 => "old"
-        case "1"::_::_                => "df"
-        case x                        => "ds"
+        case "1"::x::_ if x.toInt < 3 => "pre-df"
+        case x                        => "post-df"
       }))
   )
   .settings(
@@ -327,7 +326,6 @@ lazy val spark = Project(id = "spark", base = file("modules/spark"))
           tsv match {
             // if spark.version < 1.5.0 use spark-pre1.5
             case _ if versionCompare.lt(tsv, (1, 5, 0)) => scalaVerDir / "spark-pre1.5"
-            case _ if versionCompare.lt(tsv, (2, 0, 0)) => scalaVerDir / "spark-pre2.0"
             case _ => scalaVerDir / "spark-last"
           }
       }

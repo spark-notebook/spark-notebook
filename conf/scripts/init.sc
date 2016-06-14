@@ -14,7 +14,6 @@ import notebook.JsonCodec._
 import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd._
-import org.apache.spark.sql._
 
 import scala.util.matching.Regex
 
@@ -107,7 +106,6 @@ import scala.util.matching.Regex
 
   @transient var jars = (addedJars ++ CustomJars ++ conf.get("spark.jars", ",").split(",")).distinct
 
-  @transient var sparkSession:SparkSession = _
   @transient var sparkContext:SparkContext = _
 
   import org.apache.spark.ui.notebook.front.gadgets.SparkMonitor
@@ -118,7 +116,7 @@ import scala.util.matching.Regex
     conf.setMaster(sparkMaster.getOrElse("local[*]"))
       .setAll(_5C4L4_N0T3800K_5P4RK_C0NF.toList)
       .setAppName(appName)
-      .set("spark.repl.class.outputDir", uri)
+      .set("spark.repl.class.uri", uri)
 
     execMemory foreach (v => conf.set("spark.executor.memory", v))
     execUri foreach (v => conf.set("spark.executor.uri", v))
@@ -128,11 +126,10 @@ import scala.util.matching.Regex
 
     lastChanges(conf)
 
-    if (sparkSession != null) {
-      sparkSession.stop()
+    if (sparkContext != null) {
+      sparkContext.stop()
     }
-    sparkSession = SparkSession.builder().config(conf).getOrCreate
-    sparkContext = sparkSession.sparkContext
+    sparkContext = new SparkContext(conf)
     sparkMonitor = Some(new SparkMonitor(sparkContext))
     sparkMonitor.get.start
   }
@@ -140,12 +137,9 @@ import scala.util.matching.Regex
   def sc:SparkContext = sparkContext
 }
 
-import globalScope.{sparkSession, sparkContext, reset, sc}
+import globalScope.{sparkContext, reset, sc}
 
 reset()
-
-@transient val ss = sparkSession
-import ss.implicits._
 
 println("init.sc done!")
 ()
