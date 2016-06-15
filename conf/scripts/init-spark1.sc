@@ -104,7 +104,7 @@ import scala.util.matching.Regex
 
   @transient var conf = new SparkConf().setAll(_5C4L4_N0T3800K_5P4RK_C0NF.toList)
 
-  @transient var jars = (addedJars ++ CustomJars ++ conf.get("spark.jars", ",").split(",")).distinct
+  @transient var jars = (addedJars ++ CustomJars ++ conf.get("spark.jars", ",").split(",")).map(_.trim).filter(!_.isEmpty).distinct
 
   @transient var sparkContext:SparkContext = _
 
