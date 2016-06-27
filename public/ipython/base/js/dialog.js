@@ -340,8 +340,8 @@ define(function(require) {
             var remoteRepoForms=lis([
                 "my-repo % default % file:///path-to/ivy2 % ivy",
                 "my-repo % default % http:///link-to/ivy2 % ivy",
-                "a-mvn % default % http://link-to/repository % mvn",
-                "on-s3 % default % s3://my-maven/repository % mvn % (\"$AWS_KEY\", \"$AWS_SECRET\")"
+                "a-mvn % default % http://link-to/repository % maven",
+                "on-s3 % default % s3://my-maven/repository % maven % (\"$AWS_KEY\", \"$AWS_SECRET\")"
             ]);
             info.append(reposInfo);
             info.append(remoteRepoForms);
