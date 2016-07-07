@@ -31,4 +31,4 @@ This procedure will launch a Notebook Server with the default configuration. If 
 * Connect to a cluster 
 * Advanced configuration and deployment
 
-### Next: 
+### Next: [Exploring the Notebook]

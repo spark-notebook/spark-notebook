@@ -13,11 +13,19 @@ These examples are the best way to get familiar with the notebook.  Feel free to
 Each Notebook entry consists of the Notebook name and several function buttons:
 ![notebook-entry](./images/spark-101.png)
 * Clicking on the notebook name will open the notebook in the interactive editor.
+  ![notebook click on name](./images/spark-101-click.png)
 * View (read-only):  opens the notebook in read-only mode. The notebook contents will be rendered in the same state as they were last saved. This mode also allows for a "follow along" visualization: Other user can open the same notebook in interactive mode, and the _read-only_ visualization will be updated as changes happen in the interactive mode.
-* Duplicate: ![Ducplicate button](./images/duplicate-notebook.png) Creates a new copy the selected notebook. It will pop a dialog asking for confirmation.  
+  ![notebook click on name](./images/spark-101-view-ro.png)
+* Duplicate:  Creates a new copy the selected notebook. It will pop a dialog asking for confirmation.
+  ![notebook click on name](./images/spark-101-click.png)  
+  ![Duplicate button](./images/duplicate-notebook.png)
 * Delete | Shutdown : This button changes mode with the state of the notebook:
-  * Shutdown - ![Shutdown button](./images/notebook-running-shutdown-button.png)  If the notebook is currently running, this button will display "shutdown", allowing us to shutdown the running notebook. (see the #notebook section for more details on the runtime)
-  * Delete - ![Delete button](./images/delete-notebook-dialog.png) a stopped notebook can be deleted from the filesystem. 
+  * Shutdown -  If the notebook is currently running, this button will display "shutdown", allowing us to shutdown the running notebook. (see the #notebook section for more details on the runtime)
+    ![Shutdown button](./images/spark-101-shutdown.png)
+    ![Shutdown dialog](./images/notebook-running-shutdown-button.png)
+  * Delete - a stopped notebook can be deleted from the filesystem. 
+    ![Delete button](./images/spark-101-delete.png)
+    ![Delete dialog](./images/delete-notebook-dialog.png)   
 
 ### The Running Tab
 ![Running Tab](/docs/imagesrunning-tab.png) 
