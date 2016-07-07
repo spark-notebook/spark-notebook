@@ -2,7 +2,7 @@
 
 ## Quick Start Guide
 
-Want to try out the Spark Notebook? Take these steps.
+Start using the Spark Notebook in less than 5 minutes? Take these steps:
 
 ### Requirements:
 * Make sure you are running at least Java 7 
@@ -18,7 +18,9 @@ Want to try out the Spark Notebook? Take these steps.
 * Execute the command `bin/spark-notebook` (*NIX) or `bin\spark-notebook` (Windows)
 * Open your browser to [localhost:9000](http://localhost:9000)
 
-This procedure will launch a Notebook Server with the default configuration.
+This procedure will launch a Notebook Server with the default configuration. If all went well, you will see the Notebook browser home page:
+
+![Notebook browser home page](/docs/images/spark-notebook-home.md)
 
 ### Where to go from here? [TODO: Review for consistency]
 
