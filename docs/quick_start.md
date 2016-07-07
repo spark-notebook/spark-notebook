@@ -21,7 +21,7 @@ Start using the Spark Notebook in less than 5 minutes? Take these steps:
 
 This procedure will launch a Notebook Server with the default configuration. If all went well, you will see the Notebook browser home page:
 
-![Notebook browser home page](/docs/images/spark-notebook-home.md)
+![Notebook browser home page](./images/spark-notebook-home.md)
 
 ### Where to go from here? [TODO: Review for consistency]
 
