@@ -19,7 +19,7 @@ Each Notebook entry consists of the Notebook name and several function buttons:
 * ** Duplicate **:  Creates a new copy the selected notebook. 
   ![notebook duplicate](./images/spark-101-duplicate.png) 
   It will pop a dialog asking for confirmation. 
-  ![Duplicate button](./images/duplicate-notebook-dialog.png)
+  ![Duplicate dialog](./images/duplicate-notebook-dialog.png)
 * ** Delete | Shutdown ** : This button changes mode with the state of the notebook:
   * ** Shutdown ** -  If the notebook is currently running, this button will display "shutdown", allowing us to shutdown the running notebook. (see the #notebook section for more details on the runtime)
     ![Shutdown button](./images/spark-101-shutdown.png)
