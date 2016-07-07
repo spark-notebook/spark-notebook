@@ -16,7 +16,7 @@ C:/path/to/notebook>bin/spark-notebook.bat
 
 Head to your browser of choice and access the url: http://localhost:9000
 If all went well, you will see the Notebook server file browser:
-![File Browser](./images/notebook_server_home.png)
+![File Browser](./images/spark-notebook-home.png)
 
 **You are ready to start exploring the Spark Notebook.**
 
