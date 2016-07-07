@@ -9,7 +9,8 @@ Start using the Spark Notebook in less than 5 minutes? Take these steps:
 
 ### Steps
 * Go to [spark-notebook.io](http://spark-notebook.io/)
-	* Choose your Spark version according to your specific needs
+	* Choose your release, spark version and additional packages according to your specific needs
+		- Read more on: [Using Releases](using_releases.md)
 	* If trying Spark for the first time, pick the latest release
 * Download one of the packaged builds (TGZ or ZIP)
 * Extract the file somewhere convenient
@@ -24,11 +25,12 @@ This procedure will launch a Notebook Server with the default configuration. If 
 
 ### Where to go from here? [TODO: Review for consistency]
 
-* Get familiar with the Spark Notebook
-* Interact with the community
-* Learn about Data Analytics with the Spark Notebook (???)
+* [Get familiar with the Spark Notebook](exploring_notebook.md)
+* [Interact with the community](community.md)
+* [Deep dive of the Spark Notebook](notebook_browser.md) 
 * Check out the Visualization capabilities
 * Connect to a cluster 
-* Advanced configuration and deployment
+* Advanced topics
+	- [Building from Sources](build_from_source.md)
 
-### Next: [Exploring the Notebook]
+### Next: [Exploring the Notebook]()
