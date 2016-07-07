@@ -29,7 +29,8 @@ Each Notebook entry consists of the Notebook name and several function buttons:
     ![Delete dialog](./images/delete-notebook-dialog.png)   
 
 ### The Running Tab
-![Running Tab](./images/running-tab.png) 
+![Running Tab](./images/running-tab.png) ++
+![Running Tab](./images/running-tab.png) ++
 
 This tab shows a summary of the notebooks currently running in the system. Learn more about notebook resources. [TODO]
 In this view, the notebook listing only show the "View (read only" and "Shutdown" buttons described above.
