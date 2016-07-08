@@ -50,3 +50,52 @@ For a simple `zip` distro, you can run
 ```
 
 In order to develop on the Spark Notebook, you'll have to use the `run` command instead.
+
+### Customizing your build
+If you want to change some build information like the `name` or the `organization` or even specific to `docker` for your builds.
+Preferably you would want to avoid having to change the source code of this project.
+
+You can do this by creating some hidden files being caught by the builder but kept out of git (added to `.gitignore`).
+
+Here are the supported configuration.
+
+#### Update main configuration
+To update main configuration, `name` or `organization` alike, you can create a `.main.build.conf` next to `build.sbt`.
+
+The structure of the file is the following:
+```
+main {
+  name = "YourName"
+  organization = "YourOrganization"
+}
+```
+
+Check `project/MainProperties.scala` for details.
+
+###### Update Docker configuration
+Sometimes you may want to change the Docker image which is the result of the `sbt ... docker:publishLocal` command.
+
+Create a file called `.docker.build.conf` next to `build.sbt`, this file is added to `.gitignore`.
+The structure of the file is the following:
+```
+docker {
+  maintainer = "Your maintainer details"
+  registry = "your custom registry"
+  baseImage = "your custom base image"
+  commands = [
+    { cmd = USER, arg = root },
+    { cmd = RUN,  arg = "apt-get update -y && apt-get install -y ..." },
+    { cmd = ENV,  arg = "MESOS_JAVA_NATIVE_LIBRARY /usr/lib/libmesos.so" },
+    { cmd = ENV,  arg = "MESOS_LOG_DIR /var/log/mesos" }
+  ]
+}
+```
+
+Check `project/DockerProperties.scala` for details.
+
+#### Using unreleased Spark version
+While using the repository from SBT, you can use any version of Apache Spark you want (**up to 1.4 atm**), this will require several these things:
+
+* you have a local install (maven) of the version (let's say Spark 1.4-RC1 or even Spark-1.4-SNAPSHOT)
+* you run the sbt command using the wanted version `sbt -Dspark.version=1.4.0-SNAPSHOT`
+* there is a folder in `modules/spark/src/main/scala-2.1X` that points to the base of the required version (excl. the classifier SNAPHOST or RC): `spark-1.6`
