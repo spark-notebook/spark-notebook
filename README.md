@@ -4,42 +4,37 @@ Spark Notebook
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/andypetrella/spark-notebook?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/andypetrella/spark-notebook.svg?branch=master)](https://travis-ci.org/andypetrella/spark-notebook)
 
-*Originally forked from the amazing [scala-notebook](https://github.com/Bridgewater/scala-notebook), almost entirely refactored for Massive Dataset Analysis using [Apache Spark](http://spark.apache.org).*
+The Spark Notebook is the open source notebook aimed at enterprise environments, providing Data Scientist and Data Engineers with  an interactive web-based editor that can combine Scala code, SQL queries, Markup and JavaScript in a collaborative manner to explore, analyse and learn from massive data sets.
 
-The tool allows performing [reproducible analysis](http://simplystatistics.org/2014/06/06/the-real-reason-reproducible-research-is-important/) with Scala, Apache Spark and more.
+![notebook intro](./docs/images/tables-charts.png)
 
-This is achieved through an interactive web-based editor that can combine Scala code, SQL queries, Markup or even JavaScript in a collaborative manner.
+The Spark Notebook allows performing [reproducible analysis](http://simplystatistics.org/2014/06/06/the-real-reason-reproducible-research-is-important/) with Scala, Apache Spark and the Big Data ecosystem.
 
-The Spark is available out of the box, and is simply accessed by the variable `sparkContext`.
+The Spark is available out of the box, and is simply accessed by the variable `sparkContext` or `sc`.
 
-### Quick Start
+The Spark Notebook supports exclusibly the Scala programming language, the [The Unpredicted Lingua Franca for Data Science](https://youtu.be/3_oV25nZz8I) and extensibly exploits the JVM ecosystem of libraries to drive and smooth evolution of data-driven software from exploration to production.
 
-Want to try out Spark Notebook? Do these steps.
+The Spark Notebook is available for *NIX and Windows systems in easy to use ZIP/TAR, Docker and DEB packages.
 
-* Go to [spark-notebook.io](http://spark-notebook.io/).
-* Download one of the builds (master is the latest, but unstable).
-* Extract the file somewhere convenient.
-* Open a terminal/command window.
-* Change to the root directory of the expanded distribution.
-* Execute the command `bin/spark-notebook` (*NIX) or `bin\spark-notebook` (Windows).
-* Open your browser to [localhost:9000](http://localhost:9000).
+##Quick Start
 
-For details and cofiguration options, see [Launch](details.md#launch).
-
-**Run straight from sources (for geeks)**
-
-Checkout the sources and run:
-
-    $ sbt run
-
-### Learn more
+Go to [Quick Start](./docs/quick_start.md) for our 5-minutes guide to get up and running with the Spark Notebook.
 
 C'mon on to [Gitter](https://gitter.im/andypetrella/spark-notebook?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 to discuss things, to get some help, or to start contributing!
 
-The documentation is being rewritten. Meanwhile, read the [slightly outdated docs](details.md)
-about the advanced features and configuration,
-the different cluster deployment options (Amazon EMR, Mesons, YARN), and to find answers to FAQs.
+## Learn more
+
+### [Explore the Spark Notebook](./docs/exploring_notebook.md)
+### [Notebook Browser](./docs/notebook_browser.md)
+### [Configuration and Metadata](./docs/metadata.md)
+### [Running on Clusters and Clouds](./docs/clusters_clouds.md)
+### [Community](./docs/community.md)
+### Advanced Topics
+#### [Using Releases](./docs/using_releases.md)
+#### [Building from Sources](./docs/build_from_source.md)
+#### []
+
 
 ## Testimonials
 ### Skymind - The [Deeplearning4j](http://Deeplearning4j.org)
