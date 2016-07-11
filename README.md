@@ -10,9 +10,9 @@ The Spark Notebook is the open source notebook aimed at enterprise environments,
 
 The Spark Notebook allows performing [reproducible analysis](http://simplystatistics.org/2014/06/06/the-real-reason-reproducible-research-is-important/) with Scala, Apache Spark and the Big Data ecosystem.
 
-The Spark is available out of the box, and is simply accessed by the variable `sparkContext` or `sc`.
+Apache Spark is available out of the box, and is simply accessed by the variable `sparkContext` or `sc`.
 
-The Spark Notebook supports exclusibly the Scala programming language, the [The Unpredicted Lingua Franca for Data Science](https://youtu.be/3_oV25nZz8I) and extensibly exploits the JVM ecosystem of libraries to drive and smooth evolution of data-driven software from exploration to production.
+The Spark Notebook supports exclusibly the Scala programming language, the [The Unpredicted Lingua Franca for Data Science](https://youtu.be/3_oV25nZz8I) and extensibly exploits the JVM ecosystem of libraries to drive an smooth evolution of data-driven software from exploration to production.
 
 The Spark Notebook is available for *NIX and Windows systems in easy to use ZIP/TAR, Docker and DEB packages.
 
@@ -25,16 +25,15 @@ to discuss things, to get some help, or to start contributing!
 
 ## Learn more
 
-### [Explore the Spark Notebook](./docs/exploring_notebook.md)
-### [Notebook Browser](./docs/notebook_browser.md)
-### [Configuration and Metadata](./docs/metadata.md)
-### [Running on Clusters and Clouds](./docs/clusters_clouds.md)
-### [Community](./docs/community.md)
-### Advanced Topics
-#### [Using Releases](./docs/using_releases.md)
-#### [Building from Sources](./docs/build_from_source.md)
-#### []
-
+* [Explore the Spark Notebook](./docs/exploring_notebook.md)
+* [Notebook Browser](./docs/notebook_browser.md)
+* [Configuration and Metadata](./docs/metadata.md)
+* [Running on Clusters and Clouds](./docs/clusters_clouds.md)
+* [Community](./docs/community.md)
+* Advanced Topics
+	* [Using Releases](./docs/using_releases.md)
+	* [Building from Sources](./docs/build_from_source.md)
+	* [Creating Specific Distributions](./docs/build_specific_distros.md)
 
 ## Testimonials
 ### Skymind - The [Deeplearning4j](http://Deeplearning4j.org)
