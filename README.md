@@ -12,8 +12,7 @@ The Spark Notebook allows performing [reproducible analysis](http://simplystatis
 
 ## Features Highlights
 
-### Spark
-![Apache Spark](./docs/images/spark-logo-192x100px.png)
+### ![Apache Spark](./docs/images/spark-logo-192x100px.png)
 
 Apache Spark is available out of the box, and is simply accessed by the variable `sparkContext` or `sc`.
 
