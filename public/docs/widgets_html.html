@@ -1,0 +1,70 @@
+<head>
+	<link rel="stylesheet" type="text/css" href="styles/github.css">
+</head>
+<body><h1 id="documentation">Documentation</h1>
+<h2 id="widgets">Widgets</h2>
+<p>There're many widgets avaiable in the Spark Notebook that can be used to enrich the interaction with the data. Text-based widgets can help to sample or select data while graphical widgets will provide us data visualizations to help us build our intuition and understanding of the data.</p>
+<p>See also: <a href="./widgets_viz.html">Graphical Widgets</a></p>
+<h3 id="html-widgets">HTML Widgets</h3>
+<p>These are widgets dedicated to display and interact with data elements. They can be useful to show samples of large datasets, to choose specific data points or to show continuous updates of streaming data. Widgets are represented by Scala classes and therefore can be created and manipulated as objects. It's important that the widget object is returned as the resulting value of the cell so that the Spark Notebook can &quot;pick it up&quot; and display it.</p>
+<p>This is an example on how to define an <code>UnorderedList</code> that can hold up to 10 items. Note how the value of the variable is returned as the final result of the cell.</p>
+<div class="figure">
+<img src="./images/unordered-list.png" alt="unordered list" />
+<p class="caption">unordered list</p>
+</div>
+<h4 id="unordered-list">Unordered List</h4>
+<p>Creates an unordered list of the given number of elements</p>
+<h5 id="api">API</h5>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="co">// Creates an unordered list of the given capacity, initialData and prefill</span>
+<span class="kw">def</span> <span class="fu">ul</span>(capacity:Int=<span class="dv">10</span>, initData:Seq[String]=Nil, prefill:Option[String]=None)
+
+<span class="co">// adds the sequence of Strings to the list, replacing any existing elements</span>
+<span class="kw">def</span> <span class="fu">apply</span>(d:Seq[String])
+
+<span class="co">// adds a single String element to the list </span>
+<span class="kw">def</span> <span class="fu">append</span>(s:String)
+
+<span class="co">// appends a sequence of Strings to this list</span>
+<span class="kw">def</span> <span class="fu">appendAll</span>(s:Seq[String]) </code></pre></div>
+<h5 id="example">Example</h5>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> unorderedList = <span class="fu">ul</span>(<span class="dv">11</span>)
+unorderedList.<span class="fu">append</span>(<span class="st">&quot;one&quot;</span>)</code></pre></div>
+<h4 id="ordered-list">Ordered List</h4>
+<p>Creates an ordered list of the given number of elements</p>
+<h5 id="api-1">API</h5>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">def</span> <span class="fu">ol</span>(capacity:Int=<span class="dv">10</span>, initData:Seq[String]=Nil, prefill:Option[String]=None)
+
+<span class="co">// adds the sequence of Strings to the list, replacing any existing elements</span>
+<span class="kw">def</span> <span class="fu">apply</span>(d:Seq[String])
+
+<span class="co">// adds a single String element to the list </span>
+<span class="kw">def</span> <span class="fu">append</span>(s:String)
+
+<span class="co">// appends a sequence of Strings to this list</span>
+<span class="kw">def</span> <span class="fu">appendAll</span>(s:Seq[String]) </code></pre></div>
+<h5 id="example-1">Example</h5>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> orderedList = <span class="fu">ol</span>(num-elements)</code></pre></div>
+<h4 id="image">Image</h4>
+<p>Displays an image from a file or URL</p>
+<h5 id="api-2">API</h5>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">def</span> <span class="fu">img</span>(tpe:String=<span class="st">&quot;png&quot;</span>, width:String=<span class="st">&quot;150px&quot;</span>, height:String=<span class="st">&quot;150px&quot;</span>)
+
+<span class="co">// displays an image from an URL</span>
+<span class="kw">def</span> <span class="fu">url</span>(u:java.<span class="fu">net</span>.<span class="fu">URL</span>)
+
+<span class="co">// displays an image from a file</span>
+<span class="kw">def</span> <span class="fu">file</span>(f:java.<span class="fu">io</span>.<span class="fu">File</span>)</code></pre></div>
+<h5 id="example-2">Example</h5>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> diagram = <span class="fu">img</span>() <span class="co">// default type and size</span>
+diagram.<span class="fu">url</span>(<span class="kw">new</span> URL(<span class="st">&quot;http://ser.ver.add.ress/images/notebook.png)</span></code></pre></div>
+<p><em>note that the type of the image must correspond to the actual image type</em></p>
+<h4 id="text-output">Text output</h4>
+<p>Shows a paragraph of text</p>
+<h5 id="api-3">API</h5>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="co">// programmatically creates a paragraph</span>
+<span class="kw">def</span> <span class="fu">text</span>(value: String)</code></pre></div>
+<h5 id="example-3">Example</h5>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> students:Seq[String] = Seq(<span class="st">&quot;Alice&quot;</span>,<span class="st">&quot;John&quot;</span>, <span class="st">&quot;Britt&quot;</span>)
+
+<span class="kw">val</span> studentsInReport = <span class="fu">text</span>(students.<span class="fu">mkString</span>(<span class="st">&quot;, &quot;</span>))</code></pre></div>
+</body>

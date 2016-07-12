@@ -1,0 +1,23 @@
+<head>
+	<link rel="stylesheet" type="text/css" href="styles/github.css">
+</head>
+<body><h1 id="documentation">Documentation</h1>
+<h2 id="the-notebook-browser">The Notebook Browser</h2>
+<p>The Notebook browser consists of three tabs: Files, Running and Cluster</p>
+<h3 id="files-tab">Files Tab</h3>
+<p>This tab shows the file browser and gives quick access to the notebooks hosted in this server. The folder structure allows for a familiar hierarchical organization of the notebooks. The Spark Notebook comes loaded with many examples that will show in the file browser. These examples are the best way to get familiar with the notebook. Feel free to explore them after this tutorial.</p>
+<p>Each Notebook entry consists of the Notebook name and several function buttons: <img src="./images/spark-101.png" alt="notebook-entry" /> * ** Click ** on the notebook name will open the notebook in the interactive editor. <img src="./images/spark-101-click.png" alt="notebook click on name" /> * <a name="view"></a>View (read-only): opens the notebook in read-only mode. The notebook contents will be rendered in the same state as they were last saved. This mode also allows for a &quot;follow along&quot; visualization: Other user can open the same notebook in interactive mode, and the <em>read-only</em> visualization will be updated as changes happen in the interactive mode. <img src="./images/spark-101-view-ro.png" alt="notebook view read only" /> * <a name="duplicate"></a>Duplicate: Creates a new copy the selected notebook. <img src="./images/spark-101-duplicate.png" alt="notebook duplicate" /> It will pop a dialog asking for confirmation. <img src="./images/duplicate-notebook-dialog.png" alt="Duplicate dialog" /> * ** Delete | Shutdown ** : This button changes mode with the state of the notebook: * <a name="shutdown"></a> Shutdown - If the notebook is currently running, this button will display &quot;shutdown&quot;, allowing us to shutdown the running notebook. (see the #notebook section for more details on the runtime) <img src="./images/spark-101-shutdown.png" alt="Shutdown button" /> * <a name="delete"></a> Delete - a stopped notebook can be deleted from the filesystem. <img src="./images/spark-101-delete.png" alt="Delete button" /> It opens a dialog to confirm the operation. ** This operation cannot be undone ** <img src="./images/delete-notebook-dialog.png" alt="Delete dialog" /></p>
+<h3 id="the-running-tab">The Running Tab</h3>
+<div class="figure">
+<img src="./images/running-tab.png" alt="Running Tab" />
+<p class="caption">Running Tab</p>
+</div>
+<p>This tab shows a summary of the notebooks currently running in the system. Learn more about notebook resources. [TODO - link to resource usage] In this view, the notebook listing only show the <a href="#view">View (read only)</a> and <a href="#shutdown">Shutdown</a> buttons described above.</p>
+<h3 id="the-clusters-tab">The Clusters Tab</h3>
+<div class="figure">
+<img src="./images/cluster-tab.png" alt="Cluster Tab" />
+<p class="caption">Cluster Tab</p>
+</div>
+<p>This tab lets the user to create pre-defined configurations corresponding to the environment(s) that the notebook can connect to. In particular, this permits the specification of one or more Spark/Hadoop ecosystems for the Notebook to run against.</p>
+<p>Next: Notebook Deep Dive</p>
+</body>
