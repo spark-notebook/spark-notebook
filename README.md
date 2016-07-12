@@ -54,14 +54,18 @@ to discuss things, to get some help, or to start contributing!
 ## Learn more
 
 * [Explore the Spark Notebook](./docs/exploring_notebook.md)
+* [HTML Widgets](./docs/widgets_html.md) 
+* [Visualization Widgets](./docs/widgets_viz.md)
 * [Notebook Browser](./docs/notebook_browser.md)
 * [Configuration and Metadata](./docs/metadata.md)
+	* [Using Cluster Configurations](./docs/using_cluster_tab.md)
 * [Running on Clusters and Clouds](./docs/clusters_clouds.md)
 * [Community](./docs/community.md)
 * Advanced Topics
 	* [Using Releases](./docs/using_releases.md)
 	* [Building from Sources](./docs/build_from_source.md)
 	* [Creating Specific Distributions](./docs/build_specific_distros.md)
+	* [Creating your own custom visualizations](./docs/custom_charts.md)
 
 ## Testimonials
 ### Skymind - The [Deeplearning4j](http://Deeplearning4j.org)
