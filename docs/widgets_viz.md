@@ -26,7 +26,7 @@ def addAndApply(otherData:C, resetInit:Boolean=false)
 
 // changes the maximum number of data points displayed by the chart
 def newMax(max:Int)
-
+```
 
 #### Table Chart
 
@@ -167,7 +167,7 @@ case class GeoPointsChart[C:ToPoints:Sampler](
 )
 ```
 
-![Geopoints chart](./images/charts-geopoint.png)
+![Geopoints chart](./images/charts-geopoints.png)
 
 ##### GeoChart
 
@@ -182,7 +182,7 @@ case class GeoChart[C:ToPoints:Sampler](
   fillColorField:Option[String]=None)
  ```
 ![Geochart](./images/charts-geo.png)
-_note how the Museum Gardens highlighted by a polygon_
+_note the Museum Gardens highlighted by a polygon_
 
 #### Radar Chart
 
@@ -212,6 +212,4 @@ case class ParallelCoordChart[C:ToPoints:Sampler](
   )
 ```
 ![Parallel Coordinates Chart](./images/charts-parallel-coordinates.png)
-
-
 
