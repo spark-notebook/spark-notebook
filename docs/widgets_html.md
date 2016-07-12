@@ -32,7 +32,7 @@ def append(s:String)
 
 // appends a sequence of Strings to this list
 def appendAll(s:Seq[String]) 
-
+```
 
 ##### Example
 
@@ -56,7 +56,7 @@ def append(s:String)
 
 // appends a sequence of Strings to this list
 def appendAll(s:Seq[String]) 
-
+```
 
 ##### Example
 ```scala
@@ -84,8 +84,7 @@ def file(f:java.io.File)
 val diagram = img() // default type and size
 diagram.url(new URL("http://ser.ver.add.ress/images/notebook.png)
 ```
-_note that the type of the image must correspond to the 
-
+_note that the type of the image must correspond to the actual image type_
 
 
 #### Text output
@@ -146,17 +145,3 @@ val studentsInReport = text(students.mkString(", "))
 val text = out("")
 ```
 
-
-#### 
-
-
-
-
-
-
-
-
-
-
-
-### Graphical Widgets  
