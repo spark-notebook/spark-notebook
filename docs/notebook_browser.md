@@ -18,15 +18,18 @@ Each Notebook entry consists of the Notebook name and several function buttons:
   ![notebook view read only](./images/spark-101-view-ro.png)
 *  <a name="duplicate">Duplicate</a>:  Creates a new copy the selected notebook. 
   ![notebook duplicate](./images/spark-101-duplicate.png)
+
   It will pop a dialog asking for confirmation. 
 
   ![Duplicate dialog](./images/duplicate-notebook-dialog.png)
-* ** Delete | Shutdown ** : This button changes mode with the state of the notebook:
+*  <a name="delete">Delete|Shutdown</a> : This button changes mode with the state of the notebook:
   * <a name="shutdown">Shutdown</a> -  If the notebook is currently running, this button will display "shutdown", allowing us to shutdown the running notebook. (see the #notebook section for more details on the runtime)
     ![Shutdown button](./images/spark-101-shutdown.png)
   * <a name="delete">Delete</a> - a stopped notebook can be deleted from the filesystem. 
     ![Delete button](./images/spark-101-delete.png)
+
     It opens a dialog to confirm the operation. ** This operation cannot be undone **
+    
     ![Delete dialog](./images/delete-notebook-dialog.png)   
 
 ### The Running Tab
@@ -41,4 +44,4 @@ In this view, the notebook listing only show the [View (read only)](#view) and [
 
 This tab lets the user to create pre-defined configurations corresponding to the environment(s) that the notebook can connect to. In particular, this permits the specification of one or more Spark/Hadoop ecosystems for the Notebook to run against.
 
-Next: [Widgets](widgets_html.md)
+Next up: [Widgets](widgets_html.md)
