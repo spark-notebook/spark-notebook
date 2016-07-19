@@ -55,13 +55,13 @@ Before the first launch, it may be necessary to add some settings to `conf/appli
 In particular `manager.kernel.vmArgs` can be used to set environment variables for the driver (e.g. `-Dhdp.version=$HDP-Version` if you want to run the Spark Notebook on a **Hortonworks** cluster). These are the settings that you would commonly pass via `spark.driver.extraJavaOptions`.
 
 When the server has been started, you can head to the page `http://localhost:9000` and you'll see something similar to:
-![Notebook list](https://raw.github.com/andypetrella/spark-notebook/master/images/list.png)
+![Notebook list](./images/spark-notebook-home.png)
 
 From there you can either:
  * create a new notebook or
  * launch an existing notebook
 
-In both case, the `scala-notebook` will open a new tab with your notebook in it, loaded as a web page.
+In both case, the `spark-notebook` will open a new tab with your notebook in it, loaded as a web page.
 
 > Note: a notebook is a JSON file containing the layout and analysis blocks, and it's located
 > within the project folder (with the `snb` extension).
