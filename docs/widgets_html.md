@@ -107,3 +107,4 @@ val studentsInReport = text(students.mkString(", "))
 
 ```
 
+Next up: [Graphical Widgets](./widgets_viz.md)

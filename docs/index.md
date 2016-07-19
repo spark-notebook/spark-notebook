@@ -2,6 +2,7 @@
 
 ## Index
 
+* [Quick Start](./quick_start.md)
 * [Explore the Spark Notebook](./exploring_notebook.md)
 * [HTML Widgets](./widgets_html.md) 
 * [Visualization Widgets](./widgets_viz.md)

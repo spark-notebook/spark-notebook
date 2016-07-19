@@ -23,14 +23,17 @@ This procedure will launch a Notebook Server with the default configuration. If 
 
 ![Notebook browser home page](./images/spark-notebook-home.png)
 
-### Where to go from here? [TODO: Review for consistency]
+### Where to go from here?
 
-* [Get familiar with the Spark Notebook](exploring_notebook.md)
+* [Get familiar with the Spark Notebook](./exploring_notebook.md)
+* Check out the supported widgets:
+   * [HTML Widgets](./widgets_html.md)
+   * [Visualization  Widgets](./widgets_viz.md)
+* or learn how to create your own [custom visualizations](./custom_charts.md)  
+* [Configure the notebook for your environment](./metadata.md)
 * [Interact with the community](community.md)
-* [Deep dive of the Spark Notebook](notebook_browser.md) 
-* Check out the Visualization capabilities
-* Connect to a cluster 
-* Advanced topics
-	- [Building from Sources](build_from_source.md)
+* [Understand the Notebook browser](notebook_browser.md) 
 
-### Next: [Exploring the Notebook]()
+See the [Index](./index.md) for a comprehensive topic list
+
+### Up next: [Exploring the Notebook](./exploring_notebook.md)
