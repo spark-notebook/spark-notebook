@@ -14,7 +14,7 @@ In the following, we'll create a widget that can plot duration bars based for gi
     * `dataInit` this is the JSON representation of the Scala data as an array of objects having the same schema as the Scala type
     * `genId` a unique id that you can use for a high level element for instance
 
-```javascript
+```scala
 val js = """
 function progressgraph (dataO, container, options) {
   var css = 'div.prog {position: relative; overflow: hidden; } span.pp {display: inline-block; position: absolute; height: 16px;} span.prog {display: inline-block; position: absolute; height: 16px; }' +
