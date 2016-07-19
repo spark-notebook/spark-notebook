@@ -1,0 +1,87 @@
+<head>
+	<link rel="stylesheet" type="text/css" href="styles/github.css">
+</head>
+<body><h1 id="documentation">Documentation</h1>
+<h2 id="creating-your-own-custom-visualizations">Creating your own custom Visualizations</h2>
+<p>If you want/need to exerce your js fu, you can always use the <code>Chart</code> (for instance) API to create new dynamic widgets types.</p>
+<p>In the following, we'll create a widget that can plot duration bars based for given operations (only a name): * a <code>js</code> string which is the javascript to execute for the new chart. It: * has to be a function with 3 params * <code>dataO</code> a knockout observable wich can be listened for new incoming data, see the <code>subscribe</code> call * <code>container</code> is the div element where you can add new elements * <code>options</code> is an extra object passed to the widget which defines additional configuration options (like width or a specific color or whatever) * has a <code>this</code> object containing: * <code>dataInit</code> this is the JSON representation of the Scala data as an array of objects having the same schema as the Scala type * <code>genId</code> a unique id that you can use for a high level element for instance</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">val js <span class="op">=</span> <span class="st">&quot;&quot;&quot;</span>
+<span class="kw">function</span> <span class="at">progressgraph</span> (dataO<span class="op">,</span> container<span class="op">,</span> options) <span class="op">{</span>
+  <span class="kw">var</span> css <span class="op">=</span> <span class="st">&#39;div.prog {position: relative; overflow: hidden; } span.pp {display: inline-block; position: absolute; height: 16px;} span.prog {display: inline-block; position: absolute; height: 16px; }&#39;</span> <span class="op">+</span>
+            <span class="st">&#39;.progs {border: solid 1px #ccc; background: #eee; } .progs .pv {background: #3182bd; }&#39;</span><span class="op">,</span>
+      head <span class="op">=</span> <span class="va">document</span>.<span class="at">head</span> <span class="op">||</span> <span class="va">document</span>.<span class="at">getElementsByTagName</span>(<span class="st">&#39;head&#39;</span>)[<span class="dv">0</span>]<span class="op">,</span>
+      style <span class="op">=</span> <span class="va">document</span>.<span class="at">createElement</span>(<span class="st">&#39;style&#39;</span>)<span class="op">;</span>
+
+  <span class="va">style</span>.<span class="at">type</span> <span class="op">=</span> <span class="st">&#39;text/css&#39;</span><span class="op">;</span>
+  <span class="cf">if</span> (<span class="va">style</span>.<span class="at">styleSheet</span>)<span class="op">{</span>
+    <span class="va">style</span>.<span class="va">styleSheet</span>.<span class="at">cssText</span> <span class="op">=</span> css<span class="op">;</span>
+  <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span>
+    <span class="va">style</span>.<span class="at">appendChild</span>(<span class="va">document</span>.<span class="at">createTextNode</span>(css))<span class="op">;</span>
+  <span class="op">}</span>
+
+  <span class="va">head</span>.<span class="at">appendChild</span>(style)<span class="op">;</span>
+
+
+  <span class="kw">var</span> width <span class="op">=</span> <span class="va">options</span>.<span class="at">width</span><span class="op">||</span><span class="dv">600</span>
+  <span class="kw">var</span> height <span class="op">=</span> <span class="va">options</span>.<span class="at">height</span><span class="op">||</span><span class="dv">400</span>
+  
+  <span class="kw">function</span> <span class="at">create</span>(name<span class="op">,</span> duration) <span class="op">{</span>
+    <span class="kw">var</span> div <span class="op">=</span>  <span class="va">d3</span>.<span class="at">select</span>(container).<span class="at">append</span>(<span class="st">&quot;div&quot;</span>).<span class="at">attr</span>(<span class="st">&quot;class&quot;</span><span class="op">,</span> <span class="st">&quot;prog&quot;</span>)<span class="op">;</span>
+
+    <span class="va">div</span>.<span class="at">append</span>(<span class="st">&quot;span&quot;</span>).<span class="at">attr</span>(<span class="st">&quot;class&quot;</span><span class="op">,</span> <span class="st">&quot;pp prog&quot;</span>)
+        .<span class="at">style</span>(<span class="st">&quot;width&quot;</span><span class="op">,</span> <span class="st">&quot;74px&quot;</span>)
+        .<span class="at">style</span>(<span class="st">&quot;text-align&quot;</span><span class="op">,</span> <span class="st">&quot;right&quot;</span>)
+        .<span class="at">style</span>(<span class="st">&quot;z-index&quot;</span><span class="op">,</span> <span class="st">&quot;2000&quot;</span>)
+        .<span class="at">text</span>(name)<span class="op">;</span>
+
+    <span class="va">div</span>.<span class="at">append</span>(<span class="st">&quot;span&quot;</span>)
+        .<span class="at">attr</span>(<span class="st">&quot;class&quot;</span><span class="op">,</span> <span class="st">&quot;progs&quot;</span>)
+        .<span class="at">style</span>(<span class="st">&quot;width&quot;</span><span class="op">,</span> <span class="st">&quot;240px&quot;</span>)
+        .<span class="at">style</span>(<span class="st">&quot;left&quot;</span><span class="op">,</span> <span class="st">&quot;80px&quot;</span>)
+      .<span class="at">append</span>(<span class="st">&quot;span&quot;</span>)
+        .<span class="at">attr</span>(<span class="st">&quot;class&quot;</span><span class="op">,</span> <span class="st">&quot;pp pv&quot;</span>)
+      .<span class="at">transition</span>()
+        .<span class="at">duration</span>(duration)
+        .<span class="at">ease</span>(<span class="st">&quot;linear&quot;</span>)
+        .<span class="at">style</span>(<span class="st">&quot;width&quot;</span><span class="op">,</span> <span class="st">&quot;350px&quot;</span>)<span class="op">;</span>
+
+    <span class="va">div</span>.<span class="at">transition</span>()
+        .<span class="at">style</span>(<span class="st">&quot;height&quot;</span><span class="op">,</span> <span class="st">&quot;20px&quot;</span>)
+      .<span class="at">transition</span>()
+        .<span class="at">delay</span>(duration)
+        .<span class="at">style</span>(<span class="st">&quot;height&quot;</span><span class="op">,</span> <span class="st">&quot;0px&quot;</span>)
+        .<span class="at">remove</span>()<span class="op">;</span>
+
+  <span class="op">}</span>
+
+  <span class="kw">function</span> <span class="at">onData</span>(data) <span class="op">{</span>
+    <span class="va">_</span>.<span class="at">each</span>(data<span class="op">,</span> <span class="kw">function</span>(d) <span class="op">{</span>
+      <span class="at">create</span>(d[<span class="va">options</span>.<span class="at">name</span>]<span class="op">,</span> <span class="dv">5000</span> <span class="op">+</span> d[<span class="va">options</span>.<span class="at">duration</span>])
+    <span class="op">}</span>)<span class="op">;</span>
+  <span class="op">}</span>
+
+  <span class="at">onData</span>(<span class="kw">this</span>.<span class="at">dataInit</span>)<span class="op">;</span>
+  <span class="va">dataO</span>.<span class="at">subscribe</span>(onData)<span class="op">;</span>
+<span class="op">}</span>
+<span class="st">&quot;&quot;&quot;.trim</span></code></pre></div>
+<p>Now we can create the widget extending <code>notebook.front.widgets.charts.Chart[C]</code>, where <code>C</code> is any Scala type, it'll be converted to JS using the implicit instance of <code>ToPoints</code>.</p>
+<p>It has to declare the original dataset which needs to be a wrapper (<code>List</code>, <code>Array</code>, ...) of the <code>C</code> instances we want to plot. But it can also define other things like below: * <code>sizes</code> are the <span class="math inline"><em>w</em> × <em>h</em></span> dimension of the chart * <code>maxPoints</code> the number of points to plot, the way to select them is defined in the implicitly available instance of <code>Sampler</code>. * <code>scripts</code> a list of references to existing javascript scripts * <code>snippets</code> a list of string that represent snippets to execute in JS, they take the form of a JSON object with * <code>f</code> the function to call when the snippet will be executed * <code>o</code> a JSON object that will be provided to the above function at execution time. Here we define which field has to be used for the name and duration.</p>
+<p>```scala import notebook.front.widgets.<em> import notebook.front.widgets.magic.</em> import notebook.front.widgets.magic.Implicits.<em> import notebook.front.widgets.magic.SamplerImplicits.</em> case class ProgChart<a href="originalData:C,%20override%20val%20sizes:(Int,%20Int)=(600,%20400),%20maxPoints:Int%20=%201000,%20name:String,%20duration:String">C:ToPoints:Sampler</a> extends notebook.front.widgets.charts.Chart<a href="originalData,%20maxPoints">C</a> { def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq</p>
+<p>override val snippets = List(s&quot;&quot;&quot;|{ | &quot;f&quot;: <span class="math inline">$js,  | &quot;o&quot;: {  | &quot;name&quot;: &quot;$</span>name&quot;, | &quot;duration&quot;: &quot;$duration&quot; | } |} &quot;&quot;&quot;.stripMargin)</p>
+<p>override val scripts = Nil } ```</p>
+<p>We can define the type of data we'll use for this example</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">case</span> <span class="kw">class</span> <span class="fu">ProgData</span>(n:String, v:Int)</code></pre></div>
+<p>Then we generate a bunch of data bucketized by 10, and we create an instance of the new widget giving it the first bucket of data and specifying the right field names for <code>name</code> and <code>duration</code>.</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> pdata = <span class="kw">for</span> {
+  c1 &lt;- &#39;a&#39; to &#39;e&#39;
+  c2 &lt;- &#39;a&#39; to &#39;e&#39;
+} <span class="kw">yield</span> <span class="fu">ProgData</span>(<span class="st">&quot;&quot;</span>+c1+c2, (nextDouble * <span class="dv">10000</span>).<span class="fu">toInt</span>)
+<span class="kw">val</span> pdataH :: pdataS = pdata.<span class="fu">toList</span>.<span class="fu">sliding</span>(<span class="dv">10</span>, <span class="dv">10</span>).<span class="fu">toList</span></code></pre></div>
+<p>And finally we can display our custom chart</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> pc = <span class="fu">ProgChart</span>(pdataH, name = <span class="st">&quot;n&quot;</span>, duration = <span class="st">&quot;v&quot;</span>)
+pc</code></pre></div>
+<div class="figure">
+<img src="./images/widgets-custom.png" alt="Fully Customized Chart" />
+<p class="caption">Fully Customized Chart</p>
+</div>
+</body>

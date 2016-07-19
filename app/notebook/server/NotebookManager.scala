@@ -88,7 +88,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
   def getNotebook(path: String) = {
     Logger.info(s"getNotebook at path $path")
     for (notebook <- load(path)) yield {
-      val data = FileUtils.readFileToString(notebookFile(path), StandardCharsets.UTF_8)
+      val data = FileUtils.readFileToString(notebookFile(path), "UTF-8")
       val df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss z'('Z')'")
       val last_mtime = df.format(new Date(notebookFile(path).lastModified()))
       (last_mtime, notebook.name, data, path)
@@ -129,7 +129,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
     if (!overwrite && file.exists()) {
       throw new NotebookExistsException("Notebook " + path + " already exists.")
     }
-    FileUtils.writeStringToFile(file, NBSerializer.write(notebook), Charset.forName("UTF-8"))
+    FileUtils.writeStringToFile(file, NBSerializer.write(notebook), "UTF-8")
     val nb = load(path)
     (nb.get.metadata.get.name, path)
   }

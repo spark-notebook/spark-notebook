@@ -1,71 +1,26 @@
-Spark Notebook
-==============
+# Documentation
 
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/andypetrella/spark-notebook?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://travis-ci.org/andypetrella/spark-notebook.svg?branch=master)](https://travis-ci.org/andypetrella/spark-notebook)
+## Community
 
-The Spark Notebook is the open source notebook aimed at enterprise environments, providing Data Scientist and Data Engineers with  an interactive web-based editor that can combine Scala code, SQL queries, Markup and JavaScript in a collaborative manner to explore, analyse and learn from massive data sets.
+### Discussions
+Come on [gitter](https://gitter.im/andypetrella/spark-notebook?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)!
+Helpful and friendly community around the Spark Notebook, ready to provide help and advice on setting up and working with the Spark Notebook. Our core committers hang often on Gitter. 
 
-![notebook intro](./docs/images/geo-airports.png)
+### Mailing list
+There are two different mailing lists, each aiming to specific discussions:
 
-The Spark Notebook allows performing [reproducible analysis](http://simplystatistics.org/2014/06/06/the-real-reason-reproducible-research-is-important/) with Scala, Apache Spark and the Big Data ecosystem.
+#### Spark Notebook Dev
 
-## Features Highlights
+The [spark-notebook-dev](https://groups.google.com/forum/?hl=fr#!forum/spark-notebook-dev) mailing list for all threads regarding implementation, architecture, features and what not related to fix or enhance the project.
 
-### ![Apache Spark](./docs/images/spark-logo-192x100px.png)
+Email: [spark-notebook-dev@googlegroups.com](mailto:spark-notebook-dev@googlegroups.com) (go to [spark-notebook-dev](https://groups.google.com/forum/#!forum/spark-notebook-dev) to Join; carefully check the options to receive emails).
 
-Apache Spark is available out of the box, and is simply accessed by the variable `sparkContext` or `sc`.
+#### Spark Notebook User
 
-#### Multiple Spark Context Support
+The [spark-notebook-user](https://groups.google.com/forum/?hl=fr#!forum/spark-notebook-user) is for almost everything else than dev, which are questions, bugs, complains, or hopefully some kindness :-D.
 
-One of the top most useful feature brought by the Spark Notebook is its separation of the running notebooks.
-Each started notebook will spawn a new JVM with its own SparkSession instance. This allows a maximal flexibility for:
+Email: [spark-notebook-user@googlegroups.com](mailto:spark-notebook-user@googlegroups.com) (go to [spark-notebook-user](https://groups.google.com/forum/#!forum/spark-notebook-user) to Join; carefully check the options to receive emails).
 
-* dependencies without clashes
-* access different clusters
-* tune differently each notebook
-* external scheduling (on the roadmap)
-
-#### Metadata-driven configuration
-
-We achieve maximum flexibiliThe with the availability of multiple `sparkContext`s by enabling [metadata driven](./docs/metadata.md) configuration. 
-
-### Scala
-
-The Spark Notebook supports exclusibly the Scala programming language, the [The Unpredicted Lingua Franca for Data Science](https://youtu.be/3_oV25nZz8I) and extensibly exploits the JVM ecosystem of libraries to drive an smooth evolution of data-driven software from exploration to production.
-
-The Spark Notebook is available for *NIX and Windows systems in easy to use ZIP/TAR, Docker and DEB packages.
-
-### Reactive
-
-All components in the Spark Notebook are dynamic and reactive. 
-
-Since data can come live in a system or you want to log vizualy some events or perhaps you need to have two visual components to interact... what you don't want to do is to write the html, js, server code and who knows what else you'll need to master...
-For that, the spark notebook comes with dynamic charts and most (if not all) components can be listened for and can react to events.
-
-
-##Quick Start
-
-Go to [Quick Start](./docs/quick_start.md) for our 5-minutes guide to get up and running with the Spark Notebook.
-
-C'mon on to [Gitter](https://gitter.im/andypetrella/spark-notebook?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-to discuss things, to get some help, or to start contributing!
-
-## Learn more
-
-* [Explore the Spark Notebook](./docs/exploring_notebook.md)
-* [HTML Widgets](./docs/widgets_html.md) 
-* [Visualization Widgets](./docs/widgets_viz.md)
-* [Notebook Browser](./docs/notebook_browser.md)
-* [Configuration and Metadata](./docs/metadata.md)
-	* [Using Cluster Configurations](./docs/using_cluster_tab.md)
-* [Running on Clusters and Clouds](./docs/clusters_clouds.md)
-* [Community](./docs/community.md)
-* Advanced Topics
-	* [Using Releases](./docs/using_releases.md)
-	* [Building from Sources](./docs/build_from_source.md)
-	* [Creating Specific Distributions](./docs/build_specific_distros.md)
-	* [Creating your own custom visualizations](./docs/custom_charts.md)
 
 ## Testimonials
 ### Skymind - The [Deeplearning4j](http://Deeplearning4j.org)

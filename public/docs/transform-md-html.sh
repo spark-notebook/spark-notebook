@@ -1,0 +1,14 @@
+pandoc -f markdown -t html -o  /tmp/html/build_from_source.html     build_from_source.md
+pandoc -f markdown -t html -o  /tmp/html/build_specific_distros.html     build_specific_distros.md
+pandoc -f markdown -t html -o  /tmp/html/clusters_clouds.html     clusters_clouds.md
+pandoc -f markdown -t html -o  /tmp/html/community.html     community.md
+pandoc -f markdown -t html -o  /tmp/html/custom_charts.html     custom_charts.md
+pandoc -f markdown -t html -o  /tmp/html/exploring_notebook.html     exploring_notebook.md
+pandoc -f markdown -t html -o  /tmp/html/index.html     index.md
+pandoc -f markdown -t html -o  /tmp/html/metadata.html     metadata.md
+pandoc -f markdown -t html -o  /tmp/html/notebook_browser.html     notebook_browser.md
+pandoc -f markdown -t html -o  /tmp/html/quick_start.html     quick_start.md
+pandoc -f markdown -t html -o  /tmp/html/using_cluster_tab.html     using_cluster_tab.md
+pandoc -f markdown -t html -o  /tmp/html/using_releases.html     using_releases.md
+pandoc -f markdown -t html -o  /tmp/html/widgets_html.html     widgets_html.md
+pandoc -f markdown -t html -o  /tmp/html/widgets_viz.html     widgets_viz.md
