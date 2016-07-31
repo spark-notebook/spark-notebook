@@ -1930,6 +1930,21 @@ define([
     };
 
     /**
+     *
+     */
+    Notebook.prototype.convertSvgAndSave = function() {
+        //"application/svg+base64"
+        var cells = this.get_cells();
+        for (var i = 0; i < cells.length; i++) {
+            var cell = cells[i];
+            if (cell instanceof codecell.CodeCell) {
+                cell.convertSvg();
+            }
+        }
+        this.save_notebook();
+    }
+
+    /**
      * Save this notebook on the server. This becomes a notebook instance's
      * .save_notebook method *after* the entire notebook has been loaded.
      */

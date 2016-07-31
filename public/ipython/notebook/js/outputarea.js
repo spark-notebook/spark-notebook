@@ -853,6 +853,10 @@ define([
         return toinsert;
      };
 
+    var append_ignore = function (ig, md, element) {
+        return $("<span></span>");
+     };
+
     var append_latex = function (latex, md, element) {
         /**
          * This method cannot do the typesetting because the latex first has to
@@ -982,6 +986,24 @@ define([
         }
     };
 
+    OutputArea.prototype.convertSvg = function() {
+        for (var i = 0; i < this.outputs.length; i++) {
+            var o = this.outputs[i];
+            if (o.output_type == 'execute_result') {
+                if (o.data["text/html"]) {
+                    var h = o.data["text/html"];
+                    var svg = this.element.find("svg");
+                    if (svg.length) {
+                        var s = svg.get(0);
+                        var xml  = new XMLSerializer().serializeToString(s);
+                        var data = "data:image/svg+xml;base64," + btoa(xml);
+                        o.data["application/svg+base64"] = data;
+                    }
+                }
+            }
+        }
+    }
+
 
     // JSON serialization
 
@@ -1063,7 +1085,8 @@ define([
         'image/png',
         'image/jpeg',
         'application/pdf',
-        'text/plain'
+        'text/plain',
+        'application/svg+base64'
     ];
 
     OutputArea.append_map = {
@@ -1075,7 +1098,8 @@ define([
         "image/jpeg" : append_jpeg,
         "text/latex" : append_latex,
         "application/javascript" : append_javascript,
-        "application/pdf" : append_pdf
+        "application/pdf" : append_pdf,
+        "application/svg+base64": append_ignore
     };
 
     // For backwards compatability.
