@@ -288,6 +288,10 @@ define([
         });
     };
 
+    CodeCell.prototype.convertSvg = function() {
+        this.output_area.convertSvg();
+    };
+
     /**
      * Handles when a widget loses it's comm connection.
      * @param  {WidgetView} view

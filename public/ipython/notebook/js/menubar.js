@@ -83,6 +83,9 @@ define([
             $(".show-me-back").show();
         } else {
             download = download || false;
+            if (format == 'markdown') {
+                this.notebook.convertSvgAndSave();
+            }
             var notebook_path = this.notebook.notebook_path;
             var url = utils.url_join_encode(
                 this.base_url,
@@ -154,6 +157,11 @@ define([
         });
         this.element.find('#download_pdf').click(function () {
             that._nbconvert('pdf', true);
+        });
+
+        this.element.find('#download_markdown').click(function () {
+            //generate images for svg and send save the notebook with them
+            that._nbconvert('markdown', true);
         });
 
         this.element.find('#download_scala').click(function () {
