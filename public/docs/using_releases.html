@@ -1,0 +1,42 @@
+<head>
+	<link rel="stylesheet" type="text/css" href="styles/github.css">
+</head>
+<body><h1 id="documentation">Documentation</h1>
+<h2 id="using-a-release">Using a release</h2>
+<p>Long story short, there are several ways to start the Spark Notebook quickly: * [<strong>Preferred</strong>] Built/Get from <strong><a href="http://spark-notebook.io" class="uri">http://spark-notebook.io</a></strong> * ZIP/TGZ file * Docker image * DEB package</p>
+<p>However, there are several flavors for these distributions that depends on the Spark version and Hadoop version you are using.</p>
+<h3 id="requirements">Requirements</h3>
+<ul>
+<li>Make sure you're running at least Java 7 (<code>sudo apt-get install openjdk-7-jdk</code>).</li>
+</ul>
+<h3 id="preferred-way">Preferred way</h3>
+<p>Head to <a href="http://spark-notebook.io" class="uri">http://spark-notebook.io</a> and download a pre-built/pre-packaged installation for your specific configuration and format of choice. On <a href="http://spark-notebook.io" class="uri">http://spark-notebook.io</a> it is possible to requests builds for specific combinations of Scala and Spark versions, different Hadoop releases and add/remove support for Hive and Parquet.</p>
+<p class="lead">
+You'll be presented a form to get the distribution you want. If not available, it'll gracefully build it for you and notify you want it'll be ready
+</p>
+<p><strong>Check the related section for instructions on how to use it (although it's very easy).</strong></p>
+<h4 id="ziptgz">ZIP/TGZ</h4>
+<p>Here is an example for <strong>zip</strong></p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># Downloaded spark-notebook-0.6.0-scala-2.10.5-spark-1.6.1-hadoop-2.0.0.zip</span>
+<span class="kw">unzip</span> spark-notebook-0.6.0-scala-2.10.5-spark-1.6.1-hadoop-2.0.0.zip
+<span class="kw">cd</span> spark-notebook-0.6.0-scala-2.10.5-spark-1.6.1-hadoop-2.0.0
+<span class="kw">./bin/spark-notebook</span></code></pre></div>
+<p>Here is an example for <strong>tgz</strong> &quot;tarbal&quot;</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># Downloaded spark-notebook-0.6.0-scala-2.10.5-spark-1.6.1-hadoop-2.0.0.zip</span>
+<span class="kw">tar</span> -xvf spark-notebook-0.6.0-scala-2.10.5-spark-1.6.1-hadoop-2.0.0.tgz
+<span class="kw">cd</span> spark-notebook-0.6.0-scala-2.10.5-spark-1.6.1-hadoop-2.0.0
+<span class="kw">./bin/spark-notebook</span></code></pre></div>
+<h4 id="docker">Docker</h4>
+<p>If you're a Docker user, the following procedure will be even simpler!</p>
+<p><strong>Checkout</strong> the needed version <a href="https://registry.hub.docker.com/u/andypetrella/spark-notebook/tags/manage/">here</a>.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">docker</span> pull andypetrella/spark-notebook:0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.4.0
+<span class="kw">docker</span> run -p 9000:9000 andypetrella/spark-notebook:0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.4.0</code></pre></div>
+<h5 id="note-boot2docker-mac-os-x">Note: boot2docker (Mac OS X)</h5>
+<p>On Mac OS X, you need something like <em>boot2docker</em> to use docker. However, port forwarding needs an extra command necessary for it to work (cf <a href="http://stackoverflow.com/questions/28381903/spark-notebook-not-loading-with-docker">this</a> and <a href="http://stackoverflow.com/questions/21653164/map-ports-so-you-can-access-docker-running-apps-from-osx-host">this</a> SO questions).</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">VBoxManage</span> modifyvm <span class="st">&quot;boot2docker-vm&quot;</span> --natpf1 <span class="st">&quot;tcp-port9000,tcp,,9000,,9000&quot;</span></code></pre></div>
+<h4 id="deb">DEB</h4>
+<p>For Debian/Ubuntu based distros, the Spark Notebook is also avaiable as a Debian package for download. After downloading, use your package manager to install</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># Downloaded spark-notebook-0.6.0-scala-2.10.5-spark-1.6.1-hadoop-2.0.0.deb</span>
+<span class="kw">sudo</span> dpkg -i spark-notebook-0.6.0-scala-2.10.5-spark-1.6.1-hadoop-2.0.0.deb
+<span class="kw">sudo</span> spark-notebook</code></pre></div>
+</body>

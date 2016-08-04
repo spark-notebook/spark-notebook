@@ -1,0 +1,72 @@
+<head>
+	<link rel="stylesheet" type="text/css" href="styles/github.css">
+</head>
+<body><h1 id="documentation">Documentation</h1>
+<h2 id="exploring-the-notebook-interface">Exploring the Notebook interface</h2>
+<p>For this introductory guide, we are, we are going to use <a href="http://localhost:9000/notebooks/core/Spark-101.snb">core/spark-101</a> <em>(for the links in this page to work, we assume that the Spark Notebook is running on localhost on the default port (9000))</em></p>
+<p>Click on the folder <a href="http://localhost:9000/tree/core">core</a> and then click on the <a href="http://localhost:9000/notebooks/core/Spark-101.snb">spark-101</a> notebook.</p>
+<p>The Spark Notebook main abstraction is a <em>cell</em>. A cell can contain text, in the form of Markdown or Scala/Spark code.</p>
+<div class="figure">
+<img src="./images/markdown-cell.png" alt="markdown cell" />
+<p class="caption">markdown cell</p>
+</div>
+<p>Cells are editable. To enter edit mode, click on them or press enter when the cell is highlighted.</p>
+<div class="figure">
+<img src="./images/code-cell.png" alt="code cell - edit mode" />
+<p class="caption">code cell - edit mode</p>
+</div>
+<p>Once you've edited a cell, pressing <strong>&amp;tl;Ctrl&gt;-Enter</strong> will execute the cell and display the result in the output field within the cell, right below the edit area.</p>
+<div class="figure">
+<img src="./images/code-cell-executed.png" alt="code cell - executed" />
+<p class="caption">code cell - executed</p>
+</div>
+<p>Once executed, the definitions within the cell become part of the execution context. Already defined elements can then be used in other cells, in order to interactively and gradually build up the desired logic.</p>
+<div class="figure">
+<img src="./images/code-cell-2.png" alt="code cell - uses previous definition" />
+<p class="caption">code cell - uses previous definition</p>
+</div>
+<p>We can make use of the full spectrum of the Scala programming language: <code>imports</code>, <code>classes</code>, <code>objects</code>, <code>values</code>, <code>variables</code>, <code>functions</code>, ..._ can be defined and used within the context of the notebook.</p>
+<h3 id="built-in-spark">Built-in Spark</h3>
+<p>The Spark Notebook is all about Spark. An implicit Spark context is built from the configuration and made directly available. With the Spark Notebook, you can start using Spark right away.</p>
+<div class="figure">
+<img src="./images/built-in-spark-context.png" alt="built-in Spark Context" />
+<p class="caption">built-in Spark Context</p>
+</div>
+<h3 id="automatic-visualizations">Automatic visualizations</h3>
+<p>When data collections, like arrays, lists or sets, are returned from a cell, the Spark Notebook will offer automatic visualizations. The options will depend of the specific type of the data. For example, <code>case classes</code> will be displayed as text, tuples of 2 elements <code>(x,y)</code> will have chart representations like scatter plot, line charts or bar charts. Highly customized visualizations are possible using provided widgets.</p>
+<h4 id="table">Table</h4>
+<div class="figure">
+<img src="./images/auto-viz-table.png" alt="table" />
+<p class="caption">table</p>
+</div>
+<h4 id="scatter-plot">Scatter Plot</h4>
+<div class="figure">
+<img src="./images/auto-viz-scatter-plot.png" alt="scatter plot" />
+<p class="caption">scatter plot</p>
+</div>
+<h4 id="line-chart">Line Chart</h4>
+<div class="figure">
+<img src="./images/auto-viz-line-chart.png" alt="Line Chart" />
+<p class="caption">Line Chart</p>
+</div>
+<h4 id="bar-chart">Bar Chart</h4>
+<div class="figure">
+<img src="./images/auto-viz-bar-chart.png" alt="Bar Chart" />
+<p class="caption">Bar Chart</p>
+</div>
+<h4 id="pivot-table">Pivot Table</h4>
+<div class="figure">
+<img src="./images/auto-viz-pivot-table.png" alt="Pivot Table" />
+<p class="caption">Pivot Table</p>
+</div>
+<h3 id="explore-...">Explore ...</h3>
+<p>Go through the complete notebook, changing and executing the cells. Experimentation is the best way to familiarize yourself with the notebook.</p>
+<hr />
+<h2 id="a-note-about-immutability">A Note About Immutability</h2>
+<p>The Scala Programming Language, as part of the family of functional programming languages, promotes immutability as an important programming principle. Furthermore, when programming for distributed computing, immutability plays a key role to achieve safe and consistent results. The Spark Notebook fully supports the immutable principles of Scala. Although it's possible to re-execute a cell and update the values of <code>objects</code>, what are are doing is redefining those objects in the same context. <strong>This should not be confused with value reassignment</strong> which will be safely rejected by the Scala compiler.</p>
+<p>Due to some limitations of the underlying REPL interpreter, assignments of different values to the same symbol in different cells will result in that symbol being redefined. Uniqueness of value assignments are only supported within the same cell.</p>
+<div class="figure">
+<img src="./images/redefinition-of-values.png" alt="redefinition of values" />
+<p class="caption">redefinition of values</p>
+</div>
+</body>
