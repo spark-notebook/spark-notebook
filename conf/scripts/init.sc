@@ -10,13 +10,15 @@ import notebook.front.widgets.magic._
 import notebook.front.widgets.magic.Implicits._
 import notebook.JsonCodec._
 
-
 import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd._
 import org.apache.spark.sql._
+import org.apache.spark.sql.functions._
 
 import scala.util.matching.Regex
+import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 @transient val globalScope = new java.io.Serializable {
   @transient var execUri = Option(System.getenv("SPARK_EXECUTOR_URI"))

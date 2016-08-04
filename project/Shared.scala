@@ -13,8 +13,6 @@ object Shared {
 
   lazy val withHive = SettingKey[Boolean]("x-with-hive")
 
-  lazy val withParquet = SettingKey[Boolean]("x-with-parquet")
-
   lazy val sharedSettings: Seq[Def.Setting[_]] = Seq(
     scalaVersion := defaultScalaVersion,
     sparkVersion := defaultSparkVersion,
@@ -26,45 +24,16 @@ object Shared {
       ("jline", "2.12")
     }),
     withHive := defaultWithHive,
-    withParquet := defaultWithParquet,
     libraryDependencies += guava
-  )
-
-  val wispSettings: Seq[Def.Setting[_]] = Seq(
-    libraryDependencies += wispDepSumac,
-    unmanagedJars in Compile ++= (
-      if (scalaVersion.value.startsWith("2.10"))
-        Seq((baseDirectory in "sparkNotebook").value / "temp" / "wisp_2.10-0.0.5.jar")
-      else
-        Seq((baseDirectory in "sparkNotebook").value / "temp" / "wisp_2.11-0.0.5.jar")
-    )
   )
 
   val gisSettings: Seq[Def.Setting[_]] = Seq(
     libraryDependencies ++= geometryDeps
   )
 
-  val repl: Seq[Def.Setting[_]] = {
-    val lib = libraryDependencies <++= (sparkVersion, hadoopVersion, jets3tVersion) {
-      (sv, hv, jv) => if (sv != "1.2.0") Seq(sparkRepl(sv)) else Seq.empty
-    }
-    val unmanaged = unmanagedJars in Compile ++= (
-      if (sparkVersion.value == "1.2.0" && !scalaVersion.value.startsWith("2.11"))
-        Seq((baseDirectory in "sparkNotebook").value / "temp/spark-repl_2.10-1.2.0-notebook.jar")
-      else
-        Seq.empty
-      )
-
-    val repos = resolvers <++= sparkVersion { (sv) =>
-      if (sv == "1.2.0") {
-        Seq("Resolver for spark-yarn 1.2.0" at "https://github.com/adatao/mvnrepos/raw/master/releases") // spark-yarn 1.2.0 is not released
-      } else {
-        Nil
-      }
-    }
-
-    lib ++ unmanaged ++ repos
-  }
+  val repl: Seq[Def.Setting[_]] = Seq(
+    libraryDependencies <+= (sparkVersion) { sv => sparkRepl(sv) }
+  )
 
   val hive: Seq[Def.Setting[_]] = Seq(
     libraryDependencies <++= (withHive, sparkVersion) { (wh, sv) =>
@@ -88,14 +57,13 @@ object Shared {
       val jettyVersion = "8.1.14.v20131031"
 
       val libs = Seq(
-        breeze,
         sparkCore(sv),
         sparkYarn(sv),
         sparkSQL(sv),
         hadoopClient(hv),
         jets3tVersion,
         commonsCodec
-      ) ++ sparkCSV ++ (
+      ) ++ (
             if (!v.startsWith("2.10")) {
               // in 2.11
               //Boot.scala → HttpServer → eclipse

@@ -10,8 +10,8 @@ scalaVersion := defaultScalaVersion
 
 val SparkNotebookSimpleVersion = "0.7.0-SNAPSHOT"
 
-version in ThisBuild <<= (scalaVersion, sparkVersion, hadoopVersion, withHive, withParquet) { (sc, sv, hv, h, p) =>
-  s"$SparkNotebookSimpleVersion-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "") + (if (p) "-with-parquet" else "")
+version in ThisBuild <<= (scalaVersion, sparkVersion, hadoopVersion, withHive) { (sc, sv, hv, h) =>
+  s"$SparkNotebookSimpleVersion-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "")
 }
 
 updateOptions := updateOptions.value.withCachedResolution(true)
@@ -206,7 +206,7 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).ena
   .dependsOn(subprocess, observable, common, spark, kernel)
   .settings(sharedSettings: _*)
   .settings(
-    bashScriptExtraDefines <+= (version, scalaBinaryVersion, scalaVersion, sparkVersion, hadoopVersion, withHive, withParquet) map { (v, sbv, sv, pv, hv, wh, wp) =>
+    bashScriptExtraDefines <+= (version, scalaBinaryVersion, scalaVersion, sparkVersion, hadoopVersion, withHive) map { (v, sbv, sv, pv, hv, wh) =>
       """export ADD_JARS="${ADD_JARS},${lib_dir}/$(ls ${lib_dir} | grep common.common | head)""""
     },
     mappings in Universal ++= directory("notebooks"),
@@ -214,7 +214,6 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).ena
   )
   .settings(includeFilter in(Assets, LessKeys.less) := "*.less")
   .settings(unmanagedSourceDirectories in Compile <<= (scalaSource in Compile)(Seq(_))) //avoid app-2.10 and co to be created
-  .settings(initialCommands += ConsoleHelpers.cleanAllOutputs)
   .settings(
     git.useGitDescribe := true,
     git.baseVersion := SparkNotebookSimpleVersion
@@ -266,16 +265,7 @@ lazy val common = Project(id = "common", base = file("modules/common"))
     libraryDependencies ++= Seq(
       bokeh
     ), // ++ customJacksonScala
-    unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value),
-    unmanagedSourceDirectories in Compile +=
-      (sourceDirectory in Compile).value / ((sparkVersion.value.takeWhile(_ != '-').split("\\.").toList match {
-        case "1"::x::_ if x.toInt < 3 => "old"
-        case "1"::_::_                => "df"
-        case x                        => "ds"
-      }))
-  )
-  .settings(
-    wispSettings
+    unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
   )
   .settings(
     gisSettings
@@ -291,7 +281,6 @@ lazy val common = Project(id = "common", base = file("modules/common"))
                         sparkVersion,
                         hadoopVersion,
                         withHive,
-                        withParquet,
                         jets3tVersion,
                         jlineDef,
                         sbtVersion,
@@ -325,9 +314,8 @@ lazy val spark = Project(id = "spark", base = file("modules/spark"))
           val scalaVerDir = (sourceDirectory in Compile).value / ("scala_" + v)
 
           tsv match {
-            // if spark.version < 1.5.0 use spark-pre1.5
-            case _ if versionCompare.lt(tsv, (1, 5, 0)) => scalaVerDir / "spark-pre1.5"
-            case _ if versionCompare.lt(tsv, (2, 0, 0)) => scalaVerDir / "spark-pre2.0"
+            // THIS IS HOW WE CAN DEAL WITH RADICAL CHANGES
+            //case _ if versionCompare.lt(tsv, LAST_WORKING_VERSION) => scalaVerDir / "spark-pre"+LAST_WORKING_VERSION
             case _ => scalaVerDir / "spark-last"
           }
       }

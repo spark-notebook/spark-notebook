@@ -6,7 +6,6 @@ import org.apache.spark.sql.{DataFrame, SQLContext}
 import notebook._
 import notebook.front._
 import notebook.JsonCodec._
-import notebook.front.widgets.Utils
 
 import scala.util._
 
@@ -35,6 +34,7 @@ class Sql(sqlContext: SQLContext, call: String) extends Widget with Utils {
             val b = j.before.toString.substring(i.before.toString.length + i.matched.length)
             val sqlTypedInputRegex(tpe, name) = j.matched
             (b, TypedInput(tpe, name.trim))
+          case _ => throw new RuntimeException("Bad inputs: " + inputs)
         }
         h :: t
     }

@@ -9,7 +9,6 @@ import play.api.libs.json._
 
 import notebook._
 import notebook.front.{DataConnector, SingleConnector,Widget}
-import notebook.front.widgets.Utils
 
 /**
  * An abstract view of a dataframe.

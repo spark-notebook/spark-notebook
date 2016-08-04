@@ -74,7 +74,7 @@ object Application extends Controller {
     |      "resources": {},
     |      "spec" : {
     |        "language": "scala",
-    |        "display_name": "Scala [${notebook.BuildInfo.scalaVersion}] Spark [${notebook.BuildInfo.xSparkVersion}] Hadoop [${notebook.BuildInfo.xHadoopVersion}] ${if (notebook.BuildInfo.xWithHive) " {Hive ✓}" else ""} ${if (notebook.BuildInfo.xWithParquet) " {Parquet ✓}" else ""}",
+    |        "display_name": "Scala [${notebook.BuildInfo.scalaVersion}] Spark [${notebook.BuildInfo.xSparkVersion}] Hadoop [${notebook.BuildInfo.xHadoopVersion}] ${if (notebook.BuildInfo.xWithHive) " {Hive ✓}" else ""}",
     |        "language_info": {
     |          "name" : "scala",
     |          "file_extension" : "scala",
@@ -249,16 +249,16 @@ object Application extends Controller {
 
   def profiles() = Action.async {
     implicit val ec = kernelSystem.dispatcher
-    (clustersActor ? NotebookClusters.Profiles).map { case all: List[JsObject] =>
-      Ok(JsArray(all))
-    }
+    (clustersActor ? NotebookClusters.Profiles).
+      mapTo[List[JsObject]].
+      map { all => Ok(JsArray(all)) }
   }
 
   def clusters() = Action.async {
     implicit val ec = kernelSystem.dispatcher
-    (clustersActor ? NotebookClusters.All).map { case all: List[JsObject] =>
-      Ok(JsArray(all))
-    }
+    (clustersActor ? NotebookClusters.All).
+      mapTo[List[JsObject]].
+      map { all => Ok(JsArray(all)) }
   }
 
   /**
@@ -699,7 +699,7 @@ object Application extends Controller {
               val outputs = os.getOrElse(Nil).collect {
                 case NBSerializer.ScalaOutput(_, _, _, html, text) =>
                   text.map(s => s"$s\n\n\n").getOrElse("") + html.getOrElse("")
-                case NBSerializer.ScalaExecuteResult(_, d, _, _, _) => 
+                case NBSerializer.ScalaExecuteResult(_, d, _, _, _) =>
                   d.collect {
                     case ("text/html", t) if t.trim.nonEmpty && !t.contains("<script data-this=") => toBq(t)
                     case ("application/svg+base64", m) => s"> <img src='$m'/>"
@@ -712,7 +712,7 @@ object Application extends Controller {
               case Some(nb) =>
                 val code = nb.cells.map { cells =>
                   val cs = cells.collect {
-                    case NBSerializer.CodeCell(md, "code", i, Some("scala"), _, os) if i.trim.nonEmpty => 
+                    case NBSerializer.CodeCell(md, "code", i, Some("scala"), _, os) if i.trim.nonEmpty =>
                       val (t, cd) = if (i.startsWith(":sh")) {
                                       ("sh", i.drop(3))
                                     } else {
@@ -725,7 +725,7 @@ object Application extends Controller {
                       |${osToMd(os)}
                       |""".stripMargin
 
-                    case NBSerializer.CodeCell(md, "code", i, None, _, os) if i.trim.nonEmpty => 
+                    case NBSerializer.CodeCell(md, "code", i, None, _, os) if i.trim.nonEmpty =>
                       s"""|
                       |```scala
                       |$i
@@ -733,7 +733,7 @@ object Application extends Controller {
                       |${osToMd(os)}
                       |""".stripMargin
 
-                    case NBSerializer.MarkdownCell(_, _, i)  if i.trim.nonEmpty => i                    
+                    case NBSerializer.MarkdownCell(_, _, i)  if i.trim.nonEmpty => i
                   }
                   val fc = cs.mkString("\n").trim
                   fc

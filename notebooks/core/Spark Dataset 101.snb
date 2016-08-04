@@ -54,7 +54,7 @@
       "id" : "501427AA0C4340A48A256656D33F84F6"
     },
     "cell_type" : "code",
-    "source" : "val dta:Dataset[Int] = sparkSession.read.text(\"/var/log/syslog\")\n                                         .map(_.size)\n                                         .distinct",
+    "source" : "val dta:Dataset[Int] = sparkSession.read.text(\"/var/log/syslog\")\n                                         .map(_.getAs[String](0).size)\n                                         .distinct",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -104,7 +104,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "FAC726F0D5E24C958FEC4FC9C0AD6785"
     },
     "cell_type" : "code",
@@ -120,7 +120,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "0D59266E317E42748C034EFC82DCBBA7"
     },
     "cell_type" : "code",
@@ -142,7 +142,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "57EC95B373854F27B94D505073C8CDB7"
     },
     "cell_type" : "code",
@@ -170,7 +170,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "68F6303C7842460F82B5450EDA35E9BE"
     },
     "cell_type" : "code",
@@ -204,7 +204,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "C6175DEAF8E74FB889421FB91DA2DBB4"
     },
     "cell_type" : "code",
@@ -214,7 +214,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "972FC0011A894D3282E0C75872AC1431"
     },
     "cell_type" : "code",
@@ -254,7 +254,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "FD86AD48142E47BDABD6581832DE1720"
     },
     "cell_type" : "code",
@@ -276,7 +276,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "5442C20E9CA3425FB6AF67F1BF654BDF"
     },
     "cell_type" : "code",
@@ -286,7 +286,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "86FF7855FF21418CB986184EFC62D2D9"
     },
     "cell_type" : "code",
@@ -294,13 +294,45 @@
     "outputs" : [ ]
   }, {
     "metadata" : {
+      "id" : "433B1BE1A3A34E1A8B15AD14E4AA6D1B"
+    },
+    "cell_type" : "markdown",
+    "source" : "## Read as CSV"
+  }, {
+    "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
+      "id" : "7774F17B6C35447D8E85908C313DC347"
+    },
+    "cell_type" : "code",
+    "source" : "val closesDf/*:DataFrame*/ = sparkSession.read.format(\"com.databricks.spark.csv\").load(\"/tmp/data/closes.csv\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "8D47CD8C1DF94F158CAC8EE7C6ACAEFC"
+    },
+    "cell_type" : "code",
+    "source" : "closesDf",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "id" : "E45A01F323DD43ED81BD6A65804FD2F3"
+    },
+    "cell_type" : "markdown",
+    "source" : "## Read as Quotes"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
       "id" : "04CE294385F84B2F90CE8CDC352405DD"
     },
     "cell_type" : "code",
-    "source" : "val closes/*:Dataset[Quote]*/ = sparkSession.read.text(\"/tmp/data/closes.csv\")\n                                                 .map(_.split(\",\").toList)\n                                                 .map{ case s::d::p::Nil => Quote(s, d, p.toDouble)}",
+    "source" : "val closes/*:Dataset[Quote]*/ = closesDf.toDF(\"symbol\", \"date\", \"price\")\n                                        .withColumn(\"price\", $\"price\".cast(types.DoubleType))\n                                        .map{ case row => \n                                          Quote(\n                                            row.getAs[String](\"symbol\"), \n                                            row.getAs[String](\"date\"), \n                                            row.getAs[Double](\"price\"))\n                                        }",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -312,7 +344,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "972314299E0647BABDE4B73CBE291144"
     },
     "cell_type" : "code",
@@ -328,7 +360,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "DE3B6FC244614BB981A4CF922A9799C7"
     },
     "cell_type" : "code",
@@ -338,7 +370,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "16CC10FEEC1D47E78B3226B266EFAF27"
     },
     "cell_type" : "code",
@@ -354,7 +386,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "0751E57B3B9E469F8F6F14314900D538"
     },
     "cell_type" : "code",
@@ -376,7 +408,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "8FEF64A58FD9451F810B367DA2D13F6F"
     },
     "cell_type" : "code",
@@ -392,7 +424,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "4471F4251981457281AAE7158B742105"
     },
     "cell_type" : "code",
@@ -408,7 +440,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "5A2A4823A9DF45EBA6802F4006749CC9"
     },
     "cell_type" : "code",
