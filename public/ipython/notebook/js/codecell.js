@@ -462,6 +462,11 @@ define([
 
         this.set_input_prompt('*');
         this.element.addClass("running");
+        if (this.element.attr('data-dirty')) {
+            this.element.removeClass("alert")
+                        .removeClass("alert-warning");
+            this.element.attr('data-dirty', false);
+        }
         if (this.last_msg_id) {
             this.kernel.clear_callbacks_for_msg(this.last_msg_id);
         }
