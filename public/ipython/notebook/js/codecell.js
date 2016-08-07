@@ -465,6 +465,7 @@ define([
         if (this.element.attr('data-dirty')) {
             this.element.removeClass("alert")
                         .removeClass("alert-warning");
+            this.element.find(".validate-output").remove();
             this.element.attr('data-dirty', false);
         }
         if (this.last_msg_id) {
