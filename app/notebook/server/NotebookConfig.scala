@@ -39,7 +39,11 @@ case class NotebookConfig(config: Configuration) {
     val config = me.config.getConfig("kernel").getOrElse(Configuration.empty)
     val defauldInitScript = config.getString("default.init")
                                   .orElse(
-                                    Some("init.sc")
+                                    if (notebook.BuildInfo.xSparkVersion.startsWith("1")) {
+                                      Some("init-spark1.sc")
+                                    } else {
+                                      Some("init.sc")
+                                    }
                                   ).flatMap { init =>
                                     current.resource("scripts/" + init).map(i => ScriptFromURL(i).toSource)
                                   }

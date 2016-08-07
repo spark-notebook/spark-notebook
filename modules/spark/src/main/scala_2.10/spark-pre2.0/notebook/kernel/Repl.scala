@@ -3,7 +3,7 @@ package notebook.kernel
 import java.io.{StringWriter, PrintWriter, ByteArrayOutputStream}
 import java.net.{URLDecoder, JarURLConnection}
 import java.util.ArrayList
-import notebook.kernel.repl.common._
+
 import org.apache.commons.lang3.exception.ExceptionUtils
 
 import scala.collection.JavaConversions
@@ -11,16 +11,20 @@ import scala.collection.JavaConversions._
 import scala.xml.{NodeSeq, Text}
 import scala.util.control.NonFatal
 import scala.util.Try
+
 import tools.nsc.Settings
 import tools.nsc.interpreter._
 import tools.nsc.interpreter.Completion.{Candidates, ScalaCompleter}
 import tools.nsc.interpreter.Results.{Incomplete => ReplIncomplete, Success => ReplSuccess, Error}
-import _root_.jline.console.completer.{ArgumentCompleter, Completer}
-import scala.tools.nsc.interpreter.jline.JLineDelimiter
+
+import tools.jline.console.completer.{ArgumentCompleter, Completer}
+
+import org.apache.spark.repl._
+
 import notebook.front.Widget
 import notebook.util.Match
-import org.apache.spark.SparkConf
-
+import notebook.kernel._
+import notebook.kernel.repl.common._
 
 class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends ReplT {
   val LOG = org.slf4j.LoggerFactory.getLogger(classOf[Repl])
@@ -29,37 +33,29 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
 
   private lazy val stdoutBytes = new ReplOutputStream
   private lazy val stdout = new PrintWriter(stdoutBytes)
-  private var loop:org.apache.spark.repl.HackSparkILoop = _
+  private var loop:HackSparkILoop = _
   private var _classServerUri:Option[String] = None
 
   private var _initFinished: Boolean = false
   private var _evalsUntilInitFinished: Int = 0
+  // FG: never used !
+  private var _needsDropOnReplay: Boolean = false
 
   def setInitFinished(): Unit = {
     _initFinished = true
+    _needsDropOnReplay = _evalsUntilInitFinished > 0
   }
 
   def classServerUri: Option[String] = {
     _classServerUri
   }
 
-  val interp = {
+  val interp:org.apache.spark.repl.SparkIMain = {
     val settings = new Settings
 
     settings.embeddedDefaults[Repl]
 
     if (!compilerOpts.isEmpty) settings.processArguments(compilerOpts, false)
-
-    val conf = new SparkConf()
-
-    val tmp = System.getProperty("java.io.tmpdir")
-    val rootDir = conf.get("spark.repl.classdir", tmp)
-    val outputDir = org.apache.spark.Boot.createTempDir(rootDir, "spark-notebook-repl")
-
-
-
-
-    settings.processArguments(List("-Yrepl-class-based", "-Yrepl-outdir", s"${outputDir.getAbsolutePath}", "-Yrepl-sync"), true)
 
     // fix for #52
     settings.usejavacp.value = false
@@ -100,23 +96,23 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
     // debug the classpath → settings.Ylogcp.value = true
 
     //val i = new HackIMain(settings, stdout)
-    loop = new org.apache.spark.repl.HackSparkILoop(stdout, outputDir)
+    loop = new HackSparkILoop(stdout)
 
-
-    jars.foreach { jar =>
-      import scala.tools.nsc.util.ClassPath
-      val f = scala.tools.nsc.io.File(jar).normalize
-      loop.addedClasspath = ClassPath.join(loop.addedClasspath, f.path)
-    }
+    loop.addCps(jars)
 
     loop.process(settings)
-    _classServerUri = Some(loop.outputDir.getAbsolutePath)
-    loop.intp
+    val i = {
+      val l:HackSparkILoop = loop.asInstanceOf[HackSparkILoop]
+      l.interpreter
+    }
+    //i.initializeSynchronous()
+    _classServerUri = Some(i.classServerUri)
+    i.asInstanceOf[org.apache.spark.repl.SparkIMain]
   }
 
   private lazy val completion = {
-    new JLineCompletion(interp)
-    //new SparkJLineCompletion(interp)
+    //new JLineCompletion(interp)
+    new SparkJLineCompletion(interp)
   }
 
   private def scalaToJline(tc: ScalaCompleter): Completer = new Completer {
@@ -159,7 +155,6 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
     }
   }
 
-
   def getTypeNameOfTerm(termName: String): Option[String] = {
     val tpe = try {
       interp.typeOfTerm(termName).toString
@@ -173,12 +168,11 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
         // remove some crap
         Some(
           tpe
-          .replace("iwC$", "")
-          .replaceAll("^\\(\\)" , "") // 2.11 return types prefixed, like `()Person`
+            .replace("iwC$", "")
+            .stripPrefix("\\(\\)") // 2.11 return types prefixed, like `()Person`
         )
     }
   }
-
 
   /**
    * Evaluates the given code.  Swaps out the `println` OutputStream with a version that
@@ -195,9 +189,9 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
    * @param onPrintln
    * @return result and a copy of the stdout buffer during the duration of the execution
    */
-  def evaluate(code: String,
-               onPrintln: String => Unit = _ => (),
-               onNameDefinion: NameDefinition => Unit  = _ => ()
+  def evaluate( code: String,
+                onPrintln: String => Unit = _ => (),
+                onNameDefinion: NameDefinition => Unit  = _ => ()
               ): (EvaluationResult, String) = {
     stdout.flush()
     stdoutBytes.reset()
@@ -210,12 +204,14 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
     stdout.flush()
     stdoutBytes.aop = _ => ()
 
-    val result: EvaluationResult = res match {
+    val result = res match {
       case ReplSuccess =>
-        val request = interp.prevRequestList.last
-        val lastHandler: interp.memberHandlers.MemberHandler = request.handlers.last
+        val request:interp.Request = interp.getClass.getMethods.find(_.getName == "prevRequestList").map(_.invoke(interp)).get.asInstanceOf[List[interp.Request]].last
+        //val request:Request = interp.prevRequestList.last
 
         listDefinedTerms(request).foreach(onNameDefinion)
+
+        val lastHandler/*: interp.memberHandlers.MemberHandler*/ = request.handlers.last
 
         try {
           val lastStatementReturnsValue = listDefinedTerms(request).exists(_.name.matches("res[0-9]+"))
@@ -233,37 +229,34 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
                 |  %s
                 |}""".stripMargin.format(
                   request.importsPreamble,
-                  request.fullPath(lastHandler.definesTerm.get.toString),
+                  request.fullPath(lastHandler.definesTerm.get),
                   request.importsTrailer
                 )
-                LOG.debug(renderObjectCode)
             if (line.compile(renderObjectCode)) {
               try {
+                val classLoader = interp.getClass.getMethods.find(_.getName == "classLoader").map(_.invoke(interp)).get.asInstanceOf[java.lang.ClassLoader]
+
                 val renderedClass2 = Class.forName(
-                  line.pathTo("$rendered")+"$", true, interp.classLoader
+                  line.pathTo("$rendered")+"$", true, classLoader
                 )
-                def getModule(c:Class[_]) = c.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get(())
 
-                val module = getModule(renderedClass2)
+                val o = renderedClass2.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get(())
 
-                val topInstance = module.getClass.getDeclaredMethod("$iw").invoke(module)
-
-                def iws(o:Class[_], instance: Any): NodeSeq = {
-                  val tryClass = o.getName+"$$iw"
-                  val o2 = Try{module.getClass.getClassLoader.loadClass(tryClass)}.toOption
-
+                def iws(o:Any):NodeSeq = {
+                  val iw = o.getClass.getMethods.find(_.getName == "$iw")
+                  val o2 = iw map { m =>
+                    m.invoke(o)
+                  }
                   o2 match {
                     case Some(o3) =>
-                      val inst = o.getDeclaredMethod("$iw").invoke(instance)
-                      iws(o3, inst)
+                      iws(o3)
                     case None =>
-                      val r = o.getDeclaredMethod("rendered").invoke(instance)
+                      val r = o.getClass.getDeclaredMethod("rendered").invoke(o)
                       val h = r.asInstanceOf[Widget].toHtml
                       h
                   }
                 }
-
-                iws(module.getClass.getClassLoader.loadClass(renderedClass2.getName + "$iw"), topInstance)
+                iws(o)
               } catch {
                 case NonFatal(e) =>
                   e.printStackTrace
@@ -274,12 +267,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
             } else {
               // a line like println(...) is technically a val, but returns null for some reason
               // so wrap it in an option in case that happens...
-              Option(line.call("$result")).map { result =>
-                Text(
-                  try { result.toString }
-                  catch { case e: Throwable => "Fail to `toString` the result: " + e.getMessage }
-                )
-              }.getOrElse(NodeSeq.Empty)
+              Option(line.call("$result")) map { result => Text(try { result.toString } catch { case NonFatal(e) => "Fail to `toString` the result: " + e.getMessage }) } getOrElse NodeSeq.Empty
             }
           } else {
             NodeSeq.Empty
@@ -306,7 +294,8 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
   }
 
   def addCp(newJars:List[String]) = {
-    val prevCode = interp.prevRequestList.map(_.originalLine).drop( _evalsUntilInitFinished )
+    val requests = interp.getClass.getMethods.find(_.getName == "prevRequestList").map(_.invoke(interp)).get.asInstanceOf[List[interp.Request]]
+    val prevCode = requests.drop( _evalsUntilInitFinished ).map(_.originalLine)
     interp.close() // this will close the repl class server, which is needed in order to reuse `-Dspark.replClassServer.port`!
     val r = new Repl(compilerOpts, newJars:::jars)
     (r, () => prevCode foreach (c => r.evaluate(c, _ => ())))
@@ -339,7 +328,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
       case None =>
         val candidates = getCompletions(line, cursorPosition)
 
-        (matchedText, if (candidates.size > 0 && candidates.head.isEmpty) {
+        (matchedText, if (candidates.nonEmpty && candidates.head.isEmpty) {
           List()
         } else {
           candidates.map(Match(_))

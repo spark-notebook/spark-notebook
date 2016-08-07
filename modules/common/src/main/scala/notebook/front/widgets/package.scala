@@ -18,6 +18,7 @@ import notebook.front.widgets.magic.SamplerImplicits._
 package object widgets
   extends Generic
   with Texts
+  with Images
   with Lists
   with Layouts
   with charts.Charts {

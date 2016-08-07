@@ -106,7 +106,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
       l.interpreter
     }
     //i.initializeSynchronous()
-    _classServerUri = Some(i.classServerUri)
+    _classServerUri = Some(i.getClassOutputDirectory.getAbsolutePath)
     i.asInstanceOf[org.apache.spark.repl.SparkIMain]
   }
 
