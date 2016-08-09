@@ -242,10 +242,13 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
                 // spark looks for the compressor codec from the context class loader...
                 val cp = Thread.currentThread().getContextClassLoader
                 Thread.currentThread().setContextClassLoader( interp.classLoader )
+
                 val renderedClass2 = Class.forName(
                   line.pathTo("$rendered")+"$", true, interp.classLoader
                 )
+                // restore
                 Thread.currentThread().setContextClassLoader( cp )
+
                 def getModule(c:Class[_]) = c.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get(())
 
                 val module = getModule(renderedClass2)
