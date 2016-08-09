@@ -28,7 +28,19 @@ object Dependencies {
   val spark_X_Y = "[a-zA-Z]*([0-9]+)\\.([0-9]+)\\.([0-9]+).*".r
   val extractVs = "[a-zA-Z]*(\\d+)\\.(\\d+)\\.(\\d+).*".r
 
-  val defaultSparkVersion = sys.props.getOrElse("spark.version", "1.6.1")
+  val defaultSparkVersion = sys.props.getOrElse("spark.version", "1.6.2")
+  if (defaultSparkVersion.startsWith("2")) {
+    scala.Console.err.println("""|
+      |***************************************************************************************************
+      |*                                                                                                 *
+      |*                     This branch isn't able to build against spark 2+                            *
+      |*                      Please use the `future-master` branch instead                              *
+      |*                                                                                                 *
+      |***************************************************************************************************
+      """.stripMargin)
+    sys.exit(1)
+  }
+
   val sparkVersionTuple = defaultSparkVersion match { case extractVs(v, m, p) =>  (v.toInt, m.toInt, p.toInt)}
   val defaultScalaVersion = sys.props.getOrElse("scala.version", "2.10.5") match {
     case x@scala_2_1X("0") => defaultSparkVersion match {
