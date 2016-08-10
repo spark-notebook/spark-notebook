@@ -13,12 +13,8 @@ object DockerProperties extends BuildConf {
 
   private val defaultCommands: Seq[Cmd] = Seq(
     Cmd("USER", "root"),
-    Cmd("RUN", "echo \"deb http://repos.mesosphere.io/debian jessie main\" | tee /etc/apt/sources.list.d/mesosphere.list"),
-    Cmd("RUN", "apt-key adv --keyserver keyserver.ubuntu.com --recv E56151BF"),
-    Cmd("RUN", s"apt-get update --fix-missing && apt-get install -y --no-install-recommends openjdk-7-jdk mesos=$mesosVersion-0.2.62.debian81"),
-    Cmd("ENV", "JAVA_HOME /usr/lib/jvm/java-7-openjdk-amd64"),
-    Cmd("ENV", s"MESOS_JAVA_NATIVE_LIBRARY /usr/local/lib/libmesos-$mesosVersion.so"),
-    Cmd("ENV", s"MESOS_LOG_DIR /var/log/mesos")
+    Cmd("RUN", s"apt-get update --fix-missing && apt-get install -y --no-install-recommends openjdk-7-jdk"),
+    Cmd("ENV", "JAVA_HOME /usr/lib/jvm/java-7-openjdk-amd64")
   )
   private val defaultVolumes: Seq[String] = Seq("/opt/docker", "/opt/docker/notebooks", "/opt/docker/logs")
 
