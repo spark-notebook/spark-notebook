@@ -15,7 +15,7 @@
 JAVA_OPTS="-Dpidfile.path=/var/run/${{app_name}}/play.pid $JAVA_OPTS"
 # JAVA_OPTS="-Dconfig.file=/etc/${{app_name}}/env.conf $JAVA_OPTS"
 # JAVA_OPTS="-DapplyEvolutions.default=false $JAVA_OPTS"
-# JAVA_OPTS="-Dhttp.port=9000 $JAVA_OPTS"
+# JAVA_OPTS="-Dhttp.port=9001 $JAVA_OPTS"
 # JAVA_OPTS="-Dhttp.address=127.0.0.1 $JAVA_OPTS"
 
 # Setting -Xmx and -Xms in Megabyte

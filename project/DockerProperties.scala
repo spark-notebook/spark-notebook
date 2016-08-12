@@ -36,5 +36,5 @@ object DockerProperties extends BuildConf {
   val commands     = Try { asCmdSeq(cfg.getConfigList("docker.commands").asScala.toSeq) }.getOrElse( defaultCommands )
   val volumes      = Try { cfg.getStringList("docker.volumes").asScala.toSeq }.getOrElse( defaultVolumes )
   val registry     = Some(getString("docker.registry", "andypetrella"))
-  val ports        = Try { cfg.getIntList("docker.ports").asScala.toSeq.map { e => e.intValue() } }.getOrElse( Seq(9000, 9443) )
+  val ports        = Try { cfg.getIntList("docker.ports").asScala.toSeq.map { e => e.intValue() } }.getOrElse( Seq(9001, 9443) )
 }

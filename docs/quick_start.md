@@ -17,7 +17,7 @@ Start using the Spark Notebook in less than 5 minutes? Take these steps:
 * Open a terminal/command window
 * Change to the root directory of the expanded distribution
 * Execute the command `bin/spark-notebook` (*NIX) or `bin\spark-notebook` (Windows)
-* Open your browser to [localhost:9000](http://localhost:9000)
+* Open your browser to [localhost:9001](http://localhost:9001)
 
 This procedure will launch a Notebook Server with the default configuration. If all went well, you will see the Notebook browser home page:
 

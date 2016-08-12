@@ -54,7 +54,7 @@ Before the first launch, it may be necessary to add some settings to `conf/appli
 
 In particular `manager.kernel.vmArgs` can be used to set environment variables for the driver (e.g. `-Dhdp.version=$HDP-Version` if you want to run the Spark Notebook on a **Hortonworks** cluster). These are the settings that you would commonly pass via `spark.driver.extraJavaOptions`.
 
-When the server has been started, you can head to the page `http://localhost:9000` and you'll see something similar to:
+When the server has been started, you can head to the page `http://localhost:9001` and you'll see something similar to:
 ![Notebook list](./images/spark-notebook-home.png)
 
 From there you can either:
