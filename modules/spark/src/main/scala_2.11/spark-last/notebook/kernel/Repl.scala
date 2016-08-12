@@ -229,7 +229,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
             val renderObjectCode =
               """object $rendered {
                 |  %s
-                |  val rendered: _root_.notebook.front.Widget = { %s }
+                |  val rendered: _root_.notebook.front.Widget = try { %s } catch { case t:Throwable => _root_.notebook.front.widgets.html(<div class='alert alert-danger'><div>Exception in implicit renderer: {t.getMessage}</div><pre>{t.getStackTrace.mkString("\n")}</pre></div>) }
                 |  %s
                 |}""".stripMargin.format(
                   request.importsPreamble,
@@ -239,9 +239,16 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
                 LOG.debug(renderObjectCode)
             if (line.compile(renderObjectCode)) {
               try {
+                // spark looks for the compressor codec from the context class loader...
+                val cp = Thread.currentThread().getContextClassLoader
+                Thread.currentThread().setContextClassLoader( interp.classLoader )
+
                 val renderedClass2 = Class.forName(
                   line.pathTo("$rendered")+"$", true, interp.classLoader
                 )
+                // restore
+                Thread.currentThread().setContextClassLoader( cp )
+
                 def getModule(c:Class[_]) = c.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get(())
 
                 val module = getModule(renderedClass2)
