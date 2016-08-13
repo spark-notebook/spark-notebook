@@ -690,9 +690,11 @@ object Application extends Controller {
             def toBq(s:String) = s.split("\n").map(s => s"> $s").mkString("\n")
             def bq(s:String) =
               s"""|
+              |> <pre>
               |> ```
               |${toBq(s)}
               |>```
+              |></pre>
               |""".stripMargin
 
             def osToMd(os:Option[List[NBSerializer.Output]]) = {
@@ -719,17 +721,21 @@ object Application extends Controller {
                                       ("scala", i)
                                     }
                       s"""|
+                      |<pre>
                       |```$t
                       |$cd
                       |```
+                      |</pre>
                       |${osToMd(os)}
                       |""".stripMargin
 
                     case NBSerializer.CodeCell(md, "code", i, None, _, os) if i.trim.nonEmpty => 
                       s"""|
+                      |<pre>
                       |```scala
                       |$i
                       |```
+                      |</pre>
                       |${osToMd(os)}
                       |""".stripMargin
 
