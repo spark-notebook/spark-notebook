@@ -1,0 +1,65 @@
+{
+  "metadata" : {
+    "name" : "Custom Plotly Charts",
+    "user_save_timestamp" : "1970-01-01T03:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T03:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customArgs" : null,
+    "customSparkConf" : null
+  },
+  "cells" : [ {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "D3BAD6370D1B4EB98988845E1A09F323"
+    },
+    "cell_type" : "code",
+    "source" : "case class Species(name: String, amount: Int)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "defined class Species\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 1,
+      "time" : "Took: 1 second 360 milliseconds, at 2016-8-14 23:25"
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "37B690E0CA6D41F380EA548312EFB490"
+    },
+    "cell_type" : "code",
+    "source" : "CustomPlotlyChart(Seq(Species(\"giraffes\", 20), Species(\"orangutans\", 14), Species(\"monkeys\", 23)), \n                  \"\"\"{}\"\"\",\n                  \"\"\"{type: 'bar'}\"\"\",\n                  \"\"\"{x: 'name', y: 'amount'}\"\"\")",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res3: notebook.front.widgets.charts.CustomPlotlyChart[Seq[Species]] = <CustomPlotlyChart widget>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon6456456da3980cf3e0e87f6e5e9c2f1f&quot;,&quot;dataInit&quot;:[{&quot;name&quot;:&quot;giraffes&quot;,&quot;amount&quot;:20},{&quot;name&quot;:&quot;orangutans&quot;,&quot;amount&quot;:14},{&quot;name&quot;:&quot;monkeys&quot;,&quot;amount&quot;:23}],&quot;genId&quot;:&quot;178107672&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/customPlotlyChart'], \n      function(playground, _magiccustomPlotlyChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magiccustomPlotlyChart,\n    \"o\": {\"js\":\"var layout = {}; var dataSources={x: 'name', y: 'amount'}; var dataOptions = {type: 'bar'}\",\"headers\":[\"name\",\"amount\"],\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n      <span class=\"chart-total-item-count\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anond5401a41b60454f8576ff3aee5dcba92&quot;,&quot;initialValue&quot;:&quot;3&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId, initialValue)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p> entries total</span>\n      <span class=\"chart-sampling-warning\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anonf3c7d2d7591020192162f9dd381fdb16&quot;,&quot;initialValue&quot;:&quot;&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId, initialValue)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p></span>\n      <div>\n      </div>\n    </div></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 2,
+      "time" : "Took: 1 second 894 milliseconds, at 2016-8-14 23:26"
+    } ]
+  } ],
+  "nbformat" : 4
+}
