@@ -63,4 +63,5 @@ define([
     chart = Plotly.newPlot(chart_container.attr("id"),
                            plotlyData,
                            layout)
+
 )
