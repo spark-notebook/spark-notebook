@@ -6,10 +6,11 @@ define([
   (dataO, container, options) ->
 
     formatData = (dataPoints, dataSources, dataOptions) ->
-        nameField = dataOptions["nameField"] or null
-        data = if nameField is not null then {} else {unk: {}}
+        splitBy = dataOptions.splitBy
+        delete dataOptions.splitBy
+        data = if splitBy? then {} else {unk: {}}
         for point in dataPoints
-            traceName = if nameField is not null then {} else "unk"
+            traceName = if splitBy? then point[splitBy] else "unk"
             if traceName not of data
                 data[traceName] = {}
             trace = data[traceName]
@@ -27,7 +28,9 @@ define([
                     trace[field].push(point[source])
         # TODO add options per trace
         for traceName, trace of data
-            for option, value of dataOptions[traceName]
+            if splitBy?
+                trace['name'] = traceName
+            for option, value of dataOptions#[traceName]
                 if typeof value == "object"
                     trace[option] = {}
                     for suboption, subvalue of value
@@ -55,11 +58,4 @@ define([
     chart = Plotly.newPlot(chart_container.attr("id"),
                            plotlyData,
                            layout)
-
-    # chart = new tauCharts.Chart(chartOptions)
-    # chart.renderTo("#" + chart_container.attr("id"))
-
-    # dataO.subscribe( (newData) =>
-    #   chart.setData(newData)
-    # )
 )

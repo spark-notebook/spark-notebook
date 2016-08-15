@@ -11,17 +11,19 @@ import notebook.front.widgets.magic.Implicits._
 import notebook.front.widgets.magic.SamplerImplicits._
 
 case class CustomPlotlyChart[C:ToPoints:Sampler](
-  originalData:C,
-  chartOptions :String = "{}",
+  originalData: C,
+  layout: String = "{}",
+  dataOptions: String = "{}",
+  dataSources: String = "{}",
   override val sizes:(Int, Int)=(600, 400),
   maxPoints:Int = DEFAULT_MAX_POINTS
 ) extends Chart[C](originalData, maxPoints) {
 
   def mToSeq(t:MagicRenderPoint):Seq[(String, Any)] = t.data.toSeq
 
-  override val scripts = List(Script( "magic/customTauChart",
+  override val scripts = List(Script( "magic/customPlotlyChart",
     Json.obj(
-      "js" → s"var chartOptions = $chartOptions;",
+      "js" → s"var layout = $layout; var dataSources=$dataSources; var dataOptions = $dataOptions",
       "headers" → headers,
       "height" → sizes._2)))
 }
