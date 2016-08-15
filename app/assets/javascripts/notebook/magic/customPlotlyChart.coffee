@@ -26,11 +26,16 @@ define([
                     if field not of trace
                         trace[field] = []
                     trace[field].push(point[source])
-        # TODO add options per trace
+        optionsByTrace = dataOptions.byTrace
+        delete dataOptions.byTrace
         for traceName, trace of data
             if splitBy?
                 trace['name'] = traceName
-            for option, value of dataOptions#[traceName]
+            if optionsByTrace? and optionsByTrace[traceName]?
+                options = optionsByTrace[traceName]
+            else
+                options = dataOptions
+            for option, value of options
                 if typeof value == "object"
                     trace[option] = {}
                     for suboption, subvalue of value
