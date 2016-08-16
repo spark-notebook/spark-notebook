@@ -994,11 +994,18 @@ define([
                     var h = o.data["text/html"];
                     var svg = this.element.find("svg");
                     if (svg.length) {
-                        var s = svg.get(0);
-                        var xml  = new XMLSerializer().serializeToString(s);
-                        var xmlSerializable /*latin1*/ = escape(xml)
-                        var data = "data:image/svg+xml;base64," + btoa(xmlSerializable);
-                        o.data["application/svg+base64"] = data;
+                        try {
+                            var s = svg.get(0);
+                            var texts = $(svg).find("text");
+                            _.each(texts, function(z) { $(z).text(escape($(z).text())) });
+                            var xml  = new XMLSerializer().serializeToString(s);
+                            _.each(texts, function(z) { $(z).text(unescape($(z).text())) });
+                            var data = "data:image/svg+xml;base64," + btoa(xml);
+                            o.data["application/svg+base64"] = data;
+                        } catch(e) {
+                            alert("Couldn't generate markdown, check the javascript console for the error and report an issue if necessary... sorry.")
+                            console.error(e);
+                        }
                     }
                 }
             }

@@ -722,6 +722,7 @@ object Application extends Controller {
                       |```$t
                       |$cd
                       |```
+                      |
                       |${osToMd(os)}
                       |""".stripMargin
 
@@ -730,6 +731,7 @@ object Application extends Controller {
                       |```scala
                       |$i
                       |```
+                      |
                       |${osToMd(os)}
                       |""".stripMargin
 
