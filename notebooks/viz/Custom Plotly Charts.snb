@@ -24,52 +24,6 @@
     "source" : "# Bar Charts"
   }, {
     "metadata" : {
-      "id" : "5DC3CE3457CC4CBF89CF847FCF5A69B8"
-    },
-    "cell_type" : "markdown",
-    "source" : "## Basic Line Chart"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "65FB920A524A466B88CC3B89722148C7"
-    },
-    "cell_type" : "code",
-    "source" : "val traces = List.tabulate(4, 3)((i, j) => (i, scala.util.Random.nextInt(10), \"trace\"+j)).flatten",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "F43C1D5465C34FF182768D720E96E0E9"
-    },
-    "cell_type" : "code",
-    "source" : "val layout = \"\"\"\nlayout = {\n  title: 'Line Graph',\n  xaxis: {\n    title: 'x-axis title'\n  },\n  yaxis: {\n    title: 'y-axis title'\n  }\n}\n\"\"\"",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "9495E1AA37C9482085B1198DA9108D5A"
-    },
-    "cell_type" : "code",
-    "source" : "val line = CustomPlotlyChart(traces, \n                  dataOptions=\"{type: 'line', splitBy: '_3'}\",\n                  dataSources=\"{x: '_1', y: '_2'}\")\nline",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "FBEF1413144146FB9CB12BE3C814C9B3"
-    },
-    "cell_type" : "code",
-    "source" : "line.addAndApply(List((4, 10, \"trace0\"), (4, 10, \"trace1\"), (4, 10, \"trace2\")))",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
       "id" : "B569E588AE474C348E5DC84731FF8372"
     },
     "cell_type" : "markdown",
@@ -92,11 +46,11 @@
       "id" : "37B690E0CA6D41F380EA548312EFB490"
     },
     "cell_type" : "code",
-    "source" : "val bar = CustomPlotlyChart(Seq(Species(\"giraffes\", 20), Species(\"orangutans\", 14), Species(\"monkeys\", 23)), \n                  dataOptions=\"{type: 'bar'}\",\n                  dataSources=\"{x: 'name', y: 'amount'}\")\nbar",
+    "source" : "val bar = CustomPlotlyChart(Seq(Species(\"giraffes\", 20), Species(\"orangutans\", 14), Species(\"monkeys\", 23)), \n                            dataOptions=\"{type: 'bar'}\",\n                            dataSources=\"{x: 'name', y: 'amount'}\")\nbar",
     "outputs" : [ ]
   }, {
     "metadata" : {
-      "id" : "2E6B3B07C3774284841A49C3B776A679"
+      "id" : "DBBAACCB57184BE2B6C65626FC34DE10"
     },
     "cell_type" : "markdown",
     "source" : "Adding some unicorns, not too much though. $5$ is probably even too much for this world..."
@@ -105,7 +59,7 @@
       "trusted" : true,
       "input_collapsed" : false,
       "collapsed" : false,
-      "id" : "29DB106198614C0584DC2FA05F09FB09"
+      "id" : "D1B89BB61C3A4E608D7A0AFA4BF87D9E"
     },
     "cell_type" : "code",
     "source" : "bar.addAndApply(Seq(Species(\"unicorns\", 5)))",
@@ -120,7 +74,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false,
+      "collapsed" : true,
       "id" : "02492FA6AD294A009934D421EE7F3B8A"
     },
     "cell_type" : "code",
@@ -130,7 +84,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false,
+      "collapsed" : true,
       "id" : "8DEEA2C0D82144F0A65A90B24818D0BB"
     },
     "cell_type" : "code",
@@ -149,7 +103,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false,
+      "collapsed" : true,
       "id" : "9745838191BF4CD09D09F9C4DD113BAE"
     },
     "cell_type" : "code",
@@ -221,7 +175,7 @@
       "id" : "C8C567289BC5479185BAA847D4F384F1"
     },
     "cell_type" : "code",
-    "source" : "val bubbles = Seq(\n  (1, 10, 40), (2, 11, 60), (3, 12, 80), (4, 13, 100)\n).toDF(\"xPos\", \"yPos\", \"bubbleSize\")",
+    "source" : "val bubbles = Seq(\n  (1, 10, 40, \"magenta\"), (2, 11, 60, \"lightblue\"), (3, 12, 80, \"lightgreen\"), (4, 13, 100, \"pink\")\n).toDF(\"xPos\", \"yPos\", \"bubbleSize\", \"color\")",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -231,7 +185,7 @@
       "id" : "DCFEBDE6B0FD487095DF8F91DBFDB6B9"
     },
     "cell_type" : "code",
-    "source" : "CustomPlotlyChart(bubbles, \n                  layout=\"{title: 'Marker Size', showlegend: false, height: 600, width: 600}\",\n                  dataOptions=\"{mode: 'markers'}\",\n                  dataSources=\"{x: 'xPos', y: 'yPos', marker: {size: 'bubbleSize'}}\")",
+    "source" : "CustomPlotlyChart(bubbles, \n                  layout=\"{title: 'Marker Size', showlegend: false, height: 600, width: 600}\",\n                  dataOptions=\"{mode: 'markers'}\",\n                  dataSources=\"{x: 'xPos', y: 'yPos', marker: {size: 'bubbleSize', color: 'color'}}\")",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -244,7 +198,7 @@
       "trusted" : true,
       "input_collapsed" : false,
       "collapsed" : false,
-      "id" : "5B22F2003F4B49B89D4CD67012143444"
+      "id" : "B382460D9CC3491684287350D3E7C29A"
     },
     "cell_type" : "code",
     "source" : "import scala.util.Random",
@@ -275,13 +229,241 @@
     "outputs" : [ ]
   }, {
     "metadata" : {
+      "id" : "76EA2E930B47475E80134D4500382F6D"
+    },
+    "cell_type" : "markdown",
+    "source" : "# Line and Scatter Charts"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "4796771738B9472FA37F0B98E16F5DEB"
+    },
+    "cell_type" : "code",
+    "source" : "val samples = Seq(\n  (1, 10, \"trace 1\"), (2, 15, \"trace 1\"), (3, 13, \"trace 1\"), (4, 17, \"trace 1\"),\n  (2, 16, \"trace 2\"), (3, 5, \"trace 2\"), (4, 11, \"trace 2\"), (5, 9, \"trace 2\"),\n  (1, 12, \"trace 3\"), (2, 9, \"trace 3\"), (3, 15, \"trace 3\"), (4, 12, \"trace 3\")\n).toDF(\"x\", \"y\", \"trace\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "D5A36479315F4E7D8A895639F678BF34"
+    },
+    "cell_type" : "code",
+    "source" : "CustomPlotlyChart(samples,\n                  layout=\"{title: 'Line and Scatter Styling'}\",\n                  dataOptions=\"\"\"{\n                    splitBy: 'trace',\n                    byTrace: {\n                      'trace 1': {\n                        mode: 'markers',\n                        marker: {\n                          color: 'rgb(219, 64, 82)',\n                          size: 12\n                        }\n                      },\n                      'trace 2': {\n                        mode: 'lines',\n                        line: {\n                          color: 'rgb(55, 128, 191)',\n                          width: 3\n                        }\n                      },\n                      'trace 3': {\n                        mode: 'lines+markers',\n                        line: {\n                          color: 'rgb(128, 0, 128)',\n                          width: 1\n                        },\n                        marker: {\n                           color: 'rgb(128, 0, 128)',\n                           size: 8\n                        }\n                      }\n                    }\n                  }\"\"\",\n                  dataSources=\"{x: 'x', y: 'y'}\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "id" : "420294658DC64BCFBDF776217F7750E2"
+    },
+    "cell_type" : "markdown",
+    "source" : "# Area Charts"
+  }, {
+    "metadata" : {
+      "id" : "83A5933DD5544324A20E189A2F3DC515"
+    },
+    "cell_type" : "markdown",
+    "source" : "## Overlaid Area Chart"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "529F882892934F7D85B22945F5F76B73"
+    },
+    "cell_type" : "code",
+    "source" : "val samples = Seq(\n  (1, 0, \"trace 1\"), (2, 2, \"trace 1\"), (3, 3, \"trace 1\"), (4, 5, \"trace 1\"),\n  (1, 3, \"trace 2\"), (2, 5, \"trace 2\"), (3, 1, \"trace 2\"), (4, 7, \"trace 2\")\n).toDF(\"x\", \"y\", \"trace\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "87EC5D8A82434226AA5A15D8AAEA0396"
+    },
+    "cell_type" : "code",
+    "source" : "CustomPlotlyChart(samples,\n                  layout=\"{title: 'Overlaid Area Chart'}\",\n                  dataOptions=\"\"\"{\n                    splitBy: 'trace',\n                    byTrace: {\n                      'trace 1': {\n                        mode: 'scatter',\n                        fill: 'tozeroy'\n                      },\n                      'trace 2': {\n                        mode: 'scatter',\n                        fill: 'tonexty'\n                      }\n                    }\n                  }\"\"\",\n                  dataSources=\"{x: 'x', y: 'y'}\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "id" : "29D68C8FCBFA452A878D28947DE0BFDC"
+    },
+    "cell_type" : "markdown",
+    "source" : "# Histograms"
+  }, {
+    "metadata" : {
+      "id" : "02F91B8B83D94445949469AC18B04202"
+    },
+    "cell_type" : "markdown",
+    "source" : "## Basic Histogram"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "CA01CCB1DF62497A846AB394FC065783"
+    },
+    "cell_type" : "code",
+    "source" : "val samples = (0 until 500)\n      .map(Tuple2(_, Random.nextGaussian))\n      .toDF(\"sampleNum\", \"value\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "ABE8C7235A134A44854F1D0F0599FD48"
+    },
+    "cell_type" : "code",
+    "source" : "CustomPlotlyChart(samples, \n                  dataOptions=\"{type: 'histogram', opacity: 0.7}\",\n                  dataSources=\"{x: 'value'}\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "id" : "0DEEAF2BE6954E3189B844A5CA2783E3"
+    },
+    "cell_type" : "markdown",
+    "source" : "## Horizontal Histogram"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "383F8D80589B4013859A7BD335677D16"
+    },
+    "cell_type" : "code",
+    "source" : "CustomPlotlyChart(samples, \n                  dataOptions=\"{type: 'histogram', marker: {color: 'pink'}}\",\n                  dataSources=\"{y: 'value'}\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "id" : "1DB4506348544CC69B2FC91A3DBF8C02"
+    },
+    "cell_type" : "markdown",
+    "source" : "## Overlaid Histgram"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "3A0B039A5D7543CB85925D8FF14AF46D"
+    },
+    "cell_type" : "code",
+    "source" : "val samples = (0 until 500)\n      .flatMap(_ => Seq(Tuple2(\"A\", Random.nextGaussian), Tuple2(\"B\", Random.nextGaussian + 0.7)))\n      .toDF(\"cls\", \"value\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "E81D78D1C1E04EDA85504B8C2D5E006E"
+    },
+    "cell_type" : "code",
+    "source" : "CustomPlotlyChart(samples,\n                  layout=\"{barmode: 'overlay'}\",\n                  dataOptions=\"\"\"{\n                      splitBy: 'cls',\n                      type: 'histogram',\n                      opacity: 0.6\n                    }\"\"\",\n                  dataSources=\"{x: 'value'}\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "id" : "2F0CB1BD4C29479C81D14B8AF77D7470"
+    },
+    "cell_type" : "markdown",
+    "source" : "### Styled Overlaid Histograms"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "6F92C18182154AFB8765CD61ACD4137B"
+    },
+    "cell_type" : "code",
+    "source" : "CustomPlotlyChart(samples,\n                  layout=\"{barmode: 'overlay', bargap: 0.05}\",\n                  dataOptions=\"\"\"{\n                    splitBy: 'cls',\n                    byTrace: {\n                      'A': {\n                        type: 'histogram',\n                        opacity: 0.5,\n                        marker: {\n                          color: 'green'\n                        }\n                      },\n                      'B': {\n                        type: 'histogram',\n                        opacity: 0.5,\n                        marker: {\n                          color: 'red'\n                        }\n                      }\n                    }}\"\"\",\n                  dataSources=\"{x: 'value'}\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "id" : "AA9EF856B7364E558D1686E7ED870D36"
+    },
+    "cell_type" : "markdown",
+    "source" : "# 2D Histograms"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "B6B1B3D81E8B41AB93BC70004293F670"
+    },
+    "cell_type" : "code",
+    "source" : "val samples = (0 until 500)\n      .map(_ => Tuple2(Random.nextGaussian, Random.nextGaussian + 1))\n      .toDF(\"x\", \"y\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "C5045FCEB2334F9596736D84BFE06AB5"
+    },
+    "cell_type" : "code",
+    "source" : "CustomPlotlyChart(samples, \n                  dataOptions=\"{type: 'histogram2d', opacity: 0.8}\",\n                  dataSources=\"{x: 'x', y: 'y'}\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "id" : "3A31674FA7004B518ED815C9FDADE22E"
+    },
+    "cell_type" : "markdown",
+    "source" : "# Error Bars"
+  }, {
+    "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
       "collapsed" : true,
-      "id" : "FF4CD0BF77BC4A268E8B019DB559228D"
+      "id" : "3F0D0DD21FAF47C18EAD964E831D2A46"
+    },
+    "cell_type" : "markdown",
+    "source" : "## Basic Symmetric Error Bars"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "C57742F6F5B6436682D09AF3371288B7"
     },
     "cell_type" : "code",
-    "source" : "",
+    "source" : "val measurement = Seq(\n  (1, 6, 1), (3, 10, 3), (5, 2, 2)\n).toDF(\"x\", \"value\", \"error\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "C3F9EA9DDBD447D8A83837EC9A905F20"
+    },
+    "cell_type" : "code",
+    "source" : "CustomPlotlyChart(measurement, \n                  dataOptions=\"{type: 'scatter', error_y: {type: 'data', visible: true}}\",\n                  dataSources=\"{x: 'x', y: 'value', error_y: {array: 'error'}}\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true,
+      "id" : "2B609AEB43894B9285EDF905385EDE70"
+    },
+    "cell_type" : "markdown",
+    "source" : "## Asymmetric Error Bars"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "A64F97916F354E82AC9F26FF9EC2D450"
+    },
+    "cell_type" : "code",
+    "source" : "val measurement = Seq(\n  (1.0, 2.0, 0.4, 0.1), (3.0, 1.0, 0.2, 0.8), (5.0, 4.0, 0.3, 1.0)\n).toDF(\"x\", \"value\", \"pluserror\", \"minuserror\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "BFEA6047236D45438A5850798181ABCB"
+    },
+    "cell_type" : "code",
+    "source" : "CustomPlotlyChart(measurement, \n                  dataOptions=\"{type: 'scatter', error_y: {type: 'data', visible: true}}\",\n                  dataSources=\"{x: 'x', y: 'value', error_y: {symmetric: false, array: 'pluserror', arrayminus: 'minuserror'}}\")",
     "outputs" : [ ]
   } ],
   "nbformat" : 4
