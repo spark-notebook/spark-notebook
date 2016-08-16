@@ -1,7 +1,7 @@
 {
   "metadata" : {
     "name" : "Custom Plotly Charts",
-    "user_save_timestamp" : "1111-10-01T03:00:00.000Z",
+    "user_save_timestamp" : "1111-10-12T09:00:00.000Z",
     "auto_save_timestamp" : "1970-01-01T03:00:00.000Z",
     "language_info" : {
       "name" : "scala",
@@ -74,7 +74,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "02492FA6AD294A009934D421EE7F3B8A"
     },
     "cell_type" : "code",
@@ -84,7 +84,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "8DEEA2C0D82144F0A65A90B24818D0BB"
     },
     "cell_type" : "code",
@@ -103,7 +103,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "9745838191BF4CD09D09F9C4DD113BAE"
     },
     "cell_type" : "code",
