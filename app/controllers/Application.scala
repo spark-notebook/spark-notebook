@@ -692,7 +692,7 @@ object Application extends Controller {
               s"""|
               |><pre>
               |${toBq(s)}
-              |></pre>
+              |> <pre>
               |""".stripMargin
 
             def osToMd(os:Option[List[NBSerializer.Output]]) = {
