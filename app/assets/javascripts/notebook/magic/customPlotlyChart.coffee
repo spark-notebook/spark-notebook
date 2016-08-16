@@ -37,12 +37,12 @@ define([
                 options = dataOptions
             for option, value of options
                 if typeof value == "object"
-                    trace[option] = {}
+                    if option not of trace
+                        trace[option] = {}
                     for suboption, subvalue of value
                         trace[option][suboption] = subvalue
                 else
                     trace[option] = value
-
         (value for own prop, value of data)
 
     h = options.height||400
@@ -63,5 +63,4 @@ define([
     chart = Plotly.newPlot(chart_container.attr("id"),
                            plotlyData,
                            layout)
-
 )
