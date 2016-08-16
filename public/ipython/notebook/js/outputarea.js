@@ -996,7 +996,8 @@ define([
                     if (svg.length) {
                         var s = svg.get(0);
                         var xml  = new XMLSerializer().serializeToString(s);
-                        var data = "data:image/svg+xml;base64," + btoa(xml);
+                        var xmlSerializable /*latin1*/ = escape(xml)
+                        var data = "data:image/svg+xml;base64," + btoa(xmlSerializable);
                         o.data["application/svg+base64"] = data;
                     }
                 }

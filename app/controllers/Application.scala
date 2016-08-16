@@ -690,9 +690,9 @@ object Application extends Controller {
             def toBq(s:String) = s.split("\n").map(s => s"> $s").mkString("\n")
             def bq(s:String) =
               s"""|
-              |> ```
+              |><pre>
               |${toBq(s)}
-              |>```
+              |></pre>
               |""".stripMargin
 
             def osToMd(os:Option[List[NBSerializer.Output]]) = {
