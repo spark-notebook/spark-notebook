@@ -50,18 +50,25 @@ define([
     chart_container = $("<div>").addClass("custom-plotly-chart").attr("height", h+"px")
     chart_container.attr("id", "custom-plotly-chart-"+@genId).appendTo(container)
 
-    try
-      eval(options.js) # should create `layout`,'dataOptions' and 'dataSources' vars
-    catch error
-      alert("Error when evaluating layout (see console for the error)")
-      console.log(error)
+    c_options = options
 
-    dataPoints = @dataInit
+    plot = (data) =>
+        # we re-eval the js because the newPlot function has side effects -_-"
+        try
+          eval(c_options.js) # should create `layout`,'dataOptions' and 'dataSources' vars
+        catch error
+          alert("Error when evaluating layout (see console for the error)")
+          console.log(error)
 
-    plotlyData = formatData(dataPoints, dataSources, dataOptions)
+        plotlyData = formatData(data, dataSources, dataOptions)
 
-    chart = Plotly.newPlot(chart_container.attr("id"),
-                           plotlyData,
-                           layout)
+        chart = Plotly.newPlot(chart_container.attr("id"),
+                               plotlyData,
+                               layout,
+                                {displaylogo: false})
+
+    plot(@dataInit)
+
+    dataO.subscribe(plot)
 
 )

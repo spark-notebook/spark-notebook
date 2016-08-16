@@ -24,6 +24,52 @@
     "source" : "# Bar Charts"
   }, {
     "metadata" : {
+      "id" : "5DC3CE3457CC4CBF89CF847FCF5A69B8"
+    },
+    "cell_type" : "markdown",
+    "source" : "## Basic Line Chart"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "65FB920A524A466B88CC3B89722148C7"
+    },
+    "cell_type" : "code",
+    "source" : "val traces = List.tabulate(4, 3)((i, j) => (i, scala.util.Random.nextInt(10), \"trace\"+j)).flatten",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "F43C1D5465C34FF182768D720E96E0E9"
+    },
+    "cell_type" : "code",
+    "source" : "val layout = \"\"\"\nlayout = {\n  title: 'Line Graph',\n  xaxis: {\n    title: 'x-axis title'\n  },\n  yaxis: {\n    title: 'y-axis title'\n  }\n}\n\"\"\"",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "9495E1AA37C9482085B1198DA9108D5A"
+    },
+    "cell_type" : "code",
+    "source" : "val line = CustomPlotlyChart(traces, \n                  dataOptions=\"{type: 'line', splitBy: '_3'}\",\n                  dataSources=\"{x: '_1', y: '_2'}\")\nline",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "FBEF1413144146FB9CB12BE3C814C9B3"
+    },
+    "cell_type" : "code",
+    "source" : "line.addAndApply(List((4, 10, \"trace0\"), (4, 10, \"trace1\"), (4, 10, \"trace2\")))",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
       "id" : "B569E588AE474C348E5DC84731FF8372"
     },
     "cell_type" : "markdown",
@@ -32,7 +78,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "D3BAD6370D1B4EB98988845E1A09F323"
     },
     "cell_type" : "code",
@@ -42,11 +88,27 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "37B690E0CA6D41F380EA548312EFB490"
     },
     "cell_type" : "code",
-    "source" : "CustomPlotlyChart(Seq(Species(\"giraffes\", 20), Species(\"orangutans\", 14), Species(\"monkeys\", 23)), \n                  dataOptions=\"{type: 'bar'}\",\n                  dataSources=\"{x: 'name', y: 'amount'}\")",
+    "source" : "val bar = CustomPlotlyChart(Seq(Species(\"giraffes\", 20), Species(\"orangutans\", 14), Species(\"monkeys\", 23)), \n                  dataOptions=\"{type: 'bar'}\",\n                  dataSources=\"{x: 'name', y: 'amount'}\")\nbar",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "id" : "2E6B3B07C3774284841A49C3B776A679"
+    },
+    "cell_type" : "markdown",
+    "source" : "Adding some unicorns, not too much though. $5$ is probably even too much for this world..."
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "29DB106198614C0584DC2FA05F09FB09"
+    },
+    "cell_type" : "code",
+    "source" : "bar.addAndApply(Seq(Species(\"unicorns\", 5)))",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -58,7 +120,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "02492FA6AD294A009934D421EE7F3B8A"
     },
     "cell_type" : "code",
@@ -68,7 +130,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "8DEEA2C0D82144F0A65A90B24818D0BB"
     },
     "cell_type" : "code",
@@ -87,7 +149,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "9745838191BF4CD09D09F9C4DD113BAE"
     },
     "cell_type" : "code",
@@ -103,7 +165,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "0C1DE57076894F1F92346C34BCEB2C9C"
     },
     "cell_type" : "code",
@@ -113,7 +175,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "5C6F1355D9CC43ED825B3C7B523A742B"
     },
     "cell_type" : "code",
@@ -123,7 +185,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "FF6F5C1BB26748FE80028E4393F0121C"
     },
     "cell_type" : "code",
@@ -139,7 +201,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "42A5D2036A82492A8944109EB4F71E5A"
     },
     "cell_type" : "code",
@@ -155,7 +217,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "C8C567289BC5479185BAA847D4F384F1"
     },
     "cell_type" : "code",
@@ -165,7 +227,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "DCFEBDE6B0FD487095DF8F91DBFDB6B9"
     },
     "cell_type" : "code",
@@ -181,7 +243,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "5B22F2003F4B49B89D4CD67012143444"
     },
     "cell_type" : "code",
@@ -200,19 +262,7 @@
     },
     "cell_type" : "code",
     "source" : "val samples = (0 until 50)\n      .flatMap(_ => Seq(Tuple2(Random.nextDouble(), \"A\"), Tuple2(Random.nextDouble() + 0.3, \"B\")))\n      .toDF(\"sample\", \"cls\")",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "samples: org.apache.spark.sql.DataFrame = [sample: double, cls: string]\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : ""
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 44,
-      "time" : "Took: 732 milliseconds, at 2016-8-15 14:55"
-    } ]
+    "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
@@ -222,19 +272,17 @@
     },
     "cell_type" : "code",
     "source" : "CustomPlotlyChart(samples, \n                  dataOptions=\"{type: 'box', splitBy: 'cls'}\",\n                  dataSources=\"{y: 'sample'}\")",
-    "outputs" : [ {
-      "name" : "stdout",
-      "output_type" : "stream",
-      "text" : "res136: notebook.front.widgets.charts.CustomPlotlyChart[org.apache.spark.sql.DataFrame] = <CustomPlotlyChart widget>\n"
-    }, {
-      "metadata" : { },
-      "data" : {
-        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon8488be6190f7f3d4826f25a69864414f&quot;,&quot;dataInit&quot;:[{&quot;sample&quot;:0.9540378433514606,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.0247579179752893,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.9855665001217845,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.7517064002788121,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.7874939881675455,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.7024916378260384,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.9486086272679026,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.0946682175546087,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.5576041154735283,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.0338652138395161,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.3619505525442338,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.1848531786621752,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.48773166308899807,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.38535402171179783,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.28773999254797566,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.5369778183793759,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.9517316663720928,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.6191338934388175,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.5620762067035266,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.1508172622553092,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.9556091243592434,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.1501351750248885,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.7819310933056866,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.093759083926878,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.5814624670553605,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.4927333978113016,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.1731330725333322,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.114940334364728,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.599675103062379,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.1888305154152692,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.8642240417596799,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.911725127602155,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.5695760769687167,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.5061510405168124,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.7833832753945169,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.8694767215845398,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.26929880113850235,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.44889813372030635,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.9942447416667943,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.4520223521523102,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.22232399108630074,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.4324844689484422,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.7913168758670217,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.9329052606566781,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.4212016073781636,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.439873552857254,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.28684689025748955,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.8264626462118514,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.08820373522512703,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.599136859516261,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.5383546935838155,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.202964710324722,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.45816865744441293,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.9001531445715976,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.4896937822325743,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.0534943275846127,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.12055358757658974,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.202946121907177,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.12837974930920892,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.0079430157410711,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.41572214596005286,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.7809770936776368,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.2980597279326157,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.0034431112601474,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.7447494787277359,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.3897796297687181,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.5473786474972399,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.9507527930727693,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.42253703582428637,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.2546434588040571,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.24513164981916158,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.052554398788926,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.880785104629337,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.4306252985352303,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.946473852762095,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.1903232003047095,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.6103809610376623,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.7039843310395755,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.6560925278181272,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.7153679211450656,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.2220166036174669,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.5762107140088006,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.20162860717937026,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.0548403458186792,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.39935905015589845,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.90013554263386,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.40426790586498706,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.7749564563840183,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.32085315232058353,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.42218115476514245,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.11330518107981802,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.1313668254300717,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.3342453846950936,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.8256309644017135,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.4576164074958071,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.680559244442017,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.2821743919745656,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.8668680853368751,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.859358286210765,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.2263720253706607,&quot;cls&quot;:&quot;B&quot;}],&quot;genId&quot;:&quot;439452594&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/customPlotlyChart'], \n      function(playground, _magiccustomPlotlyChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magiccustomPlotlyChart,\n    \"o\": {\"js\":\"var layout = {}; var dataSources={y: 'sample'}; var dataOptions = {type: 'box', splitBy: 'cls'}\",\"headers\":[\"sample\",\"cls\"],\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n      <span class=\"chart-total-item-count\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anonc24cb00b978f3b12469781a40890002b&quot;,&quot;initialValue&quot;:&quot;100&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId, initialValue)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p> entries total</span>\n      <span class=\"chart-sampling-warning\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anond272d50b612e940932d6a1858f470a71&quot;,&quot;initialValue&quot;:&quot;&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId, initialValue)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p></span>\n      <div>\n      </div>\n    </div></div>"
-      },
-      "output_type" : "execute_result",
-      "execution_count" : 45,
-      "time" : "Took: 997 milliseconds, at 2016-8-15 14:55"
-    } ]
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : true,
+      "id" : "FF4CD0BF77BC4A268E8B019DB559228D"
+    },
+    "cell_type" : "code",
+    "source" : "",
+    "outputs" : [ ]
   } ],
   "nbformat" : 4
 }
