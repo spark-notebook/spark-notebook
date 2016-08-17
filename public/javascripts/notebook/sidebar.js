@@ -77,24 +77,80 @@ require(["jquery", "underscore", "base/js/events", "knockout"], function($, _, e
   if (!td.find("table").length) {
     function viewModel() {
       var self = this;
+      self.checkClash = ko.observable(true);
       self.definitions = {};
       self.definitions.data = ko.observableArray([]);
       self.clearDefinitions = function() {
         self.definitions.data.remove(function(e) { return true });
       };
+      self.findDirty = function(v) {
+        if (!v) return [];
+        var defs = self.definitions.data();
+        var findDirtyInDef = function(def, v) {
+          if (def.refs) {
+            return _.find(def.refs, function(r) { return r === v.name });
+          } else return [];
+        };
+        var findDirtyInDefs = function(defs, v) {
+          return _.filter(defs, function(def) { return findDirtyInDef(def, v)});
+        }
+        var catchThemAll = function(vs, acc) {
+          if (!vs || !vs.length) return acc;
+          else {
+            var dirty = _.flatten(_.map(vs, function(v) { return findDirtyInDefs(defs, v); }));
+            return catchThemAll(dirty, _.flatten([acc, dirty]));
+          }
+        };
+        return catchThemAll([v], []);
+      };
       self.addDefinition = function(def) {
-        self.definitions.data.remove(function(e) { return e.name == def.name;});
+        var finder = function(e) { return e.name == def.name;};
+        var existing = _.find(self.definitions.data(), finder);
+        if (existing && self.checkClash() === true) {
+          if (existing.cell != def.cell) {
+            self.hightlight(existing, "danger", true);
+          } else {
+            var dirty = self.findDirty(def);
+            _.each(dirty, function(d) {
+              var cell = self.findCell(d).attr("data-dirty", true);
+              if (!cell.find(".validate-output").length){
+                var validate = $('<small><a href="#" class="btn btn-xs btn-success validate-output">Ignore</a></small>');
+                validate.find("a.validate-output").click(function(e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  validate.remove();
+                  cell.removeClass("alert").removeClass("alert-warning");
+                });
+                cell.find("div.pull-right.text-info").append(validate);
+                self.hightlight(d, "warning", false, false);                
+              } 
+            });
+          }
+        }
+        self.definitions.data.remove(finder);
         self.definitions.data.push(def);
       };
+      self.findCell = function(def) {
+        var cell = $("div.cell[data-cell-id='"+def.cell+"']");
+        return cell;
+      };
+      self.hightlight = function(def, level, scroll, timeout) {
+        var cell = self.findCell(def);
+        var level = level || "info";
+        var scroll = scroll === true || scroll === undefined;
+        var timeout = (timeout === false ? false : (timeout || 800));
+        cell.addClass("alert alert-"+level);
+
+        if (scroll) $('#site').scrollTo(cell, { duration: 300, offsetTop: 200 });
+
+        if (timeout) {
+          setTimeout(function() {
+            cell.removeClass("alert alert-"+level)
+          }, timeout);
+        }
+      };
       self.hightlightCell = function() {
-        var cell = $("div.cell[data-cell-id='"+this.cell+"']");
-        cell.addClass("alert alert-info");
-
-        $('#site').scrollTo(cell, { duration: 300, offsetTop: 200 });
-
-        setTimeout(function() {
-          cell.removeClass("alert alert-info")
-        }, 800);
+        self.hightlight(this);
       };
     };
     var model = new viewModel();
@@ -126,12 +182,12 @@ require(["jquery", "underscore", "base/js/events", "knockout"], function($, _, e
 
     events.on('kernel_ready.Kernel', function(e, c) {
       var kernel = c.kernel;
-      console.log("kernel", kernel);
+      console.debug("kernel", kernel);
 
       kernel.events.on("new.Definition", function(e, c) {
-        console.log("new def", c);
+        console.debug("new def", c);
         if (c.term || c.type) {
-          model.addDefinition({name: c.term || c.type, type: c.tpe, cell: c.cell});
+          model.addDefinition({name: c.term || c.type, type: c.tpe, cell: c.cell, refs: c.references});
         }
       });
     });
