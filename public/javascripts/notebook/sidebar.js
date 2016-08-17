@@ -113,15 +113,17 @@ require(["jquery", "underscore", "base/js/events", "knockout"], function($, _, e
             var dirty = self.findDirty(def);
             _.each(dirty, function(d) {
               var cell = self.findCell(d).attr("data-dirty", true);
-              var validate = $('<small><a href="#" class="btn btn-xs btn-success validate-output">validate output</a></small>');
-              validate.find("a.validate-output").click(function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                validate.remove();
-                cell.removeClass("alert").removeClass("alert-warning");
-              });
-              cell.find("div.pull-right.text-info").append(validate);
-              self.hightlight(d, "warning", false, false);
+              if (!cell.find(".validate-output").length){
+                var validate = $('<small><a href="#" class="btn btn-xs btn-success validate-output">Ignore</a></small>');
+                validate.find("a.validate-output").click(function(e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  validate.remove();
+                  cell.removeClass("alert").removeClass("alert-warning");
+                });
+                cell.find("div.pull-right.text-info").append(validate);
+                self.hightlight(d, "warning", false, false);                
+              } 
             });
           }
         }
