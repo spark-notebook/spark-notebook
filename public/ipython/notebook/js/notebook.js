@@ -1933,15 +1933,19 @@ define([
      *
      */
     Notebook.prototype.convertSvgAndSave = function() {
-        //"application/svg+base64"
+        var self = this;
+        //"application/svg+`pngbase64"
         var cells = this.get_cells();
+        var promises = [];
         for (var i = 0; i < cells.length; i++) {
             var cell = cells[i];
             if (cell instanceof codecell.CodeCell) {
-                cell.convertSvg();
+                promises.push(cell.convertSvg());
             }
         }
-        this.save_notebook();
+        Promise.all(promises).then(function() { 
+            self.save_notebook() 
+        });
     }
 
     /**
