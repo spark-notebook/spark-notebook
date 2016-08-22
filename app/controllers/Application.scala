@@ -687,64 +687,21 @@ object Application extends Controller {
                 InternalServerError(s"Notebook could not be parsed.")
             }
           case "markdown" =>
-            def toBq(s:String) = s.split("\n").map(s => s"> $s").mkString("\n")
-            def bq(s:String) =
-              s"""|
-              |><pre>
-              |${toBq(s)}
-              |></pre>
-              |""".stripMargin
-
-            def osToMd(os:Option[List[NBSerializer.Output]]) = {
-              val outputs = os.getOrElse(Nil).collect {
-                case NBSerializer.ScalaOutput(_, _, _, html, text) =>
-                  text.map(s => s"$s\n\n\n").getOrElse("") + html.getOrElse("")
-                case NBSerializer.ScalaExecuteResult(_, d, _, _, _) => 
-                  d.collect {
-                    case ("text/html", t) if t.trim.nonEmpty && !t.contains("<script data-this=") => toBq(t)
-                    case ("application/svg+base64", m) => s"> <img src='$m'/>"
-                  }.mkString("\n\n")
-                case NBSerializer.ScalaStream(_, _, d) => bq(d)
-              }.mkString("\n")
-              outputs
-            }
             NBSerializer.fromJson(Json.parse(data)) match {
               case Some(nb) =>
-                val code = nb.cells.map { cells =>
-                  val cs = cells.collect {
-                    case NBSerializer.CodeCell(md, "code", i, Some("scala"), _, os) if i.trim.nonEmpty => 
-                      val (t, cd) = if (i.startsWith(":sh")) {
-                                      ("sh", i.drop(3))
-                                    } else {
-                                      ("scala", i)
-                                    }
-                      s"""|
-                      |```$t
-                      |$cd
-                      |```
-                      |
-                      |${osToMd(os)}
-                      |""".stripMargin
-
-                    case NBSerializer.CodeCell(md, "code", i, None, _, os) if i.trim.nonEmpty => 
-                      s"""|
-                      |```scala
-                      |$i
-                      |```
-                      |
-                      |${osToMd(os)}
-                      |""".stripMargin
-
-                    case NBSerializer.MarkdownCell(_, _, i)  if i.trim.nonEmpty => i                    
-                  }
-                  val fc = cs.mkString("\n").trim
-                  fc
-                }.getOrElse("#NO CELLS!")
-
-                Ok(code).withHeaders(
-                  HeaderNames.CONTENT_DISPOSITION → s"""attachment; filename="$name.md" """,
-                  HeaderNames.LAST_MODIFIED → lastMod
-                )
+                notebook.export.Markdown.generate(nb, name, false) match {
+                  case Some(Left(code)) =>  
+                    Ok(code).withHeaders(
+                      HeaderNames.CONTENT_DISPOSITION → s"""attachment; filename="$name.md" """,
+                      HeaderNames.LAST_MODIFIED → lastMod
+                    )
+                  case Some(Right(file)) => 
+                    Ok.sendFile(
+                      content = file,
+                      fileName = _ => name+".zip"
+                    )
+                  case _ => BadRequest(s"No Cells!")
+                }
               case None =>
                 InternalServerError(s"Notebook could not be parsed.")
             }

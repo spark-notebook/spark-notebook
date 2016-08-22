@@ -9,7 +9,8 @@ define([
     'base/js/keyboard',
     'notebook/js/mathjaxutils',
     'components/marked/lib/marked',
-], function(IPython, $, utils, security, keyboard, mathjaxutils, marked) {
+    'svgAsPng'
+], function(IPython, $, utils, security, keyboard, mathjaxutils, marked, svgAsPng) {
     "use strict";
 
     /**
@@ -987,21 +988,26 @@ define([
     };
 
     OutputArea.prototype.convertSvg = function() {
+        var promises = [];
         for (var i = 0; i < this.outputs.length; i++) {
             var o = this.outputs[i];
             if (o.output_type == 'execute_result') {
                 if (o.data["text/html"]) {
+                    if (!o.data_list) o.data_list  = {};
+                    o.data_list["application/svg+pngbase64"] = [];
                     var h = o.data["text/html"];
                     var svg = this.element.find("svg");
-                    if (svg.length) {
+                    for (var i in svg) {
+                        var s = svg[i];
                         try {
-                            var s = svg.get(0);
-                            var texts = $(svg).find("text");
-                            _.each(texts, function(z) { $(z).text(escape($(z).text())) });
-                            var xml  = new XMLSerializer().serializeToString(s);
-                            _.each(texts, function(z) { $(z).text(unescape($(z).text())) });
-                            var data = "data:image/svg+xml;base64," + btoa(xml);
-                            o.data["application/svg+base64"] = data;
+                            var p = new Promise(function(resolve, reject) {
+                                svgAsPng.svgAsPngUri(s, {}, function(uri) {
+                                  var data = uri;
+                                  o.data_list["application/svg+pngbase64"].push(data);
+                                  resolve(true)
+                                });
+                            });
+                            promises.push(p);
                         } catch(e) {
                             alert("Couldn't generate markdown, check the javascript console for the error and report an issue if necessary... sorry.")
                             console.error(e);
@@ -1010,6 +1016,7 @@ define([
                 }
             }
         }
+        return Promise.all(promises);
     }
 
 
@@ -1094,7 +1101,7 @@ define([
         'image/jpeg',
         'application/pdf',
         'text/plain',
-        'application/svg+base64'
+        'application/svg+pngbase64'
     ];
 
     OutputArea.append_map = {
@@ -1107,7 +1114,7 @@ define([
         "text/latex" : append_latex,
         "application/javascript" : append_javascript,
         "application/pdf" : append_pdf,
-        "application/svg+base64": append_ignore
+        "application/svg+pngbase64": append_ignore
     };
 
     // For backwards compatability.

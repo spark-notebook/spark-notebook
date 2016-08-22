@@ -29,6 +29,7 @@ object NBSerializer {
   case class ScalaExecuteResult(
     metadata: ExecuteResultMetadata,
     data: Map[String, String],
+    data_list: Option[Map[String, List[String]]],
     output_type: String,
     execution_count: Int,
     time: Option[String]
