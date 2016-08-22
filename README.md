@@ -32,7 +32,7 @@ We achieve maximum flexibiliThe with the availability of multiple `sparkContext`
 
 ### Scala
 
-The Spark Notebook supports exclusibly the Scala programming language, the [The Unpredicted Lingua Franca for Data Science](https://youtu.be/3_oV25nZz8I) and extensibly exploits the JVM ecosystem of libraries to drive an smooth evolution of data-driven software from exploration to production.
+The Spark Notebook supports exclusively the Scala programming language, the [The Unpredicted Lingua Franca for Data Science](https://youtu.be/3_oV25nZz8I) and extensibly exploits the JVM ecosystem of libraries to drive an smooth evolution of data-driven software from exploration to production.
 
 The Spark Notebook is available for *NIX and Windows systems in easy to use ZIP/TAR, Docker and DEB packages.
 
