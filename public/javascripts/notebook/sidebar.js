@@ -77,7 +77,8 @@ require(["jquery", "underscore", "base/js/events", "knockout"], function($, _, e
   if (!td.find("table").length) {
     function viewModel() {
       var self = this;
-      self.checkClash = ko.observable(true);
+      // FIXME: disabled as seem to freeze UI, fix or remove the feature
+      self.checkClash = ko.observable(false);
       self.definitions = {};
       self.definitions.data = ko.observableArray([]);
       self.clearDefinitions = function() {
