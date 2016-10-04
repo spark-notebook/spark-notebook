@@ -143,7 +143,7 @@ Want to try out Spark Notebook? Do these steps.
 * Open a terminal/command window.
 * Change to the root directory of the expanded distribution.
 * Execute the command `bin/spark-notebook` (*NIX) or `bin\spark-notebook` (Windows).
-* Open your browser to [localhost:9000](http://localhost:9000).
+* Open your browser to [localhost:9001](http://localhost:9001).
 
 For more details on getting started, see [Launch](#launch).
 
@@ -233,14 +233,14 @@ If you're a Docker user, the following procedure will be even simpler!
 
 ```
 docker pull andypetrella/spark-notebook:0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.4.0
-docker run -p 9000:9000 andypetrella/spark-notebook:0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.4.0
+docker run -p 9001:9001 andypetrella/spark-notebook:0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.4.0
 ```
 
 ###### boot2docker (Mac OS X)
 On Mac OS X, you need something like _boot2docker_ to use docker. However, port forwarding needs an extra command necessary for it to work (cf [this](http://stackoverflow.com/questions/28381903/spark-notebook-not-loading-with-docker) and [this](http://stackoverflow.com/questions/21653164/map-ports-so-you-can-access-docker-running-apps-from-osx-host) SO questions).
 
 ```
-VBoxManage modifyvm "boot2docker-vm" --natpf1 "tcp-port9000,tcp,,9000,,9000"
+VBoxManage modifyvm "boot2docker-vm" --natpf1 "tcp-port9001,tcp,,9001,,9001"
 ```
 
 
@@ -419,7 +419,7 @@ Before the first launch, it may be necessary to add some settings to `conf/appli
 
 In particular `manager.kernel.vmArgs` can be used to set environment variables for the driver (e.g. `-Dhdp.version=$HDP-Version` if you want to run the Spark Notebook on a **Hortonworks** cluster). These are the settings that you would commonly pass via `spark.driver.extraJavaOptions`.
 
-When the server has been started, you can head to the page `http://localhost:9000` and you'll see something similar to:
+When the server has been started, you can head to the page `http://localhost:9001` and you'll see something similar to:
 ![Notebook list](https://raw.github.com/andypetrella/spark-notebook/master/images/list.png)
 
 From there you can either:
@@ -497,7 +497,7 @@ _Note_: the spark assembly is referred locally in `spark.yarn.jar`, you can also
 
 To run the notebook, it's **important** to update its classpath with the location of the configuration files for yarn, hadoop and hive, but also the different specific jars that the drivers will require to access the Yarn cluster.
 
-The port `9000` being already taken by Hadoop (hdfs), you'll need to run it on a different port, below we've arbitrarly chosen `8989`.
+If the port `9001` is already being used by another service, you'll need to run it on a different port, below we've arbitrarly chosen `8989`.
 
 Hence, the final launch is something like this:
 
@@ -583,7 +583,7 @@ _Note_: the spark assembly is referred locally in `spark.yarn.jar`, you can also
 
 To run the notebook, it's **important** to update its classpath with the location of the configuration files for yarn, hadoop and hive, but also the different specific jars that the drivers will require to access the Yarn cluster.
 
-The port `9000` being already taken by Hadoop (hdfs), you'll need to run it on a different port, below we've arbitrarly chosen `8989`.
+If the port `9001` is already being used by another service, you'll need to run it on a different port, below we've arbitrarly chosen `8989`.
 
 Hence, the final launch is something like this:
 
@@ -694,7 +694,7 @@ Locate the commented key `override` and paste:
 
 To run the notebook, it's **important** to update its classpath with the location of the configuration files for yarn, hadoop and hive, but also the different specific jars that the drivers will require to access the Yarn cluster.
 
-The port `9000` being already taken by Hadoop (hdfs), you'll need to run it on a different port, below we've arbitrarly chosen `8989`.
+If the port `9001` is already being used by another service, you'll need to run it on a different port, below we've arbitrarly chosen `8989`.
 
 Hence, the final launch is something like this (**check** below for how to use `screen` for persistence):
 ```
@@ -1407,7 +1407,7 @@ you should start Spark Notebook with `-Dhadoop.version parameter`, like: `sbt -D
 * some features (like switching output modes of the cell) are activated by keyboard shortcuts that are described at **Help > Keyboard Shortcuts**.
 * running the dist/sbt on a different port: `./bin/spark-notebook -Dhttp.port=8888`
 * running the dist/sbt on a different address: `./bin/spark-notebook -Dhttp.address=example.com`
-* running the dist/sbt on a different context path: `./bin/spark-notebook -Dapplication.context=/spark-notebook`. Then you can browse [http://localhost:9000/spark-notebook](http://localhost:9000/spark-notebook). **NB**: the context path **has** to start wiht `/`.
+* running the dist/sbt on a different context path: `./bin/spark-notebook -Dapplication.context=/spark-notebook`. Then you can browse [http://localhost:9001/spark-notebook](http://localhost:9001/spark-notebook). **NB**: the context path **has** to start wiht `/`.
 
 
 # IMPORTANT

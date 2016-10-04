@@ -50,14 +50,14 @@ If you're a Docker user, the following procedure will be even simpler!
 
 ```bash
 docker pull andypetrella/spark-notebook:0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.4.0
-docker run -p 9000:9000 andypetrella/spark-notebook:0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.4.0
+docker run -p 9001:9001 andypetrella/spark-notebook:0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.4.0
 ```
 
 ##### Note: boot2docker (Mac OS X)
 On Mac OS X, you need something like _boot2docker_ to use docker. However, port forwarding needs an extra command necessary for it to work (cf [this](http://stackoverflow.com/questions/28381903/spark-notebook-not-loading-with-docker) and [this](http://stackoverflow.com/questions/21653164/map-ports-so-you-can-access-docker-running-apps-from-osx-host) SO questions).
 
 ```bash
-VBoxManage modifyvm "boot2docker-vm" --natpf1 "tcp-port9000,tcp,,9000,,9000"
+VBoxManage modifyvm "boot2docker-vm" --natpf1 "tcp-port9001,tcp,,9001,,9001"
 ```
 
 
