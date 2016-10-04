@@ -48,7 +48,7 @@ rm spark-notebook-0.6.0-scala-2.10.4-spark-1.3.1-hadoop-2.4.0-with-hive-with-par
 <p><em>Note</em>: the spark assembly is referred locally in <code>spark.yarn.jar</code>, you can also put it <code>HDFS</code> yourself and refer its path on hdfs.</p>
 <h6 id="run">Run</h6>
 <p>To run the notebook, it's <strong>important</strong> to update its classpath with the location of the configuration files for yarn, hadoop and hive, but also the different specific jars that the drivers will require to access the Yarn cluster.</p>
-<p>The port <code>9000</code> being already taken by Hadoop (hdfs), you'll need to run it on a different port, below we've arbitrarly chosen <code>8989</code>.</p>
+<p>The port <code>9001</code> being already taken by Hadoop (hdfs), you'll need to run it on a different port, below we've arbitrarly chosen <code>8989</code>.</p>
 <p>Hence, the final launch is something like this:</p>
 <pre><code>export HADOOP_CONF_DIR=/home/hadoop/conf
 export EXTRA_CLASSPATH=/home/hadoop/share/hadoop/common/lib/hadoop-lzo.jar:/home/hadoop/hive/conf
@@ -111,7 +111,7 @@ rm spark-notebook-0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-par
 <p><em>Note</em>: the spark assembly is referred locally in <code>spark.yarn.jar</code>, you can also put it <code>HDFS</code> yourself and refer its path on hdfs.</p>
 <p id="run-1">Run</p>
 <p>To run the notebook, it's <strong>important</strong> to update its classpath with the location of the configuration files for yarn, hadoop and hive, but also the different specific jars that the drivers will require to access the Yarn cluster.</p>
-<p>The port <code>9000</code> being already taken by Hadoop (hdfs), you'll need to run it on a different port, below we've arbitrarly chosen <code>8989</code>.</p>
+<p>The port <code>9001</code> being already taken by Hadoop (hdfs), you'll need to run it on a different port, below we've arbitrarly chosen <code>8989</code>.</p>
 <p>Hence, the final launch is something like this:</p>
 <pre><code>export HADOOP_CONF_DIR=/etc/hadoop/conf
 export SPARK_HOME=/usr/lib/spark
@@ -198,7 +198,7 @@ cd spark-notebook</code></pre>
 </blockquote>
 <p id="run-2">Run</p>
 <p>To run the notebook, it's <strong>important</strong> to update its classpath with the location of the configuration files for yarn, hadoop and hive, but also the different specific jars that the drivers will require to access the Yarn cluster.</p>
-<p>The port <code>9000</code> being already taken by Hadoop (hdfs), you'll need to run it on a different port, below we've arbitrarly chosen <code>8989</code>.</p>
+<p>The port <code>9001</code> being already taken by Hadoop (hdfs), you'll need to run it on a different port, below we've arbitrarly chosen <code>8989</code>.</p>
 <p>Hence, the final launch is something like this (<strong>check</strong> below for how to use <code>screen</code> for persistence):</p>
 <pre><code>export SPARK_LOCAL_IP=$(ec2-metadata -o | cut -d &#39; &#39; -f2)
 export SPARK_LOCAL_HOSTNAME=$(ec2-metadata -h | cut -d &#39; &#39; -f2)
