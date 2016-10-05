@@ -702,7 +702,6 @@ object Application extends Controller {
                     )
                   case _ => BadRequest(s"No Cells!")
                 }
-
               case None =>
                 InternalServerError(s"Notebook could not be parsed.")
             }

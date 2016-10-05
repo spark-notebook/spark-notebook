@@ -65,7 +65,7 @@ _Note_: the spark assembly is referred locally in `spark.yarn.jar`, you can also
 
 To run the notebook, it's **important** to update its classpath with the location of the configuration files for yarn, hadoop and hive, but also the different specific jars that the drivers will require to access the Yarn cluster.
 
-The port `9000` being already taken by Hadoop (hdfs), you'll need to run it on a different port, below we've arbitrarly chosen `8989`.
+If the port `9001` is already being used by another service, you'll need to run it on a different port, below we've arbitrarly chosen `8989`.
 
 Hence, the final launch is something like this:
 
@@ -151,7 +151,7 @@ _Note_: the spark assembly is referred locally in `spark.yarn.jar`, you can also
 
 To run the notebook, it's **important** to update its classpath with the location of the configuration files for yarn, hadoop and hive, but also the different specific jars that the drivers will require to access the Yarn cluster.
 
-The port `9000` being already taken by Hadoop (hdfs), you'll need to run it on a different port, below we've arbitrarly chosen `8989`.
+If the port `9001` is already being used by another service, you'll need to run it on a different port, below we've arbitrarly chosen `8989`.
 
 Hence, the final launch is something like this:
 
@@ -262,7 +262,7 @@ Locate the commented key `override` and paste:
 
 To run the notebook, it's **important** to update its classpath with the location of the configuration files for yarn, hadoop and hive, but also the different specific jars that the drivers will require to access the Yarn cluster.
 
-The port `9000` being already taken by Hadoop (hdfs), you'll need to run it on a different port, below we've arbitrarly chosen `8989`.
+If the port `9001` is already being used by another service, you'll need to run it on a different port, below we've arbitrarly chosen `8989`.
 
 Hence, the final launch is something like this (**check** below for how to use `screen` for persistence):
 ```

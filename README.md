@@ -28,11 +28,11 @@ Each started notebook will spawn a new JVM with its own SparkSession instance. T
 
 #### Metadata-driven configuration
 
-We achieve maximum flexibiliThe with the availability of multiple `sparkContext`s by enabling [metadata driven](./docs/metadata.md) configuration. 
+We achieve maximum flexibility with the availability of multiple `sparkContext`s by enabling [metadata driven](./docs/metadata.md) configuration. 
 
 ### Scala
 
-The Spark Notebook supports exclusibly the Scala programming language, the [The Unpredicted Lingua Franca for Data Science](https://youtu.be/3_oV25nZz8I) and extensibly exploits the JVM ecosystem of libraries to drive an smooth evolution of data-driven software from exploration to production.
+The Spark Notebook supports exclusively the Scala programming language, the [The Unpredicted Lingua Franca for Data Science](https://youtu.be/3_oV25nZz8I) and extensibly exploits the JVM ecosystem of libraries to drive an smooth evolution of data-driven software from exploration to production.
 
 The Spark Notebook is available for *NIX and Windows systems in easy to use ZIP/TAR, Docker and DEB packages.
 
@@ -40,8 +40,11 @@ The Spark Notebook is available for *NIX and Windows systems in easy to use ZIP/
 
 All components in the Spark Notebook are dynamic and reactive. 
 
-Since data can come live in a system or you want to log vizualy some events or perhaps you need to have two visual components to interact... what you don't want to do is to write the html, js, server code and who knows what else you'll need to master...
-For that, the spark notebook comes with dynamic charts and most (if not all) components can be listened for and can react to events.
+The Spark Notebook comes with dynamic charts and most (if not all) components can be listened for and can react to events. This is very helpful in many cases, for example:
+* data entering the system live at runtime
+* visually plots of events
+* multiple interconnected visual components
+Dynamic and reactive components mean that you don't have write the html, js, server code just for basic use cases.
 
 
 ##Quick Start
@@ -82,7 +85,7 @@ to discuss things, to get some help, or to start contributing!
 |----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Data Fellas                            | ![Data Fellas](http://www.data-fellas.guru/assets/images/logo-wired-small.png)                                                 | [website](http://www.data-fellas.guru)                                                           | Mad Data Science and Scalable Computing                                                                                                                                                                                 |
 | Agile Lab                              | ![Agile Lab](http://www.agilelab.it/wp-content/uploads/2015/02/logo1.png)                                                      | [website](http://www.agilelab.it)                                                                | The only Italian Spark Certified systems integrator                                                                                                                                                                   |
-| CloudPhysics                           | ![CloudPhysics](https://www.cloudphysics.com/static/uploads/2014/06/3color_bug_lg.png)                                         | [website](http://www.cloudphysics.com)                                                           | DATA-DRIVEN INSIGHTS FOR SMARTER IT                                                                                                                                                                                   |
+| CloudPhysics                           | ![CloudPhysics](https://www.cloudphysics.com/static/uploads/2014/06/3color_bug_lg.png)                                         | [website](http://www.cloudphysics.com)                                                           | Data-Driven Inisghts for Smarter IT                                                                                                                                                                                   |
 | Aliyun                                 | ![Alibaba - Aliyun ECS](http://gtms02.alicdn.com/tps/i2/T1J0xIFMteXXX4dCTl-220-72.png)                                         | [product](http://market.aliyun.com/products/56014009/jxsc000194.html?spm=5176.900004.4.1.WGc3Ei) | Spark runtime environment on ECS and management tool of Spark Cluster running on Aliyun ECS                                                                                                                             |
 | EMBL European Bioinformatics Institute | ![EMBL - EBI](http://www.ebi.ac.uk/miriam/static/main/img/EBI_logo.png)                                                        | [website](http://www.ebi.ac.uk/)                                                                 | EMBL-EBI provides freely available data from life science experiments, performs basic research in computational biology and offers an extensive user training programme, supporting researchers in academia and industry. |
 | Metail                                 | ![Metail](http://metail.wpengine.com/wp-content/uploads/2013/11/Metail_Logo1.png)                                              | [website](http://metail.com/)                                                                    | The best body shape and garment fit company in the world. To create and empower everyone’s online body identity.                                                                                                          |

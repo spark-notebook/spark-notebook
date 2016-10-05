@@ -19,7 +19,7 @@ help: ## This help dialog.
 all: help
 
 run: ## start server with mode DEV on port 9002
-	sbt ~run -Dhttp.port=9000 # -Dconfig.file=/FULL PATH TO YOUR LOCAL DEV CONF FILE/dev.conf
+	sbt ~run -Dhttp.port=9001 # -Dconfig.file=/FULL PATH TO YOUR LOCAL DEV CONF FILE/dev.conf
 
 console: ## start console
 	sbt console

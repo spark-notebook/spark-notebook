@@ -134,7 +134,7 @@ define([
                         return false;
                     }
                 });
-                d.find('input[type="text"]').focus().select();
+                d.find('input[type="text"].notebook-name').focus().select();
             }
         });
     };
