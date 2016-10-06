@@ -31,13 +31,13 @@ class ReplCalculator(
   customImports: Option[List[String]],
   customArgs: Option[List[String]],
   customSparkConf: Option[Map[String, String]],
-  remoteActor:ActorRef,
+  remoteCalcActorRef:ActorRef, // From CalcWebSocketService !
   _initScripts: List[(String, String)],
   compilerArgs: List[String]
 ) extends Actor with akka.actor.ActorLogging {
 
   private val remoteLogger = context.actorSelection("/user/remote-logger")
-  remoteLogger ! remoteActor
+  remoteLogger ! remoteCalcActorRef
 
   private val repoRegex = "(?s)^:local-repo\\s*(.+)\\s*$".r
   private val resolverRegex = "(?s)^:remote-repo\\s*(.+)\\s*$".r
