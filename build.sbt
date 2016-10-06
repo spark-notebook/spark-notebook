@@ -276,9 +276,6 @@ lazy val common = Project(id = "common", base = file("modules/common"))
       }))
   )
   .settings(
-    wispSettings
-  )
-  .settings(
     gisSettings
   )
   .settings(sharedSettings: _*)
