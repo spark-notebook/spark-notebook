@@ -5,7 +5,6 @@ import play.api.libs.json._
 import notebook._
 import notebook.front._
 import notebook.JsonCodec._
-import notebook.front.widgets.magic
 import notebook.front.widgets.magic._
 
 trait Images extends Generic with Utils {
