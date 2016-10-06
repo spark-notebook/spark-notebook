@@ -249,16 +249,16 @@ object Application extends Controller {
 
   def profiles() = Action.async {
     implicit val ec = kernelSystem.dispatcher
-    (clustersActor ? NotebookClusters.Profiles).
-      mapTo[List[JsObject]].
-      map { all => Ok(JsArray(all)) }
+    (clustersActor ? NotebookClusters.Profiles).map { case all: List[JsObject] =>
+      Ok(JsArray(all))
+    }
   }
 
   def clusters() = Action.async {
     implicit val ec = kernelSystem.dispatcher
-    (clustersActor ? NotebookClusters.All).
-      mapTo[List[JsObject]].
-      map { all => Ok(JsArray(all)) }
+    (clustersActor ? NotebookClusters.All).map { case all: List[JsObject] =>
+      Ok(JsArray(all))
+    }
   }
 
   /**
