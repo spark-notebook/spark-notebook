@@ -216,7 +216,6 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).ena
   )
   .settings(includeFilter in(Assets, LessKeys.less) := "*.less")
   .settings(unmanagedSourceDirectories in Compile <<= (scalaSource in Compile)(Seq(_))) //avoid app-2.10 and co to be created
-  .settings(initialCommands += ConsoleHelpers.cleanAllOutputs)
   .settings(
     git.useGitDescribe := true,
     git.baseVersion := SparkNotebookSimpleVersion
