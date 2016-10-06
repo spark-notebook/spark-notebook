@@ -194,7 +194,6 @@ object Dependencies {
 
   // Viz
   val bokeh = "io.continuum.bokeh" %% "bokeh" % "0.2"
-  val wispDepSumac = "com.quantifind" %% "sumac" % "0.3.0"
   val geometryDeps = Seq(
     "org.wololo" % "jts2geojson" % "0.7.0" excludeAll (
         ExclusionRule("com.fasterxml.jackson.module", "jackson-module-scala"),
@@ -204,16 +203,7 @@ object Dependencies {
         ExclusionRule("com.fasterxml.jackson.datatype", "jackson-datatype-joda")
       )
   )
-  //"com.quantifind" %% "wisp" % "0.0.4" excludeAll(
-  //  ExclusionRule("com.google.guava"),
-  //  ExclusionRule("org.json4s"),
-  //  ExclusionRule("net.databinder", "unfiltered-filter"),
-  //  ExclusionRule("net.databinder", "unfiltered-jetty"),
-  //  ExclusionRule("org.apache.commons", "commons-math3"),
-  //  ExclusionRule("commons-io", "commons-io")
-  //)
-  // wisp deps on jackson-module-scala_2.10 v2.4 → guava v15
-  // but spark → guava 14.0.1
+
   val customJacksonScala = Seq(
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.4.4" force() excludeAll ExclusionRule("com.google.guava"),
     "com.fasterxml.jackson.core" % "jackson-annotations" % "2.4.4" force() excludeAll ExclusionRule("com.google.guava"),
