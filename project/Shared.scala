@@ -30,16 +30,6 @@ object Shared {
     libraryDependencies += guava
   )
 
-  val wispSettings: Seq[Def.Setting[_]] = Seq(
-    libraryDependencies += wispDepSumac,
-    unmanagedJars in Compile ++= (
-      if (scalaVersion.value.startsWith("2.10"))
-        Seq((baseDirectory in "sparkNotebook").value / "temp" / "wisp_2.10-0.0.5.jar")
-      else
-        Seq((baseDirectory in "sparkNotebook").value / "temp" / "wisp_2.11-0.0.5.jar")
-    )
-  )
-
   val gisSettings: Seq[Def.Setting[_]] = Seq(
     libraryDependencies ++= geometryDeps
   )
