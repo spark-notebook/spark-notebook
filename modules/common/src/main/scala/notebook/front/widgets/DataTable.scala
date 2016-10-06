@@ -38,6 +38,8 @@ class DataTable[T](data: Seq[T])(implicit val codec: Codec[JsValue, T]) {
           source.addColumn(Symbol(k), values)
           val c = new TableColumn().field(k).header(k)
           c
+
+        case x => throw new RuntimeException(s"Cannot deal with $x")
       }
     }
     new HandsonTable().source(source).columns(columns) //.editable(true

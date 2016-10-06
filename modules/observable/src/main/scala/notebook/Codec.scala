@@ -62,6 +62,7 @@ object JsonCodec {
     def encode(v: JsValue): Int = v match {
       case JsString(s) => s.toInt
       case JsNumber(i) => i.toInt
+      case _ => throw new RuntimeException(s"Cannot encode $v as int")
     }
   }
 

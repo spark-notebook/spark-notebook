@@ -38,9 +38,8 @@ case class NotebookConfig(config: Configuration) {
   object kernel {
     val config = me.config.getConfig("kernel").getOrElse(Configuration.empty)
     val defauldInitScript = config.getString("default.init")
-                                  .orElse(
-                                    Some("init.sc")
-                                  ).flatMap { init =>
+                                  .orElse(Some("init.sc"))
+                                  .flatMap { init =>
                                     current.resource("scripts/" + init).map(i => ScriptFromURL(i).toSource)
                                   }
     val kernelInit = {
