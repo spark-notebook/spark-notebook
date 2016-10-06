@@ -4,7 +4,6 @@ import scala.xml.{NodeSeq, UnprefixedAttribute, Null}
 import play.api.libs.json._
 import notebook._
 import notebook.JsonCodec._
-import notebook.front.widgets.magic
 import notebook.front.widgets.magic._
 import notebook.front.widgets.magic.Implicits._
 import notebook.front.widgets.magic.SamplerImplicits._
@@ -52,8 +51,8 @@ trait Utils {
       case v: BigDecimal    => JsNumber(v)
       case v: String        => JsString(v)
       case v: Boolean       => JsBoolean(v)
-      case v: Date          => JsNumber(v.getTime)
       case v: SqlDate       => JsNumber(v.getTime)
+      case v: Date          => JsNumber(v.getTime)
       case v: Geometry      =>
         val json  = geometryToGeoJSON(v)
         val jsonstring = json.toString()
