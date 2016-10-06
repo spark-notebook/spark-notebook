@@ -326,8 +326,8 @@ lazy val spark = Project(id = "spark", base = file("modules/spark"))
           val scalaVerDir = (sourceDirectory in Compile).value / ("scala_" + v)
 
           tsv match {
-            // if spark.version < 1.5.0 use spark-pre1.5
-            case _ if versionCompare.lt(tsv, (1, 5, 0)) => scalaVerDir / "spark-pre1.5"
+            // THIS IS HOW WE CAN DEAL WITH RADICAL CHANGES
+            //case _ if versionCompare.lt(tsv, LAST_WORKING_VERSION) => scalaVerDir / "spark-pre"+LAST_WORKING_VERSION
             case _ => scalaVerDir / "spark-last"
           }
       }
