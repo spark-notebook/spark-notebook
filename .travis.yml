@@ -12,14 +12,13 @@ language: scala
 #    - $HOME/.sbt/boot/
 
 scala:
-  - 2.10.4
-  - 2.11.7
+  - 2.10.5
+  - 2.11.8
 env:
-  - SPARK_VER=1.5.2
-  - SPARK_VER=1.6.0
-  # - SPARK_VER=1.3.1 (failing at the moment)
+  # - SPARK_VER=1.6.1 spark 1.6 is not supported anymore
+  - SPARK_VER=2.0.1
 script:
-  - export SKIP_WHEN_TRAVIS=yes; SBT_OPTS="-XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -Xmx4G -XX:MaxPermSize=4G" sbt -Dspark.version=$SPARK_VER -Dscala.version=$TRAVIS_SCALA_VERSION "set offline := true" test
+  - export SKIP_WHEN_TRAVIS=yes; SBT_OPTS="-XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -Xmx4G -XX:MaxPermSize=4G" sbt -Dspark.version=$SPARK_VER -Dscala.version=$TRAVIS_SCALA_VERSION -Dspark.resolver.search=true "set offline := true" test
 
 #  # Tricks to avoid unnecessary cache updates
 #  - find $HOME/.sbt -name "*.lock" | xargs rm -f
