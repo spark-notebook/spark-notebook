@@ -44,27 +44,9 @@ object Shared {
     libraryDependencies ++= geometryDeps
   )
 
-  val repl: Seq[Def.Setting[_]] = {
-    val lib = libraryDependencies <++= (sparkVersion, hadoopVersion, jets3tVersion) {
-      (sv, hv, jv) => if (sv != "1.2.0") Seq(sparkRepl(sv)) else Seq.empty
-    }
-    val unmanaged = unmanagedJars in Compile ++= (
-      if (sparkVersion.value == "1.2.0" && !scalaVersion.value.startsWith("2.11"))
-        Seq((baseDirectory in "sparkNotebook").value / "temp/spark-repl_2.10-1.2.0-notebook.jar")
-      else
-        Seq.empty
-      )
-
-    val repos = resolvers <++= sparkVersion { (sv) =>
-      if (sv == "1.2.0") {
-        Seq("Resolver for spark-yarn 1.2.0" at "https://github.com/adatao/mvnrepos/raw/master/releases") // spark-yarn 1.2.0 is not released
-      } else {
-        Nil
-      }
-    }
-
-    lib ++ unmanaged ++ repos
-  }
+  val repl: Seq[Def.Setting[_]] = Seq(
+    libraryDependencies <+= (sparkVersion) { sv => sparkRepl(sv) }
+  )
 
   val hive: Seq[Def.Setting[_]] = Seq(
     libraryDependencies <++= (withHive, sparkVersion) { (wh, sv) =>
