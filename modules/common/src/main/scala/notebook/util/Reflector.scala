@@ -37,7 +37,7 @@ object Reflector {
       try{
         Some(extractName(f) -> fields._2.reflectField(f.asTerm).get)
       } catch {
-        case x =>
+        case x: Throwable =>
           LOG.warn(s"Cannot reflect field ${f.name}")
           None
       }

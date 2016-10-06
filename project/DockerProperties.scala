@@ -16,6 +16,7 @@ object DockerProperties extends BuildConf {
     Cmd("RUN", s"apt-get update --fix-missing && apt-get install -y --no-install-recommends openjdk-7-jdk"),
     Cmd("ENV", "JAVA_HOME /usr/lib/jvm/java-7-openjdk-amd64")
   )
+
   private val defaultVolumes: Seq[String] = Seq("/opt/docker", "/opt/docker/notebooks", "/opt/docker/logs")
 
   private def asCmdSeq( configs: Seq[Config] ): Seq[Cmd] = {
