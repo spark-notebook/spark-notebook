@@ -9,8 +9,7 @@ object WebSocketObservableActor {
     system: ActorSystem): ActorRef = system.actorOf(Props(new WebSocketObservableActor(out, contextId)))
 }
 
-class WebSocketObservableActor(channel: Concurrent.Channel[JsValue], val contextId: String)
-    (implicit system: ActorSystem) extends Actor {
+class WebSocketObservableActor(channel: Concurrent.Channel[JsValue], val contextId: String)(implicit system: ActorSystem) extends Actor {
 
   var service: Option[ObsWebSocketService] = None
 
@@ -22,10 +21,10 @@ class WebSocketObservableActor(channel: Concurrent.Channel[JsValue], val context
   }
 
   def receive = {
-    case m@("add", channel: Concurrent.Channel[JsValue]) =>
+    case m@("add", channel: Concurrent.Channel[_ /*JsValue*/]) =>
       service foreach (_.obsActor ! m)
 
-    case m@("remove", channel: Concurrent.Channel[JsValue]) =>
+    case m@("remove", channel: Concurrent.Channel[_ /*JsValue*/]) =>
       service foreach (_.obsActor ! m)
 
     case msg: JsValue =>

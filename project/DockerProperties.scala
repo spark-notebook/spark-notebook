@@ -17,6 +17,7 @@ object DockerProperties extends BuildConf {
     Cmd("ENV", "JAVA_HOME /usr/lib/jvm/java-7-openjdk-amd64"),
     Cmd("RUN", s"apt-get install -y wget curl")
   )
+
   private val defaultVolumes: Seq[String] = Seq("/opt/docker", "/opt/docker/notebooks", "/opt/docker/logs")
 
   private def asCmdSeq( configs: Seq[Config] ): Seq[Cmd] = {

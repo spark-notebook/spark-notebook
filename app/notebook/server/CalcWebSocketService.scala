@@ -43,6 +43,7 @@ class CalcWebSocketService(
 
   class CalcActor extends Actor with ActorLogging {
     private var currentSessionOperations: Queue[SessionOperation] = Queue.empty
+
     var calculator: ActorRef = null
     var wss: List[WebSockWrapper] = Nil
 
