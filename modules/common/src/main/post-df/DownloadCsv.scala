@@ -1,7 +1,7 @@
 package notebook.front.widgets
 
 import notebook.front.Widget
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.{FileUtil, FileSystem, Path}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.DataFrame
 
@@ -23,17 +23,22 @@ object SpreadsheetOutput {
   }
 
   implicit class SparkContextWithFsMerge(sc: SparkContext) {
-    def renameFile(src: String, dest: String): Boolean = {
-      // based on http://stackoverflow.com/a/31188767
+    def mergeDirToSingleFile(srcDir: String, dstFile: String) = {
       val hadoopConfig = sc.hadoopConfiguration
       val fs = FileSystem.get(hadoopConfig)
-      val srcPath = new Path(src)
-      val dstPath = new Path(dest)
-      require(fs.exists(srcPath), !fs.exists(dstPath))
 
-      val deleteSource = true
-      // fs.rename should be safer than FileUtil.copyMerge, as it do not put pressure on master
-      fs.rename(srcPath, dstPath)
+      val srcPath = new Path(srcDir)
+      val dstPath = new Path(dstFile)
+      require(fs.exists(srcPath), s"Can not merge files of non existent dir: $srcPath")
+      require(!fs.exists(dstPath), s"The destination path should not exist: $dstPath")
+
+      FileUtil.copyMerge(
+        fs, srcPath,
+        fs, dstPath,
+        /* deleteSource = */ true,
+        /* conf = */ fs.getConf,
+        /* addString = */ null
+      )
     }
   }
 
@@ -70,8 +75,9 @@ object SpreadsheetOutput {
     // (df.coalesce(1) alone causes exception even on moderate input size)
     saveAsCsv(df.repartition(100).coalesce(1), temporaryDirName)
 
-    // merge part-00000 into a one file
-    df.sqlContext.sparkContext.renameFile(s"${temporaryDirName}/part-00000", temporaryFileName)
+    // merge files in temporaryDirName into a single file which can be downloaded
+    df.sqlContext.sparkContext.mergeDirToSingleFile(temporaryDirName, temporaryFileName)
+
     webHdfsDownloadLink(temporaryFileName, webHdfsUserName)
   }
 }
