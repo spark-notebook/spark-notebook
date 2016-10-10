@@ -1,17 +1,17 @@
 import sbt._
 
 object Dependencies {
-  val mesosVersion = sys.props.getOrElse("mesos.version", "0.22.2") //0.22.0 is current DCOS version
+  val mesosVersion = sys.props.getOrElse("mesos.version", "0.26.0") //todo 1.0.0
 
   val playDeps = Seq(
     "com.typesafe.play" %% "play" % "2.3.10" withSources() excludeAll(
       ExclusionRule("com.typesafe.akka"),
       ExclusionRule("com.google.guava")
-      ),
+    ),
     "com.typesafe.play" %% "play-test" % "2.3.10" % "test" withSources() excludeAll(
       ExclusionRule("com.typesafe.akka"),
       ExclusionRule("com.google.guava")
-      )
+    )
   )
   val rxScala = "io.reactivex" %% "rxscala" % "0.22.0"
   val scalaZ = "org.scalaz" %% "scalaz-core" % "7.0.6"
@@ -28,102 +28,60 @@ object Dependencies {
   val spark_X_Y = "[a-zA-Z]*([0-9]+)\\.([0-9]+)\\.([0-9]+).*".r
   val extractVs = "[a-zA-Z]*(\\d+)\\.(\\d+)\\.(\\d+).*".r
 
-  val defaultSparkVersion = sys.props.getOrElse("spark.version", "1.6.2")
-  if (defaultSparkVersion.startsWith("2")) {
-    scala.Console.err.println("""|
-      |***************************************************************************************************
-      |*                                                                                                 *
-      |*                     This branch isn't able to build against spark 2+                            *
-      |*                      Please use the `future-master` branch instead                              *
-      |*                                                                                                 *
-      |***************************************************************************************************
-      """.stripMargin)
-    sys.exit(1)
-  }
+  val defaultSparkVersion = sys.props.getOrElse("spark.version", "2.0.1")
 
   val sparkVersionTuple = defaultSparkVersion match { case extractVs(v, m, p) =>  (v.toInt, m.toInt, p.toInt)}
-  val defaultScalaVersion = sys.props.getOrElse("scala.version", "2.10.5") match {
+  val defaultScalaVersion = sys.props.getOrElse("scala.version", "2.10.6") match {
     case x@scala_2_1X("0") => defaultSparkVersion match {
-      case spark_X_Y("1", x, _) if x.toInt < 6 => "2.10.4"
-      case spark_X_Y("1", "6", _)              => "2.10.5"
       case spark_X_Y("2", _, _)                => "2.10.6"
       case spark_X_Y(_, _, _)                  => x
     }
     case x@scala_2_1X("1") => defaultSparkVersion match {
-      case spark_X_Y("1", "4", "0") => x
-      case spark_X_Y("1", "4", _) => "2.11.6"
-      case spark_X_Y("1", "5", x) if x.toInt < 2 => "2.11.6"
-      case spark_X_Y("1", "5", _) => "2.11.7"
-      case spark_X_Y("1", "6", _) => "2.11.7"
       case spark_X_Y("2", _, _) => "2.11.8"
       case spark_X_Y(_, _, _) => x
     }
   }
-  val breeze = "org.scalanlp" %% "breeze" % "0.10" excludeAll(
-    ExclusionRule("junit"),
-    ExclusionRule("org.apache.commons", "commons-math3")
-  )
 
   def sparkCore(v: String) = "org.apache.spark" %% "spark-core" % v excludeAll(
     ExclusionRule("org.apache.hadoop"),
     ExclusionRule("org.apache.ivy", "ivy")
   )
+  val bokeh = "io.continuum.bokeh" %% "bokeh" % "0.2"
 
   def sparkYarn(v: String) = "org.apache.spark" %% "spark-yarn" % v excludeAll(
       ExclusionRule("org.apache.hadoop"),
       ExclusionRule("javax.servlet", "servlet-api"),
+      ExclusionRule("javax.servlet", "javax.servlet-api"),
       ExclusionRule("org.mortbay.jetty", "servlet-api"),
       ExclusionRule("org.apache.ivy", "ivy")
     )
 
   val defaultWithHive = sys.props.getOrElse("with.hive", "false").toBoolean
-  val defaultWithParquet = sys.props.getOrElse("with.parquet", "false").toBoolean
-  val parquetList:List[ExclusionRule] =
-    if (!defaultWithParquet) {
-      List(
-        ExclusionRule("com.twitter", "parquet-column"),
-        ExclusionRule("com.twitter", "parquet-hadoop")
-      )
-    } else {
-      Nil
-    }
 
   def sparkHive(v: String) = "org.apache.spark" %% "spark-hive" % v excludeAll(
     ExclusionRule("org.apache.hadoop"),
     ExclusionRule("org.apache.ivy", "ivy"),
     ExclusionRule("javax.servlet", "servlet-api"),
+    ExclusionRule("javax.servlet", "javax.servlet-api"),
     ExclusionRule("org.mortbay.jetty", "servlet-api")
-  ) excludeAll(parquetList:_*) excludeAll(
-    {
-      import scala.math.Ordering.Implicits._
-      if (sparkVersionTuple >= (1, 5, 2)) {
-        Nil
-      } else {
-        List(
-          ExclusionRule("com.twitter", "parquet-hadoop-bundle")
-        )
-      }
-    }:_*
   )
-
-  def sparkRepl(
-    v: String) = "org.apache.spark" %% "spark-repl" % v excludeAll ExclusionRule("org.apache.hadoop")
+  def sparkRepl(v: String) = "org.apache.spark" %% "spark-repl" % v excludeAll (
+      ExclusionRule("org.apache.hadoop"),
+      ExclusionRule("javax.servlet", "servlet-api"),
+      ExclusionRule("javax.servlet", "javax.servlet-api")
+    )
 
   def sparkSQL(v: String) = "org.apache.spark" %% "spark-sql" % v excludeAll(
-    ExclusionRule("org.apache.hadoop")
-  ) excludeAll(parquetList:_*)
-
-  def sparkCSV: Seq[ModuleID] = {
-    import scala.math.Ordering.Implicits._
-    if (sparkVersionTuple >= (1, 3, 0)) {
-      Seq("com.databricks" %% "spark-csv" % "1.3.0")
-    } else Nil
-  }
+    ExclusionRule("org.apache.hadoop"),
+    ExclusionRule("javax.servlet", "servlet-api"),
+    ExclusionRule("javax.servlet", "javax.servlet-api")
+  )
 
   def hadoopClient(v: String) = "org.apache.hadoop" % "hadoop-client" % v excludeAll(
     ExclusionRule("org.apache.commons", "commons-exec"),
     ExclusionRule("commons-codec", "commons-codec"),
     ExclusionRule("javax.servlet", "servlet-api"),
+    ExclusionRule("javax.servlet", "javax.servlet-api"),
     ExclusionRule("com.google.guava", "guava")
   )
 
@@ -131,13 +89,13 @@ object Dependencies {
       ExclusionRule("org.apache.commons", "commons-exec"),
       ExclusionRule("commons-codec", "commons-codec"),
       ExclusionRule("javax.servlet", "servlet-api"),
+      ExclusionRule("javax.servlet", "javax.servlet-api"),
       ExclusionRule("com.google.guava", "guava")
   )
 
   val defaultJets3tVersion = sys.props.getOrElse("jets3t.version", "0.7.1")
 
-  def jets3t(jv: Option[String],
-    hv: Option[String]) = {
+  def jets3t(jv: Option[String], hv: Option[String]) = {
     val hvr = "([0-9])\\.([0-9]+)\\..+".r
     val v = (jv, hv) match {
       case (Some(x), _) => x
@@ -150,7 +108,7 @@ object Dependencies {
     "net.java.dev.jets3t" % "jets3t" % v force() excludeAll ExclusionRule()
   }
 
-  val commonsIO = "org.apache.commons" % "commons-io" % "1.3.2"
+  val commonsIO = "commons-io" % "commons-io" % "2.4"
   val commonsHttp = "org.apache.httpcomponents" % "httpclient" % "4.3.4" excludeAll ExclusionRule("com.google.guava")
   val commonsExec = "org.apache.commons" % "commons-exec" % "1.3" force()
   val commonsCodec = "commons-codec" % "commons-codec" % "1.10" force()
@@ -184,7 +142,6 @@ object Dependencies {
   val ningAsyncHttpClient = "com.ning" % "async-http-client" % "[1.6.5, 1.6.5]" force() //"1.8.10"//"[1.6.5, 1.6.5]" force()
 
   // Viz
-  val bokeh = "io.continuum.bokeh" %% "bokeh" % "0.2"
   val geometryDeps = Seq(
     "org.wololo" % "jts2geojson" % "0.7.0" excludeAll (
         ExclusionRule("com.fasterxml.jackson.module", "jackson-module-scala"),

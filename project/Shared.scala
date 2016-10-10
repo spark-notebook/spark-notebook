@@ -13,8 +13,6 @@ object Shared {
 
   lazy val withHive = SettingKey[Boolean]("x-with-hive")
 
-  lazy val withParquet = SettingKey[Boolean]("x-with-parquet")
-
   lazy val sharedSettings: Seq[Def.Setting[_]] = Seq(
     scalaVersion := defaultScalaVersion,
     sparkVersion := defaultSparkVersion,
@@ -26,7 +24,6 @@ object Shared {
       ("jline", "2.12")
     }),
     withHive := defaultWithHive,
-    withParquet := defaultWithParquet,
     libraryDependencies += guava
   )
 
@@ -60,14 +57,13 @@ object Shared {
       val jettyVersion = "8.1.14.v20131031"
 
       val libs = Seq(
-        breeze,
         sparkCore(sv),
         sparkYarn(sv),
         sparkSQL(sv),
         hadoopClient(hv),
         jets3tVersion,
         commonsCodec
-      ) ++ sparkCSV ++ (
+      ) ++ (
             if (!v.startsWith("2.10")) {
               // in 2.11
               //Boot.scala → HttpServer → eclipse

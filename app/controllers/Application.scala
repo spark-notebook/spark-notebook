@@ -74,7 +74,7 @@ object Application extends Controller {
     |      "resources": {},
     |      "spec" : {
     |        "language": "scala",
-    |        "display_name": "Scala [${notebook.BuildInfo.scalaVersion}] Spark [${notebook.BuildInfo.xSparkVersion}] Hadoop [${notebook.BuildInfo.xHadoopVersion}] ${if (notebook.BuildInfo.xWithHive) " {Hive ✓}" else ""} ${if (notebook.BuildInfo.xWithParquet) " {Parquet ✓}" else ""}",
+    |        "display_name": "Scala [${notebook.BuildInfo.scalaVersion}] Spark [${notebook.BuildInfo.xSparkVersion}] Hadoop [${notebook.BuildInfo.xHadoopVersion}] ${if (notebook.BuildInfo.xWithHive) " {Hive ✓}" else ""}",
     |        "language_info": {
     |          "name" : "scala",
     |          "file_extension" : "scala",

@@ -10,10 +10,11 @@ import notebook.front.widgets.magic._
 import notebook.front.widgets.magic.Implicits._
 import notebook.JsonCodec._
 
-
 import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd._
+import org.apache.spark.sql._
+import org.apache.spark.sql.functions._
 
 import scala.util.matching.Regex
 
@@ -82,10 +83,13 @@ import scala.util.matching.Regex
 
   /** Resolve a comma-separated list of paths. */
   private def resolveURIs(paths: String, testWindows: Boolean = false): String = {
+    import scala.collection.JavaConversions._
+    import scala.collection.JavaConverters._
+
     if (paths == null || paths.trim.isEmpty) {
       ""
     } else {
-      paths.split(",").map { p => resolveURI(p, testWindows) }.mkString(",")
+      paths.split(",").map(_.trim).filter(!_.isEmpty).map { p => resolveURI(p, testWindows) }.mkString(",")
     }
   }
 
@@ -106,6 +110,7 @@ import scala.util.matching.Regex
 
   @transient var jars = (addedJars ++ CustomJars ++ conf.get("spark.jars", ",").split(",")).distinct
 
+  @transient var sparkSession:SparkSession = _
   @transient var sparkContext:SparkContext = _
 
   import org.apache.spark.ui.notebook.front.gadgets.SparkMonitor
@@ -116,7 +121,7 @@ import scala.util.matching.Regex
     conf.setMaster(sparkMaster.getOrElse("local[*]"))
       .setAll(_5C4L4_N0T3800K_5P4RK_C0NF.toList)
       .setAppName(appName)
-      .set("spark.repl.class.uri", uri)
+      .set("spark.repl.class.outputDir", uri)
 
     execMemory foreach (v => conf.set("spark.executor.memory", v))
     execUri foreach (v => conf.set("spark.executor.uri", v))
@@ -126,10 +131,11 @@ import scala.util.matching.Regex
 
     lastChanges(conf)
 
-    if (sparkContext != null) {
-      sparkContext.stop()
+    if (sparkSession != null) {
+      sparkSession.stop()
     }
-    sparkContext = new SparkContext(conf)
+    sparkSession = SparkSession.builder().config(conf).getOrCreate
+    sparkContext = sparkSession.sparkContext
     sparkMonitor = Some(new SparkMonitor(sparkContext))
     sparkMonitor.get.start
   }
@@ -137,9 +143,12 @@ import scala.util.matching.Regex
   def sc:SparkContext = sparkContext
 }
 
-import globalScope.{sparkContext, reset, sc}
+import globalScope.{sparkSession, sparkContext, reset, sc}
 
 reset()
+
+@transient val ss = sparkSession
+import ss.implicits._
 
 println("init.sc done!")
 ()
