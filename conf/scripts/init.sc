@@ -17,8 +17,6 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 
 import scala.util.matching.Regex
-import scala.collection.JavaConversions._
-import scala.collection.JavaConverters._
 
 @transient val globalScope = new java.io.Serializable {
   @transient var execUri = Option(System.getenv("SPARK_EXECUTOR_URI"))
@@ -85,6 +83,9 @@ import scala.collection.JavaConverters._
 
   /** Resolve a comma-separated list of paths. */
   private def resolveURIs(paths: String, testWindows: Boolean = false): String = {
+    import scala.collection.JavaConversions._
+    import scala.collection.JavaConverters._
+
     if (paths == null || paths.trim.isEmpty) {
       ""
     } else {
