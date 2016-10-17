@@ -1,4 +1,5 @@
 import java.io.{File, FileReader, BufferedReader}
+import java.lang.IllegalArgumentException
 import java.net.URI
 
 import notebook._
@@ -134,7 +135,19 @@ import scala.util.matching.Regex
     if (sparkSession != null) {
       sparkSession.stop()
     }
-    sparkSession = SparkSession.builder().config(conf).getOrCreate
+
+    var sessionBuilder = SparkSession.builder().config(conf)
+    // try enable hive support automatically, if notebook was built with Hive (i.e. hive libs available)
+    try {
+      sessionBuilder = sessionBuilder.enableHiveSupport()
+      println("Will instantiate SparkSession with Hive support")
+    } catch {
+      // we'll get IllegalArgumentException when Hive libs unavailable
+      case exception: IllegalArgumentException =>
+        println(s"Will instantiate SparkSession without Hive support because: ${exception.getMessage}")
+    }
+    sparkSession = sessionBuilder.getOrCreate
+
     sparkContext = sparkSession.sparkContext
     sparkMonitor = Some(new SparkMonitor(sparkContext))
     sparkMonitor.get.start
