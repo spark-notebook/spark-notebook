@@ -8,7 +8,7 @@ name := MainProperties.name
 
 scalaVersion := defaultScalaVersion
 
-val SparkNotebookSimpleVersion = "0.7.0"
+val SparkNotebookSimpleVersion = "0.8.0-SNAPSHOT"
 
 version in ThisBuild <<= (scalaVersion, sparkVersion, hadoopVersion, withHive) { (sc, sv, hv, h) =>
   s"$SparkNotebookSimpleVersion-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "")
