@@ -49,7 +49,7 @@ object Application extends Controller {
   val kernelKillTimeout = current.configuration.getMilliseconds("manager.kernel.killTimeout")
   val base_kernel_url = "/"
   val base_observable_url = "observable"
-  val read_only = false.toString
+  val read_only = false
   //  TODO: Ugh...
   val terminals_available = false.toString // TODO
 
@@ -413,7 +413,7 @@ object Application extends Controller {
     }.get
   }
 
-  def openNotebook(p: String, presentation: Option[String]) = Action { implicit request =>
+  def openNotebook(p: String, presentation: Option[String], recompute_now: Option[String]) = Action { implicit request =>
     val path = URLDecoder.decode(p, UTF_8)
     Logger.info(s"View notebook '$path', presentation: '$presentation'")
     val wsPath = base_project_url match {
@@ -429,6 +429,10 @@ object Application extends Controller {
       """.stripMargin.replaceAll("\n", " ")
     }
 
+    // notebooks in Report-mode should be openned readonly (to avoid clashes of autosaving)
+    // FIXME: get rid of recompute_now once headless mode is implemented
+    val openInReadOnlyMode = read_only || (presentation == Some("report") && recompute_now != Some("true"))
+
     Ok(views.html.notebook(
       project + ":" + path,
       project,
@@ -438,7 +442,7 @@ object Application extends Controller {
         "base-project-url" -> base_project_url,
         "base-kernel-url" -> base_kernel_url,
         "base-observable-url" -> ws_url(Some(base_observable_url)),
-        "read-only" -> read_only,
+        "read-only" -> openInReadOnlyMode.toString,
         "notebook-name" -> nbm.name,
         "notebook-path" -> path,
         "notebook-writable" -> "true",
@@ -592,7 +596,7 @@ object Application extends Controller {
         "project" → project,
         "base-project-url" → base_project_url,
         "base-kernel-url" → base_kernel_url,
-        "read-only" → read_only,
+        "read-only" → read_only.toString,
         "base-url" → base_project_url,
         "notebook-path" → path,
         "terminals-available" → terminals_available
