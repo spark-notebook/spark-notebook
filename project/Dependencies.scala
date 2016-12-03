@@ -13,6 +13,14 @@ object Dependencies {
       ExclusionRule("com.google.guava")
     )
   )
+  val playJson = Seq(
+    "com.typesafe.play" %% "play-json" % "2.3.7" withSources() excludeAll(
+      ExclusionRule("com.typesafe.akka"),
+      ExclusionRule("com.google.guava")
+      )
+  )
+
+
   val rxScala = "io.reactivex" %% "rxscala" % "0.22.0"
   val scalaZ = "org.scalaz" %% "scalaz-core" % "7.0.6"
 
