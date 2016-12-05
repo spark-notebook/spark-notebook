@@ -211,6 +211,7 @@ lazy val sparkNotebookCore = Project(id = "spark-notebook-core", base = file("mo
     publishArtifact in Test := false,
     publishMavenStyle := true,
     libraryDependencies ++= playJson,
+    libraryDependencies += slf4jLog4j,
     libraryDependencies += commonsIO,
     libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.6" % "test"
   ).settings(sharedSettings: _*)
@@ -256,6 +257,7 @@ lazy val subprocess = project.in(file("modules/subprocess"))
 
 lazy val observable = Project(id = "observable", base = file("modules/observable"))
   .dependsOn(subprocess)
+  .dependsOn(sparkNotebookCore)
   .settings(
     libraryDependencies ++= Seq(
       akkaRemote,
