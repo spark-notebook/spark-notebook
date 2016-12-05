@@ -2,12 +2,12 @@ package notebook
 
 import java.util.Date
 
-import play.api.Logger
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
-object NBSerializer {
+import notebook.util.Logging
 
+object NBSerializer extends Logging {
   trait Output {
     def output_type: String
   }
@@ -68,7 +68,7 @@ object NBSerializer {
       case "error" => scalaErrorFormat.reads(js)
       case "stream" => scalaStreamFormat.reads(js)
       case x =>
-        Logger.error("Cannot read this output_type: " + x)
+        logError("Cannot read this output_type: " + x)
         throw new IllegalStateException("Cannot read this output_type: " + x)
     }
   }
@@ -200,7 +200,7 @@ object NBSerializer {
       case "raw" => rawCellFormat.reads(js)
       case "heading" => headingCellFormat.reads(js)
       case x =>
-        Logger.error("Cannot read this cell_type: " + x)
+        logError("Cannot read this cell_type: " + x)
         throw new IllegalStateException("Cannot read this cell_type: " + x)
     }
   }
@@ -230,14 +230,14 @@ object NBSerializer {
   implicit val notebookFormat = Json.format[Notebook]
 
   def fromJson(json: JsValue): Option[Notebook] = {
-    Logger.trace("\r\n**************************************\r\n")
-    Logger.trace(Json.prettyPrint(json))
-    Logger.trace("**************************************\r\n")
+    logTrace("\r\n**************************************\r\n")
+    logTrace(Json.prettyPrint(json))
+    logTrace("**************************************\r\n")
     json.validate[Notebook] match {
       case s: JsSuccess[Notebook] => {
         s.get match {
           case Notebook(None,None,None,None,None) =>
-            Logger.warn("Nothing in the notebook data.")
+            logWarn("Nothing in the notebook data.")
             None
           case notebook =>
             Some( notebook.cells.map { _ => notebook } getOrElse notebook.copy(cells = Some(Nil)) )
@@ -245,7 +245,7 @@ object NBSerializer {
       }
       case e: JsError => {
         val ex = new RuntimeException(Json.stringify(JsError.toFlatJson(e)))
-        Logger.error("parse notebook", ex)
+        logError("parse notebook", ex)
         throw ex
       }
     }
