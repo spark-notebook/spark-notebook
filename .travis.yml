@@ -16,9 +16,9 @@ scala:
   - 2.11.8
 env:
   # - SPARK_VER=1.6.1 spark 1.6 is not supported anymore
-  - SPARK_VER=2.0.1
+  - SPARK_VER=2.0.2
 script:
-  - export SKIP_WHEN_TRAVIS=yes; SBT_OPTS="-XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -Xmx4G -XX:MaxPermSize=4G" sbt -Dspark.version=$SPARK_VER -Dscala.version=$TRAVIS_SCALA_VERSION -Dspark.resolver.search=true "set offline := true" test
+  - export SKIP_WHEN_TRAVIS=yes; SBT_OPTS="-XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -Xmx4G -XX:MaxPermSize=4G" sbt -Dspark.version=$SPARK_VER -Dscala.version=$TRAVIS_SCALA_VERSION -Dspark.resolver.search=false "set offline := true" test
 
 #  # Tricks to avoid unnecessary cache updates
 #  - find $HOME/.sbt -name "*.lock" | xargs rm -f
