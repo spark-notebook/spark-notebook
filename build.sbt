@@ -213,7 +213,7 @@ lazy val sparkNotebookCore = Project(id = "spark-notebook-core", base = file("mo
     libraryDependencies ++= playJson,
     libraryDependencies += slf4jLog4j,
     libraryDependencies += commonsIO,
-    libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.6" % "test"
+    libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
   ).settings(sharedSettings: _*)
 
 lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).enablePlugins(SbtWeb)
