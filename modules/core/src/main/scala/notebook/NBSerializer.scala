@@ -2,12 +2,22 @@ package notebook
 
 import java.util.Date
 
+import com.fasterxml.jackson.core.JsonParseException
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-
 import notebook.util.Logging
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
+
+class NotebookDeserializationError(msg: String) extends RuntimeException(msg)
 
 object NBSerializer extends Logging {
+  val DATETIME_FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+
+  def parseDateTime(str: String): Date = DATETIME_FORMAT.parseDateTime(str).toDate
+
+  def formatDateTime(dt: Date): String = DATETIME_FORMAT.print(new DateTime(dt))
+
   trait Output {
     def output_type: String
   }
@@ -53,11 +63,9 @@ object NBSerializer extends Logging {
   ) extends Output
   implicit val scalaErrorFormat = Json.format[ScalaError]
 
-
   case class ScalaStream(name: String, output_type: String, text: String) extends Output
 
   implicit val scalaStreamFormat = Json.format[ScalaStream]
-
 
   implicit val outputReads: Reads[Output] = Reads { (js: JsValue) =>
     val tpe = (js \ "output_type").as[String]
@@ -138,54 +146,62 @@ object NBSerializer extends Logging {
   val scala: LanguageInfo = LanguageInfo("scala", "scala", "text/x-scala")
 
   case class Metadata(
+    id: String,
     name: String,
     user_save_timestamp: Date = new Date(0),
     auto_save_timestamp: Date = new Date(0),
     language_info: LanguageInfo = scala,
     trusted: Boolean = true,
+    sparkNotebook: Option[Map[String, String]] = None,
     customLocalRepo: Option[String] = None,
     customRepos: Option[List[String]] = None,
     customDeps: Option[List[String]] = None,
     customImports: Option[List[String]] = None,
     customArgs: Option[List[String]] = None,
-    customSparkConf: Option[JsObject] = None
+    customSparkConf: Option[JsObject] = None,
+    customVars: Option[Map[String, String]] = None
   )
 
   implicit val metadataFormat: Format[Metadata] = {
-    val f = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     val r: Reads[Metadata] = (
-      (JsPath \ "name").read[String] and
-        (JsPath \ "user_save_timestamp").read[String].map(x => f.parse(x)) and
-        (JsPath \ "auto_save_timestamp").read[String].map(x => f.parse(x)) and
+      (JsPath \ "id").readNullable[String].map(_.getOrElse(Notebook.getNewUUID)) and
+        (JsPath \ "name").read[String] and
+        (JsPath \ "user_save_timestamp").read[String].map(parseDateTime) and
+        (JsPath \ "auto_save_timestamp").read[String].map(parseDateTime) and
         (JsPath \ "language_info").readNullable[LanguageInfo].map(_.getOrElse(scala)) and
         (JsPath \ "trusted").readNullable[Boolean].map(_.getOrElse(true)) and
+        (JsPath \ "sparkNotebook").readNullable[Map[String, String]] and
         (JsPath \ "customLocalRepo").readNullable[String] and
         (JsPath \ "customRepos").readNullable[List[String]] and
         (JsPath \ "customDeps").readNullable[List[String]] and
         (JsPath \ "customImports").readNullable[List[String]] and
         (JsPath \ "customArgs").readNullable[List[String]] and
-        (JsPath \ "customSparkConf").readNullable[JsObject]
+        (JsPath \ "customSparkConf").readNullable[JsObject] and
+        (JsPath \ "customVars").readNullable[Map[String,String]]
       )(Metadata.apply _)
 
     val w: Writes[Metadata] =
       OWrites { (m: Metadata) =>
         val name = JsString(m.name)
-        val user_save_timestamp = JsString(f.format(m.user_save_timestamp))
-        val auto_save_timestamp = JsString(f.format(m.auto_save_timestamp))
+        val user_save_timestamp = JsString(formatDateTime(m.user_save_timestamp))
+        val auto_save_timestamp = JsString(formatDateTime(m.auto_save_timestamp))
         val language_info = languageInfoFormat.writes(m.language_info)
         val trusted = JsBoolean(m.trusted)
         Json.obj(
+          "id" → m.id,
           "name" → name,
           "user_save_timestamp" → user_save_timestamp,
           "auto_save_timestamp" → auto_save_timestamp,
           "language_info" → language_info,
           "trusted" → trusted,
+          "sparkNotebook"→ m.sparkNotebook,
           "customLocalRepo" → m.customLocalRepo,
           "customRepos" → m.customRepos,
           "customDeps" → m.customDeps,
           "customImports" → m.customImports,
           "customArgs" → m.customArgs,
-          "customSparkConf" → m.customSparkConf
+          "customSparkConf" → m.customSparkConf,
+          "customVars" -> m.customVars
         )
       }
 
@@ -218,15 +234,6 @@ object NBSerializer extends Logging {
 
   implicit val worksheetFormat = Json.format[Worksheet]
 
-  case class Notebook(
-    metadata: Option[Metadata] = None,
-    cells: Option[List[Cell]] = Some(Nil),
-    worksheets: Option[List[Worksheet]] = None,
-    autosaved: Option[List[Worksheet]] = None,
-    nbformat: Option[Int]) {
-    def name = metadata.map(_.name).getOrElse("Anonymous")
-  }
-
   implicit val notebookFormat = Json.format[Notebook]
 
   def fromJson(json: JsValue): Option[Notebook] = {
@@ -234,28 +241,38 @@ object NBSerializer extends Logging {
     logTrace(Json.prettyPrint(json))
     logTrace("**************************************\r\n")
     json.validate[Notebook] match {
-      case s: JsSuccess[Notebook] => {
+      case s: JsSuccess[Notebook] =>
         s.get match {
-          case Notebook(None,None,None,None,None) =>
+          case Notebook(None, None, None, None, None) =>
             logWarn("Nothing in the notebook data.")
-            None
-          case notebook =>
-            Some( notebook.cells.map { _ => notebook } getOrElse notebook.copy(cells = Some(Nil)) )
+            throw new NotebookDeserializationError("Got an empty notebook")
+
+          // if cells were undefined, make them into an empty list
+          case nb if nb.cells.isEmpty => Some(nb.copy(cells = Some(List.empty)))
+
+          case notebook => Some(notebook)
         }
-      }
-      case e: JsError => {
-        val ex = new RuntimeException(Json.stringify(JsError.toFlatJson(e)))
+
+      case e: JsError =>
+        val ex = new NotebookDeserializationError("Failed to parse JSON: " + Json.stringify(JsError.toFlatJson(e)))
         logError("parse notebook", ex)
         throw ex
-      }
     }
   }
 
-  def read(s: String): Option[ Notebook ] = {
-    fromJson(Json.parse(s))
+  def fromJson(s: String): Option[Notebook] = {
+    try {
+      fromJson(Json.parse(s))
+    } catch {
+      case e: JsonParseException =>
+        val ex = new NotebookDeserializationError("Failed to parse JSON: " + e.toString)
+        logError("parse notebook", ex)
+        throw ex
+    }
+
   }
 
-  def write(n: Notebook): String = {
+  def toJson(n: Notebook): String = {
     Json.prettyPrint(notebookFormat.writes(n))
   }
 
