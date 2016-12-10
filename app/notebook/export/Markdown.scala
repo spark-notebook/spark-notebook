@@ -11,7 +11,7 @@ object Markdown {
     s"""|
     |><pre>
     |${toBq(s)}
-    |> <pre>
+    |> </pre>
     |""".stripMargin
 
   def outputsToMarkdown(os:Option[List[Output]], dir:Option[File]):(String, Option[List[File]]) = {
