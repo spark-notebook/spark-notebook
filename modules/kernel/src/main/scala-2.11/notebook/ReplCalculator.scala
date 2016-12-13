@@ -439,7 +439,7 @@ class ReplCalculator(
     log.info("ReplCalculator preStart")
 
     val dummyScript = ("dummy", () => s"""val dummy = ();\n""")
-    val SparkHookScript = ("class server", () => s"""@transient val _5C4L4_N0T3800K_5P4RK_HOOK = "${repl.classServerUri.get.replaceAll("\\", "\\\\")}";\n""")
+    val SparkHookScript = ("class server", () => s"""@transient val _5C4L4_N0T3800K_5P4RK_HOOK = "${repl.classServerUri.get.replaceAll("\\\\", "\\\\\\\\")}";\n""")
 
     // Must escape last remaining '\', which could be for windows paths.
     val nbName = notebookName.replaceAll("\"", "").replace("\\", "\\\\")

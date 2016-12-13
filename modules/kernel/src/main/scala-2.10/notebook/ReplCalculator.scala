@@ -440,7 +440,7 @@ class ReplCalculator(
     val dummyScript = ("dummy", () => s"""val dummy = ();\n""")
     val SparkHookScript = (
       "class server",
-      () => s"""@transient val _5C4L4_N0T3800K_5P4RK_HOOK = "${repl.classServerUri.get.replaceAll("\\", "\\\\")}";\n"""
+      () => s"""@transient val _5C4L4_N0T3800K_5P4RK_HOOK = "${repl.classServerUri.get.replaceAll("\\\\", "\\\\\\\\")}";\n"""
       )
 
     // Must escape last remaining '\', which could be for windows paths.
