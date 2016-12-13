@@ -203,9 +203,22 @@ libraryDependencies <++= scalaBinaryVersion {
   )
 }
 
+lazy val sparkNotebookCore = Project(id = "spark-notebook-core", base = file("modules/core"))
+  .settings(
+    scalaVersion := scalaVersion.value,
+    organization := "guru.data-fellas",
+    version := version.value,
+    publishArtifact in Test := false,
+    publishMavenStyle := true,
+    libraryDependencies ++= playJson,
+    libraryDependencies += slf4jLog4j,
+    libraryDependencies += commonsIO,
+    libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.6" % "test"
+  ).settings(sharedSettings: _*)
+
 lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).enablePlugins(SbtWeb)
-  .aggregate(subprocess, observable, common, spark, kernel)
-  .dependsOn(subprocess, observable, common, spark, kernel)
+  .aggregate(sparkNotebookCore, subprocess, observable, common, spark, kernel)
+  .dependsOn(sparkNotebookCore, subprocess, observable, common, spark, kernel)
   .settings(sharedSettings: _*)
   .settings(
     bashScriptExtraDefines <+= (version, scalaBinaryVersion, scalaVersion, sparkVersion, hadoopVersion, withHive, withParquet) map { (v, sbv, sv, pv, hv, wh, wp) =>
@@ -245,6 +258,7 @@ lazy val subprocess = project.in(file("modules/subprocess"))
 
 lazy val observable = Project(id = "observable", base = file("modules/observable"))
   .dependsOn(subprocess)
+  .dependsOn(sparkNotebookCore)
   .settings(
     libraryDependencies ++= Seq(
       akkaRemote,
