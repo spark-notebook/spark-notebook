@@ -26,3 +26,4 @@ notebooks/cassandra/Cassandra and G3nerator.snb
 /bin/
 .cache-main
 .cache-tests
+notebooks/temp

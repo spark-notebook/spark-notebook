@@ -18,453 +18,142 @@
   },
   "cells" : [ {
     "metadata" : {
-      "id" : "DC16BF67890349F580549428C0848BB2"
-    },
-    "cell_type" : "markdown",
-    "source" : "# Bar Charts"
-  }, {
-    "metadata" : {
-      "id" : "B569E588AE474C348E5DC84731FF8372"
-    },
-    "cell_type" : "markdown",
-    "source" : "## Basic Bar Chart"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "D3BAD6370D1B4EB98988845E1A09F323"
-    },
-    "cell_type" : "code",
-    "source" : "case class Species(name: String, amount: Int)",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "37B690E0CA6D41F380EA548312EFB490"
-    },
-    "cell_type" : "code",
-    "source" : "val bar = CustomPlotlyChart(Seq(Species(\"giraffes\", 20), Species(\"orangutans\", 14), Species(\"monkeys\", 23)), \n                            dataOptions=\"{type: 'bar'}\",\n                            dataSources=\"{x: 'name', y: 'amount'}\")\nbar",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "id" : "DBBAACCB57184BE2B6C65626FC34DE10"
-    },
-    "cell_type" : "markdown",
-    "source" : "Adding some unicorns, not too much though. $5$ is probably even too much for this world..."
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "D1B89BB61C3A4E608D7A0AFA4BF87D9E"
-    },
-    "cell_type" : "code",
-    "source" : "bar.addAndApply(Seq(Species(\"unicorns\", 5)))",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "id" : "D1B98FEC63BC46B8BD9E5F5542A8F58C"
-    },
-    "cell_type" : "markdown",
-    "source" : "## Grouped Bar Chart"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "02492FA6AD294A009934D421EE7F3B8A"
-    },
-    "cell_type" : "code",
-    "source" : "case class Species(name: String, amount: Int, zoo: String)\n\nval zoos = Seq(Species(\"giraffes\", 20, \"SF Zoo\"), Species(\"orangutans\", 14, \"SF Zoo\"), Species(\"monkeys\", 23, \"SF Zoo\"),\n               Species(\"giraffes\", 12, \"LA Zoo\"), Species(\"orangutans\", 18, \"LA Zoo\"), Species(\"monkeys\", 29, \"LA Zoo\"))",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "8DEEA2C0D82144F0A65A90B24818D0BB"
-    },
-    "cell_type" : "code",
-    "source" : "CustomPlotlyChart(zoos,\n                  layout=\"{barmode: 'group'}\",\n                  dataOptions=\"{splitBy: 'zoo', type: 'bar'}\",\n                  dataSources=\"{x: 'name', y: 'amount'}\")",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "D7BCB24EFF2D47A7B1C7B0B5ECE9083B"
-    },
-    "cell_type" : "markdown",
-    "source" : "## Stacked Bar Chart"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "9745838191BF4CD09D09F9C4DD113BAE"
-    },
-    "cell_type" : "code",
-    "source" : "CustomPlotlyChart(zoos,\n                  layout=\"{barmode: 'stack'}\",\n                  dataOptions=\"{splitBy: 'zoo', type: 'bar'}\",\n                  dataSources=\"{x: 'name', y: 'amount'}\")",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
       "id" : "BCAEC2971664418585E667902020CA3F"
     },
     "cell_type" : "markdown",
-    "source" : "## Render a DataFrame in Plotly Chart"
+    "source" : "## Render a DataFrame"
   }, {
     "metadata" : {
       "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "0C1DE57076894F1F92346C34BCEB2C9C"
-    },
-    "cell_type" : "code",
-    "source" : "val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)\nimport sqlContext.implicits._",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "5C6F1355D9CC43ED825B3C7B523A742B"
-    },
-    "cell_type" : "code",
-    "source" : "val exportDf = Seq(\n  (1995, 219, \"Rest of world\"), (1996, 146, \"Rest of world\"),\n  (1997, 112, \"Rest of world\"), (1998, 127, \"Rest of world\"),\n  (1999, 124, \"Rest of world\"), (2000, 180, \"Rest of world\"),\n  (2001, 236, \"Rest of world\"), (2002, 207, \"Rest of world\"),\n  (2003, 236, \"Rest of world\"), (2004, 263, \"Rest of world\"),\n  (2005, 350, \"Rest of world\"), (2006, 430, \"Rest of world\"),\n  (2007, 474, \"Rest of world\"), (2008, 526, \"Rest of world\"),\n  (2009, 488, \"Rest of world\"), (2010, 537, \"Rest of world\"),\n  (2011, 500, \"Rest of world\"), (2012, 439, \"Rest of world\"),\n  (1995, 16, \"China\"), (1996, 13, \"China\"),\n  (1997, 10, \"China\"), (1998, 11, \"China\"),\n  (1999, 28, \"China\"), (2000, 37, \"China\"),\n  (2001, 43, \"China\"), (2002, 55, \"China\"),\n  (2003, 56, \"China\"), (2004, 88, \"China\"),\n  (2005, 105, \"China\"), (2006, 156, \"China\"),\n  (2007, 270, \"China\"), (2008, 299, \"China\"),\n  (2009, 340, \"China\"), (2010, 403, \"China\"),\n  (2011, 549, \"China\"), (2012, 499, \"China\")\n).toDF(\"year\", \"usd\", \"destination\")\n",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "FF6F5C1BB26748FE80028E4393F0121C"
-    },
-    "cell_type" : "code",
-    "source" : "CustomPlotlyChart(exportDf,\n                  layout=\"{barmode: 'group', title: 'US Export of Plastic Scrap', yaxis: {title: 'USD (millions)'}}\",\n                  dataOptions=\"{splitBy: 'destination', type: 'bar'}\",\n                  dataSources=\"{x: 'year', y: 'usd'}\")",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "id" : "DEBF85BE0C044F0089A22F0AB933E50F"
-    },
-    "cell_type" : "markdown",
-    "source" : "## Colored and Styled Bar Chart"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
+      "input_collapsed" : true,
+      "output_stream_collapsed" : true,
       "collapsed" : false,
       "id" : "42A5D2036A82492A8944109EB4F71E5A"
     },
     "cell_type" : "code",
     "source" : "CustomPlotlyChart(exportDf,\n                  layout=\"\"\"{\n  title: 'US Export of Plastic Scrap',\n  xaxis: {tickfont: {\n      size: 14,\n      color: 'rgb(107, 107, 107)'\n    }},\n  yaxis: {\n    title: 'USD (millions)',\n    titlefont: {\n      size: 16,\n      color: 'rgb(107, 107, 107)'\n    },\n    tickfont: {\n      size: 14,\n      color: 'rgb(107, 107, 107)'\n    }\n  },\n  legend: {\n    x: 0,\n    y: 1.0,\n    bgcolor: 'rgba(255, 255, 255, 0)',\n    bordercolor: 'rgba(255, 255, 255, 0)'\n  },\n  barmode: 'group',\n  bargap: 0.15,\n  bargroupgap: 0.1\n}\"\"\",\n                  dataOptions=\"\"\"{\n                    splitBy: 'destination',\n                    byTrace: {\n                      'China': {\n                        type: 'bar',\n                        marker: {color: 'rgb(26, 118, 255)'}\n                      },\n                      'Rest of world': {\n                        type: 'bar',\n                        marker: {color: 'rgb(55, 83, 109)'}\n                      }\n                    }\n                  }\"\"\",\n                  dataSources=\"{x: 'year', y: 'usd'}\")",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "id" : "54B4A25431F449E68FCFC890ECBC3A48"
-    },
-    "cell_type" : "markdown",
-    "source" : "# Bubble Charts"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "C8C567289BC5479185BAA847D4F384F1"
-    },
-    "cell_type" : "code",
-    "source" : "val bubbles = Seq(\n  (1, 10, 40, \"magenta\"), (2, 11, 60, \"lightblue\"), (3, 12, 80, \"lightgreen\"), (4, 13, 100, \"pink\")\n).toDF(\"xPos\", \"yPos\", \"bubbleSize\", \"color\")",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "DCFEBDE6B0FD487095DF8F91DBFDB6B9"
-    },
-    "cell_type" : "code",
-    "source" : "CustomPlotlyChart(bubbles, \n                  layout=\"{title: 'Marker Size', showlegend: false, height: 600, width: 600}\",\n                  dataOptions=\"{mode: 'markers'}\",\n                  dataSources=\"{x: 'xPos', y: 'yPos', marker: {size: 'bubbleSize', color: 'color'}}\")",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res16: notebook.front.widgets.charts.CustomPlotlyChart[org.apache.spark.sql.DataFrame] = <CustomPlotlyChart widget>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon1a0818a3288c17482429ddd8ca8e2cf3&quot;,&quot;dataInit&quot;:[{&quot;year&quot;:1995,&quot;usd&quot;:219,&quot;destination&quot;:&quot;Rest of world&quot;},{&quot;year&quot;:1996,&quot;usd&quot;:146,&quot;destination&quot;:&quot;Rest of world&quot;},{&quot;year&quot;:1997,&quot;usd&quot;:112,&quot;destination&quot;:&quot;Rest of world&quot;},{&quot;year&quot;:1998,&quot;usd&quot;:127,&quot;destination&quot;:&quot;Rest of world&quot;},{&quot;year&quot;:1999,&quot;usd&quot;:124,&quot;destination&quot;:&quot;Rest of world&quot;},{&quot;year&quot;:2000,&quot;usd&quot;:180,&quot;destination&quot;:&quot;Rest of world&quot;},{&quot;year&quot;:2001,&quot;usd&quot;:236,&quot;destination&quot;:&quot;Rest of world&quot;},{&quot;year&quot;:2002,&quot;usd&quot;:207,&quot;destination&quot;:&quot;Rest of world&quot;},{&quot;year&quot;:2003,&quot;usd&quot;:236,&quot;destination&quot;:&quot;Rest of world&quot;},{&quot;year&quot;:2004,&quot;usd&quot;:263,&quot;destination&quot;:&quot;Rest of world&quot;},{&quot;year&quot;:2005,&quot;usd&quot;:350,&quot;destination&quot;:&quot;Rest of world&quot;},{&quot;year&quot;:2006,&quot;usd&quot;:430,&quot;destination&quot;:&quot;Rest of world&quot;},{&quot;year&quot;:2007,&quot;usd&quot;:474,&quot;destination&quot;:&quot;Rest of world&quot;},{&quot;year&quot;:2008,&quot;usd&quot;:526,&quot;destination&quot;:&quot;Rest of world&quot;},{&quot;year&quot;:2009,&quot;usd&quot;:488,&quot;destination&quot;:&quot;Rest of world&quot;},{&quot;year&quot;:2010,&quot;usd&quot;:537,&quot;destination&quot;:&quot;Rest of world&quot;},{&quot;year&quot;:2011,&quot;usd&quot;:500,&quot;destination&quot;:&quot;Rest of world&quot;},{&quot;year&quot;:2012,&quot;usd&quot;:439,&quot;destination&quot;:&quot;Rest of world&quot;},{&quot;year&quot;:1995,&quot;usd&quot;:16,&quot;destination&quot;:&quot;China&quot;},{&quot;year&quot;:1996,&quot;usd&quot;:13,&quot;destination&quot;:&quot;China&quot;},{&quot;year&quot;:1997,&quot;usd&quot;:10,&quot;destination&quot;:&quot;China&quot;},{&quot;year&quot;:1998,&quot;usd&quot;:11,&quot;destination&quot;:&quot;China&quot;},{&quot;year&quot;:1999,&quot;usd&quot;:28,&quot;destination&quot;:&quot;China&quot;},{&quot;year&quot;:2000,&quot;usd&quot;:37,&quot;destination&quot;:&quot;China&quot;},{&quot;year&quot;:2001,&quot;usd&quot;:43,&quot;destination&quot;:&quot;China&quot;},{&quot;year&quot;:2002,&quot;usd&quot;:55,&quot;destination&quot;:&quot;China&quot;},{&quot;year&quot;:2003,&quot;usd&quot;:56,&quot;destination&quot;:&quot;China&quot;},{&quot;year&quot;:2004,&quot;usd&quot;:88,&quot;destination&quot;:&quot;China&quot;},{&quot;year&quot;:2005,&quot;usd&quot;:105,&quot;destination&quot;:&quot;China&quot;},{&quot;year&quot;:2006,&quot;usd&quot;:156,&quot;destination&quot;:&quot;China&quot;},{&quot;year&quot;:2007,&quot;usd&quot;:270,&quot;destination&quot;:&quot;China&quot;},{&quot;year&quot;:2008,&quot;usd&quot;:299,&quot;destination&quot;:&quot;China&quot;},{&quot;year&quot;:2009,&quot;usd&quot;:340,&quot;destination&quot;:&quot;China&quot;},{&quot;year&quot;:2010,&quot;usd&quot;:403,&quot;destination&quot;:&quot;China&quot;},{&quot;year&quot;:2011,&quot;usd&quot;:549,&quot;destination&quot;:&quot;China&quot;},{&quot;year&quot;:2012,&quot;usd&quot;:499,&quot;destination&quot;:&quot;China&quot;}],&quot;genId&quot;:&quot;1425112410&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/customPlotlyChart'], \n      function(playground, _magiccustomPlotlyChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magiccustomPlotlyChart,\n    \"o\": {\"js\":\"var layout = {\\n  title: 'US Export of Plastic Scrap',\\n  xaxis: {tickfont: {\\n      size: 14,\\n      color: 'rgb(107, 107, 107)'\\n    }},\\n  yaxis: {\\n    title: 'USD (millions)',\\n    titlefont: {\\n      size: 16,\\n      color: 'rgb(107, 107, 107)'\\n    },\\n    tickfont: {\\n      size: 14,\\n      color: 'rgb(107, 107, 107)'\\n    }\\n  },\\n  legend: {\\n    x: 0,\\n    y: 1.0,\\n    bgcolor: 'rgba(255, 255, 255, 0)',\\n    bordercolor: 'rgba(255, 255, 255, 0)'\\n  },\\n  barmode: 'group',\\n  bargap: 0.15,\\n  bargroupgap: 0.1\\n}; var dataSources={x: 'year', y: 'usd'}; var dataOptions = {\\n                    splitBy: 'destination',\\n                    byTrace: {\\n                      'China': {\\n                        type: 'bar',\\n                        marker: {color: 'rgb(26, 118, 255)'}\\n                      },\\n                      'Rest of world': {\\n                        type: 'bar',\\n                        marker: {color: 'rgb(55, 83, 109)'}\\n                      }\\n                    }\\n                  }\",\"headers\":[\"year\",\"usd\",\"destination\"],\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n      <span class=\"chart-total-item-count\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon7a50e22491a46da37e8ea86fa33e65e8&quot;,&quot;initialValue&quot;:&quot;36&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId, initialValue)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p> entries total</span>\n      <span class=\"chart-sampling-warning\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon099ead0a7b6899727a8bbf549b648efd&quot;,&quot;initialValue&quot;:&quot;&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId, initialValue)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p></span>\n      <div>\n      </div>\n    </div></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 10,
+      "time" : "Took: 2 seconds 896 milliseconds, at 2016-11-11 17:7"
+    } ]
   }, {
     "metadata" : {
       "id" : "2A37AC07E19A474C87D5D5C6E83D92EA"
     },
     "cell_type" : "markdown",
-    "source" : "# Box Plots"
+    "source" : "# Proportions"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "B382460D9CC3491684287350D3E7C29A"
-    },
-    "cell_type" : "code",
-    "source" : "import scala.util.Random",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "presentation" : {
-        "tabs_state" : "{\n  \"tab_id\": \"#tab1506371030-0\"\n}",
-        "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [],\n  \"rows\": [],\n  \"vals\": [],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count\",\n  \"rendererName\": \"Table\"\n}"
-      },
-      "id" : "C9B2826834564DE7909B0326D6D26F1F"
-    },
-    "cell_type" : "code",
-    "source" : "val samples = (0 until 50)\n      .flatMap(_ => Seq(Tuple2(Random.nextDouble(), \"A\"), Tuple2(Random.nextDouble() + 0.3, \"B\")))\n      .toDF(\"sample\", \"cls\")",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
+      "output_stream_collapsed" : true,
       "collapsed" : false,
       "id" : "A996270615E64465B14E52AB4F284D04"
     },
     "cell_type" : "code",
     "source" : "CustomPlotlyChart(samples, \n                  dataOptions=\"{type: 'box', splitBy: 'cls'}\",\n                  dataSources=\"{y: 'sample'}\")",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res23: notebook.front.widgets.charts.CustomPlotlyChart[org.apache.spark.sql.DataFrame] = <CustomPlotlyChart widget>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon73958e0838a19317225a8921b5dfc3fb&quot;,&quot;dataInit&quot;:[{&quot;sample&quot;:0.9132931470046737,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.1051298750885765,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.47630188508683124,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.0328801880851626,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.0068416057461052615,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.2310152203864813,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.9226894207125057,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.8971025345861252,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.2696289923097662,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.9979669420176895,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.1816291410783163,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.0340824642360391,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.795694965073421,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.2256427564125918,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.4089851822806496,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.5559917955479032,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.4696097141038782,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.292563647237917,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.5979191504754979,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.986541789550059,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.3641377104074959,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.8474870241381378,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.8260741255987526,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.9437065887459632,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.6356861377917421,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.1167778567195457,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.8369232515521007,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.3711574590573275,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.7340965768479172,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.9370804263220907,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.5477205573077116,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.1649960795983003,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.08415956289906756,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.9287268016331187,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.6204374544945545,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.656632556964827,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.39330092676910333,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.41770045705712816,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.9322627578953538,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.4331622602273531,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.39321020831991926,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.8126064031059568,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.6386903839636577,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.4033528789229472,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.13275088455940198,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.147982294176093,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.5349134034772602,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.8503609828858893,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.9053129251977061,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.4164172821609014,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.5901888082072456,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.4515555266117735,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.5158383714734822,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.1293286229401882,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.8550328866989753,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.8913331936413724,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.8710711676589901,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.2698787565838885,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.4225517160720721,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.7445682165547405,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.8111520773833599,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.43139808402513075,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.7629072897320001,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.7663477081122905,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.6915009753038354,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.4708121152910943,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.5438647712557568,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.5879005723099753,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.47099790167700384,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.44895366804097364,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.0005617527822945334,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.0891365022461887,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.9657956521981025,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.9782743750847138,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.024085680463910353,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.3949689560370026,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.4876659671450858,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.3533520696222054,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.40114090912730216,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.5256041058020471,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.3016027845126995,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.0007236241035988,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.0560323122638684,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.2202355497955852,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.2094753293228908,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.8519555691929956,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.7213873908705434,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.3490919597680359,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.09484470623828856,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.217497685849039,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.1954845130820838,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.6305434586412144,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.44862795451452575,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.6187474926971024,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.23174980075830853,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:1.0779794073336755,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.7361135559315604,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.8218866343972051,&quot;cls&quot;:&quot;B&quot;},{&quot;sample&quot;:0.14993092814538223,&quot;cls&quot;:&quot;A&quot;},{&quot;sample&quot;:0.7154288215455051,&quot;cls&quot;:&quot;B&quot;}],&quot;genId&quot;:&quot;159330839&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/customPlotlyChart'], \n      function(playground, _magiccustomPlotlyChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magiccustomPlotlyChart,\n    \"o\": {\"js\":\"var layout = {}; var dataSources={y: 'sample'}; var dataOptions = {type: 'box', splitBy: 'cls'}\",\"headers\":[\"sample\",\"cls\"],\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n      <span class=\"chart-total-item-count\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon77f3fc46ef0b9f83bffa4e4556d6b31b&quot;,&quot;initialValue&quot;:&quot;100&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId, initialValue)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p> entries total</span>\n      <span class=\"chart-sampling-warning\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anonaeb584ffe9f90971b6a8936c8f6e06e7&quot;,&quot;initialValue&quot;:&quot;&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId, initialValue)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p></span>\n      <div>\n      </div>\n    </div></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 15,
+      "time" : "Took: 3 seconds 17 milliseconds, at 2016-11-11 17:7"
+    } ]
   }, {
     "metadata" : {
       "id" : "76EA2E930B47475E80134D4500382F6D"
     },
     "cell_type" : "markdown",
-    "source" : "# Line and Scatter Charts"
+    "source" : "# Trends"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false,
+      "collapsed" : true,
       "id" : "4796771738B9472FA37F0B98E16F5DEB"
     },
     "cell_type" : "code",
     "source" : "val samples = Seq(\n  (1, 10, \"trace 1\"), (2, 15, \"trace 1\"), (3, 13, \"trace 1\"), (4, 17, \"trace 1\"),\n  (2, 16, \"trace 2\"), (3, 5, \"trace 2\"), (4, 11, \"trace 2\"), (5, 9, \"trace 2\"),\n  (1, 12, \"trace 3\"), (2, 9, \"trace 3\"), (3, 15, \"trace 3\"), (4, 12, \"trace 3\")\n).toDF(\"x\", \"y\", \"trace\")",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "samples: org.apache.spark.sql.DataFrame = [x: int, y: int ... 1 more field]\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 16,
+      "time" : "Took: 2 seconds 218 milliseconds, at 2016-11-11 17:7"
+    } ]
   }, {
     "metadata" : {
       "trusted" : true,
-      "input_collapsed" : false,
+      "input_collapsed" : true,
+      "output_stream_collapsed" : true,
       "collapsed" : false,
       "id" : "D5A36479315F4E7D8A895639F678BF34"
     },
     "cell_type" : "code",
     "source" : "CustomPlotlyChart(samples,\n                  layout=\"{title: 'Line and Scatter Styling'}\",\n                  dataOptions=\"\"\"{\n                    splitBy: 'trace',\n                    byTrace: {\n                      'trace 1': {\n                        mode: 'markers',\n                        marker: {\n                          color: 'rgb(219, 64, 82)',\n                          size: 12\n                        }\n                      },\n                      'trace 2': {\n                        mode: 'lines',\n                        line: {\n                          color: 'rgb(55, 128, 191)',\n                          width: 3\n                        }\n                      },\n                      'trace 3': {\n                        mode: 'lines+markers',\n                        line: {\n                          color: 'rgb(128, 0, 128)',\n                          width: 1\n                        },\n                        marker: {\n                           color: 'rgb(128, 0, 128)',\n                           size: 8\n                        }\n                      }\n                    }\n                  }\"\"\",\n                  dataSources=\"{x: 'x', y: 'y'}\")",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "id" : "420294658DC64BCFBDF776217F7750E2"
-    },
-    "cell_type" : "markdown",
-    "source" : "# Area Charts"
-  }, {
-    "metadata" : {
-      "id" : "83A5933DD5544324A20E189A2F3DC515"
-    },
-    "cell_type" : "markdown",
-    "source" : "## Overlaid Area Chart"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "529F882892934F7D85B22945F5F76B73"
-    },
-    "cell_type" : "code",
-    "source" : "val samples = Seq(\n  (1, 0, \"trace 1\"), (2, 2, \"trace 1\"), (3, 3, \"trace 1\"), (4, 5, \"trace 1\"),\n  (1, 3, \"trace 2\"), (2, 5, \"trace 2\"), (3, 1, \"trace 2\"), (4, 7, \"trace 2\")\n).toDF(\"x\", \"y\", \"trace\")",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "87EC5D8A82434226AA5A15D8AAEA0396"
-    },
-    "cell_type" : "code",
-    "source" : "CustomPlotlyChart(samples,\n                  layout=\"{title: 'Overlaid Area Chart'}\",\n                  dataOptions=\"\"\"{\n                    splitBy: 'trace',\n                    byTrace: {\n                      'trace 1': {\n                        mode: 'scatter',\n                        fill: 'tozeroy'\n                      },\n                      'trace 2': {\n                        mode: 'scatter',\n                        fill: 'tonexty'\n                      }\n                    }\n                  }\"\"\",\n                  dataSources=\"{x: 'x', y: 'y'}\")",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "id" : "29D68C8FCBFA452A878D28947DE0BFDC"
-    },
-    "cell_type" : "markdown",
-    "source" : "# Histograms"
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res26: notebook.front.widgets.charts.CustomPlotlyChart[org.apache.spark.sql.DataFrame] = <CustomPlotlyChart widget>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anon1c571c094e7293163bab0ad14a163fc3&quot;,&quot;dataInit&quot;:[{&quot;x&quot;:1,&quot;y&quot;:10,&quot;trace&quot;:&quot;trace 1&quot;},{&quot;x&quot;:2,&quot;y&quot;:15,&quot;trace&quot;:&quot;trace 1&quot;},{&quot;x&quot;:3,&quot;y&quot;:13,&quot;trace&quot;:&quot;trace 1&quot;},{&quot;x&quot;:4,&quot;y&quot;:17,&quot;trace&quot;:&quot;trace 1&quot;},{&quot;x&quot;:2,&quot;y&quot;:16,&quot;trace&quot;:&quot;trace 2&quot;},{&quot;x&quot;:3,&quot;y&quot;:5,&quot;trace&quot;:&quot;trace 2&quot;},{&quot;x&quot;:4,&quot;y&quot;:11,&quot;trace&quot;:&quot;trace 2&quot;},{&quot;x&quot;:5,&quot;y&quot;:9,&quot;trace&quot;:&quot;trace 2&quot;},{&quot;x&quot;:1,&quot;y&quot;:12,&quot;trace&quot;:&quot;trace 3&quot;},{&quot;x&quot;:2,&quot;y&quot;:9,&quot;trace&quot;:&quot;trace 3&quot;},{&quot;x&quot;:3,&quot;y&quot;:15,&quot;trace&quot;:&quot;trace 3&quot;},{&quot;x&quot;:4,&quot;y&quot;:12,&quot;trace&quot;:&quot;trace 3&quot;}],&quot;genId&quot;:&quot;246406471&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/customPlotlyChart'], \n      function(playground, _magiccustomPlotlyChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magiccustomPlotlyChart,\n    \"o\": {\"js\":\"var layout = {title: 'Line and Scatter Styling'}; var dataSources={x: 'x', y: 'y'}; var dataOptions = {\\n                    splitBy: 'trace',\\n                    byTrace: {\\n                      'trace 1': {\\n                        mode: 'markers',\\n                        marker: {\\n                          color: 'rgb(219, 64, 82)',\\n                          size: 12\\n                        }\\n                      },\\n                      'trace 2': {\\n                        mode: 'lines',\\n                        line: {\\n                          color: 'rgb(55, 128, 191)',\\n                          width: 3\\n                        }\\n                      },\\n                      'trace 3': {\\n                        mode: 'lines+markers',\\n                        line: {\\n                          color: 'rgb(128, 0, 128)',\\n                          width: 1\\n                        },\\n                        marker: {\\n                           color: 'rgb(128, 0, 128)',\\n                           size: 8\\n                        }\\n                      }\\n                    }\\n                  }\",\"headers\":[\"x\",\"y\",\"trace\"],\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n      <span class=\"chart-total-item-count\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon1599c0eaaca8032a9761b8f6d27c99e3&quot;,&quot;initialValue&quot;:&quot;12&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId, initialValue)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p> entries total</span>\n      <span class=\"chart-sampling-warning\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon9cce825d88b51f14fc7cb7aceb295ce4&quot;,&quot;initialValue&quot;:&quot;&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId, initialValue)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p></span>\n      <div>\n      </div>\n    </div></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 17,
+      "time" : "Took: 2 seconds 413 milliseconds, at 2016-11-11 17:7"
+    } ]
   }, {
     "metadata" : {
       "id" : "02F91B8B83D94445949469AC18B04202"
     },
     "cell_type" : "markdown",
-    "source" : "## Basic Histogram"
+    "source" : "# Distributions"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "CA01CCB1DF62497A846AB394FC065783"
-    },
-    "cell_type" : "code",
-    "source" : "val samples = (0 until 500)\n      .map(Tuple2(_, Random.nextGaussian))\n      .toDF(\"sampleNum\", \"value\")",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "ABE8C7235A134A44854F1D0F0599FD48"
-    },
-    "cell_type" : "code",
-    "source" : "CustomPlotlyChart(samples, \n                  dataOptions=\"{type: 'histogram', opacity: 0.7}\",\n                  dataSources=\"{x: 'value'}\")",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "id" : "0DEEAF2BE6954E3189B844A5CA2783E3"
-    },
-    "cell_type" : "markdown",
-    "source" : "## Horizontal Histogram"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "383F8D80589B4013859A7BD335677D16"
-    },
-    "cell_type" : "code",
-    "source" : "CustomPlotlyChart(samples, \n                  dataOptions=\"{type: 'histogram', marker: {color: 'pink'}}\",\n                  dataSources=\"{y: 'value'}\")",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "id" : "1DB4506348544CC69B2FC91A3DBF8C02"
-    },
-    "cell_type" : "markdown",
-    "source" : "## Overlaid Histgram"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "3A0B039A5D7543CB85925D8FF14AF46D"
-    },
-    "cell_type" : "code",
-    "source" : "val samples = (0 until 500)\n      .flatMap(_ => Seq(Tuple2(\"A\", Random.nextGaussian), Tuple2(\"B\", Random.nextGaussian + 0.7)))\n      .toDF(\"cls\", \"value\")",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "E81D78D1C1E04EDA85504B8C2D5E006E"
-    },
-    "cell_type" : "code",
-    "source" : "CustomPlotlyChart(samples,\n                  layout=\"{barmode: 'overlay'}\",\n                  dataOptions=\"\"\"{\n                      splitBy: 'cls',\n                      type: 'histogram',\n                      opacity: 0.6\n                    }\"\"\",\n                  dataSources=\"{x: 'value'}\")",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "id" : "2F0CB1BD4C29479C81D14B8AF77D7470"
-    },
-    "cell_type" : "markdown",
-    "source" : "### Styled Overlaid Histograms"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "6F92C18182154AFB8765CD61ACD4137B"
-    },
-    "cell_type" : "code",
-    "source" : "CustomPlotlyChart(samples,\n                  layout=\"{barmode: 'overlay', bargap: 0.05}\",\n                  dataOptions=\"\"\"{\n                    splitBy: 'cls',\n                    byTrace: {\n                      'A': {\n                        type: 'histogram',\n                        opacity: 0.5,\n                        marker: {\n                          color: 'green'\n                        }\n                      },\n                      'B': {\n                        type: 'histogram',\n                        opacity: 0.5,\n                        marker: {\n                          color: 'red'\n                        }\n                      }\n                    }}\"\"\",\n                  dataSources=\"{x: 'value'}\")",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "id" : "AA9EF856B7364E558D1686E7ED870D36"
-    },
-    "cell_type" : "markdown",
-    "source" : "# 2D Histograms"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "B6B1B3D81E8B41AB93BC70004293F670"
-    },
-    "cell_type" : "code",
-    "source" : "val samples = (0 until 500)\n      .map(_ => Tuple2(Random.nextGaussian, Random.nextGaussian + 1))\n      .toDF(\"x\", \"y\")",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
+      "output_stream_collapsed" : true,
       "collapsed" : false,
       "id" : "C5045FCEB2334F9596736D84BFE06AB5"
     },
     "cell_type" : "code",
     "source" : "CustomPlotlyChart(samples, \n                  dataOptions=\"{type: 'histogram2d', opacity: 0.8}\",\n                  dataSources=\"{x: 'x', y: 'y'}\")",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "id" : "3A31674FA7004B518ED815C9FDADE22E"
-    },
-    "cell_type" : "markdown",
-    "source" : "# Error Bars"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : true,
-      "id" : "3F0D0DD21FAF47C18EAD964E831D2A46"
-    },
-    "cell_type" : "markdown",
-    "source" : "## Basic Symmetric Error Bars"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "C57742F6F5B6436682D09AF3371288B7"
-    },
-    "cell_type" : "code",
-    "source" : "val measurement = Seq(\n  (1, 6, 1), (3, 10, 3), (5, 2, 2)\n).toDF(\"x\", \"value\", \"error\")",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "C3F9EA9DDBD447D8A83837EC9A905F20"
-    },
-    "cell_type" : "code",
-    "source" : "CustomPlotlyChart(measurement, \n                  dataOptions=\"{type: 'scatter', error_y: {type: 'data', visible: true}}\",\n                  dataSources=\"{x: 'x', y: 'value', error_y: {array: 'error'}}\")",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : true,
-      "id" : "2B609AEB43894B9285EDF905385EDE70"
-    },
-    "cell_type" : "markdown",
-    "source" : "## Asymmetric Error Bars"
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "A64F97916F354E82AC9F26FF9EC2D450"
-    },
-    "cell_type" : "code",
-    "source" : "val measurement = Seq(\n  (1.0, 2.0, 0.4, 0.1), (3.0, 1.0, 0.2, 0.8), (5.0, 4.0, 0.3, 1.0)\n).toDF(\"x\", \"value\", \"pluserror\", \"minuserror\")",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : false,
-      "id" : "BFEA6047236D45438A5850798181ABCB"
-    },
-    "cell_type" : "code",
-    "source" : "CustomPlotlyChart(measurement, \n                  dataOptions=\"{type: 'scatter', error_y: {type: 'data', visible: true}}\",\n                  dataSources=\"{x: 'x', y: 'value', error_y: {symmetric: false, array: 'pluserror', arrayminus: 'minuserror'}}\")",
-    "outputs" : [ ]
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "res42: notebook.front.widgets.charts.CustomPlotlyChart[org.apache.spark.sql.DataFrame] = <CustomPlotlyChart widget>\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : "<div>\n      <script data-this=\"{&quot;dataId&quot;:&quot;anona82b952349b69805b8195ee9499d3175&quot;,&quot;dataInit&quot;:[{&quot;x&quot;:-0.5216542051329047,&quot;y&quot;:0.8347457562089486},{&quot;x&quot;:0.44242920381587236,&quot;y&quot;:-0.6748106528275883},{&quot;x&quot;:0.383840427610743,&quot;y&quot;:1.2753094373553533},{&quot;x&quot;:0.03995957432136446,&quot;y&quot;:2.492296432238373},{&quot;x&quot;:-0.20707222054401203,&quot;y&quot;:1.3549054832599856},{&quot;x&quot;:-0.9724409900403755,&quot;y&quot;:2.051629554916313},{&quot;x&quot;:0.49726440395963856,&quot;y&quot;:0.9942064028458337},{&quot;x&quot;:-0.7767683442119555,&quot;y&quot;:1.7165098812937618},{&quot;x&quot;:-2.0819968116369294,&quot;y&quot;:0.5341799487817853},{&quot;x&quot;:-0.255691384578621,&quot;y&quot;:-0.35974265832089625},{&quot;x&quot;:-0.6877725924204519,&quot;y&quot;:1.3145560448721925},{&quot;x&quot;:-0.04362057351116583,&quot;y&quot;:0.7781863676316749},{&quot;x&quot;:1.4677527323291395,&quot;y&quot;:1.1802329363611928},{&quot;x&quot;:1.0056855251252366,&quot;y&quot;:0.9199881489084372},{&quot;x&quot;:1.472267536836204,&quot;y&quot;:1.380956356988049},{&quot;x&quot;:-0.0454986083452419,&quot;y&quot;:-0.3312763126810445},{&quot;x&quot;:0.8688609306353539,&quot;y&quot;:0.5522943123880133},{&quot;x&quot;:1.2318425921024485,&quot;y&quot;:-0.6050179915432268},{&quot;x&quot;:1.4616562449423363,&quot;y&quot;:1.8213316901695413},{&quot;x&quot;:-0.3804534437285666,&quot;y&quot;:1.1925945141228511},{&quot;x&quot;:-2.4754745896493335,&quot;y&quot;:2.236136553729512},{&quot;x&quot;:0.05895754577355421,&quot;y&quot;:1.6940256811560337},{&quot;x&quot;:-0.04552087654498667,&quot;y&quot;:1.3249734541254607},{&quot;x&quot;:0.3805459633215741,&quot;y&quot;:2.169901888958279},{&quot;x&quot;:0.3037554119488067,&quot;y&quot;:-0.308911113067053},{&quot;x&quot;:-0.217737448402259,&quot;y&quot;:1.242144041458222},{&quot;x&quot;:0.9133292695614295,&quot;y&quot;:3.7455086427815587},{&quot;x&quot;:-1.2325786731531203,&quot;y&quot;:-0.4576820198086411},{&quot;x&quot;:-1.5414823762835423,&quot;y&quot;:0.25471895707169545},{&quot;x&quot;:-0.6324142548492192,&quot;y&quot;:1.3138109119557764},{&quot;x&quot;:0.9565594097552111,&quot;y&quot;:-0.4547720567099922},{&quot;x&quot;:0.8455274616680797,&quot;y&quot;:2.1560234806182157},{&quot;x&quot;:1.1157839522443582,&quot;y&quot;:1.7210584895985273},{&quot;x&quot;:0.16275888342488223,&quot;y&quot;:-0.36959650317979187},{&quot;x&quot;:-0.35542985807328586,&quot;y&quot;:-0.17075301787404107},{&quot;x&quot;:-0.29944184744143615,&quot;y&quot;:0.43188113030799635},{&quot;x&quot;:0.41632879932626765,&quot;y&quot;:2.8176846777988125},{&quot;x&quot;:1.6226989182408151,&quot;y&quot;:0.22389947858161452},{&quot;x&quot;:-0.3039753913555501,&quot;y&quot;:0.6402212082648095},{&quot;x&quot;:-1.3002754851368539,&quot;y&quot;:1.5206452277709182},{&quot;x&quot;:0.18174180549076682,&quot;y&quot;:0.8625905465562366},{&quot;x&quot;:-0.3758729158801911,&quot;y&quot;:0.4394112631245559},{&quot;x&quot;:-0.041737097258113656,&quot;y&quot;:-0.34390400900592577},{&quot;x&quot;:-0.4566219132596001,&quot;y&quot;:0.5442416338282078},{&quot;x&quot;:0.2997627851886098,&quot;y&quot;:1.336704798514904},{&quot;x&quot;:-1.3212383713397813,&quot;y&quot;:2.26109345570778},{&quot;x&quot;:0.7021933548516255,&quot;y&quot;:2.4621776943469715},{&quot;x&quot;:1.3872762393200002,&quot;y&quot;:2.5644277122182917},{&quot;x&quot;:0.2222353522205451,&quot;y&quot;:1.976347783889604},{&quot;x&quot;:-1.2726217319564084,&quot;y&quot;:0.23129147627467206},{&quot;x&quot;:0.005728981472386285,&quot;y&quot;:2.2330314680874777},{&quot;x&quot;:-0.6279071770118698,&quot;y&quot;:-0.031325783113049344},{&quot;x&quot;:0.08181409324566717,&quot;y&quot;:1.7346929572063958},{&quot;x&quot;:1.4074814744611026,&quot;y&quot;:0.19464587940992184},{&quot;x&quot;:-0.6354388307709075,&quot;y&quot;:-0.9306483252597815},{&quot;x&quot;:-1.0943878923913821,&quot;y&quot;:0.7051150405691078},{&quot;x&quot;:0.9979283447134275,&quot;y&quot;:-0.5967596153505466},{&quot;x&quot;:1.2271067103997324,&quot;y&quot;:0.16993118057553902},{&quot;x&quot;:-1.36907856881166,&quot;y&quot;:0.6045718365479129},{&quot;x&quot;:-0.13139335784127076,&quot;y&quot;:0.1759888624241105},{&quot;x&quot;:0.5708224988194823,&quot;y&quot;:1.1860093322243783},{&quot;x&quot;:-0.36153955649008684,&quot;y&quot;:0.8889893022607117},{&quot;x&quot;:-0.4845586687605081,&quot;y&quot;:1.8426486268321673},{&quot;x&quot;:-0.664530704066359,&quot;y&quot;:-0.6026209032011725},{&quot;x&quot;:0.24801544802826675,&quot;y&quot;:-0.22205763984068905},{&quot;x&quot;:-0.8824643365313682,&quot;y&quot;:0.9061621689926674},{&quot;x&quot;:-0.0499093418409469,&quot;y&quot;:1.1624738927079126},{&quot;x&quot;:1.483052109906091,&quot;y&quot;:-0.1531823347217176},{&quot;x&quot;:-0.15569710934895606,&quot;y&quot;:-0.44213534673069743},{&quot;x&quot;:1.1888574256289635,&quot;y&quot;:-0.05187979228732775},{&quot;x&quot;:-0.03935441393492108,&quot;y&quot;:0.8394364616710404},{&quot;x&quot;:2.060844093677431,&quot;y&quot;:0.37722579879023643},{&quot;x&quot;:-0.7509576317593717,&quot;y&quot;:2.2937376525569344},{&quot;x&quot;:-0.591365798309705,&quot;y&quot;:-0.4897694868706901},{&quot;x&quot;:0.876876546226305,&quot;y&quot;:1.2289083154874558},{&quot;x&quot;:-1.4015186933287782,&quot;y&quot;:1.5118622630899043},{&quot;x&quot;:-0.1269610741863758,&quot;y&quot;:-0.3334646870415059},{&quot;x&quot;:-0.5620497206551341,&quot;y&quot;:1.1195101289035092},{&quot;x&quot;:0.6534585504292826,&quot;y&quot;:1.7507285637130106},{&quot;x&quot;:2.073987169119014,&quot;y&quot;:0.24540275983709914},{&quot;x&quot;:1.1100656554194235,&quot;y&quot;:1.5834029772312914},{&quot;x&quot;:-0.7578473789933389,&quot;y&quot;:0.2403358192445062},{&quot;x&quot;:-0.2899907116349273,&quot;y&quot;:0.9660932885905817},{&quot;x&quot;:-0.8657869166644723,&quot;y&quot;:1.4152810076414142},{&quot;x&quot;:-0.7200091923602553,&quot;y&quot;:0.9479353782812308},{&quot;x&quot;:0.30282173896367237,&quot;y&quot;:0.18846764884792433},{&quot;x&quot;:0.26131778833566993,&quot;y&quot;:0.06650833561224534},{&quot;x&quot;:0.7295790835944663,&quot;y&quot;:0.870394719102714},{&quot;x&quot;:-0.3994837828687562,&quot;y&quot;:-1.73739581089941},{&quot;x&quot;:0.48315923994348514,&quot;y&quot;:0.19552783201163026},{&quot;x&quot;:1.175197413217009,&quot;y&quot;:1.928877483622516},{&quot;x&quot;:1.4014008777469225,&quot;y&quot;:1.2557666223450408},{&quot;x&quot;:-1.0839993772499577,&quot;y&quot;:1.387443236041625},{&quot;x&quot;:-0.3957522809632754,&quot;y&quot;:0.8107637530842147},{&quot;x&quot;:-0.9315531939727886,&quot;y&quot;:0.7852357869980608},{&quot;x&quot;:2.036914961870926,&quot;y&quot;:1.6591860282444388},{&quot;x&quot;:0.7918169857696892,&quot;y&quot;:0.9261864515178035},{&quot;x&quot;:-0.8509596082346611,&quot;y&quot;:1.3807173199436213},{&quot;x&quot;:-0.7938939146361171,&quot;y&quot;:-1.1077076538183568},{&quot;x&quot;:0.37449725414576945,&quot;y&quot;:0.2372194235188314},{&quot;x&quot;:1.462014760868827,&quot;y&quot;:0.33346191372687894},{&quot;x&quot;:-2.324003817285041,&quot;y&quot;:1.113537643295664},{&quot;x&quot;:0.8806499812772236,&quot;y&quot;:1.3450923773623786},{&quot;x&quot;:2.0196791551764703,&quot;y&quot;:0.22065975414418093},{&quot;x&quot;:1.3804294411075682,&quot;y&quot;:0.7955037941733697},{&quot;x&quot;:0.2199579668335001,&quot;y&quot;:0.22590063679106898},{&quot;x&quot;:-1.5771260298098249,&quot;y&quot;:1.479942854675585},{&quot;x&quot;:-1.1474239965599697,&quot;y&quot;:0.32035124977052787},{&quot;x&quot;:-0.5811647624144065,&quot;y&quot;:3.911442587115213},{&quot;x&quot;:-0.1323085093758317,&quot;y&quot;:-0.03890955568156973},{&quot;x&quot;:2.081302513743404,&quot;y&quot;:-0.2688601994377253},{&quot;x&quot;:-0.855821123295789,&quot;y&quot;:0.49273528209990747},{&quot;x&quot;:-0.7971632941958801,&quot;y&quot;:1.0698361696108372},{&quot;x&quot;:-0.5481686797276224,&quot;y&quot;:0.1581179849369606},{&quot;x&quot;:-0.018859279523995624,&quot;y&quot;:1.1615584405885466},{&quot;x&quot;:0.20291564741921264,&quot;y&quot;:0.7093682925828417},{&quot;x&quot;:0.6805047686105554,&quot;y&quot;:-0.9953746103909749},{&quot;x&quot;:0.33689024297938913,&quot;y&quot;:0.11569920014993129},{&quot;x&quot;:1.1293312777343845,&quot;y&quot;:-0.14075427994950807},{&quot;x&quot;:-0.5134886974277453,&quot;y&quot;:1.7613921680822284},{&quot;x&quot;:-0.5131304904113694,&quot;y&quot;:2.2425158620657917},{&quot;x&quot;:0.5973654169697993,&quot;y&quot;:0.10300203976636613},{&quot;x&quot;:-0.5851821956486061,&quot;y&quot;:-0.5523599938231545},{&quot;x&quot;:-1.8312669974128482,&quot;y&quot;:1.0972123868918993},{&quot;x&quot;:-1.0264020306133608,&quot;y&quot;:-0.09012926535301768},{&quot;x&quot;:0.04324048711630778,&quot;y&quot;:1.041772007433418},{&quot;x&quot;:0.08364943407693011,&quot;y&quot;:2.166691599624741},{&quot;x&quot;:-0.029749491932486362,&quot;y&quot;:0.9633679746288726},{&quot;x&quot;:0.8096406766268134,&quot;y&quot;:1.288885839052642},{&quot;x&quot;:1.4293570000467573,&quot;y&quot;:0.8590697980512142},{&quot;x&quot;:1.5217337408324618,&quot;y&quot;:0.10029379646789216},{&quot;x&quot;:-0.06347021082062235,&quot;y&quot;:3.1437629979952133},{&quot;x&quot;:0.3749211822615715,&quot;y&quot;:0.9770328322022417},{&quot;x&quot;:2.213494647098288,&quot;y&quot;:0.26359875273127575},{&quot;x&quot;:0.8900205493863754,&quot;y&quot;:2.715023572783479},{&quot;x&quot;:0.2643111431686379,&quot;y&quot;:2.0251410482208865},{&quot;x&quot;:0.5145543970183362,&quot;y&quot;:0.9533391807044042},{&quot;x&quot;:0.8421044026964569,&quot;y&quot;:2.1666344895461274},{&quot;x&quot;:-0.3780691837391371,&quot;y&quot;:0.4039068391987414},{&quot;x&quot;:-0.4460236941344536,&quot;y&quot;:0.6899866802455692},{&quot;x&quot;:0.2935880434326789,&quot;y&quot;:3.0833212992791044},{&quot;x&quot;:-0.765154975054237,&quot;y&quot;:1.8994154878623746},{&quot;x&quot;:0.6111776254603024,&quot;y&quot;:2.640939284961644},{&quot;x&quot;:0.4605688271515256,&quot;y&quot;:2.661518218032555},{&quot;x&quot;:-0.06230819965657059,&quot;y&quot;:-0.5848768378645741},{&quot;x&quot;:-0.345716431185487,&quot;y&quot;:0.6479224553931742},{&quot;x&quot;:0.9099649452995003,&quot;y&quot;:1.0302218025286263},{&quot;x&quot;:0.4613750846467596,&quot;y&quot;:0.3151225033170937},{&quot;x&quot;:1.2628723487816285,&quot;y&quot;:0.4805474575729102},{&quot;x&quot;:0.677722445309072,&quot;y&quot;:0.6851850847414771},{&quot;x&quot;:-0.004524206150504093,&quot;y&quot;:1.1197534377362282},{&quot;x&quot;:-0.199261762375039,&quot;y&quot;:0.7523165542410986},{&quot;x&quot;:0.7059484692976326,&quot;y&quot;:0.993007810546648},{&quot;x&quot;:-0.15734505131302942,&quot;y&quot;:1.1625209612827891},{&quot;x&quot;:1.121412805358067,&quot;y&quot;:1.9492122840192738},{&quot;x&quot;:-0.8184140815218196,&quot;y&quot;:-0.4256462750328225},{&quot;x&quot;:1.2640820649473838,&quot;y&quot;:0.0520203198368856},{&quot;x&quot;:-1.4367525610355136,&quot;y&quot;:2.305638032351725},{&quot;x&quot;:0.8158744419825897,&quot;y&quot;:0.5060740331835848},{&quot;x&quot;:-0.8464452498983208,&quot;y&quot;:0.6256966691670476},{&quot;x&quot;:0.9171954253221435,&quot;y&quot;:0.16099467140152235},{&quot;x&quot;:-0.5570737120615313,&quot;y&quot;:0.18171221777058144},{&quot;x&quot;:-0.746376788084684,&quot;y&quot;:1.3167675447415443},{&quot;x&quot;:-2.406992996035191,&quot;y&quot;:1.2339696109945528},{&quot;x&quot;:1.2310357239911105,&quot;y&quot;:2.070408323268003},{&quot;x&quot;:-0.569260242739323,&quot;y&quot;:1.8950431025920065},{&quot;x&quot;:0.8016750995088099,&quot;y&quot;:1.0183172047740674},{&quot;x&quot;:-0.5047140068526859,&quot;y&quot;:0.23126807637362934},{&quot;x&quot;:-1.7615272813192748,&quot;y&quot;:-0.1684888090541019},{&quot;x&quot;:0.21725864718890558,&quot;y&quot;:0.23253374469448596},{&quot;x&quot;:0.6846655467156417,&quot;y&quot;:1.214381914203457},{&quot;x&quot;:0.6275795312413941,&quot;y&quot;:3.2999335036612547},{&quot;x&quot;:1.2125725887740477,&quot;y&quot;:-0.4715452280304686},{&quot;x&quot;:-0.5170016255499436,&quot;y&quot;:1.850977525106333},{&quot;x&quot;:-0.8496728565665816,&quot;y&quot;:0.6469513106001918},{&quot;x&quot;:1.1629604240419509,&quot;y&quot;:0.8066020398678151},{&quot;x&quot;:0.15308236254362256,&quot;y&quot;:0.967293754184516},{&quot;x&quot;:0.7109532750818526,&quot;y&quot;:1.9229939942789591},{&quot;x&quot;:-1.5767986865536987,&quot;y&quot;:2.0930283174391486},{&quot;x&quot;:-0.48800233245703,&quot;y&quot;:1.3239559864235395},{&quot;x&quot;:0.812239422293733,&quot;y&quot;:-0.1739249777498626},{&quot;x&quot;:-1.233674674197982,&quot;y&quot;:2.7574662530744147},{&quot;x&quot;:-1.041111022844966,&quot;y&quot;:0.8218271724772284},{&quot;x&quot;:-0.3047068778595532,&quot;y&quot;:2.1562054350592126},{&quot;x&quot;:1.7390532244470156,&quot;y&quot;:1.840409015159282},{&quot;x&quot;:1.4349231917175982,&quot;y&quot;:0.9655516832701987},{&quot;x&quot;:-0.7374095805609583,&quot;y&quot;:1.2386154082451852},{&quot;x&quot;:1.5125115567208613,&quot;y&quot;:0.7464850148133179},{&quot;x&quot;:-0.5471871232566671,&quot;y&quot;:1.0101810235358206},{&quot;x&quot;:1.8600418992341854,&quot;y&quot;:2.0413637631945356},{&quot;x&quot;:-1.3075947121877525,&quot;y&quot;:1.1041581396336173},{&quot;x&quot;:1.1380775974346777,&quot;y&quot;:0.05529497048839205},{&quot;x&quot;:-0.46317475025894833,&quot;y&quot;:-1.0219538648246735},{&quot;x&quot;:0.11797388586474873,&quot;y&quot;:3.2927823387503525},{&quot;x&quot;:-0.5475942350882416,&quot;y&quot;:1.0786048439632583},{&quot;x&quot;:1.882375670961193,&quot;y&quot;:1.5391342492555968},{&quot;x&quot;:-1.3399746989507801,&quot;y&quot;:2.001682015538862},{&quot;x&quot;:-1.2676953796624157,&quot;y&quot;:1.9519925621629985},{&quot;x&quot;:-0.1305090982772459,&quot;y&quot;:1.5069923589172372},{&quot;x&quot;:-0.7861372881674323,&quot;y&quot;:0.40335250721561977},{&quot;x&quot;:1.9074611524491543,&quot;y&quot;:0.2238418875339967},{&quot;x&quot;:1.4152551683691899,&quot;y&quot;:1.4439218426373568},{&quot;x&quot;:-1.1929955906822234,&quot;y&quot;:0.544712447688104},{&quot;x&quot;:-1.954899364725735,&quot;y&quot;:0.9014340612297422},{&quot;x&quot;:0.5456628389840236,&quot;y&quot;:0.708014025771178},{&quot;x&quot;:0.4609238642336282,&quot;y&quot;:-0.7233169174152507},{&quot;x&quot;:0.6156048956777885,&quot;y&quot;:1.1172349906930574},{&quot;x&quot;:0.13495342311272313,&quot;y&quot;:1.041988723670185},{&quot;x&quot;:-0.7255989671372556,&quot;y&quot;:2.6589187137002304},{&quot;x&quot;:0.20368655871759828,&quot;y&quot;:1.2123820286361018},{&quot;x&quot;:-1.0119787765964214,&quot;y&quot;:-0.4810062557989283},{&quot;x&quot;:0.9017148394699942,&quot;y&quot;:-1.3192505918802215},{&quot;x&quot;:-0.9102355095731087,&quot;y&quot;:-0.5070811104267559},{&quot;x&quot;:0.4714451282363905,&quot;y&quot;:-0.03726680720748399},{&quot;x&quot;:-0.5558739067274966,&quot;y&quot;:0.4501106682475764},{&quot;x&quot;:-1.3401265751649039,&quot;y&quot;:1.8549505336476448},{&quot;x&quot;:-1.047403728100112,&quot;y&quot;:0.980662266064113},{&quot;x&quot;:0.29363171438449515,&quot;y&quot;:0.6891755405783906},{&quot;x&quot;:-1.215922825540243,&quot;y&quot;:1.1660140437018147},{&quot;x&quot;:-0.43613766806639076,&quot;y&quot;:1.8337770285943438},{&quot;x&quot;:-0.06067955274800769,&quot;y&quot;:1.4524299797120421},{&quot;x&quot;:1.1428326625936045,&quot;y&quot;:1.39532609990802},{&quot;x&quot;:-0.7288811085688446,&quot;y&quot;:0.8053682227742212},{&quot;x&quot;:-0.46296835368651634,&quot;y&quot;:2.1277330474284852},{&quot;x&quot;:-1.9871513419411437,&quot;y&quot;:1.9205985031939654},{&quot;x&quot;:0.2912374062843681,&quot;y&quot;:2.479703897540042},{&quot;x&quot;:0.7373189853856288,&quot;y&quot;:2.4323036581032396},{&quot;x&quot;:-0.2981309178842167,&quot;y&quot;:0.8597626667368543},{&quot;x&quot;:-0.12018945057136574,&quot;y&quot;:0.7663969714359175},{&quot;x&quot;:0.9328240034853358,&quot;y&quot;:0.7665586194958458},{&quot;x&quot;:0.9474201688296084,&quot;y&quot;:0.9903426489557473},{&quot;x&quot;:-0.43896995512914394,&quot;y&quot;:-0.5422815697532442},{&quot;x&quot;:0.7445000360466044,&quot;y&quot;:1.7602217890568654},{&quot;x&quot;:0.15079474717686617,&quot;y&quot;:1.2044638727238546},{&quot;x&quot;:0.3647873002625648,&quot;y&quot;:0.0865776819961428},{&quot;x&quot;:1.2131598166117838,&quot;y&quot;:1.8953534242941272},{&quot;x&quot;:0.8228863830838286,&quot;y&quot;:-0.770192603455429},{&quot;x&quot;:0.17335452268425708,&quot;y&quot;:2.0615444503201887},{&quot;x&quot;:-0.9592776549997257,&quot;y&quot;:0.060077722308371495},{&quot;x&quot;:-0.48240738264187083,&quot;y&quot;:0.46574323311369814},{&quot;x&quot;:-0.5998075366062806,&quot;y&quot;:0.5458261624641271},{&quot;x&quot;:-0.2533711223309665,&quot;y&quot;:1.1705067734302117},{&quot;x&quot;:0.4736571067921236,&quot;y&quot;:0.8727846332969694},{&quot;x&quot;:-0.63459743540398,&quot;y&quot;:0.1884184121150686},{&quot;x&quot;:0.5130523111607095,&quot;y&quot;:1.4008318967977775},{&quot;x&quot;:-1.1411425924865306,&quot;y&quot;:1.1877236690228092},{&quot;x&quot;:0.3329448531806365,&quot;y&quot;:1.1280337263738582},{&quot;x&quot;:-1.6113281964191422,&quot;y&quot;:3.2846711684753704},{&quot;x&quot;:-0.4588452051573595,&quot;y&quot;:0.5592072033662656},{&quot;x&quot;:-0.08116332461430253,&quot;y&quot;:-0.5143372059146996},{&quot;x&quot;:-1.5159716009105342,&quot;y&quot;:2.0496194046277747},{&quot;x&quot;:0.8751336287891994,&quot;y&quot;:0.6168859275906364},{&quot;x&quot;:-0.9482506607922517,&quot;y&quot;:1.5573556038707355},{&quot;x&quot;:-0.4917310745836846,&quot;y&quot;:0.2525334917867188},{&quot;x&quot;:-1.1187035459220402,&quot;y&quot;:1.055358745239099},{&quot;x&quot;:0.8782936705160327,&quot;y&quot;:1.3306348937339554},{&quot;x&quot;:0.6579322615353703,&quot;y&quot;:0.3632622455951683},{&quot;x&quot;:0.839318669844785,&quot;y&quot;:-0.47604309097813124},{&quot;x&quot;:1.0769099224760974,&quot;y&quot;:0.7316960927684677},{&quot;x&quot;:-0.7481209001165711,&quot;y&quot;:-0.6194151389601832},{&quot;x&quot;:-1.613071230505915,&quot;y&quot;:2.684279900859553},{&quot;x&quot;:0.8018603642390814,&quot;y&quot;:1.9898258999064589},{&quot;x&quot;:-0.48759398273515064,&quot;y&quot;:0.2020134732193214},{&quot;x&quot;:1.5740728629656997,&quot;y&quot;:0.24848921903411403},{&quot;x&quot;:0.8865100371345842,&quot;y&quot;:0.5755654531725433},{&quot;x&quot;:-0.8942290870303172,&quot;y&quot;:1.3970559390832},{&quot;x&quot;:-0.8073349323038668,&quot;y&quot;:-0.8871988366274921},{&quot;x&quot;:-0.7842822394093772,&quot;y&quot;:2.7772698160458535},{&quot;x&quot;:1.3504024056108905,&quot;y&quot;:3.1721461561395365},{&quot;x&quot;:0.9501980829792505,&quot;y&quot;:1.1142459830710747},{&quot;x&quot;:0.19158548002898365,&quot;y&quot;:1.0809551707258696},{&quot;x&quot;:0.011238750524144265,&quot;y&quot;:1.8957927233197622},{&quot;x&quot;:0.4320203990386362,&quot;y&quot;:1.709653195976549},{&quot;x&quot;:0.9863988443859486,&quot;y&quot;:0.07975867187516361},{&quot;x&quot;:-0.7150889256051055,&quot;y&quot;:0.050239857887412476},{&quot;x&quot;:0.5305051275259478,&quot;y&quot;:1.3038250508767777},{&quot;x&quot;:-0.7841137730437182,&quot;y&quot;:0.7280686538847593},{&quot;x&quot;:-0.3420162456308925,&quot;y&quot;:0.4124653173342997},{&quot;x&quot;:0.5202277176511162,&quot;y&quot;:1.1426740244529643},{&quot;x&quot;:0.437531904455782,&quot;y&quot;:1.4250069574803739},{&quot;x&quot;:1.5859703009112696,&quot;y&quot;:2.067546164171671},{&quot;x&quot;:1.0479672261926514,&quot;y&quot;:0.06192977228758256},{&quot;x&quot;:2.07257588815696,&quot;y&quot;:1.745662020518566},{&quot;x&quot;:-0.6347949780968928,&quot;y&quot;:2.024185906246502},{&quot;x&quot;:-0.5804794617164968,&quot;y&quot;:1.1481216615677425},{&quot;x&quot;:-0.09362688370461347,&quot;y&quot;:-1.0062406640875063},{&quot;x&quot;:-0.014802133682123493,&quot;y&quot;:2.3620314402153983},{&quot;x&quot;:0.0738269392551273,&quot;y&quot;:1.1093972183431442},{&quot;x&quot;:-1.076692265936314,&quot;y&quot;:-0.32465656986531943},{&quot;x&quot;:-0.486123862170325,&quot;y&quot;:0.3338140140600917},{&quot;x&quot;:1.209413169769002,&quot;y&quot;:0.42198737026779054},{&quot;x&quot;:1.909114159824271,&quot;y&quot;:1.5355454341133674},{&quot;x&quot;:-1.1836789288556435,&quot;y&quot;:2.4707845734957044},{&quot;x&quot;:0.4311825452220483,&quot;y&quot;:1.6823227023889635},{&quot;x&quot;:-0.7535612534853483,&quot;y&quot;:1.4391885961185946},{&quot;x&quot;:-0.031183120662443786,&quot;y&quot;:0.587453112816462},{&quot;x&quot;:-0.35688167266055615,&quot;y&quot;:-0.17793811919039304},{&quot;x&quot;:0.022047560952081137,&quot;y&quot;:1.2286184428647964},{&quot;x&quot;:-0.8257681064735272,&quot;y&quot;:-0.9759245502248626},{&quot;x&quot;:-0.009187018771664566,&quot;y&quot;:1.7455553956973362},{&quot;x&quot;:-0.29082076237811477,&quot;y&quot;:2.203023519563178},{&quot;x&quot;:-0.11315906356674618,&quot;y&quot;:0.7115602086915866},{&quot;x&quot;:-0.5765204914041996,&quot;y&quot;:1.293165978757427},{&quot;x&quot;:-0.9700043460330734,&quot;y&quot;:0.6408349938313966},{&quot;x&quot;:1.5832981814559999,&quot;y&quot;:0.18561442354671198},{&quot;x&quot;:-1.107407706622444,&quot;y&quot;:0.9915427491119705},{&quot;x&quot;:-0.41136956750481035,&quot;y&quot;:1.2798817607373199},{&quot;x&quot;:0.5832235355094808,&quot;y&quot;:1.7685122674429272},{&quot;x&quot;:-0.9352021009121984,&quot;y&quot;:1.6061694509824618},{&quot;x&quot;:0.22748287155364666,&quot;y&quot;:1.325692947931492},{&quot;x&quot;:1.292590805023755,&quot;y&quot;:0.7252818162476656},{&quot;x&quot;:-0.7527117461735927,&quot;y&quot;:0.5801653343287412},{&quot;x&quot;:-1.249933863961596,&quot;y&quot;:0.5918526584917825},{&quot;x&quot;:0.3386117540339796,&quot;y&quot;:0.12238585188169226},{&quot;x&quot;:-0.5996326042276245,&quot;y&quot;:0.9927791532740186},{&quot;x&quot;:0.9232940926124594,&quot;y&quot;:-2.543520202845087},{&quot;x&quot;:0.6429972295504734,&quot;y&quot;:-0.2438158485919668},{&quot;x&quot;:-1.7670090724071856,&quot;y&quot;:1.3576542728105043},{&quot;x&quot;:0.9321743566634246,&quot;y&quot;:0.27106335868180764},{&quot;x&quot;:2.387764873212274,&quot;y&quot;:1.9757406952777044},{&quot;x&quot;:0.9497028407750336,&quot;y&quot;:2.0792229714499264},{&quot;x&quot;:1.795471406333878,&quot;y&quot;:-0.6471699717069281},{&quot;x&quot;:0.12106239809696825,&quot;y&quot;:1.485726801208026},{&quot;x&quot;:-0.7316393824039963,&quot;y&quot;:1.1816458385091901},{&quot;x&quot;:-0.14211694509647818,&quot;y&quot;:1.5975305737105936},{&quot;x&quot;:-2.2516360781127855,&quot;y&quot;:0.05071299486474046},{&quot;x&quot;:-0.08484889573281554,&quot;y&quot;:0.9012883159633475},{&quot;x&quot;:-0.2137714252588067,&quot;y&quot;:-0.12368599787414802},{&quot;x&quot;:-0.9287734458823498,&quot;y&quot;:2.213951006164736},{&quot;x&quot;:0.9288974137006104,&quot;y&quot;:2.3492301767984376},{&quot;x&quot;:-0.7268549754038149,&quot;y&quot;:2.0148314814733337},{&quot;x&quot;:0.4008460150483502,&quot;y&quot;:1.0086576199006063},{&quot;x&quot;:-1.3315813985637641,&quot;y&quot;:1.036397739854845},{&quot;x&quot;:0.6878544591244639,&quot;y&quot;:2.9172519458454325},{&quot;x&quot;:-0.38838049214430853,&quot;y&quot;:0.011715617478321394},{&quot;x&quot;:-0.40620330083659695,&quot;y&quot;:1.1251800569245582},{&quot;x&quot;:-0.16835171382999334,&quot;y&quot;:0.7121571253298125},{&quot;x&quot;:0.9993819288633697,&quot;y&quot;:2.3438970338863268},{&quot;x&quot;:0.6534781300442156,&quot;y&quot;:3.6374057640258153},{&quot;x&quot;:-0.12530610432848155,&quot;y&quot;:0.1964458717139551},{&quot;x&quot;:1.4819943061427248,&quot;y&quot;:0.21835739311986746},{&quot;x&quot;:2.476347189577953,&quot;y&quot;:1.4244424625811485},{&quot;x&quot;:-0.4629968788293101,&quot;y&quot;:0.4827662743913519},{&quot;x&quot;:0.5976060768531671,&quot;y&quot;:0.7992277974038875},{&quot;x&quot;:1.0722443545072462,&quot;y&quot;:0.689637075138382},{&quot;x&quot;:-0.4572576169509686,&quot;y&quot;:1.913724611260849},{&quot;x&quot;:1.4979393540387165,&quot;y&quot;:0.10182982246043071},{&quot;x&quot;:-0.1598445940197392,&quot;y&quot;:2.6638957653721027},{&quot;x&quot;:1.1209241944028856,&quot;y&quot;:0.8093157572242567},{&quot;x&quot;:1.924977028015718,&quot;y&quot;:2.4584349808929944},{&quot;x&quot;:-0.8838415730501357,&quot;y&quot;:0.632609138393375},{&quot;x&quot;:-0.41538793797312457,&quot;y&quot;:1.2927534218865926},{&quot;x&quot;:0.19312364865859286,&quot;y&quot;:0.8280260729171994},{&quot;x&quot;:1.0735688332683924,&quot;y&quot;:1.3765359743968804},{&quot;x&quot;:-1.606011884655899,&quot;y&quot;:0.5974780047412994},{&quot;x&quot;:0.6183495086077139,&quot;y&quot;:0.8875808438791267},{&quot;x&quot;:1.1521944863027895,&quot;y&quot;:0.431134121447062},{&quot;x&quot;:0.7961637561812499,&quot;y&quot;:0.27799986543437916},{&quot;x&quot;:-0.33152502393597244,&quot;y&quot;:0.6301099543749077},{&quot;x&quot;:-0.8764597253045391,&quot;y&quot;:1.3071048219489365},{&quot;x&quot;:-0.7092146398260388,&quot;y&quot;:1.0163607101586936},{&quot;x&quot;:-0.7790703523212823,&quot;y&quot;:1.294799461303604},{&quot;x&quot;:0.4804124343917747,&quot;y&quot;:1.7892863221647508},{&quot;x&quot;:0.05392490636638965,&quot;y&quot;:0.44311799414300257},{&quot;x&quot;:1.7852761842003733,&quot;y&quot;:0.5704835964559587},{&quot;x&quot;:0.2956154338767393,&quot;y&quot;:1.4798453152460984},{&quot;x&quot;:0.5146257297978288,&quot;y&quot;:0.04203056968413055},{&quot;x&quot;:1.1525267537404007,&quot;y&quot;:0.8842777063730143},{&quot;x&quot;:-1.8671779736655127,&quot;y&quot;:1.8977594533818776},{&quot;x&quot;:-0.916915212477676,&quot;y&quot;:1.221600390626249},{&quot;x&quot;:1.1997842287523697,&quot;y&quot;:0.03376480074610311},{&quot;x&quot;:-0.904133478898806,&quot;y&quot;:2.267879136309671},{&quot;x&quot;:1.6220113807032763,&quot;y&quot;:0.9275398602312573},{&quot;x&quot;:-0.4030709500848835,&quot;y&quot;:2.556421984197736},{&quot;x&quot;:-0.0061539071288861475,&quot;y&quot;:0.9395360690945468},{&quot;x&quot;:-0.7039733284179646,&quot;y&quot;:1.8254299778081904},{&quot;x&quot;:-0.031141993926013068,&quot;y&quot;:0.9245384365227907},{&quot;x&quot;:0.5900171931119075,&quot;y&quot;:1.8164540229759454},{&quot;x&quot;:0.49034506070400224,&quot;y&quot;:-0.8302917473363629},{&quot;x&quot;:0.007596509562491387,&quot;y&quot;:1.502642503375394},{&quot;x&quot;:-0.7228536059512146,&quot;y&quot;:-0.9666799103656596},{&quot;x&quot;:2.34148023793783,&quot;y&quot;:0.6860265401369189},{&quot;x&quot;:-0.32739987572729434,&quot;y&quot;:1.1696881608860976},{&quot;x&quot;:1.7432753006391317,&quot;y&quot;:-0.17596191091438573},{&quot;x&quot;:-0.5182524944780906,&quot;y&quot;:2.0458773956192924},{&quot;x&quot;:-0.6469343223529113,&quot;y&quot;:0.6252837144403776},{&quot;x&quot;:-0.4388528784868144,&quot;y&quot;:0.8170029935066045},{&quot;x&quot;:1.2243224691646477,&quot;y&quot;:0.6857493571753767},{&quot;x&quot;:-1.631339643934596,&quot;y&quot;:1.0788619912603112},{&quot;x&quot;:0.75546802563271,&quot;y&quot;:1.496055283580459},{&quot;x&quot;:0.06567807060663274,&quot;y&quot;:0.44503320505180377},{&quot;x&quot;:-1.9566640447454662,&quot;y&quot;:3.2569566380441795},{&quot;x&quot;:0.16137594146183998,&quot;y&quot;:0.5103895445518493},{&quot;x&quot;:0.877319835249723,&quot;y&quot;:2.5967249043844287},{&quot;x&quot;:0.8435552588260442,&quot;y&quot;:0.6612033625075475},{&quot;x&quot;:-0.3293724618477932,&quot;y&quot;:0.5421355657359391},{&quot;x&quot;:0.6312835540470366,&quot;y&quot;:2.2065783683012623},{&quot;x&quot;:0.0487213926350371,&quot;y&quot;:3.17387108659434},{&quot;x&quot;:0.7507743351118915,&quot;y&quot;:1.4457373206628283},{&quot;x&quot;:1.2604740388320315,&quot;y&quot;:0.6036909215231755},{&quot;x&quot;:-1.3860110822761953,&quot;y&quot;:2.2221866515036233},{&quot;x&quot;:0.5793084925838915,&quot;y&quot;:0.25649476405007865},{&quot;x&quot;:-0.9506197769860675,&quot;y&quot;:0.5779459950506585},{&quot;x&quot;:-0.6895523117063648,&quot;y&quot;:3.2707549680787573},{&quot;x&quot;:0.7085725494728293,&quot;y&quot;:0.6555076092446688},{&quot;x&quot;:0.31259852058092713,&quot;y&quot;:0.37103211359913657},{&quot;x&quot;:0.3140637826203331,&quot;y&quot;:1.0003525956540626},{&quot;x&quot;:1.49297693550148,&quot;y&quot;:1.1239653948094623},{&quot;x&quot;:-0.9765417280430309,&quot;y&quot;:-0.6347723916821817},{&quot;x&quot;:0.41476648026602153,&quot;y&quot;:-0.6168340316534886},{&quot;x&quot;:-0.6323750119558152,&quot;y&quot;:0.6962772607688704},{&quot;x&quot;:0.39024188495255197,&quot;y&quot;:0.02749221857847972},{&quot;x&quot;:-1.7565258670452513,&quot;y&quot;:3.608255911899942},{&quot;x&quot;:0.5390366459344128,&quot;y&quot;:0.07993252881006285},{&quot;x&quot;:-0.10069673866273021,&quot;y&quot;:0.835799089881299},{&quot;x&quot;:0.8254098573367452,&quot;y&quot;:1.7994244073322734},{&quot;x&quot;:-1.1870368060247092,&quot;y&quot;:1.4091979008714646},{&quot;x&quot;:-0.1559526961235001,&quot;y&quot;:0.8105214868955005},{&quot;x&quot;:-0.7747140362518864,&quot;y&quot;:1.7874153717359942},{&quot;x&quot;:1.1218357296794135,&quot;y&quot;:1.414580871300429},{&quot;x&quot;:0.44431611732276177,&quot;y&quot;:0.07438432086045377},{&quot;x&quot;:-0.8419138124677497,&quot;y&quot;:1.8410933509192677},{&quot;x&quot;:0.8244544342512939,&quot;y&quot;:0.3008476098273728},{&quot;x&quot;:-2.2190849829474115,&quot;y&quot;:-0.8923930170256102},{&quot;x&quot;:0.3159931125635464,&quot;y&quot;:0.6498649558924734},{&quot;x&quot;:0.7684828217854554,&quot;y&quot;:0.7899830636697618},{&quot;x&quot;:0.2058399855770542,&quot;y&quot;:0.9134673654093449},{&quot;x&quot;:-0.49534423731036975,&quot;y&quot;:1.1326909068868478},{&quot;x&quot;:0.23456746419323066,&quot;y&quot;:1.9377306171588584},{&quot;x&quot;:-0.6030900201577977,&quot;y&quot;:0.43597886793261587},{&quot;x&quot;:0.24188027754622204,&quot;y&quot;:0.5176523405317975},{&quot;x&quot;:0.05017279505350511,&quot;y&quot;:3.143331177175904},{&quot;x&quot;:-0.26042159477604754,&quot;y&quot;:-1.3493756618183217},{&quot;x&quot;:-0.24138938698019935,&quot;y&quot;:1.038077082992377},{&quot;x&quot;:0.6288544946243103,&quot;y&quot;:1.4338414638271972},{&quot;x&quot;:2.0339955223570847,&quot;y&quot;:0.556696283731548},{&quot;x&quot;:0.366241005046646,&quot;y&quot;:0.936893855071073},{&quot;x&quot;:-0.4613212732532861,&quot;y&quot;:1.2767748155764826},{&quot;x&quot;:-0.03298408723851764,&quot;y&quot;:0.5151267191560743},{&quot;x&quot;:-0.7194822933775186,&quot;y&quot;:2.635803006932982},{&quot;x&quot;:0.5459138988871545,&quot;y&quot;:0.2229398892675264},{&quot;x&quot;:-1.4389525978763489,&quot;y&quot;:3.163042846616142},{&quot;x&quot;:0.7523955276334682,&quot;y&quot;:1.2996524162047844},{&quot;x&quot;:0.3371333530799074,&quot;y&quot;:1.8216252058991187},{&quot;x&quot;:1.009873782176397,&quot;y&quot;:2.5863720100110417},{&quot;x&quot;:-0.4165751316103416,&quot;y&quot;:0.8035498164869487},{&quot;x&quot;:-0.4426758507705517,&quot;y&quot;:0.5386550216700319},{&quot;x&quot;:-0.02103356571615707,&quot;y&quot;:1.9960267860928218},{&quot;x&quot;:0.45018125168493783,&quot;y&quot;:1.914987897861923},{&quot;x&quot;:-1.6568833506831637,&quot;y&quot;:1.6485912927325819},{&quot;x&quot;:-0.3765693909961242,&quot;y&quot;:0.9568062437661804},{&quot;x&quot;:-1.231604748952459,&quot;y&quot;:2.471989450874192},{&quot;x&quot;:0.9568882544957508,&quot;y&quot;:0.8084408514379879},{&quot;x&quot;:0.25635742075496565,&quot;y&quot;:0.006106482143073189},{&quot;x&quot;:0.871449968213688,&quot;y&quot;:-0.5056636911094987},{&quot;x&quot;:-1.4395878345783015,&quot;y&quot;:0.24929192532913258},{&quot;x&quot;:-1.8487448495264978,&quot;y&quot;:0.219776160876617},{&quot;x&quot;:1.2039335913633313,&quot;y&quot;:0.3858092130010914},{&quot;x&quot;:-0.4942316543358091,&quot;y&quot;:-0.49201369910590276},{&quot;x&quot;:-0.5181254189929939,&quot;y&quot;:3.3322151144153493},{&quot;x&quot;:-0.38007582652703553,&quot;y&quot;:0.6760863251404561},{&quot;x&quot;:-0.4581363233950215,&quot;y&quot;:0.7460507735453468},{&quot;x&quot;:0.9806405141400174,&quot;y&quot;:-1.8204285407561098},{&quot;x&quot;:-0.835953549215691,&quot;y&quot;:1.7546512071817015},{&quot;x&quot;:2.5153552412406683,&quot;y&quot;:2.3300415243871173},{&quot;x&quot;:0.12434424403154486,&quot;y&quot;:0.5077802502613773},{&quot;x&quot;:2.0423761383833803,&quot;y&quot;:0.8104556928196425},{&quot;x&quot;:-0.23212792293087636,&quot;y&quot;:1.1749161465147435},{&quot;x&quot;:0.3806875839041003,&quot;y&quot;:0.9359168064281055},{&quot;x&quot;:0.40808957143502367,&quot;y&quot;:1.8275129210742924},{&quot;x&quot;:-0.36224971987901083,&quot;y&quot;:0.6418862919634912},{&quot;x&quot;:1.438145654689305,&quot;y&quot;:0.9603830947515658},{&quot;x&quot;:-1.027986314769598,&quot;y&quot;:0.9228951749329798},{&quot;x&quot;:0.2771581662075175,&quot;y&quot;:0.7572507166879183},{&quot;x&quot;:-0.664686873063825,&quot;y&quot;:-0.3526034547606316},{&quot;x&quot;:0.7463691213416933,&quot;y&quot;:0.5785050755882098},{&quot;x&quot;:2.0555465908073147,&quot;y&quot;:2.1648517118572803},{&quot;x&quot;:1.4532127969319186,&quot;y&quot;:1.0139029571112321},{&quot;x&quot;:1.1920631329490454,&quot;y&quot;:-0.42899028909982406},{&quot;x&quot;:-1.1541347218863858,&quot;y&quot;:0.33009336018032465},{&quot;x&quot;:-0.3193536046623056,&quot;y&quot;:-1.161969811906948},{&quot;x&quot;:0.3870012932634789,&quot;y&quot;:1.2791844731814175},{&quot;x&quot;:0.73060692330843,&quot;y&quot;:1.0295875529430096},{&quot;x&quot;:-0.1782648529437509,&quot;y&quot;:1.6920781362935866},{&quot;x&quot;:-0.19498523799138942,&quot;y&quot;:1.9526271479161181},{&quot;x&quot;:-0.336757666382167,&quot;y&quot;:-0.06961574685764171},{&quot;x&quot;:0.31743571573845436,&quot;y&quot;:-0.005493817850200644},{&quot;x&quot;:-0.7535606977738367,&quot;y&quot;:2.898995870674148},{&quot;x&quot;:-0.48950969205699363,&quot;y&quot;:0.19281574601295404},{&quot;x&quot;:-0.33633812044550443,&quot;y&quot;:0.914233642124543},{&quot;x&quot;:-0.41065274816247904,&quot;y&quot;:1.5030533374940451},{&quot;x&quot;:1.50122865519325,&quot;y&quot;:0.7688248589002388},{&quot;x&quot;:1.4571457600014077,&quot;y&quot;:3.3248645702383253},{&quot;x&quot;:0.032443722198342476,&quot;y&quot;:0.5526818881242326},{&quot;x&quot;:0.575446893989444,&quot;y&quot;:0.8605284544997194},{&quot;x&quot;:0.8739044790933824,&quot;y&quot;:-0.1557662176737793},{&quot;x&quot;:-0.6331487009775632,&quot;y&quot;:-0.5021892843015086},{&quot;x&quot;:-0.9753315473774936,&quot;y&quot;:2.042885901467338},{&quot;x&quot;:0.9834928207641047,&quot;y&quot;:1.9646366225443468},{&quot;x&quot;:0.7002058412832937,&quot;y&quot;:1.0346191258763315}],&quot;genId&quot;:&quot;1314612847&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/req(['../javascripts/notebook/playground','../javascripts/notebook/magic/customPlotlyChart'], \n      function(playground, _magiccustomPlotlyChart) {\n        // data ==> data-this (in observable.js's scopedEval) ==> this in JS => { dataId, dataInit, ... }\n        // this ==> scope (in observable.js's scopedEval) ==> this.parentElement ==> div.container below (toHtml)\n\n        playground.call(data,\n                        this\n                        ,\n                        {\n    \"f\": _magiccustomPlotlyChart,\n    \"o\": {\"js\":\"var layout = {}; var dataSources={x: 'x', y: 'y'}; var dataOptions = {type: 'histogram2d', opacity: 0.8}\",\"headers\":[\"x\",\"y\"],\"height\":400}\n  }\n  \n                        \n                        \n                      );\n      }\n    );/*]]>*/</script>\n    <div>\n      <span class=\"chart-total-item-count\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anon770893066587aef32d703d0ef856dd28&quot;,&quot;initialValue&quot;:&quot;500&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId, initialValue)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p> entries total</span>\n      <span class=\"chart-sampling-warning\"><p data-bind=\"text: value\"><script data-this=\"{&quot;valueId&quot;:&quot;anonb4269bf5c3c0802ddb6742abdd492177&quot;,&quot;initialValue&quot;:&quot;&quot;}\" type=\"text/x-scoped-javascript\">/*<![CDATA[*/\nreq(\n['observable', 'knockout'],\nfunction (O, ko) {\n  ko.applyBindings({\n      value: O.makeObservable(valueId, initialValue)\n    },\n    this\n  );\n});\n        /*]]>*/</script></p></span>\n      <div>\n      </div>\n    </div></div>"
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 27,
+      "time" : "Took: 2 seconds 165 milliseconds, at 2016-11-11 17:7"
+    } ]
   } ],
   "nbformat" : 4
 }
