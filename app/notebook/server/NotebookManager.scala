@@ -73,11 +73,10 @@ class NotebookManager(val name: String, val notebookDir: File) {
   }
 
   def copyNotebook(nbPath: String) = {
-    val nbData = getNotebook(nbPath)
-    nbData.map { nb =>
-      val newPath = incrementFileName(nb._4.dropRight(extension.length))
+    getNotebook(nbPath).map { case (_, _, nbData, nbFilePath) =>
+      val newPath = incrementFileName(nbFilePath.dropRight(extension.length))
       val newName = getName(newPath)
-      Notebook.deserialize(nb._3) match {
+      Notebook.deserialize(nbData) match {
         case Some(oldNB) =>
           val newMeta = oldNB.metadata.map(_.copy(id = Notebook.getNewUUID, name = newName))
             .orElse(Some(Metadata(id = Notebook.getNewUUID, name = newName)))
