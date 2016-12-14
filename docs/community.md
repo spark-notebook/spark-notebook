@@ -4,7 +4,7 @@
 
 ### Discussions
 Come on [gitter](https://gitter.im/andypetrella/spark-notebook?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)!
-Helpful and friendly community around the Spark Notebook, ready to provide help and advice on setting up and working with the Spark Notebook. Our core committers hang often on Gitter. 
+Helpful and friendly community around the Spark Notebook, ready to provide help and advice on setting up and working with the Spark Notebook. Our core committers hang often on Gitter.
 
 ### Mailing list
 There are two different mailing lists, each aiming to specific discussions:
@@ -23,7 +23,7 @@ Email: [spark-notebook-user@googlegroups.com](mailto:spark-notebook-user@googleg
 
 
 ## Testimonials
-### Skymind - The [Deeplearning4j](http://Deeplearning4j.org)
+### Skymind - [Deeplearning4j](http://Deeplearning4j.org)
 
 > Spark Notebook gives us a clean, useful way to mix code and prose when we demo and explain our tech to customers. The Spark ecosystem needed this.
 
@@ -42,7 +42,7 @@ Email: [spark-notebook-user@googlegroups.com](mailto:spark-notebook-user@googleg
 | EMBL European Bioinformatics Institute | ![EMBL - EBI](http://www.ebi.ac.uk/miriam/static/main/img/EBI_logo.png)                                                        | [website](http://www.ebi.ac.uk/)                                                                 | EMBL-EBI provides freely available data from life science experiments, performs basic research in computational biology and offers an extensive user training programme, supporting researchers in academia and industry. |
 | Metail                                 | ![Metail](http://metail.wpengine.com/wp-content/uploads/2013/11/Metail_Logo1.png)                                              | [website](http://metail.com/)                                                                    | The best body shape and garment fit company in the world. To create and empower everyone’s online body identity.                                                                                                          |
 | kt NexR                                | ![kt NexR](http://ktnexr.com/images/main/kt_h_logo.jpg)                                                                        | [website](http://ktnexr.com)                                                                     | the kt NexR is one of the leading BigData company in the Korea from 2007.                                                                                                                                             |
-| Skymind                                | ![Skymind](http://skymind.io/wp-content/uploads/2015/02/logo.png)                                                              | [website](http://www.skymind.io)                                                                 | At Skymind, we’re tackling some of the most advanced problems in data analysis and machine intelligence. We offer start-of-the-art, flexible, scalable deep learning for industry.                                      |
+| Skymind                                | ![Skymind](https://skymind.io/images/skymind_logo_latest.png)                                                                  | [website](http://www.skymind.io)                                                                 | At Skymind, we’re tackling some of the most advanced problems in data analysis and machine intelligence. We offer start-of-the-art, flexible, scalable deep learning for industry.                                      |
 | Amino                                  | ![Amino](https://amino.com/static/img/logos/amino-logo-123x30_2x.png)                                                          | [website](http://www.Amino.com)                                                                  | A new way to get the facts about your health care choices.                                                                                                                                                            |
 | Vinted                                 | ![Vinted](http://engineering.vinted.com/brandbook/images/logos/vinted.svg)                                                     | [website](http://www.vinted.com/)                                                                | Online marketplace and a social network focused on young women’s lifestyle.                                                                                                                                             |
 | Vingle                                 | ![Vingle](https://s3.amazonaws.com/vingle-assets/Vingle_Wordmark_Red.png)                                                      | [website](https://www.vingle.net)                                                                | Vingle is the community where you can meet someone like you.                                                                                                                                                          |

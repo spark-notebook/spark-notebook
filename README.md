@@ -28,7 +28,7 @@ Each started notebook will spawn a new JVM with its own SparkSession instance. T
 
 #### Metadata-driven configuration
 
-We achieve maximum flexibility with the availability of multiple `sparkContext`s by enabling [metadata driven](./docs/metadata.md) configuration. 
+We achieve maximum flexibility with the availability of multiple `sparkContext`s by enabling [metadata driven](./docs/metadata.md) configuration.
 
 ### Scala
 
@@ -38,7 +38,7 @@ The Spark Notebook is available for *NIX and Windows systems in easy to use ZIP/
 
 ### Reactive
 
-All components in the Spark Notebook are dynamic and reactive. 
+All components in the Spark Notebook are dynamic and reactive.
 
 The Spark Notebook comes with dynamic charts and most (if not all) components can be listened for and can react to events. This is very helpful in many cases, for example:
 * data entering the system live at runtime
@@ -57,21 +57,21 @@ to discuss things, to get some help, or to start contributing!
 ## Learn more
 
 * [Explore the Spark Notebook](./docs/exploring_notebook.md)
-* [HTML Widgets](./docs/widgets_html.md) 
+* [HTML Widgets](./docs/widgets_html.md)
 * [Visualization Widgets](./docs/widgets_viz.md)
 * [Notebook Browser](./docs/notebook_browser.md)
 * [Configuration and Metadata](./docs/metadata.md)
-	* [Using Cluster Configurations](./docs/using_cluster_tab.md)
+    * [Using Cluster Configurations](./docs/using_cluster_tab.md)
 * [Running on Clusters and Clouds](./docs/clusters_clouds.md)
 * [Community](./docs/community.md)
 * Advanced Topics
-	* [Using Releases](./docs/using_releases.md)
-	* [Building from Sources](./docs/build_from_source.md)
-	* [Creating Specific Distributions](./docs/build_specific_distros.md)
-	* [Creating your own custom visualizations](./docs/custom_charts.md)
+    * [Using Releases](./docs/using_releases.md)
+    * [Building from Sources](./docs/build_from_source.md)
+    * [Creating Specific Distributions](./docs/build_specific_distros.md)
+    * [Creating your own custom visualizations](./docs/custom_charts.md)
 
 ## Testimonials
-### Skymind - The [Deeplearning4j](http://Deeplearning4j.org)
+### Skymind - [Deeplearning4j](http://Deeplearning4j.org)
 
 > Spark Notebook gives us a clean, useful way to mix code and prose when we demo and explain our tech to customers. The Spark ecosystem needed this.
 
@@ -90,7 +90,7 @@ to discuss things, to get some help, or to start contributing!
 | EMBL European Bioinformatics Institute | ![EMBL - EBI](http://www.ebi.ac.uk/miriam/static/main/img/EBI_logo.png)                                                        | [website](http://www.ebi.ac.uk/)                                                                 | EMBL-EBI provides freely available data from life science experiments, performs basic research in computational biology and offers an extensive user training programme, supporting researchers in academia and industry. |
 | Metail                                 | ![Metail](http://metail.wpengine.com/wp-content/uploads/2013/11/Metail_Logo1.png)                                              | [website](http://metail.com/)                                                                    | The best body shape and garment fit company in the world. To create and empower everyone’s online body identity.                                                                                                          |
 | kt NexR                                | ![kt NexR](http://ktnexr.com/images/main/kt_h_logo.jpg)                                                                        | [website](http://ktnexr.com)                                                                     | the kt NexR is one of the leading BigData company in the Korea from 2007.                                                                                                                                             |
-| Skymind                                | ![Skymind](http://skymind.io/wp-content/uploads/2015/02/logo.png)                                                              | [website](http://www.skymind.io)                                                                 | At Skymind, we’re tackling some of the most advanced problems in data analysis and machine intelligence. We offer start-of-the-art, flexible, scalable deep learning for industry.                                      |
+| Skymind                                | ![Skymind](https://skymind.io/images/skymind_logo_latest.png)                                                                  | [website](http://www.skymind.io)                                                                 | At Skymind, we’re tackling some of the most advanced problems in data analysis and machine intelligence. We offer start-of-the-art, flexible, scalable deep learning for industry.                                      |
 | Amino                                  | ![Amino](https://amino.com/static/img/logos/amino-logo-123x30_2x.png)                                                          | [website](http://www.Amino.com)                                                                  | A new way to get the facts about your health care choices.                                                                                                                                                            |
 | Vinted                                 | ![Vinted](http://engineering.vinted.com/brandbook/images/logos/vinted.svg)                                                     | [website](http://www.vinted.com/)                                                                | Online marketplace and a social network focused on young women’s lifestyle.                                                                                                                                             |
 | Vingle                                 | ![Vingle](https://s3.amazonaws.com/vingle-assets/Vingle_Wordmark_Red.png)                                                      | [website](https://www.vingle.net)                                                                | Vingle is the community where you can meet someone like you.                                                                                                                                                          |
