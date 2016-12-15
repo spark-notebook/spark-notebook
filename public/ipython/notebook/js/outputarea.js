@@ -996,9 +996,19 @@ define([
                     if (!o.data_list) o.data_list  = {};
                     o.data_list["application/svg+pngbase64"] = [];
                     var h = o.data["text/html"];
-                    var svg = this.element.find("svg");
-                    for (var i in svg) {
-                        var s = svg[i];
+
+                    var svgs = this.element
+                      .find("svg")
+                      // exclude buttons and special SVGs from Plotly
+                      .filter(function (index, svg) {
+                        var isPlotly = $(svg).parents(".plotly").length > 0;
+                        var isPlotyButton = $(svg).parents(".modebar").length > 0;
+                        var isWeirdSvg = $(svg).find(".zoomlayer, .infolayer, .hoverlayer").length > 0;
+                        return  !isPlotly || (!isPlotyButton && !isWeirdSvg);
+                      });
+
+                    for (var i in svgs) {
+                        var s = svgs[i];
                         try {
                             var p = new Promise(function(resolve, reject) {
                                 svgAsPng.svgAsPngUri(s, {}, function(uri) {
