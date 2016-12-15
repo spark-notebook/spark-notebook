@@ -11,7 +11,7 @@ object Markdown {
     s"""|
     |><pre>
     |${toBq(s)}
-    |> <pre>
+    |> </pre>
     |""".stripMargin
 
   def outputsToMarkdown(os:Option[List[Output]], dir:Option[File]):(String, Option[List[File]]) = {
@@ -22,14 +22,14 @@ object Markdown {
         text.map(s => s"$s\n\n\n").getOrElse("") + html.getOrElse("")
 
       case ScalaExecuteResult(_, d, dl, _, _, _) =>
-        
+
         d.collect {
           case ("text/html", t) if t.trim.nonEmpty && !t.contains("<script data-this=") => toBq(t)
         }.mkString("\n\n")
 
         dl.getOrElse(Map.empty[String, List[String]]).collect {
-          case ("application/svg+pngbase64", ml) => 
-            ml.map { m => 
+          case ("application/svg+pngbase64", ml) =>
+            ml.map { m =>
               dir match {
                 case Some(d) =>
                   val fl = d.list()
@@ -52,7 +52,7 @@ object Markdown {
                   s"> ![generated image $i](./${dir.get.getName}/${imageFile.getName})"
                 case None =>
                   s"> <img src='$m'/>"
-              } 
+              }
             }
         }.flatten.mkString("\n\n")
 
@@ -62,8 +62,10 @@ object Markdown {
     outputs -> (if (files.nonEmpty) Some(files.toList) else None)
   }
 
-  def generate(nb:Notebook, name:String, single:Boolean):Option[Either[String, File]] = {
-    val (dir,images) = if (!single) {    
+  def generate(nb:Notebook, nbPath:String, single:Boolean):Option[Either[String, File]] = {
+    // make sure file names dont contain funny symbols
+    val name = nbPath.replace("/", "_")
+    val (dir,images) = if (!single) {
       val dir = new File(sys.props("java.io.tmpdir"), name+"-"+System.nanoTime)
       dir.mkdir
       val images = new File(dir, "images")
@@ -116,7 +118,7 @@ object Markdown {
         zipFile.createNewFile
         val baos = new java.io.FileOutputStream(zipFile);
         val zip = new java.util.zip.ZipOutputStream(baos);
-        
+
         def write(files:List[File], prefix:String) = files.foreach { f =>
           zip.putNextEntry(new java.util.zip.ZipEntry(prefix+f.getName))
           val in = new java.io.BufferedInputStream(new java.io.FileInputStream(f))
