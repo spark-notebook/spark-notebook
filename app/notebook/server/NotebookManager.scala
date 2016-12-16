@@ -1,12 +1,12 @@
 package notebook.server
 
 import java.io._
-import java.nio.charset.{StandardCharsets, Charset}
+import java.nio.charset.{Charset, StandardCharsets}
 import java.net.URLDecoder
 import java.text.SimpleDateFormat
 import java.util.Date
 
-import notebook.NBSerializer
+import notebook.Notebook
 import notebook.NBSerializer._
 import org.apache.commons.io.FileUtils
 import play.api.Logger
@@ -54,7 +54,9 @@ class NotebookManager(val name: String, val notebookDir: File) {
     val sep = if (path.last == '/') "" else "/"
     val fpath = name.map(path + sep + _ + extension).getOrElse(incrementFileName(path + sep + "Untitled"))
     val nb = Notebook(
-      Some(new Metadata(getName(fpath),
+      Some(Metadata(
+        id = Notebook.getNewUUID,
+        name = getName(fpath),
         customLocalRepo = customLocalRepo,
         customRepos = customRepos,
         customDeps = customDeps,
@@ -71,13 +73,14 @@ class NotebookManager(val name: String, val notebookDir: File) {
   }
 
   def copyNotebook(nbPath: String) = {
-    val nbData = getNotebook(nbPath)
-    nbData.map { nb =>
-      val newPath = incrementFileName(nb._4.dropRight(extension.length))
+    getNotebook(nbPath).map { case (_, _, nbData, nbFilePath) =>
+      val newPath = incrementFileName(nbFilePath.dropRight(extension.length))
       val newName = getName(newPath)
-      NBSerializer.read(nb._3) match {
+      Notebook.deserialize(nbData) match {
         case Some(oldNB) =>
-          save(newPath, Notebook(oldNB.metadata.map(_.copy(name = newName)), oldNB.cells, oldNB.worksheets, oldNB.autosaved, None), false)
+          val newMeta = oldNB.metadata.map(_.copy(id = Notebook.getNewUUID, name = newName))
+            .orElse(Some(Metadata(id = Notebook.getNewUUID, name = newName)))
+          save(newPath, Notebook(newMeta, oldNB.cells, oldNB.worksheets, oldNB.autosaved, None), false)
           newPath
         case None =>
           newNotebook()
@@ -110,7 +113,8 @@ class NotebookManager(val name: String, val notebookDir: File) {
     Logger.debug(s"rename from path $path to $newpath: old file is ${oldfile.getAbsolutePath}")
     load(path).foreach { notebook =>
       val nb = if (notebook.name != newname) {
-        val meta = notebook.metadata.map(_.copy(name = newname)).orElse(Some(new Metadata(newname)))
+        val meta = notebook.metadata.map(_.copy(name = newname))
+          .orElse(Some(Metadata(id = Notebook.getNewUUID, name = newname)))
         notebook.copy(metadata = meta)
       } else {
         notebook
@@ -118,7 +122,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
       val newfile = notebookFile(newpath)
       Logger.debug(s"rename from path $path to $newpath: new file is ${newfile.getAbsolutePath}")
       oldfile.renameTo(newfile)
-      FileUtils.writeStringToFile(newfile, NBSerializer.write(nb))
+      FileUtils.writeStringToFile(newfile, Notebook.serialize(nb))
     }
     (newname, newpath)
   }
@@ -129,7 +133,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
     if (!overwrite && file.exists()) {
       throw new NotebookExistsException("Notebook " + path + " already exists.")
     }
-    FileUtils.writeStringToFile(file, NBSerializer.write(notebook), "UTF-8")
+    FileUtils.writeStringToFile(file, Notebook.serialize(notebook), "UTF-8")
     val nb = load(path)
     (nb.get.metadata.get.name, path)
   }
@@ -138,7 +142,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
     Logger.info(s"Loading notebook at path $path")
     val file = notebookFile(path)
     if (file.exists())
-      NBSerializer.read(FileUtils.readFileToString(file))
+      Notebook.deserialize(FileUtils.readFileToString(file))
     else
       None
   }

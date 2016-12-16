@@ -2,7 +2,8 @@ package notebook.export
 
 import java.io.File
 
-import notebook.NBSerializer.{CodeCell, MarkdownCell, Notebook, Output, ScalaExecuteResult, ScalaOutput, ScalaStream}
+import notebook.NBSerializer.{CodeCell, MarkdownCell, Output, ScalaExecuteResult, ScalaOutput, ScalaStream}
+import notebook.Notebook
 
 object Markdown {
   def toBq(s:String) = s.split("\n").map(s => s"> $s").mkString("\n")
