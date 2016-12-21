@@ -13,8 +13,8 @@ object DockerProperties extends BuildConf {
 
   private val defaultCommands: Seq[Cmd] = Seq(
     Cmd("USER", "root"),
-    Cmd("RUN", s"apt-get update --fix-missing && apt-get install -y --no-install-recommends openjdk-7-jdk"),
-    Cmd("ENV", "JAVA_HOME /usr/lib/jvm/java-7-openjdk-amd64"),
+    Cmd("RUN", s"apt-get update --fix-missing && apt-get install -y --no-install-recommends openjdk-8-jdk"),
+    Cmd("ENV", "JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64"),
     Cmd("RUN", s"apt-get install -y wget curl")
   )
 
@@ -33,7 +33,7 @@ object DockerProperties extends BuildConf {
 
   val maintainer   = getString("docker.maintainer", "Andy Petrella")
 
-  val baseImage    = getString("docker.baseImage", "debian:jessie")
+  val baseImage    = getString("docker.baseImage", "debian:jessie-backports")
 
   val commands     = Try { asCmdSeq(cfg.getConfigList("docker.commands").asScala.toSeq) }.getOrElse( defaultCommands )
   val volumes      = Try { cfg.getStringList("docker.volumes").asScala.toSeq }.getOrElse( defaultVolumes )
