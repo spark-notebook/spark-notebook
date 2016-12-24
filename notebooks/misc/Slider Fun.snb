@@ -11,99 +11,107 @@
     "trusted" : true,
     "customLocalRepo" : null,
     "customRepos" : null,
-    "customDeps" : null,
+    "customDeps" : [ "com.cra.figaro %% figaro % 2.2.2.0", "- com.typesafe.akka %% akka-actor % _", "- xerces % xercesImpl % _", "- xml-apis % xml-apis % _" ],
     "customImports" : null,
     "customArgs" : null,
     "customSparkConf" : null
   },
   "cells" : [ {
-    "metadata" : { },
-    "cell_type" : "markdown",
-    "source" : "# Warm Up"
-  }, {
     "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : true
+      "id" : "79BB004A389444748F04CDA1BD7F2464"
     },
-    "cell_type" : "code",
-    "source" : ":dp com.cra.figaro % figaro_2.10 % 2.2.2.0\n- com.typesafe.akka % akka-actor_2.10 % _\n- xerces % xercesImpl % _\n- xml-apis % xml-apis % _",
-    "outputs" : [ ]
-  }, {
-    "metadata" : { },
     "cell_type" : "markdown",
     "source" : "# Prerequesites"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : true,
+      "id" : "5042E06C015C42B59F60FAEE10EA025D"
     },
     "cell_type" : "code",
     "source" : "import extraTypes._",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "F943B4F5177646DE8B8C67F5467CC87A"
+    },
     "cell_type" : "markdown",
     "source" : "# Sinus"
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "29AF7678F3F743ED8887CA65F2E456EB"
+    },
     "cell_type" : "markdown",
     "source" : "First we override the number input type for `Int` (default to `<input type=\"number\">`) with an input type `range` using the `SliderType` from `5` to `15` by `2`."
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : true,
+      "id" : "608434BC195849FC8CA00CE7FB02AC03"
     },
     "cell_type" : "code",
     "source" : "implicit val ITI:types.InputType[Int] = SliderType[Int](5, 15, 2)\nval si = new InputBox(5, \"slider\")",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "A1B0AFE6F42A410F94C7349F7866EC88"
+    },
     "cell_type" : "markdown",
     "source" : "Then we define the function to create a sine curve using a scaling factor `k`: \n\n$\\sin(k*x)$"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : true,
+      "id" : "1C6D17F8CC2B4654BCAD78CF7AAAAB85"
     },
     "cell_type" : "code",
     "source" : "def sin(k:Int) = (-math.Pi to math.Pi by 0.1).toList map (x => math.sin(k*x))",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "C971F15754EA4673824588E1268E0AF9"
+    },
     "cell_type" : "markdown",
     "source" : "Let's plot that in a regular `LineChart`"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : true,
+      "id" : "F33C4D2653B34584A577C5D1DC7997D9"
     },
     "cell_type" : "code",
     "source" : "val plot = widgets.LineChart(sin(1), fields=Some((\"_1\", \"_2\")), maxPoints=100)",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "3147B3371F644CA3BAE5C84D2B7A9FDB"
+    },
     "cell_type" : "markdown",
     "source" : "Now the **reactive** part, in order to adapt `k` we will use the slider and see the effect on the sine wave.\n\nTo do this, we ask the **events** in the slider (`si`) to be published into a dedicated **`Observer`** that will create a new sine wave using `k` and then ask the plot to update using `plot.applyOn` with the new data."
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : true,
+      "id" : "2B08218E4731473086547674CC3280D7"
     },
     "cell_type" : "code",
     "source" : "si.currentData --> Connection.fromObserver{k: Int =>\n                                            val s = sin(k) \n                                            plot.applyOn(s)\n                                          }",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "42E61872A3DD48B28085479FAD07B8CB"
+    },
     "cell_type" : "markdown",
     "source" : "# Beta"
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "5FAD0A69702148988B99E52F240EEB68"
+    },
     "cell_type" : "markdown",
     "source" : "We can also show what's the density of the $\\beta$ distribution using its two parameters:\n* $\\alpha$ ~ the count of successes\n* $\\beta$ ~ the count of failures"
   }, {
@@ -111,33 +119,40 @@
       "trusted" : true,
       "input_collapsed" : false,
       "output_stream_collapsed" : true,
-      "collapsed" : false
+      "collapsed" : true,
+      "id" : "D66E3A29194A40868476CAD592BB2E94"
     },
     "cell_type" : "code",
     "source" : "implicit val ITI:types.InputType[Int] = SliderType[Int](1, 1000, 1)\nval alpha = new InputBox(0, \"alpha\")\nval beta = new InputBox(0, \"beta\")\nalpha ++ beta",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "EE23B71899B947EC8C6A59F17D4425B0"
+    },
     "cell_type" : "markdown",
     "source" : "Now, we can create the $\\beta$ density function to generate the plot."
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true,
+      "id" : "C94A380DA5524C3B8F99C8E1C8E47427"
     },
     "cell_type" : "code",
     "source" : "def e(a:Int, b:Int) = {\n  val d = com.cra.figaro.library.atomic.continuous.Beta(a, b)\n  val s = (0d to 1d by 0.01).toList\n  s map (x => (x, d.density(x)))\n}\nvar a = 1\nvar b = 1\nval betaPlot = widgets.LineChart(e(1, 1), fields=Some((\"_1\", \"_2\")))",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "A46C01DD2E3E40D98F78CACE1CEEE89D"
+    },
     "cell_type" : "markdown",
     "source" : "And finally, we simply update the value depending if we update $\\alpha$ or $\\beta$ (note that we could have merge the streams...)"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : true,
+      "id" : "DD72C0448F0F447B8534F91C98FE6747"
     },
     "cell_type" : "code",
     "source" : "alpha.currentData --> Connection.fromObserver{ i: Int =>\n                                          a = i\n                                          val s = e(a, b) \n                                          betaPlot.applyOn(s)\n                                       }\nbeta.currentData --> Connection.fromObserver{ i: Int =>\n                                          b = i\n                                          val s = e(a, b) \n                                          betaPlot.applyOn(s)\n                                       }",

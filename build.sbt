@@ -277,10 +277,6 @@ lazy val common = Project(id = "common", base = file("modules/common"))
       scalaZ
     ),
     libraryDependencies ++= depsToDownloadDeps(scalaBinaryVersion.value, sbtVersion.value),
-    // plotting functionality
-    libraryDependencies ++= Seq(
-      bokeh
-    ), // ++ customJacksonScala
     unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
   )
   .settings(

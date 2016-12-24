@@ -9,56 +9,69 @@
       "codemirror_mode" : "text/x-scala"
     },
     "trusted" : true,
-    "customLocalRepo" : "/home/noootsab/.ivy2",
+    "customLocalRepo" : null,
     "customRepos" : null,
-    "customDeps" : [ "org.apache.spark % spark-mllib_2.10 % 1.4.1", "com.cra.figaro % figaro % 2.1.0.0", "- org.apache.spark % spark-core_2.10 % _", "- org.apache.hadoop % _ % _" ],
+    "customDeps" : [ "com.cra.figaro %% figaro % 2.2.2.0", "- org.apache.spark % _ % _", "- org.apache.hadoop % _ % _" ],
     "customImports" : null,
     "customArgs" : null,
     "customSparkConf" : null
   },
   "cells" : [ {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "19B4E33C0B194D48BA5D0F975BD81807"
+    },
     "cell_type" : "markdown",
     "source" : "# Generate some data with a simple model"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "3D3E68F08DA14230BB01987B9316EFA8"
     },
     "cell_type" : "code",
     "source" : "import org.apache.spark.rdd.RDD\nimport com.cra.figaro.library.atomic.continuous._",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "A3BFEF8719D5447491D2845268B59C89"
+    },
     "cell_type" : "markdown",
     "source" : "## System generating X values"
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "6B243002E2E042778DA5B6609535778E"
+    },
     "cell_type" : "markdown",
     "source" : "The first variable is $X \\sim \\textit{U}(1.0, 5.0)$"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "A93E1CC4A30D433B86406BE8F0824253"
     },
     "cell_type" : "code",
     "source" : "val generatorModelX = Uniform(1.0, 5.0)\n\nval generateOneX = () => {\n  generatorModelX.generate()\n  generatorModelX.value\n}",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "6D1E0FE0C7794D2689175BC5A1D71F79"
+    },
     "cell_type" : "markdown",
     "source" : "## System generating Y values from X"
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "6989BBF4712249A9AAD6B0CB160869F0"
+    },
     "cell_type" : "markdown",
     "source" : "We're going to generate a model like this \n\n$Y = X^2 + Z$\n\n$Z \\sim \\mathcal{N}(0.0, 0.25)$"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "EB579850DF454A2784FF6CD29E60B71B"
     },
     "cell_type" : "code",
     "source" : "val generatorModelZ = Normal(0.0, 0.25)\n\nval generateOneY = (x: Double) => {\n  generatorModelZ.generate()\n  x*x + math.abs(generatorModelZ.value)\n}",
@@ -68,7 +81,8 @@
       "trusted" : true,
       "input_collapsed" : false,
       "output_stream_collapsed" : true,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "F836D1580A6F450389153EF618DFA74C"
     },
     "cell_type" : "code",
     "source" : "import org.apache.spark.mllib.linalg.Vectors\nimport org.apache.spark.mllib.regression.LabeledPoint",
@@ -77,12 +91,15 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : true,
+      "id" : "F6D005A44A5F4E04B7F44EFC957425BA"
     },
     "cell_type" : "markdown",
     "source" : "## Generate the universe (1000 items)"
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "DCD389AF2BB84A258739D032F0543C45"
+    },
     "cell_type" : "markdown",
     "source" : "An universe is actually **all data**, we never have access to that."
   }, {
@@ -90,27 +107,33 @@
       "trusted" : true,
       "input_collapsed" : false,
       "output_stream_collapsed" : true,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "6D3A4083CAA94C92A4478D01BB7B172B"
     },
     "cell_type" : "code",
-    "source" : "val collection = (1 to 1000).map(i => {\n                   val x = generateOneX().toDouble\n                   val y = generateOneY(x).toDouble\n                   (x, y)\n  })\nwidgets.LineChart(collection.toList, maxPoints=collection.size)",
+    "source" : "val collection = (1 to 1000).map(i => {\n                   val x = generateOneX().toDouble\n                   val y = generateOneY(x).toDouble\n                   (x, y)\n  })\nLineChart(collection.toList, maxPoints=collection.size)",
     "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
       "output_stream_collapsed" : true,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "E8AD8E8CA01F4799AB424248285F1920"
     },
     "cell_type" : "code",
     "source" : "val universe = sparkContext.parallelize( collection )\nuniverse.cache()\nuniverse.count",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "E0CD7483FE6E479498DA366F53288CF4"
+    },
     "cell_type" : "markdown",
     "source" : "# Create the model generators"
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "E55EC3DF8D8E417CB64FEA04DE74B322"
+    },
     "cell_type" : "markdown",
     "source" : "Create some functions (formulas) to be considered as models. \n\nThat is, they are trying to model the real universe, we know that the real world is actually following a second order distribution, however here we create four models, from order `0` (constant) to to third order."
   }, {
@@ -118,20 +141,24 @@
       "trusted" : true,
       "input_collapsed" : false,
       "output_stream_collapsed" : true,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "1C4589C28E8C4661B4FCF8750704783E"
     },
     "cell_type" : "code",
     "source" : "val toPoints0 = ( xy: (Double, Double)) => \n  LabeledPoint(xy._2, Vectors.dense(Array(1.0)))\n\nval toPoints1 = ( xy: (Double, Double)) => \n  LabeledPoint(xy._2, Vectors.dense(Array(xy._1, 1.0)))\n\nval toPoints2 = ( xy: (Double, Double)) => \n  LabeledPoint(xy._2, Vectors.dense(Array(xy._1*xy._1, xy._1, 1.0)))\n\nval toPoints3 = ( xy: (Double, Double)) => \n  LabeledPoint(xy._2, Vectors.dense(Array(xy._1*xy._1*xy._1, xy._1*xy._1, xy._1, 1.0)))",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "AACDA0B1E0034ACA9278CECDDB2F058E"
+    },
     "cell_type" : "markdown",
     "source" : "# Example: simple linear regression on one sample"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : true,
+      "id" : "EE216076D1524104A869EF8A8F0A9EBC"
     },
     "cell_type" : "markdown",
     "source" : "## Take a sample of this universe (1% items)"
@@ -140,13 +167,16 @@
       "trusted" : true,
       "input_collapsed" : false,
       "output_stream_collapsed" : true,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "A1967B91AAD74120B76342010A74F209"
     },
     "cell_type" : "code",
     "source" : "val sample = () => universe.sample(true, 0.01)",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "E4910EED914E41C9865147F46AF82A5B"
+    },
     "cell_type" : "markdown",
     "source" : "Let's create a order `1` model this sample."
   }, {
@@ -154,16 +184,18 @@
       "trusted" : true,
       "input_collapsed" : false,
       "output_stream_collapsed" : true,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "8F88C6C9C4C7481085709A8440934DD5"
     },
     "cell_type" : "code",
-    "source" : "val data = sample().map(toPoints1)\nwidgets.LineChart(data.map(lp => (lp.features(0), lp.label)).collect.toList)",
+    "source" : "val data = sample().map(toPoints1)\nLineChart(data.map(lp => (lp.features(0), lp.label)).collect.toList)",
     "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : true,
+      "id" : "5C5DDFA0A89D4204A81198A9A3D29D7E"
     },
     "cell_type" : "markdown",
     "source" : "## Order `1` Linear regression"
@@ -171,43 +203,54 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "74CC83BCECE2440F87B98803C6AA9328"
     },
     "cell_type" : "code",
     "source" : "import org.apache.spark.mllib.optimization.{LBFGS, LeastSquaresGradient, SimpleUpdater}\nimport org.apache.spark.mllib.regression.LinearRegressionModel",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "FF283593A56349A0A28D03D1B6DC8749"
+    },
     "cell_type" : "markdown",
     "source" : "We're now creating a function that will basically train a **Linear Regression** using **Least-squared loss** function on the modeled data."
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "948D47AD0031439780C5EEBA64828388"
     },
     "cell_type" : "code",
     "source" : "val train = (dta: RDD[LabeledPoint]) => {\n  val one = dta.first\n  val numCorrections = 10\n  val convergenceTol = 1e-4\n  val maxNumIterations = 100\n  val regParam = 0.1\n  val initialWeightsWithIntercept = Vectors.dense(new Array[Double](one.features.size))\n  \n  val (weightsWithIntercept, loss) = LBFGS.runLBFGS(\n    dta.map(lp => (lp.label, lp.features)), // create the RDD[(Double, Vector)]\n    new LeastSquaresGradient(),             // loss function\n    new SimpleUpdater(),\n    numCorrections,\n    convergenceTol,\n    maxNumIterations,\n    regParam,\n    initialWeightsWithIntercept\n  )\n  \n  new LinearRegressionModel(weightsWithIntercept, 0.0)\n}",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "A4DE5C12B6434DDC897C47CAB27052C2"
+    },
     "cell_type" : "markdown",
     "source" : "Now we can run it on the first order modeled data."
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "31311F89C02447DE803F0FAAF3BBABB0"
     },
     "cell_type" : "code",
     "source" : "val model = train(data)",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "5BFC0FCB8A7249DDAE0650D41DC295B8"
+    },
     "cell_type" : "markdown",
     "source" : "## Estimate the error for the `1` order model"
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "36ABBE07C9B04B88848CDD1CF89CE1E9"
+    },
     "cell_type" : "markdown",
     "source" : "This is going to apply the model on the sample data we have, then it computes the standard error on it.\n\nRecall that this dataset is **exactly** the same as for the training part."
   }, {
@@ -215,7 +258,8 @@
       "trusted" : true,
       "input_collapsed" : false,
       "output_stream_collapsed" : true,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "2BD3BB10C1C8451C8F6C553772A38624"
     },
     "cell_type" : "code",
     "source" : "val safe = new java.io.Serializable {\n  val localModel = model\n  val pred = (p: LabeledPoint) => localModel.predict(p.features)\n  val localData = data\n  \n  localModel.predict(localData.map(_.features))\n  val valuesAndPreds = localData.map { point =>\n    val prediction = pred(point)\n    (point.label, prediction)\n  }\n  val MSE = valuesAndPreds.map{case(v, p) => math.pow((v - p), 2)}.mean()\n}\nimport safe._",
@@ -223,51 +267,67 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "input_collapsed" : true,
+      "input_collapsed" : false,
       "output_stream_collapsed" : true,
-      "collapsed" : true
+      "collapsed" : false,
+      "id" : "348728448BDD4D75AF789E186BBCC318"
     },
     "cell_type" : "code",
     "source" : ":markdown\nSo we have a **${safe.MSE}** mean square error ",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "E503C257D6D2471F8DC6E6100779E298"
+    },
     "cell_type" : "markdown",
     "source" : "We can also plot what the predictions and the data are looking like."
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "output_stream_collapsed" : true,
-      "collapsed" : false
+      "collapsed" : false,
+      "presentation" : {
+        "tabs_state" : "{\n  \"tab_id\": \"#tab64092461-0\"\n}",
+        "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [],\n  \"rows\": [],\n  \"vals\": [],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count\",\n  \"rendererName\": \"Table\"\n}"
+      },
+      "id" : "A79FFA155E4A4A5AA2EED071C3768256"
     },
     "cell_type" : "code",
-    "source" : "import notebook.front.third.wisp._\nPlot(Seq(Pairs(data.collect().map(v => (v.features(0), v.label)).toList.sortBy(_._1), chart=\"line\"),\n         Pairs((data.collect().map(v => v.features(0)) zip safe.valuesAndPreds.map(_._2).collect.toList).sortBy(_._1), chart=\"line\")\n     )\n)",
+    "source" : "val plotData = data.collect().map(v => (v.features(0), v.label, \"real\")).toList.sortBy(_._1) ++\n              (data.collect().map(v => v.features(0)) zip safe.valuesAndPreds.map(_._2).collect).map{ case (f,p) => (f,p,\"pred\") }.toList.sortBy(_._1)\n\nnew CustomPlotlyChart(plotData,\n                      layout=\"{title: 'Plot real and predicted values'}\",\n                      dataOptions=\"\"\"{\n                        splitBy: '_3',\n                        byTrace: {\n                          'real': {\n                            mode: 'lines+markers',\n                            marker: {\n                              color: 'rgb(219, 64, 82)',\n                              size: 4\n                            }\n                          },\n                          'pred': {\n                            mode: 'markers',\n                            line: {\n                              color: 'rgb(55, 128, 191)',\n                              width: 2\n                            }\n                          }\n                        }\n                      }\"\"\",\n                      dataSources=\"{x: '_1', y: '_2'}\") ",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "FB67DDEE258048EB83ED2A89FB88BE89"
+    },
     "cell_type" : "markdown",
     "source" : "## How does this predict works?"
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "2D59689F671645E5827CBB8B60134B9D"
+    },
     "cell_type" : "markdown",
     "source" : "Getting back to the model, we basically trained two parameters:\n* $\\beta_0$, the interceptor\n* $\\beta_1$, the weigths vector (slope in the dimensions) "
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "338A48C427694EFA90515844123844CA"
+    },
     "cell_type" : "markdown",
     "source" : "Hence the prediction will take the features we have seen, the data, and apply a linear inference on it, that is apply $y = \\beta_0 + \\beta_1 * x$ "
   }, {
     "metadata" : {
       "trusted" : true,
-      "input_collapsed" : true,
+      "input_collapsed" : false,
       "output_stream_collapsed" : true,
-      "collapsed" : true
+      "collapsed" : false,
+      "id" : "C16E60681C4745959255F1CFBE29CA54"
     },
     "cell_type" : "code",
     "source" : ":markdown\nWe'll use the intercept `${model.intercept}` and the weights `${model.weights}`",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "7C11DFB7FDF141C688263AF6EA9D8F4A"
+    },
     "cell_type" : "markdown",
     "source" : "So let's take an observation, and look at the features (data) and label (value)."
   }, {
@@ -275,7 +335,8 @@
       "trusted" : true,
       "input_collapsed" : false,
       "output_stream_collapsed" : true,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "CC96A77EF9F14422B60D7422D1953C44"
     },
     "cell_type" : "code",
     "source" : "val sample1 = data.take(1).head",
@@ -283,9 +344,10 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "input_collapsed" : true,
+      "input_collapsed" : false,
       "output_stream_collapsed" : true,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "40F08FE2742C4058A3923452B5A511E9"
     },
     "cell_type" : "code",
     "source" : ":markdown\n* label `${sample1.label}`\n* features `${sample1.features}`",
@@ -294,17 +356,19 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "15542711F2F944F483C0292CB887FAFE"
     },
     "cell_type" : "code",
-    "source" : "val predict1 = model.intercept + (sample1.features.toArray zip model.weights.toArray).map(x => x._1*x._2).sum\n()",
+    "source" : "val predict1 = model.intercept + (sample1.features.toArray zip model.weights.toArray).map(x => x._1*x._2).sum",
     "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
-      "input_collapsed" : true,
+      "input_collapsed" : false,
       "output_stream_collapsed" : true,
-      "collapsed" : true
+      "collapsed" : false,
+      "id" : "FCBF7983181F4CD38C546D37539AB941"
     },
     "cell_type" : "code",
     "source" : ":markdown\nSo the prediction is `${predict1}` and is `${math.abs(sample1.label - predict1)}` far from the correct label",
@@ -313,39 +377,37 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "output_stream_collapsed" : true,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "widgets.ScatterChart(List(predict1, sample1.label, math.abs(sample1.label - predict1)))",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : true,
+      "id" : "8543A76674EC46DE8398BBCC0F9064D4"
     },
     "cell_type" : "markdown",
     "source" : "# Try 0, 1st, 2nd & 3rd order functions on 1% universe samples"
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "517AD0733E334B46BD3E65106A51B660"
+    },
     "cell_type" : "markdown",
     "source" : "This function will:\n* compute the error of a given model and the prediction of the data.\n* create a plot that can be used to check the difference between the data and the prediction"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "0C7F0CC494904A0C8E28C6D048A43176"
     },
     "cell_type" : "code",
-    "source" : "import org.apache.spark.mllib.regression.LinearRegressionModel\nimport org.apache.spark.rdd.RDD\nimport com.quantifind.charts.highcharts._\n\nval MSE = (model: LinearRegressionModel, dta: RDD[LabeledPoint], deg:Int) => {\n  val localModel = model\n  val pred = (p: LabeledPoint) => localModel.predict(p.features)\n  val localData = dta\n  \n  localModel.predict(localData.map(_.features))\n  val valuesAndPreds = localData.map { point =>\n    val prediction = pred(point)\n    (point.label, prediction)\n  }\n  \n  val vs = localData.collect().map(v => (v.features.toArray.sum, v.label))\n  \n  val plot = Plot(Seq(\n    Pairs(vs.toList.sortBy(_._1), chart=\"line\"),\n    Pairs((vs.map(_._1) zip valuesAndPreds.map(_._2).collect.toList).sortBy(_._1), chart=\"line\")\n  ))\n  \n  (plot, valuesAndPreds.map{case(v, p) => math.pow((v - p), 2)}.mean())\n}",
+    "source" : "import org.apache.spark.mllib.regression.LinearRegressionModel\nimport org.apache.spark.rdd.RDD\n\nval MSE = (model: LinearRegressionModel, dta: RDD[LabeledPoint], deg:Int) => {\n  val localModel = model\n  val pred = (p: LabeledPoint) => localModel.predict(p.features)\n  val localData = dta\n  \n  localModel.predict(localData.map(_.features))\n  val valuesAndPreds = localData.map { point =>\n    val prediction = pred(point)\n    (point.label, prediction)\n  }\n  \n  val vs = localData.collect().map(v => (v.features.toArray.sum, v.label, \"real\")).toList.sortBy(_._1)\n  val ps = (vs.map(_._1) zip valuesAndPreds.map(_._2).collect.toList).map(x => (x._1, x._2, \"pred\")).sortBy(_._1)\n  \n  val plot = LineChart(\n              vs ++ ps,\n              fields=Some((\"_1\", \"_2\")),\n              groupField=Some(\"_3\"))\n  \n  (plot, valuesAndPreds.map{case(v, p) => math.pow((v - p), 2)}.mean())\n}",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "A118979CC53F44388DE694D82EB445FB"
+    },
     "cell_type" : "markdown",
     "source" : "## Simulations"
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "0B253DBF0F764355BCFD8CBA379715C9"
+    },
     "cell_type" : "markdown",
     "source" : "Now we will run a lot of times the models on training data but also keep some data for validation testing later, that are usually named testing datasets.\n\nSo that we are simulating cases where we have a lot of samples that where either taken from the same dataset, or have been taken at different time."
   }, {
@@ -353,13 +415,16 @@
       "trusted" : true,
       "input_collapsed" : false,
       "output_stream_collapsed" : true,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "1AB46BBC5C354E83BBEB0C70F5747ADB"
     },
     "cell_type" : "code",
-    "source" : "case class ModelsMSE(mses: Array[(notebook.front.Widget, Double)])\n\nval errors = (1 to 20).map{ i =>\n                            \n  val data = universe.sample(true, 0.01)                            \n  val (data0, data1, data2, data3) = \n                           (data.map(toPoints0), data.map(toPoints1), data.map(toPoints2), data.map(toPoints3))\n  \n  val test = universe\n  val (test0, test1, test2, test3) = \n                           (test.map(toPoints0), test.map(toPoints1), test.map(toPoints2), test.map(toPoints3))\n              \n  val model0 = train(data0)\n  val model1 = train(data1)\n  val model2 = train(data2)\n  val model3 = train(data3)\n\n  (ModelsMSE(Array(MSE(model0, data0, 0), MSE(model1, data1, 1), MSE(model2, data2, 2), MSE(model3, data3, 3))),\n   ModelsMSE(Array(MSE(model0, test0, 0), MSE(model1, test1, 1), MSE(model2, test2, 2), MSE(model3, test3, 3))))\n}\n()",
+    "source" : "case class ModelsMSE(mses: Array[(notebook.front.Widget, Double)])\n\nval errors = (1 to 20).map{ i =>\n                            \n  val data = universe.sample(true, 0.01)                            \n  val (data0, data1, data2, data3) = \n                           (data.map(toPoints0), data.map(toPoints1), data.map(toPoints2), data.map(toPoints3))\n  \n  val test = universe\n  val (test0, test1, test2, test3) = \n                           (test.map(toPoints0), test.map(toPoints1), test.map(toPoints2), test.map(toPoints3))\n              \n  val model0 = train(data0)\n  val model1 = train(data1)\n  val model2 = train(data2)\n  val model3 = train(data3)\n\n  (ModelsMSE(Array(MSE(model0, data0, 0), MSE(model1, data1, 1), MSE(model2, data2, 2), MSE(model3, data3, 3))),\n   ModelsMSE(Array(MSE(model0, test0, 0), MSE(model1, test1, 1), MSE(model2, test2, 2), MSE(model3, test3, 3))))\n}",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "DA982911753047D8BF4050F3D061BBB1"
+    },
     "cell_type" : "markdown",
     "source" : "Let's take a look at one of these runs to see how trainings and tests ppredictions are comparable"
   }, {
@@ -367,17 +432,22 @@
       "trusted" : true,
       "input_collapsed" : false,
       "output_stream_collapsed" : true,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "CAA5EFA69848477F8382C8B967BE9D1C"
     },
     "cell_type" : "code",
     "source" : "val (tr, te) = errors(scala.util.Random.nextInt(errors.size))\n\ndef plots(order:Int) = html(<h4>Order {order}</h4>) ++ tr.mses(order)._1 ++ te.mses(order)._1\n\nList.tabulate(4){i => plots(i)}.reduce(_ ++ _)",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "D38840AC5E9C4B6CBFEABF23F9927B3A"
+    },
     "cell_type" : "markdown",
     "source" : "## Comparing the models"
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "1C2CD2C012C342EB962492190AB5A242"
+    },
     "cell_type" : "markdown",
     "source" : "In the following, we'll be using the 20 trainings and testing we've done to check which model won.\n\nFor this, we'll count the number of times a specific order worked better than the others, for both the training set and the testing set."
   }, {
@@ -385,13 +455,16 @@
       "trusted" : true,
       "input_collapsed" : false,
       "output_stream_collapsed" : true,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "2E73572557ED4C658606A92AB2BB8C16"
     },
     "cell_type" : "code",
     "source" : "case class Error(order: Int, bestCount: Int, sse: Double, count: Int) {\n  def addBest(se: Double) = Error(order, bestCount+1, sse+se, count+1)\n  def add(se: Double) = Error(order, bestCount, sse+se, count+1)\n}\n\nval zeros = List.tabulate(4)(i => Error(i, 0, 0.0, 0))\n\nval errs = ((zeros) /: errors.map(_._2))((acc, err) => {\n                                 val bestIdx = err.mses.map(_._2).zipWithIndex.minBy(_._1)._2\n                                 acc.zipWithIndex.map{\n                                   case (e, idx) if (idx == bestIdx) => e.addBest(err.mses(bestIdx)._2)\n                                   case (e, idx) => e.add(err.mses(idx)._2)\n                                 }\n                                }\n                               )\nval trainErrs = ((zeros) /: errors.map(_._1))((acc, err) => {\n                                 val bestIdx = err.mses.map(_._2).zipWithIndex.minBy(_._1)._2\n                                 acc.zipWithIndex.map{\n                                   case (e, idx) if (idx == bestIdx) => e.addBest(err.mses(bestIdx)._2)\n                                   case (e, idx) => e.add(err.mses(idx)._2)\n                                 }\n                                }\n                               )\n\nimport notebook.front.widgets._\ntable(\n  5,\n  Seq.tabulate(4){i=>\n    Seq(\n      text(\"\"+i), text(\"\"+{errs(i).bestCount}), text(\"\"+(errs(i).sse/errs(i).count)), text(\"\"+trainErrs(i).bestCount), text(\"\"+(trainErrs(i).sse/trainErrs(i).count))\n    )\n  }.flatten,\n  Seq(text(\"Model Order\"), text(\"# Best model\"), text(\"Mean Squared Error\"), text(\"Training best model\"), text(\"Training MSE\"))\n)",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "D4D06BB634A14B5EBFB3F42F58EA30E0"
+    },
     "cell_type" : "markdown",
     "source" : "As we can see, the **second order** model is more often picked on the test data sets, which is great because we **know** (we're lucky) that the **Universe** is actually quadratic.\n\nHowever, if we look at the training data set best models, we can see that the **third** order is/should **always** be the best. We is countersense with our knwowledge of the Universe.\nThis is simply because, the $R^2$ can only be reduced by adding new component into the model.\n\nThat's also why we be better use some regularization to choose the model than relying on a single metric.\n\nBut that's a different story!"
   } ],

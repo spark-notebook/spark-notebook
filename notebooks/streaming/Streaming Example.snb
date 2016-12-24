@@ -19,23 +19,9 @@
   "cells" : [ {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : ":dp org.apache.spark % spark-streaming_2.10 % 1.2.1",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "collapsed" : false
-    },
-    "cell_type" : "code",
-    "source" : "import org.apache.spark.ui.notebook.front.widgets.SparkInfo\nimport scala.concurrent.duration._\nnew SparkInfo(sparkContext, checkInterval=1 seconds, execNumber=Some(100))",
-    "outputs" : [ ]
-  }, {
-    "metadata" : {
-      "trusted" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "3653A681207042AAAAF25153558F7576"
     },
     "cell_type" : "code",
     "source" : "import org.apache.spark.streaming.{StreamingContext, Duration}\nval streaming = new StreamingContext(sparkContext, Duration(1000))",
@@ -43,7 +29,9 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "AB42D489520B46BCA0AA985E9C505105"
     },
     "cell_type" : "code",
     "source" : "import org.apache.spark.streaming.dstream.ConstantInputDStream\nval stream  = new ConstantInputDStream(\n                streaming, \n                sparkContext.makeRDD(Seq.fill(1000)(() => scala.util.Random.nextInt(1000)))\n              )",
@@ -51,7 +39,9 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "3129709950FF4AA886EA5F644370FFCB"
     },
     "cell_type" : "code",
     "source" : "val concrete = stream.map(_())",
@@ -59,15 +49,19 @@
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "2625ADE1FAAE4B62B770BFB873207195"
     },
     "cell_type" : "code",
-    "source" : "import notebook._, front._, widgets._\nimport notebook.JsonCodec._\nimport play.api.libs.json._\nimport notebook.Series,Series._\n\ndef series(values:Seq[(Double, Double)]) = Seq(Series(\"Fun-DStream\", \"#4a6860\", values))\nval p = new Playground(series(Nil), List(Script(\"rickshawts\", \n                                         Json.obj(\n                                           \"renderer\" -> \"stack\",\n                                           \"fixed\" -> Json.obj(\n                                              (\"interval\" -> 1000),\n                                              (\"max\" -> 5),\n                                              (\"baseInSec\" -> 1)\n                                         )))))(seriesCodec)\nconcrete.foreachRDD { rdd => \n  val sum = rdd.reduce(_+_)\n  p(series(Seq((System.currentTimeMillis.toDouble, sum.toDouble))))\n}\nstreaming.start\np",
+    "source" : "import notebook._, front._, widgets._\nimport notebook.JsonCodec._\nimport play.api.libs.json._\n\nval ts = TimeseriesChart(Seq((System.currentTimeMillis.toDouble, 0.0)))\n\nconcrete.foreachRDD { rdd => \n  val sum = rdd.reduce(_+_)\n  ts.addAndApply(Seq((System.currentTimeMillis.toDouble, sum.toDouble)))\n}\nstreaming.start\nts",
     "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "8C82F7BECA9F4868AF14F64DDCC70E88"
     },
     "cell_type" : "code",
     "source" : "import scala.concurrent._\nimport scala.concurrent.ExecutionContext.Implicits.global\nFuture { Thread.sleep(30000) ; streaming.stop() }\n ",
