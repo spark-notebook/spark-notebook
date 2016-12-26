@@ -1,1 +1,0 @@
-https://raw.githubusercontent.com/shutterstock/rickshaw/master/rickshaw.min.js

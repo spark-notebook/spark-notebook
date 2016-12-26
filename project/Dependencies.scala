@@ -54,8 +54,6 @@ object Dependencies {
     ExclusionRule("org.apache.hadoop"),
     ExclusionRule("org.apache.ivy", "ivy")
   )
-  val bokeh = "io.continuum.bokeh" %% "bokeh" % "0.2"
-
   def sparkYarn(v: String) = "org.apache.spark" %% "spark-yarn" % v excludeAll(
       ExclusionRule("org.apache.hadoop"),
       ExclusionRule("javax.servlet", "servlet-api"),
