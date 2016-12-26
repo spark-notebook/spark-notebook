@@ -278,10 +278,6 @@ lazy val common = Project(id = "common", base = file("modules/common"))
       scalaZ
     ),
     libraryDependencies ++= depsToDownloadDeps(scalaBinaryVersion.value, sbtVersion.value),
-    // plotting functionality
-    libraryDependencies ++= Seq(
-      bokeh
-    ), // ++ customJacksonScala
     unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value),
     unmanagedSourceDirectories in Compile +=
       (sourceDirectory in Compile).value / ((sparkVersion.value.takeWhile(_ != '-').split("\\.").toList match {
@@ -290,7 +286,7 @@ lazy val common = Project(id = "common", base = file("modules/common"))
       }))
   )
   .settings(
-    wispSettings
+    unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
   )
   .settings(
     gisSettings

@@ -77,8 +77,7 @@ object Dependencies {
     ExclusionRule("org.apache.ivy", "ivy")
   )
 
-  def sparkYarn(v: String) = if (v == "1.2.0") {
-    "org.apache.spark" %% "spark-yarn" % (v + "-adatao") excludeAll(
+  def sparkYarn(v: String) = "org.apache.spark" %% "spark-yarn" % v excludeAll(
       ExclusionRule("org.apache.hadoop"),
       ExclusionRule("javax.servlet", "servlet-api"),
       ExclusionRule("org.mortbay.jetty", "servlet-api"),
