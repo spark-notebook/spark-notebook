@@ -286,9 +286,6 @@ lazy val common = Project(id = "common", base = file("modules/common"))
       }))
   )
   .settings(
-    unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
-  )
-  .settings(
     gisSettings
   )
   .settings(sharedSettings: _*)

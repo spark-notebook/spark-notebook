@@ -78,19 +78,11 @@ object Dependencies {
   )
 
   def sparkYarn(v: String) = "org.apache.spark" %% "spark-yarn" % v excludeAll(
-      ExclusionRule("org.apache.hadoop"),
-      ExclusionRule("javax.servlet", "servlet-api"),
-      ExclusionRule("org.mortbay.jetty", "servlet-api"),
-      ExclusionRule("org.apache.ivy", "ivy")
-    )
-  } else {
-    "org.apache.spark" %% "spark-yarn" % v excludeAll(
-      ExclusionRule("org.apache.hadoop"),
-      ExclusionRule("javax.servlet", "servlet-api"),
-      ExclusionRule("org.mortbay.jetty", "servlet-api"),
-      ExclusionRule("org.apache.ivy", "ivy")
-    )
-  }
+    ExclusionRule("org.apache.hadoop"),
+    ExclusionRule("javax.servlet", "servlet-api"),
+    ExclusionRule("org.mortbay.jetty", "servlet-api"),
+    ExclusionRule("org.apache.ivy", "ivy")
+  )
 
   val defaultWithHive = sys.props.getOrElse("with.hive", "false").toBoolean
   val defaultWithParquet = sys.props.getOrElse("with.parquet", "false").toBoolean
