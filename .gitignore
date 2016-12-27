@@ -13,16 +13,11 @@
 project/target/
 target/
 logs/
-Time+Serie+Demo.snb
-server/src/main/scala/BreezeAndbokehTest.scala
 conf/notebooks/Untitled*
 notebooks/Untitled*
 adam.log
-notebooks/parleys
-notebooks/parleys-notebooks
-notebooks/virdata
 notebooks/oreilly
-notebooks/cassandra/Cassandra and G3nerator.snb
+notebooks/temp
 /bin/
 .cache-main
 .cache-tests

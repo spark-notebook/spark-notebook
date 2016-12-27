@@ -1,6 +1,6 @@
 {
   "metadata" : {
-    "name" : "Simple (hard link) classpath",
+    "name" : "Add local jar to driver and cluster",
     "user_save_timestamp" : "2014-12-03T21:59:08.437Z",
     "auto_save_timestamp" : "2014-11-22T04:12:36.158Z",
     "language_info" : {

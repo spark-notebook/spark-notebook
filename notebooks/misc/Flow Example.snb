@@ -80,12 +80,23 @@
           "inPorts" : [ "in" ],
           "outPorts" : [ "even" ],
           "position" : {
-            "x" : 29,
-            "y" : 135
+            "x" : 107,
+            "y" : 139
           },
           "size" : {
             "width" : 100,
             "height" : 60
+          },
+          "remove" : false
+        }, {
+          "name" : "link",
+          "id" : "024adad2-a395-4793-b488-3d1abda983a1",
+          "tpe" : "link",
+          "parameters" : {
+            "source_id" : "58379e31-1d09-4e85-983c-315f07f4119d",
+            "source_port" : "even",
+            "target_id" : "bf167976-f3a7-447b-a250-d8447b5026af",
+            "target_port" : "left"
           },
           "remove" : false
         }, {
@@ -98,12 +109,23 @@
           "inPorts" : [ "in" ],
           "outPorts" : [ "square" ],
           "position" : {
-            "x" : 53,
-            "y" : 312
+            "x" : 63,
+            "y" : 433
           },
           "size" : {
             "width" : 100,
             "height" : 60
+          },
+          "remove" : false
+        }, {
+          "name" : "link",
+          "id" : "74bf5bd3-623a-4761-b8f9-78d881ba8132",
+          "tpe" : "link",
+          "parameters" : {
+            "source_id" : "9c6d5011-3a88-4928-b264-a230d260bf75",
+            "source_port" : "square",
+            "target_id" : "bf167976-f3a7-447b-a250-d8447b5026af",
+            "target_port" : "right"
           },
           "remove" : false
         }, {
@@ -116,48 +138,26 @@
           "inPorts" : [ "left", "right" ],
           "outPorts" : [ "join" ],
           "position" : {
-            "x" : 274,
-            "y" : 223
+            "x" : 281,
+            "y" : 259
           },
           "size" : {
             "width" : 100,
             "height" : 60
-          },
-          "remove" : false
-        }, {
-          "name" : "link",
-          "id" : "bd89235d-daa1-422c-aef7-912818697fd6",
-          "tpe" : "link",
-          "parameters" : {
-            "source_id" : "58379e31-1d09-4e85-983c-315f07f4119d",
-            "source_port" : "even",
-            "target_id" : "bf167976-f3a7-447b-a250-d8447b5026af",
-            "target_port" : "left"
-          },
-          "remove" : false
-        }, {
-          "name" : "link",
-          "id" : "66215ace-a12f-4b0a-bf51-80dfff607f49",
-          "tpe" : "link",
-          "parameters" : {
-            "source_id" : "9c6d5011-3a88-4928-b264-a230d260bf75",
-            "source_port" : "square",
-            "target_id" : "bf167976-f3a7-447b-a250-d8447b5026af",
-            "target_port" : "right"
           },
           "remove" : false
         }, {
           "name" : "customizable",
-          "id" : "6834753e-01f9-49e7-b2ca-d6f8f84e2e2d",
+          "id" : "7a0cfacd-4cbf-4d6d-977f-d8fb83afb428",
           "tpe" : "box",
           "parameters" : {
-            "next" : "(a:Map[String, Any])=> Map(\"collect\" → (a(\"in\").asInstanceOf[RDD[_]].collect))"
+            "next" : "(a:Map[String, Any])=>  Map(\"collect\" -> a(\"in\").asInstanceOf[RDD[(String, (Int, Int))]].collect)"
           },
           "inPorts" : [ "in" ],
           "outPorts" : [ "collect" ],
           "position" : {
-            "x" : 498,
-            "y" : 226
+            "x" : 611,
+            "y" : 267
           },
           "size" : {
             "width" : 100,
@@ -166,12 +166,12 @@
           "remove" : false
         }, {
           "name" : "link",
-          "id" : "0c72a26a-4631-4f5e-8545-a923df118bea",
+          "id" : "5ffa488a-799f-49a6-90d7-35ed3809fabd",
           "tpe" : "link",
           "parameters" : {
             "source_id" : "bf167976-f3a7-447b-a250-d8447b5026af",
             "source_port" : "join",
-            "target_id" : "6834753e-01f9-49e7-b2ca-d6f8f84e2e2d",
+            "target_id" : "7a0cfacd-4cbf-4d6d-977f-d8fb83afb428",
             "target_port" : "in"
           },
           "remove" : false
@@ -179,7 +179,7 @@
       }
     },
     "cell_type" : "code",
-    "source" : "val f:Flow = Flow()",
+    "source" : "val f:Flow = Flow()\nf",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -234,7 +234,7 @@
       "id" : "9AE974F1BB434337AEA0967982BBADE9"
     },
     "cell_type" : "code",
-    "source" : "val array:Array[(String, Int, Int)] = result((\"6834753e-01f9-49e7-b2ca-d6f8f84e2e2d\", \"collect\")).\n                                      asInstanceOf[Array[(String, (Int, Int))]].\n                                      map{ case (i, (j,k)) => (i,j,k) }",
+    "source" : "val array:Array[(String, Int, Int)] = result((\"7a0cfacd-4cbf-4d6d-977f-d8fb83afb428\", \"collect\")).\n                                      asInstanceOf[Array[(String, (Int, Int))]].\n                                      map{ case (i, (j,k)) => (i,j,k) }",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -289,7 +289,7 @@
       "extra" : {
         "state" : [ {
           "name" : "sumPipe",
-          "id" : "40a82ad3-7d95-4058-b0d3-369a8c1dbc5b",
+          "id" : "86ec777d-a970-4bef-af39-d3b613c5c7b9",
           "tpe" : "box",
           "parameters" : {
             "mult" : "1"
@@ -307,7 +307,7 @@
           "remove" : false
         }, {
           "name" : "sumPipe",
-          "id" : "a421a84b-0e20-4958-ac08-8d888ab4630c",
+          "id" : "8d25e574-38f4-43fa-bc53-7820f2725ef1",
           "tpe" : "box",
           "parameters" : {
             "mult" : "1"
@@ -327,7 +327,7 @@
       }
     },
     "cell_type" : "code",
-    "source" : "val f2 = Flow()",
+    "source" : "val f2 = Flow()\nf2",
     "outputs" : [ ]
   } ],
   "nbformat" : 4

@@ -17,7 +17,6 @@
         <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/pivot.css")" type="text/css" />
         <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/d3-radar/radar-chart.css")" type="text/css" />
         <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/d3-pc/d3.parcoords.css")" type="text/css" />
-        <link rel="stylesheet" href="@routes.Assets.at("javascripts/taucharts/tauCharts.min.css")" type="text/css" />
 
         @stylesheet
         @*<link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/bootstrap/css/bootstrap.min.css")" type="text/css" />*@
@@ -42,8 +41,6 @@
           kernelspecs : '/kernelspecs',
           underscore : '@routes.Assets.at("javascripts/third/underscore-min")',
           plotly: '@routes.Assets.at("javascripts/third/plotly-latest.min")',
-          taucharts_root: '@routes.Assets.at("javascripts/taucharts")',
-          tauCharts : '@routes.Assets.at("javascripts/taucharts/tauCharts")',
           backbone : 'components/backbone/backbone-min',
           jquery: 'components/jquery/jquery.min',
           bootstrap: 'components/bootstrap/js/bootstrap.min',
@@ -76,7 +73,6 @@
           pivotC3: '@routes.Assets.at("javascripts/third/c3_renderers")',
           pivotExport: '@routes.Assets.at("javascripts/third/export_renderers")',
           parcoords: '@routes.Assets.at("javascripts/third/d3-pc/d3.parcoords")',
-          rickshaw: '@routes.Assets.at("javascripts/third/rickshaw/rickshaw")',
           radarChart: '@routes.Assets.at("javascripts/third/d3-radar/radar-chart")',
           'jquery.gridster': '@routes.Assets.at("javascripts/third/jquery/js/jquery.gridster.min")',
           wizard: '@routes.Assets.at("javascripts/third/jquery/js/jquery.bootstrap.wizard.min")',
@@ -122,7 +118,7 @@
         @meta
     </head>
 
-        <!-- todo bodyclasses (=notebook_app for notebook.scala.html)  â†’ class="" -->
+        <!-- todo bodyclasses (=notebook_app for notebook.scala.html) class="" -->
     <body class="@{page.get} notebook_app data" @Html(params.map(x => s"""data-${x._1}="${x._2}"""").mkString(" "))>
 
         <noscript>
