@@ -20,15 +20,15 @@ object AppUtils {
 
   object proxy {
     def proxyKeys(pre: String) = List(
-      pre + "_proxy",
-      pre + "_proxy_user",
-      pre + "_proxy_pass",
-      pre + ".proxyHost",
-      pre + ".proxyPort",
-      pre + ".proxyUser",
-      pre + ".proxyPassword",
-      pre + ".nonProxyHosts"
-    )
+      "_proxy",
+      "_proxy_user",
+      "_proxy_pass",
+      ".proxyHost",
+      ".proxyPort",
+      ".proxyUser",
+      ".proxyPassword",
+      ".nonProxyHosts"
+    ).map(e => pre + e)
 
     def mapper = (path:String) => path → current.configuration.getString(path)
     def collecter:PartialFunction[(String, Option[String]),(String, String)] = { case (x:String, Some(y:String)) => x → y }
