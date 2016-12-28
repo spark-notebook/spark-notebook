@@ -15,7 +15,7 @@ Cells are editable. To enter edit mode, click on them or press enter when the ce
 
 ![code cell - edit mode](./images/code-cell.png)
 
-Once you've edited a cell, pressing **&tl;Ctrl&gt;-Enter** will execute the cell and display the result in the output field within the cell, right below the edit area.
+Once you've edited a cell, pressing **&lt;Ctrl&gt;-Enter** will execute the cell and display the result in the output field within the cell, right below the edit area.
 
 ![code cell - executed](./images/code-cell-executed.png)
 
