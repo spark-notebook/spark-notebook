@@ -33,7 +33,7 @@ case class Breadcrumbs(home: String = "/", crumbs: List[Crumb] = Nil)
 
 object Application extends Controller {
 
-  private lazy val config = AppUtils.config
+  private lazy val config = AppUtils.notebookConfig
   private lazy val notebookManager = AppUtils.notebookManager
   private val kernelIdToCalcService = collection.mutable.Map[String, CalcWebSocketService]()
   private val kernelIdToObservableActor = collection.mutable.Map[String, ActorRef]()
