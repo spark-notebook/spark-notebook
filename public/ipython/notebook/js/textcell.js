@@ -34,15 +34,15 @@ define([
         /**
          * Constructor
          *
-         * Construct a new TextCell, codemirror mode is by default 'htmlmixed', 
+         * Construct a new TextCell, codemirror mode is by default 'htmlmixed',
          * and cell type is 'text' cell start as not redered.
          *
          * Parameters:
          *  options: dictionary
          *      Dictionary of keyword arguments.
-         *          events: $(Events) instance 
+         *          events: $(Events) instance
          *          config: dictionary
-         *          keyboard_manager: KeyboardManager instance 
+         *          keyboard_manager: KeyboardManager instance
          *          notebook: Notebook instance
          */
         options = options || {};
@@ -54,12 +54,12 @@ define([
         this.notebook = options.notebook;
         this.events = options.events;
         this.config = options.config;
-        
+
         // we cannot put this as a class key as it has handle to "this".
         var config = utils.mergeopt(TextCell, this.config);
         Cell.apply(this, [{
-                    config: config, 
-                    keyboard_manager: options.keyboard_manager, 
+                    config: config,
+                    keyboard_manager: options.keyboard_manager,
                     events: this.events}]);
 
         this.cell_type = this.cell_type || 'text';
@@ -94,7 +94,7 @@ define([
         cell.append(prompt);
         var inner_cell = $('<div/>').addClass('inner_cell');
         this.celltoolbar = new celltoolbar.CellToolbar({
-            cell: this, 
+            cell: this,
             notebook: this.notebook});
         inner_cell.append(this.celltoolbar.element);
         var input_area = $('<div/>').addClass('input_area');
@@ -117,7 +117,7 @@ define([
 
 
     // Cell level actions
-    
+
     TextCell.prototype.select = function () {
         var cont = Cell.prototype.select.apply(this);
         if (cont) {
@@ -195,7 +195,7 @@ define([
                 // to this state, instead of a blank cell
                 this.code_mirror.clearHistory();
                 // TODO: This HTML needs to be treated as potentially dangerous
-                // user input and should be handled before set_rendered.         
+                // user input and should be handled before set_rendered.
                 this.set_rendered(data.rendered || '');
                 this.rendered = false;
                 this.render();
@@ -223,9 +223,9 @@ define([
          * Parameters:
          *  options: dictionary
          *      Dictionary of keyword arguments.
-         *          events: $(Events) instance 
+         *          events: $(Events) instance
          *          config: ConfigSection instance
-         *          keyboard_manager: KeyboardManager instance 
+         *          keyboard_manager: KeyboardManager instance
          *          notebook: Notebook instance
          */
         options = options || {};
@@ -300,7 +300,6 @@ define([
         return cont;
     };
 
-
     var RawCell = function (options) {
         /**
          * Constructor
@@ -308,9 +307,9 @@ define([
          * Parameters:
          *  options: dictionary
          *      Dictionary of keyword arguments.
-         *          events: $(Events) instance 
+         *          events: $(Events) instance
          *          config: ConfigSection instance
-         *          keyboard_manager: KeyboardManager instance 
+         *          keyboard_manager: KeyboardManager instance
          *          notebook: Notebook instance
          */
         options = options || {};
@@ -324,10 +323,10 @@ define([
 
     RawCell.options_default = {
         placeholder : "Write raw LaTeX or other formats here, for use with nbconvert. " +
-            "It will not be rendered in the notebook. " + 
+            "It will not be rendered in the notebook. " +
             "When passing through nbconvert, a Raw Cell's content is added to the output unmodified."
     };
-    
+
     RawCell.config_defaults =  {
         highlight_modes : {
             'diff'         :{'reg':[/^diff/]}
