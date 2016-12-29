@@ -34,7 +34,7 @@ case class Breadcrumbs(home: String = "/", crumbs: List[Crumb] = Nil)
 object Application extends Controller {
 
   private lazy val config = AppUtils.config
-  private lazy val nbm = AppUtils.nbm
+  private lazy val notebookManager = AppUtils.notebookManager
   private val kernelIdToCalcService = collection.mutable.Map[String, CalcWebSocketService]()
   private val kernelIdToObservableActor = collection.mutable.Map[String, ActorRef]()
   private val clustersActor = kernelSystem.actorOf(Props(NotebookClusters(AppUtils.clustersConf)))
@@ -43,7 +43,7 @@ object Application extends Controller {
 
   private implicit val GetClustersTimeout = Timeout(60 seconds)
 
-  val project = nbm.name
+  val project = notebookManager.name
   val base_project_url = current.configuration.getString("application.context").getOrElse("/")
   val autoStartKernel = current.configuration.getBoolean("manager.kernel.autostartOnNotebookOpen").getOrElse(true)
   val kernelKillTimeout = current.configuration.getMilliseconds("manager.kernel.killTimeout")
@@ -138,7 +138,7 @@ object Application extends Controller {
       // Load the notebook → get the metadata
       val md: Option[Metadata] = for {
         p <- notebookPath
-        n <- nbm.load(p)
+        n <- notebookManager.load(p)
         m <- n.metadata
       } yield m
 
@@ -338,7 +338,7 @@ object Application extends Controller {
       j <- Try(custom \ "customSparkConf") if j.isInstanceOf[JsObject]
     } yield j.asInstanceOf[JsObject]).toOption
 
-    val fpath = nbm.newNotebook(
+    val fpath = notebookManager.newNotebook(
       path,
       customLocalRepo orElse config.customConf.localRepo,
       customRepos orElse config.customConf.repos,
@@ -353,7 +353,7 @@ object Application extends Controller {
   def copyingNb(fp: String) = {
     val fromPath = URLDecoder.decode(fp, UTF_8)
     Logger.info("Copying notebook:" + fromPath)
-    val np = nbm.copyNotebook(fromPath)
+    val np = notebookManager.copyNotebook(fromPath)
     Try(Ok(Json.obj("path" → np)))
   }
 
@@ -439,7 +439,7 @@ object Application extends Controller {
         "base-kernel-url" -> base_kernel_url,
         "base-observable-url" -> ws_url(Some(base_observable_url)),
         "read-only" -> read_only,
-        "notebook-name" -> nbm.name,
+        "notebook-name" -> notebookManager.name,
         "notebook-path" -> path,
         "notebook-writable" -> "true",
         "presentation" -> presentation.getOrElse("edit")
@@ -508,7 +508,7 @@ object Application extends Controller {
     val newPath = (request.body \ "path").as[String]
     Logger.info("RENAME → " + oldPath + " to " + newPath)
     try {
-      val (newname, newpath) = nbm.rename(oldPath, newPath)
+      val (newname, newpath) = notebookManager.rename(oldPath, newPath)
 
       KernelManager.atPath(oldPath).foreach { case (_, kernel) =>
         kernel.moveNotebook(newpath)
@@ -533,7 +533,7 @@ object Application extends Controller {
       NBSerializer.fromJson(notebookJsObject) match {
         case Some(notebook) =>
           Try {
-            val (name, savedPath) = nbm.save(path, notebook, overwrite = true)
+            val (name, savedPath) = notebookManager.save(path, notebook, overwrite = true)
             Ok(Json.obj(
               "type" → "notebook",
               "name" → name,
@@ -565,7 +565,7 @@ object Application extends Controller {
     val path = URLDecoder.decode(p, UTF_8)
     Logger.info("DELETE → " + path)
     try {
-      nbm.deleteNotebook(path)
+      notebookManager.deleteNotebook(path)
 
       Ok(Json.obj(
         "type" → "notebook",
@@ -586,7 +586,7 @@ object Application extends Controller {
     val path = URLDecoder.decode(p, UTF_8)
     Logger.debug("DASH → " + path)
     Ok(views.html.projectdashboard(
-      nbm.name,
+      notebookManager.name,
       project,
       Map(
         "project" → project,
@@ -642,7 +642,7 @@ object Application extends Controller {
   def getNotebook(name: String, path: String, format: String, dl: Boolean = false) = {
     try {
       Logger.debug(s"getNotebook: name is '$name', path is '$path' and format is '$format'")
-      val response = nbm.getNotebook(path).map { case (lastMod, nbname, data, fpath) =>
+      val response = notebookManager.getNotebook(path).map { case (lastMod, nbname, data, fpath) =>
         format match {
           case "json" =>
             val j = Json.parse(data)
