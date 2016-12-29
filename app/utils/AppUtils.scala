@@ -8,7 +8,7 @@ object AppUtils {
   import play.api.Play.current
 
   lazy val config = NotebookConfig(current.configuration.getConfig("manager").get)
-  lazy val nbm = new NotebookManager(config.projectName, config.notebooksDir)
+  lazy val notebookManager = new NotebookManager(config.projectName, config.notebooksDir)
   lazy val clustersConf = config.config.getConfig("clusters").get
 
   lazy val nbServerConf = current.configuration.getConfig("notebook-server").get.underlying
