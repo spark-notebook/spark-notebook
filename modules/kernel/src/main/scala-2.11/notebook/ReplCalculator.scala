@@ -201,7 +201,7 @@ class ReplCalculator(
           execute(ref, er)
         }
 
-      case er@ExecuteRequest(_, _, code) =>
+      case er: ExecuteRequest =>
         log.debug("Enqueuing execute request at: " + queue.size)
         queue = queue.enqueue((sender(), er))
 
@@ -213,7 +213,7 @@ class ReplCalculator(
 
       case InterruptCellRequest(killCellId) =>
         // kill job(s) still waiting for execution to start, if any
-        val (jobsInQueueToKill, nonAffectedJobs) = queue.partition { case (_, ExecuteRequest(cellIdInQueue, _, _)) =>
+        val (jobsInQueueToKill, nonAffectedJobs) = queue.partition { case (_, ExecuteRequest(cellIdInQueue, _, _, _)) =>
           cellIdInQueue == killCellId
         }
         log.debug(s"Canceling $killCellId jobs still in queue (if any):\n $jobsInQueueToKill")
@@ -513,7 +513,7 @@ class ReplCalculator(
         case InterruptRequest =>
           executor.forward(InterruptRequest)
 
-        case req @ ExecuteRequest(_, _, code) => executor.forward(req)
+        case req: ExecuteRequest => executor.forward(req)
 
         case CompletionRequest(line, cursorPosition) =>
           val (matched, candidates) = repl.complete(line, cursorPosition)

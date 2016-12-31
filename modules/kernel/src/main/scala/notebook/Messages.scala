@@ -1,10 +1,11 @@
 package notebook.client
 
 import notebook.util.Match
+import play.api.libs.json.JsObject
 
 sealed trait CalcRequest
 
-case class ExecuteRequest(cellId:String, counter: Int, code: String) extends CalcRequest
+case class ExecuteRequest(cellId:String, counter: Int, code: String, extra: Option[JsObject]) extends CalcRequest
 
 case class CompletionRequest(line: String, cursorPosition: Int) extends CalcRequest
 
