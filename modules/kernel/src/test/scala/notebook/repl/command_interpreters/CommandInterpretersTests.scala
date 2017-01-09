@@ -59,10 +59,10 @@ class CommandInterpretersTests extends FunSpec with Matchers with BeforeAndAfter
        val simpleOutTypes =  OutputTypeCommand.scalaResultMarkers
          .filterNot(outType => Seq("html", "svg").contains(outType.prefix))
 
-       simpleOutTypes.foreach { case OutputTypeMarker(prefix, outputType) =>
-         val result = matchCmd(s":${prefix} \n $scalaCode")
-         it(s"recognizes :$prefix and indicates that code shall return $outputType output type)") {
-           result.outputType shouldBe outputType
+       simpleOutTypes.foreach { output: OutputTypeMarker =>
+         val result = matchCmd(s":${output.prefix} \n $scalaCode")
+         it(s"recognizes :${output.prefix} and indicates that code shall return ${output.outputType} output type)") {
+           result.outputType shouldBe output.outputType
            result.replCommand.trim shouldBe scalaCode
          }
        }
