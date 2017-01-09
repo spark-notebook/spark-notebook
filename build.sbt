@@ -350,6 +350,7 @@ lazy val kernel = Project(id = "kernel", base = file("modules/kernel"))
       slf4jLog4j,
       commonsIO
     ),
+    libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.6" % "test",
     unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
   )
   .settings(sharedSettings: _*)
