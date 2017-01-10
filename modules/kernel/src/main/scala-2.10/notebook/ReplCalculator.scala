@@ -8,9 +8,10 @@ import notebook.PresentationCompiler
 import notebook.kernel._
 import notebook.JobTracking
 import notebook.kernel.repl.common.ReplT
-import notebook.util.{CustomResolvers, Deps}
 import org.joda.time.LocalDateTime
 
+import com.datafellas.utils.{CustomResolvers, Deps}
+import com.datafellas.utils._
 import sbt._
 
 import scala.collection.immutable.Queue
@@ -108,7 +109,7 @@ class ReplCalculator(
 
   val (depsJars, depsScript): (List[String], (String, () => String)) = customDeps.map { d =>
     val customDeps = d.mkString("\n")
-    val deps = Deps.script(customDeps, resolvers, repo).toOption.getOrElse(List.empty[String])
+    val deps = Deps.script(customDeps, resolvers, repo, notebook.BuildInfo.xSparkVersion).toOption.getOrElse(List.empty[String])
     (deps, ("deps", () => {
       s"""
          |val CustomJars = ${deps.mkString("Array(\"", "\",\"", "\")").replace("\\","\\\\")}
