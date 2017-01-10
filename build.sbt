@@ -205,7 +205,7 @@ libraryDependencies <++= scalaBinaryVersion {
 
 lazy val sparkNotebookCore = Project(id = "spark-notebook-core", base = file("modules/core"))
   .settings(
-    scalaVersion := scalaVersion.value,
+    scalaVersion := defaultScalaVersion,
     organization := "guru.data-fellas",
     version := version.value,
     publishArtifact in Test := false,
