@@ -1,4 +1,4 @@
-package notebook.util
+package com.datafellas.utils
 
 import java.io.{ IOException, File }
 import java.net.URL
@@ -22,6 +22,7 @@ import com.jcabi.aether.Aether
 
 
 object Repos extends java.io.Serializable {
+
   @transient val central = new RemoteRepository(
     "maven-central",
     "default",
@@ -100,15 +101,15 @@ object Repos extends java.io.Serializable {
   }
 }
 
-case class ArtifactMD(group:String, artifact:String, version:String, extension:Option[String]=None, classifier:Option[String]=None)
+case class ArtifactMD(group:String, artifact:String, version:String, extension:Option[String]=Some("jar"), classifier:Option[String]=None)
+object ArtifactMD {
+  def from(a:Artifact) = ArtifactMD(a.getGroupId, a.getArtifactId, a.getVersion, Option(a.getExtension), Option(a.getClassifier).filter(_.nonEmpty))
+}
 case class ArtifactSelector(group:Option[String]=None, artifact:Option[String]=None, version:Option[String]=None)
 object ArtifactSelector {
-  def apply(group:String, artifact:String, version:String):ArtifactSelector =
-    ArtifactSelector(Some(group), Some(artifact), Some(version))
-  def group(group:String) =
-    ArtifactSelector(group=Some(group))
-  def artifact(group:String, artifact:String) =
-    ArtifactSelector(group=Some(group), artifact=Some(artifact))
+  def apply(group:String, artifact:String, version:String):ArtifactSelector = ArtifactSelector(Some(group), Some(artifact), Some(version))
+  def group(group:String)                                                   = ArtifactSelector(group=Some(group))
+  def artifact(group:String, artifact:String)                               = ArtifactSelector(group=Some(group), artifact=Some(artifact))
 }
 
 object Deps extends java.io.Serializable {
@@ -116,28 +117,28 @@ object Deps extends java.io.Serializable {
 
   type ArtifactPredicate = PartialFunction[(ArtifactMD, Set[ArtifactMD]), Boolean]
 
-  private val PATTERN_MODULEID_1 = """^([^%\s]+)\s*%(%?)\s*([^%\s]+)\s*%\s*([^%\s]+)$""".r
-  private val PATTERN_MODULEID_2 = """^([^%\s]+)\s*%(%?)\s*([^%\s]+)\s*%\s*([^%\s]+)\s*%\s*([^%\s]+)$""".r
+  private val PATTERN_MODULEID_1 = """^([^%\s]+)\s*%(%?)\s*([^%\s]+)\s*%\s*([^%\s]+)(?:\s+classifier\s+([^\s]+)\s*)?$""".r
+  private val PATTERN_MODULEID_2 = """^([^%\s]+)\s*%(%?)\s*([^%\s]+)\s*%\s*([^%\s]+)\s*%\s*([^%\s]+)(?:\s+classifier\s+([^\s]+)\s*)?$""".r
   private val PATTERN_COORDINATE_1 = """^([^:/]+)[:/]([^:]+):([^:]+)$""".r
 
-  def includeSparkVersion(v:String) = v match {
-    case "_" => notebook.BuildInfo.xSparkVersion
+  def includeSparkVersion(v:String, sv:String) = v match {
+    case "_" => sv
     case x   => x
   }
 
-  def parseInclude(s:String):Option[ArtifactMD] = {
+  def parseInclude(s:String, sv:String):Option[ArtifactMD] = {
     s.headOption.filter(_ != '-').map(_ => s.dropWhile(_=='+').trim).flatMap { line =>
       line.replaceAll("\"", "").trim match {
-        case PATTERN_MODULEID_1(g, "%", a, v) =>
-          Some(ArtifactMD(g, a+"_2.11", includeSparkVersion(v)))
-        case PATTERN_MODULEID_1(g, "", a, v) =>
-          Some(ArtifactMD(g, a, includeSparkVersion(v)))
-        case PATTERN_MODULEID_2(g, "%", a, v, p) =>
-          Some(ArtifactMD(g, a+"_2.11", includeSparkVersion(v), Some(p)))
-        case PATTERN_MODULEID_2(g, "", a, v, p) =>
-          Some(ArtifactMD(g, a, includeSparkVersion(v), Some(p)))
+        case PATTERN_MODULEID_1(g, "%", a, v, c) =>
+          Some(ArtifactMD(g, a+"_2.11", includeSparkVersion(v, sv), classifier=Option(c)))
+        case PATTERN_MODULEID_1(g, "", a, v, c) =>
+          Some(ArtifactMD(g, a, includeSparkVersion(v, sv), classifier=Option(c)))
+        case PATTERN_MODULEID_2(g, "%", a, v, p, c) =>
+          Some(ArtifactMD(g, a+"_2.11", includeSparkVersion(v, sv), Some(p), Option(c)))
+        case PATTERN_MODULEID_2(g, "", a, v, p, c) =>
+          Some(ArtifactMD(g, a, includeSparkVersion(v, sv), Some(p), Option(c)))
         case PATTERN_COORDINATE_1(g, a, v) =>
-          Some(ArtifactMD(g, a, includeSparkVersion(v)))
+          Some(ArtifactMD(g, a, includeSparkVersion(v, sv)))
         case _ =>
           None
       }
@@ -184,17 +185,18 @@ object Deps extends java.io.Serializable {
       def accept(node:DependencyNode, parents:java.util.List[DependencyNode] ):Boolean = {
         val ex = exclusions exists { case f =>
                   val na = node.getDependency.getArtifact
-                  val a = ArtifactMD(na.getGroupId, na.getArtifactId, na.getVersion, Option(na.getExtension))
+                  val a = ArtifactMD.from(na)
                   val sa = parents.map(n => n.getDependency.getArtifact)
-                                  .map(na => ArtifactMD(na.getGroupId, na.getArtifactId, na.getVersion, Option(na.getExtension)))
+                                  .map(na => ArtifactMD.from(na))
                                   .toSet
-                  f.isDefinedAt((a, sa)) && f((a, sa))
+                  f.isDefinedAt((a, sa)) && f(a, sa)
                 }
         !ex
       }
     }
 
-    val artifact = new DefaultArtifact(include.group, include.artifact, "", include.extension.getOrElse("jar"), include.version)
+    //                 DefaultArtifact(String groupId, String artifactId, String classifier,              String extension,                   String version)
+    val artifact = new DefaultArtifact(include.group, include.artifact, include.classifier.getOrElse(""), include.extension.getOrElse("jar"), include.version)
     val deps:Set[Artifact] =  new Aether(remotes, repo).resolve(
                                 artifact,
                                 "runtime",
@@ -210,13 +212,15 @@ object Deps extends java.io.Serializable {
     newJars
   }
 
-  def script(cp:String, remotes:List[RemoteRepository], repo:java.io.File):Try[List[String]] = {
-    //println(" -------------- DP --------------- ")
+  def parse(cp:String, sv:String) = {
     val lines = cp.trim().split("\n").toList.map(_.trim()).filter(_.size > 0).toSet
-    val includes = lines map (Deps.parseInclude _) collect { case Some(x) => x }
-    //println(includes)
+    val includes = lines.map(v => Deps.parseInclude(v, sv)).collect { case Some(x) => x }
     val excludes = lines map (Deps.parseExclude _) collect { case Some(x) => x }
-    //println(excludes)
+    (includes, excludes)
+  }
+
+  def script(cp:String, remotes:List[RemoteRepository], repo:java.io.File, sparkVersion:String):Try[List[String]] = {
+    val (includes, excludes) = parse(cp, sparkVersion)
     val excludesFns = excludes map (Deps.transitiveExclude _)
 
     val tryDeps:Try[List[String]] = includes.foldLeft(Try(List.empty[String])) { case (t, a) =>
@@ -226,7 +230,6 @@ object Deps extends java.io.Serializable {
       case Failure(t) => logger.error("Failed to resolve dependencies: \n" + cp, t)
       case _ =>
     }
-    //println(tryDeps)
     tryDeps
   }
 

@@ -1,4 +1,4 @@
-package notebook.util
+package com.datafellas.utils
 
 import sbt._
 
