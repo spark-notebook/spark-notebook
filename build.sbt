@@ -203,6 +203,15 @@ libraryDependencies <++= scalaBinaryVersion {
   )
 }
 
+lazy val sbtDependencyManager = Project(id = "sbt-dependency-manager", base = file("modules/sbt-dependency-manager"))
+  .settings(
+    scalaVersion := defaultScalaVersion,
+    organization := "io.kensu",
+    version := version.value,
+    publishArtifact in Test := false,
+    publishMavenStyle := true
+  )
+
 lazy val sparkNotebookCore = Project(id = "spark-notebook-core", base = file("modules/core"))
   .settings(
     scalaVersion := defaultScalaVersion,
@@ -217,7 +226,7 @@ lazy val sparkNotebookCore = Project(id = "spark-notebook-core", base = file("mo
   ).settings(sharedSettings: _*)
 
 lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).enablePlugins(SbtWeb)
-  .aggregate(sparkNotebookCore, subprocess, observable, common, spark, kernel)
+  .aggregate(sparkNotebookCore, sbtDependencyManager, subprocess, observable, common, spark, kernel)
   .dependsOn(sparkNotebookCore, subprocess, observable, common, spark, kernel)
   .settings(sharedSettings: _*)
   .settings(
@@ -270,14 +279,13 @@ lazy val observable = Project(id = "observable", base = file("modules/observable
   .settings(sharedSettings: _*)
 
 lazy val common = Project(id = "common", base = file("modules/common"))
-  .dependsOn(observable)
+  .dependsOn(observable, sbtDependencyManager)
   .settings(
     libraryDependencies ++= Seq(
       akka,
       log4j,
       scalaZ
     ),
-    libraryDependencies ++= depsToDownloadDeps(scalaBinaryVersion.value, sbtVersion.value),
     unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value),
     unmanagedSourceDirectories in Compile +=
       (sourceDirectory in Compile).value / ((sparkVersion.value.takeWhile(_ != '-').split("\\.").toList match {
@@ -349,7 +357,7 @@ lazy val spark = Project(id = "spark", base = file("modules/spark"))
   .settings(sparkSettings: _*)
 
 lazy val kernel = Project(id = "kernel", base = file("modules/kernel"))
-  .dependsOn(common, subprocess, observable, spark)
+  .dependsOn(common, sbtDependencyManager, subprocess, observable, spark)
   .settings(
     libraryDependencies ++= Seq(
       akkaRemote,

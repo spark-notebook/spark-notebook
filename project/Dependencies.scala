@@ -168,26 +168,6 @@ object Dependencies {
   val slf4jLog4j = "org.slf4j" % "slf4j-log4j12" % "1.7.7"
   val log4j = "log4j" % "log4j" % "1.2.17"
 
-  // to download deps at runtime
-  def depsToDownloadDeps(scalaBinaryVersion: String,
-    sbtVersion: String) = scalaBinaryVersion match {
-    case "2.10" => List(
-      "org.scala-sbt" % "sbt" % sbtVersion excludeAll ExclusionRule("org.apache.ivy", "ivy"),
-      ("com.frugalmechanic" % "fm-sbt-s3-resolver" % "0.5.0") // WARN ONLY 2.10 0.13 available !!!!
-        .extra(
-          CustomPomParser.SbtVersionKey -> sbtVersion.reverse.dropWhile(_ != '.').drop(".".length).reverse,
-          CustomPomParser.ScalaVersionKey -> scalaBinaryVersion
-        )
-        .copy(crossVersion = CrossVersion.Disabled)
-        .excludeAll(ExclusionRule("org.apache.ivy", "ivy"))
-    )
-    case _ =>
-      val aetherApi = "org.sonatype.aether" % "aether-api" % "1.13"
-      val jcabiAether = "com.jcabi" % "jcabi-aether" % "0.10.1"
-      val mavenCore = "org.apache.maven" % "maven-core" % "3.0.5"
-      List(aetherApi, jcabiAether, mavenCore)
-  }
-
   // for aether only
   val ningAsyncHttpClient = "com.ning" % "async-http-client" % "[1.6.5, 1.6.5]" force() //"1.8.10"//"[1.6.5, 1.6.5]" force()
 

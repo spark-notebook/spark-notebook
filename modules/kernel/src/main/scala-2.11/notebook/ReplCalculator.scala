@@ -16,7 +16,7 @@ import kernel._
 import org.sonatype.aether.repository.RemoteRepository
 
 import notebook.OutputTypes._
-import notebook.util.{Deps, Match, Repos}
+import com.datafellas.utils._
 import notebook.front._
 import notebook.front.widgets._
 import notebook.repl.{ReplCommand, command_interpreters}
@@ -111,7 +111,7 @@ class ReplCalculator(
 
   val (depsJars, depsScript):(List[String],(String, ()=>String)) = customDeps.map { d =>
     val customDeps = d.mkString("\n")
-    val deps = Deps.script(customDeps, remotes, repo).toOption.getOrElse(List.empty[String])
+    val deps = Deps.script(customDeps, remotes, repo, notebook.BuildInfo.xSparkVersion).toOption.getOrElse(List.empty[String])
     (deps, ("deps", () => s"""
                     |val CustomJars = ${ deps.mkString("Array(\"", "\",\"", "\")").replace("\\","\\\\") }
                     |
