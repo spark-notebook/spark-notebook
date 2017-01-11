@@ -42,29 +42,8 @@ class ReplCalculator(
   private val remoteLogger = context.actorSelection("/user/remote-logger")
   remoteLogger ! remoteActor
 
-  private val repoRegex = "(?s)^:local-repo\\s*(.+)\\s*$".r
-  private val resolverRegex = "(?s)^:remote-repo\\s*(.+)\\s*$".r
   private val authRegex = """(?s)^\s*\(([^\)]+)\)\s*$""".r
   private val credRegex = """"([^"]+)"\s*,\s*"([^"]+)"""".r //"
-
-  private def outputTypesRegex(ctx: String, outputType: String) = {
-    s"(?s)^:$ctx\\s*\n(.+)\\s*$$".r → outputType
-  }
-
-  private val htmlContext = outputTypesRegex("html", `text/html`)
-  private val plainContext = outputTypesRegex("plain", `text/plain`)
-  private val markdownContext = outputTypesRegex("markdown", `text/markdown`)
-  private val latexContext = outputTypesRegex("latex", `text/latex`)
-  private val svgContext = outputTypesRegex("svg", `image/svg+xml`)
-  private val pngContext = outputTypesRegex("png", `image/png`)
-  private val jpegContext = outputTypesRegex("jpeg", `image/jpeg`)
-  private val pdfContext = outputTypesRegex("pdf", `application/pdf`)
-  private val javascriptContext = outputTypesRegex("javascript", `application/javascript`)
-
-  private val cpRegex = "(?s)^:cp\\s*(.+)\\s*$".r
-  private val dpRegex = "(?s)^:(l?)dp\\s*(.+)\\s*$".r
-  private val sqlRegex = "(?s)^:sql(?:\\[([a-zA-Z0-9][a-zA-Z0-9]*)\\])?\\s*(.+)\\s*$".r
-  private val shRegex = "(?s)^:sh\\s*(.+)\\s*$".r
 
   // note: the resolver list is a superset of Spark's list in o.a.spark.deploy.SparkSubmit
   // except that the local ivy repo isn't included
