@@ -55,7 +55,7 @@ trait LowPriorityRenderers {
   }
 
   implicit object mapAsTable extends Renderer[Map[_, _]] {
-    def render(x: Map[_, _]) = renderSeq(x.toSeq, "map")
+    def render(x: Map[_, _]) = renderSeq(Option(x).map(_.toSeq).getOrElse(Nil), "map")
   }
 
   implicit object seqAsTable extends Renderer[Seq[_]] {
@@ -63,7 +63,7 @@ trait LowPriorityRenderers {
   }
 
   implicit object arrayAsTable extends Renderer[Array[_]] {
-    def render(x: Array[_]) = renderSeq(x.toSeq, "array")
+    def render(x: Array[_]) = renderSeq(Option(x).map(_.toSeq).getOrElse(Nil), "array")
   }
 
 }
