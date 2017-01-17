@@ -46,8 +46,8 @@ trait Utils {
     obj match {
       case null             => JsNull
       case v: Int           => JsNumber(v)
-      case v: Float         => JsNumber(v)
-      case v: Double        => JsNumber(v)
+      case v: Float         => if (v.isNaN) JsNull else JsNumber(v)
+      case v: Double        => if (v.isNaN) JsNull else JsNumber(v)
       case v: Long          => JsNumber(v)
       case v: BigDecimal    => JsNumber(v)
       case v: String        => JsString(v)
