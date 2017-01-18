@@ -20,5 +20,6 @@ script
     . /etc/default/${{app_name}}
     export MESOS_NATIVE_LIBRARY
     export SPARK_HOME
+    export SPARK_LOCAL_DIRS
     exec start-stop-daemon --start --chdir ${{chdir}} --chuid ${{daemon_user}} --exec bin/${{exec}} -- $JAVA_OPTS
 end script

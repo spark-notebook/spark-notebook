@@ -8670,6 +8670,7 @@ ul.breadcrumb span {
 }
 .list_header {
   font-weight: bold;
+  background-color: #FFF;
 }
 .list_container {
   margin-top: 4px;
@@ -11236,4 +11237,8 @@ span.autosave_status {
 }
 .terminal-app #terminado-container {
   margin-top: 20px;
+}
+
+footer.footer {
+  margin-top: 25px;
 }

@@ -45,14 +45,14 @@ trait Utils {
     obj match {
       case null             => JsNull
       case v: Int           => JsNumber(v)
-      case v: Float         => JsNumber(v)
-      case v: Double        => JsNumber(v)
+      case v: Float         => if (v.isNaN) JsNull else JsNumber(v)
+      case v: Double        => if (v.isNaN) JsNull else JsNumber(v)
       case v: Long          => JsNumber(v)
       case v: BigDecimal    => JsNumber(v)
       case v: String        => JsString(v)
       case v: Boolean       => JsBoolean(v)
-      case v: SqlDate       => JsNumber(v.getTime)
       case v: Date          => JsNumber(v.getTime)
+      case v: SqlDate       => JsNumber(v.getTime)
       case v: Geometry      =>
         val json  = geometryToGeoJSON(v)
         val jsonstring = json.toString()
