@@ -22,9 +22,7 @@ object Dependencies {
       )
   )
 
-
   val rxScala = "io.reactivex" %% "rxscala" % "0.22.0"
-  val scalaZ = "org.scalaz" %% "scalaz-core" % "7.0.6"
 
   val defaultHadoopVersion = sys.props.getOrElse("hadoop.version", "2.2.0")
 
