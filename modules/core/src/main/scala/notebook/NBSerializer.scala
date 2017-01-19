@@ -53,11 +53,9 @@ object NBSerializer extends Logging {
   ) extends Output
   implicit val scalaErrorFormat = Json.format[ScalaError]
 
-
   case class ScalaStream(name: String, output_type: String, text: String) extends Output
 
   implicit val scalaStreamFormat = Json.format[ScalaStream]
-
 
   implicit val outputReads: Reads[Output] = Reads { (js: JsValue) =>
     val tpe = (js \ "output_type").as[String]
@@ -78,6 +76,7 @@ object NBSerializer extends Logging {
       case o: ScalaOutput => scalaOutputFormat.writes(o)
       case o: ScalaError => scalaErrorFormat.writes(o)
       case o: ScalaStream => scalaStreamFormat.writes(o)
+      case x => throw new IllegalStateException("Cannot read this output_type: " + x)
     }
   }
   implicit val outputFormat: Format[Output] = Format(outputReads, outputWrites)
