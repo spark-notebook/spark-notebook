@@ -46,7 +46,7 @@ dockerExposedPorts ++= DockerProperties.ports
 
 dockerRepository := DockerProperties.registry //Docker
 
-packageName in Docker := "spark-notebook"
+packageName in Docker := MainProperties.name
 
 
 // DEBIAN PACKAGE
@@ -58,21 +58,21 @@ maintainer in Debian := DebianProperties.maintainer
 
 packageSummary in Debian := "Data Fellas Spark-notebook"
 
-packageDescription := "Interactive and Reactive Data Science using Scala and Spark. http://spark-notebook.io/"
+packageDescription := "Interactive and Reactive Data Science using Scala and Spark."
 
 debianPackageDependencies in Debian += "java7-runtime"
 
 serverLoading in Debian := DebianProperties.serverLoading
 
-daemonUser := MainProperties.name
+daemonUser in Linux := DebianProperties.daemonUser
 
-daemonGroup := (daemonUser in Debian).value
+daemonGroup in Linux := DebianProperties.daemonGroup
 
 version := sys.props.get("deb-version").getOrElse(version.value)
 
 import DebianConstants._
 maintainerScripts in Debian := maintainerScriptsAppend((maintainerScripts in Debian).value)(
-  Postinst -> s"chown -R ${MainProperties.name}:${MainProperties.name} /usr/share/${MainProperties.name}/notebooks/"
+  Postinst -> s"chown -R ${DebianProperties.daemonUser}:${DebianProperties.daemonGroup} /usr/share/${MainProperties.name}/notebooks/"
 )
 
 ivyScala := ivyScala.value map {
@@ -172,7 +172,6 @@ dependencyOverrides += log4j
 
 dependencyOverrides += guava
 
-
 sharedSettings
 
 libraryDependencies ++= playDeps
@@ -247,7 +246,7 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).ena
     gitStampSettings: _*
   )
 
-lazy val subprocess = project.in(file("modules/subprocess"))
+lazy val subprocess = Project(id="subprocess", base=file("modules/subprocess"))
   .settings(libraryDependencies ++= playDeps)
   .settings(
     libraryDependencies ++= {
