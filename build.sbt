@@ -232,6 +232,7 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).ena
     bashScriptExtraDefines <+= (version, scalaBinaryVersion, scalaVersion, sparkVersion, hadoopVersion, withHive, withParquet) map { (v, sbv, sv, pv, hv, wh, wp) =>
       """export ADD_JARS="${ADD_JARS},${lib_dir}/$(ls ${lib_dir} | grep common.common | head)""""
     },
+    // configure the "universal" distribution package (i.e. spark-notebook.zip)
     mappings in Universal ++= directory("notebooks"),
     mappings in Docker ++= directory("notebooks")
   )
@@ -364,7 +365,7 @@ lazy val kernel = Project(id = "kernel", base = file("modules/kernel"))
       slf4jLog4j,
       commonsIO
     ),
-    libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.6" % "test",
+    libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test",
     unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
   )
   .settings(sharedSettings: _*)
