@@ -5,7 +5,6 @@ import java.util.UUID
 import notebook.util.ClassUtils
 
 import scala.xml.{Node, NodeSeq}
-import scalaz._
 
 trait Widget extends Iterable[Node] {
   def toHtml: NodeSeq
@@ -35,12 +34,6 @@ object Widget {
     def toHtml = NodeSeq.Empty
 
     override def toString() = "<empty widget>"
-  }
-
-  implicit val widgetInstances = new Monoid[Widget] {
-    def zero = Empty
-
-    def append(s1: Widget, s2: ⇒ Widget) = s1 ++ s2
   }
 
   // We're stripping out dashes because we want these to be valid JS identifiers.
