@@ -283,8 +283,7 @@ lazy val common = Project(id = "common", base = file("modules/common"))
   .settings(
     libraryDependencies ++= Seq(
       akka,
-      log4j,
-      scalaZ
+      log4j
     ),
     unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value),
     unmanagedSourceDirectories in Compile +=
