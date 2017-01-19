@@ -6,20 +6,20 @@ object Reflector {
   val ru = scala.reflect.runtime.universe
   val m = ru.runtimeMirror(getClass.getClassLoader)
 
-  def objToTerms(obj: Any) = {
+  def objToTerms(obj: Any): (List[ru.Symbol], ru.InstanceMirror) = {
     val im = m.reflect(obj)
     (im.symbol.toType.members.toList.filter(a => a.isTerm && !a.isMethod).reverse, im)
   }
 
-  def numOfFields(obj: Any) = {
+  def numOfFields(obj: Any): Int = {
     toFieldNameArray(obj).size
   }
 
-  def toFieldNameArray(obj: Any) = {
+  def toFieldNameArray(obj: Any): List[String] = {
     toObjArray(obj).map(_._1)
   }
 
-  def toFieldValueArray(obj: Any) = {
+  def toFieldValueArray(obj: Any): List[Any] = {
     toObjArray(obj).map(_._2)
   }
 
@@ -31,7 +31,7 @@ object Reflector {
     }
   }
 
-  def toObjArray(obj: Any) = {
+  def toObjArray(obj: Any): List[(String, Any)] = {
     val fields = objToTerms(obj)
     fields._1.map { f =>
       try{
