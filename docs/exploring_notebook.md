@@ -61,7 +61,7 @@ Go through the complete notebook, changing and executing the cells. Experimentat
 ## A Note About Immutability
 
  The Scala Programming Language, as part of the family of functional programming languages, promotes immutability as an important programming principle. Furthermore, when programming for distributed computing, immutability plays a key role to achieve safe and consistent results. 
- The Spark Notebook fully supports the immutable principles of Scala. Although it's possible to re-execute a cell and update the values of `objects`, what are are doing is redefining those objects in the same context. __This should not be confused with value reassignment__ which will be safely rejected by the Scala compiler.
+ The Spark Notebook fully supports the immutable principles of Scala. Although it's possible to re-execute a cell and update the values of `objects`, what we are doing is redefining those objects in the same context. __This should not be confused with value reassignment__ which will be safely rejected by the Scala compiler.
 
  Due to some limitations of the underlying REPL interpreter, assignments of different values to the same symbol in different cells will result in that symbol being redefined. Uniqueness of value assignments are only supported within the same cell.
 
