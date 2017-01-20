@@ -3,6 +3,8 @@ import sbt._
 object Dependencies {
   val mesosVersion = sys.props.getOrElse("mesos.version", "0.26.0") //todo 1.0.0
 
+  val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+
   val playDeps = Seq(
     "com.typesafe.play" %% "play" % "2.3.10" withSources() excludeAll(
       ExclusionRule("com.typesafe.akka"),
