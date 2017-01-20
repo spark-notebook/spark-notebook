@@ -46,7 +46,7 @@ dockerExposedPorts ++= DockerProperties.ports
 
 dockerRepository := DockerProperties.registry //Docker
 
-packageName in Docker := "spark-notebook"
+packageName in Docker := MainProperties.name
 
 
 // DEBIAN PACKAGE
@@ -58,21 +58,21 @@ maintainer in Debian := DebianProperties.maintainer
 
 packageSummary in Debian := "Data Fellas Spark-notebook"
 
-packageDescription := "Interactive and Reactive Data Science using Scala and Spark. http://spark-notebook.io/"
+packageDescription := "Interactive and Reactive Data Science using Scala and Spark."
 
 debianPackageDependencies in Debian += "java7-runtime"
 
 serverLoading in Debian := DebianProperties.serverLoading
 
-daemonUser := MainProperties.name
+daemonUser in Linux := DebianProperties.daemonUser
 
-daemonGroup := (daemonUser in Debian).value
+daemonGroup in Linux := DebianProperties.daemonGroup
 
 version := sys.props.get("deb-version").getOrElse(version.value)
 
 import DebianConstants._
 maintainerScripts in Debian := maintainerScriptsAppend((maintainerScripts in Debian).value)(
-  Postinst -> s"chown -R ${MainProperties.name}:${MainProperties.name} /usr/share/${MainProperties.name}/notebooks/"
+  Postinst -> s"chown -R ${DebianProperties.daemonUser}:${DebianProperties.daemonGroup} /usr/share/${MainProperties.name}/notebooks/"
 )
 
 ivyScala := ivyScala.value map {
@@ -172,7 +172,6 @@ dependencyOverrides += log4j
 
 dependencyOverrides += guava
 
-
 sharedSettings
 
 libraryDependencies ++= playDeps
@@ -233,6 +232,7 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).ena
     bashScriptExtraDefines <+= (version, scalaBinaryVersion, scalaVersion, sparkVersion, hadoopVersion, withHive, withParquet) map { (v, sbv, sv, pv, hv, wh, wp) =>
       """export ADD_JARS="${ADD_JARS},${lib_dir}/$(ls ${lib_dir} | grep common.common | head)""""
     },
+    // configure the "universal" distribution package (i.e. spark-notebook.zip)
     mappings in Universal ++= directory("notebooks"),
     mappings in Docker ++= directory("notebooks")
   )
@@ -247,7 +247,7 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).ena
     gitStampSettings: _*
   )
 
-lazy val subprocess = project.in(file("modules/subprocess"))
+lazy val subprocess = Project(id="subprocess", base=file("modules/subprocess"))
   .settings(libraryDependencies ++= playDeps)
   .settings(
     libraryDependencies ++= {
@@ -283,8 +283,7 @@ lazy val common = Project(id = "common", base = file("modules/common"))
   .settings(
     libraryDependencies ++= Seq(
       akka,
-      log4j,
-      scalaZ
+      log4j
     ),
     unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value),
     unmanagedSourceDirectories in Compile +=
@@ -365,7 +364,7 @@ lazy val kernel = Project(id = "kernel", base = file("modules/kernel"))
       slf4jLog4j,
       commonsIO
     ),
-    libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.6" % "test",
+    libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test",
     unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
   )
   .settings(sharedSettings: _*)

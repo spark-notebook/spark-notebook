@@ -20,9 +20,7 @@ object Dependencies {
       )
   )
 
-
   val rxScala = "io.reactivex" %% "rxscala" % "0.22.0"
-  val scalaZ = "org.scalaz" %% "scalaz-core" % "7.0.6"
 
   val defaultHadoopVersion = sys.props.getOrElse("hadoop.version", "2.2.0")
 
@@ -124,7 +122,9 @@ object Dependencies {
   def sparkCSV: Seq[ModuleID] = {
     import scala.math.Ordering.Implicits._
     if (sparkVersionTuple >= (1, 3, 0)) {
-      Seq("com.databricks" %% "spark-csv" % "1.3.0")
+      // don't force the spark-csv package to let user to use another one
+      // Seq("com.databricks" %% "spark-csv" % "1.3.0")
+      Nil
     } else Nil
   }
 
