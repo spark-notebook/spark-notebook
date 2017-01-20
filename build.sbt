@@ -222,7 +222,7 @@ lazy val sparkNotebookCore = Project(id = "spark-notebook-core", base = file("mo
     libraryDependencies ++= playJson,
     libraryDependencies += slf4jLog4j,
     libraryDependencies += commonsIO,
-    libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+    libraryDependencies += scalaTest
   ).settings(sharedSettings: _*)
 
 lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).enablePlugins(SbtWeb)
@@ -285,6 +285,7 @@ lazy val common = Project(id = "common", base = file("modules/common"))
       log4j,
       scalaZ
     ),
+    libraryDependencies += scalaTest,
     unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
   )
   .settings(
@@ -358,7 +359,7 @@ lazy val kernel = Project(id = "kernel", base = file("modules/kernel"))
       slf4jLog4j,
       commonsIO
     ),
-    libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.6" % "test",
+    libraryDependencies += scalaTest,
     unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
   )
   .settings(sharedSettings: _*)
