@@ -10,9 +10,7 @@ scalaVersion := defaultScalaVersion
 
 val SparkNotebookSimpleVersion = "0.8.0-SNAPSHOT"
 
-version in ThisBuild <<= (scalaVersion, sparkVersion, hadoopVersion, withHive) { (sc, sv, hv, h) =>
-  s"$SparkNotebookSimpleVersion-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "")
-}
+version in ThisBuild := SparkNotebookSimpleVersion
 
 play.PlayImport.PlayKeys.playDefaultPort := 9001
 
@@ -55,8 +53,6 @@ enablePlugins(DebianPlugin)
 name in Debian := MainProperties.name
 
 maintainer in Debian := DebianProperties.maintainer
-
-packageSummary in Debian := "Data Fellas Spark-notebook"
 
 packageDescription := "Interactive and Reactive Data Science using Scala and Spark."
 
@@ -146,6 +142,8 @@ compileOrder := CompileOrder.Mixed
 
 publishMavenStyle := false
 
+publishArtifact in Test := false
+
 javacOptions ++= Seq("-Xlint:deprecation", "-g")
 
 scalacOptions ++= Seq("-deprecation", "-feature")
@@ -207,7 +205,6 @@ lazy val sbtDependencyManager = Project(id = "sbt-dependency-manager", base = fi
     scalaVersion := defaultScalaVersion,
     organization := "io.kensu",
     version := version.value,
-    publishArtifact in Test := false,
     publishMavenStyle := true
   ).settings(
     Extra.sbtDependencyManagerSettings
@@ -218,7 +215,6 @@ lazy val sparkNotebookCore = Project(id = "spark-notebook-core", base = file("mo
     scalaVersion := defaultScalaVersion,
     organization := "guru.data-fellas",
     version := version.value,
-    publishArtifact in Test := false,
     publishMavenStyle := true,
     libraryDependencies ++= playJson,
     libraryDependencies += slf4jLog4j,
@@ -238,6 +234,9 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).ena
       """export ADD_JARS="${ADD_JARS},${lib_dir}/$(ls ${lib_dir} | grep common.common | head)""""
     },
     mappings in Universal ++= directory("notebooks"),
+    version in Universal <<= (version in ThisBuild, scalaVersion, sparkVersion, hadoopVersion, withHive) { (v, sc, sv, hv, h) =>
+                                s"$v-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "")
+                              },
     mappings in Docker ++= directory("notebooks")
   )
   .settings(includeFilter in(Assets, LessKeys.less) := "*.less")
@@ -268,7 +267,6 @@ lazy val subprocess = Project(id="subprocess", base=file("modules/subprocess"))
     }
   )
   .settings(sharedSettings: _*)
-  .settings(sparkSettings: _*)
   .settings(
     Extra.subprocessSettings
   )
@@ -292,6 +290,9 @@ lazy val observable = Project(id = "observable", base = file("modules/observable
 
 lazy val common = Project(id = "common", base = file("modules/common"))
   .dependsOn(observable, sbtDependencyManager)
+  .settings(
+    version  <<= (version in ThisBuild, sparkVersion) { (v,sv) => s"${v}_$sv" }
+  )
   .settings(
     libraryDependencies ++= Seq(
       akka,
@@ -331,6 +332,9 @@ lazy val common = Project(id = "common", base = file("modules/common"))
 
 lazy val spark = Project(id = "spark", base = file("modules/spark"))
   .dependsOn(common, subprocess, observable)
+  .settings(
+    version  <<= (version in ThisBuild, sparkVersion) { (v,sv) => s"${v}_$sv" }
+  )
   .settings(
     libraryDependencies ++= Seq(
       akkaRemote,

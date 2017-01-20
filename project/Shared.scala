@@ -14,6 +14,7 @@ object Shared {
   lazy val withHive = SettingKey[Boolean]("x-with-hive")
 
   lazy val sharedSettings: Seq[Def.Setting[_]] = Seq(
+    publishArtifact in Test := false,
     scalaVersion := defaultScalaVersion,
     sparkVersion := defaultSparkVersion,
     hadoopVersion := defaultHadoopVersion,
