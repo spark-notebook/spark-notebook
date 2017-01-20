@@ -16,6 +16,7 @@ object Shared {
   lazy val withParquet = SettingKey[Boolean]("x-with-parquet")
 
   lazy val sharedSettings: Seq[Def.Setting[_]] = Seq(
+    publishArtifact in Test := false,
     scalaVersion := defaultScalaVersion,
     sparkVersion := defaultSparkVersion,
     hadoopVersion := defaultHadoopVersion,
