@@ -3,6 +3,8 @@ import sbt._
 object Dependencies {
   val mesosVersion = sys.props.getOrElse("mesos.version", "0.22.2") //0.22.0 is current DCOS version
 
+  val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+
   val playDeps = Seq(
     "com.typesafe.play" %% "play" % "2.3.10" withSources() excludeAll(
       ExclusionRule("com.typesafe.akka"),
