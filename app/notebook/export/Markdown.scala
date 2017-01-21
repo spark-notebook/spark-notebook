@@ -22,13 +22,9 @@ object Markdown {
       case ScalaOutput(_, _, _, html, text) =>
         text.map(s => s"$s\n\n\n").getOrElse("") + html.getOrElse("")
 
-      case ScalaExecuteResult(_, d, dl, _, _, _) =>
-
-        d.collect {
-          case ("text/html", t) if t.trim.nonEmpty && !t.contains("<script data-this=") => toBq(t)
-        }.mkString("\n\n")
-
-        dl.getOrElse(Map.empty[String, List[String]]).collect {
+      case scalaExecResult: ScalaExecuteResult =>
+        val dataList = scalaExecResult.data_list.getOrElse(Map.empty[String, List[String]])
+        dataList.collect {
           case ("application/svg+pngbase64", ml) =>
             ml.map { m =>
               dir match {
@@ -63,6 +59,14 @@ object Markdown {
     outputs -> (if (files.nonEmpty) Some(files.toList) else None)
   }
 
+  // FIXME: might require refactoring
+  def isNonEmptyCodeCell(cell: CodeCell) =  {
+    val codeCellLanguages = Seq(None, Some("scala"))
+    cell.cell_type == "code" &&
+      cell.source.trim.nonEmpty &&
+      codeCellLanguages.contains(cell.language)
+  }
+
   def generate(nb:Notebook, nbPath:String, single:Boolean):Option[Either[String, File]] = {
     // make sure file names dont contain funny symbols
     val name = nbPath.replace("/", "_")
@@ -76,26 +80,19 @@ object Markdown {
 
     nb.cells.map { cells =>
       val csFiles:List[(String, Option[List[File]])]= cells.collect {
-        case CodeCell(md, "code", i, Some("scala"), _, os) if i.trim.nonEmpty =>
-          val (t, code) = if (i.startsWith(":sh")) {
-                          ("sh", i.drop(3))
-                        } else {
-                          ("scala", i)
-                        }
-          val (outputsMarkdown, files) = outputsToMarkdown(os, images)
-          s"""|
+        case cell: CodeCell if isNonEmptyCodeCell(cell) =>
+          val source = cell.source
+
+          val (t, code) = if (source.startsWith(":sh")) {
+            ("sh", source.drop(3))
+          } else {
+            ("scala", source)
+          }
+
+          val (outputsMarkdown, files) = outputsToMarkdown(cell.outputs, images)
+          s"""
           |```$t
           |$code
-          |```
-          |
-          |$outputsMarkdown
-          |""".stripMargin -> files
-
-        case CodeCell(md, "code", i, None, _, os) if i.trim.nonEmpty =>
-          val (outputsMarkdown, files) = outputsToMarkdown(os, images)
-          s"""|
-          |```scala
-          |$i
           |```
           |
           |$outputsMarkdown
