@@ -17,11 +17,11 @@ class HackSparkILoop(out:JPrintWriter, val outputDir:File) extends org.apache.sp
 
   // note:
   // the creation of SecurityManager has to be lazy so SPARK_YARN_MODE is set if needed
-  /*val classServer = {
+  val classServer = {
     val s = org.apache.spark.Boot.classServer(outputDir)
     s.start
     s
-  }*/
+  }
 
   override def initializeSpark(): Unit = {
     // done using the metadata and init.sc
