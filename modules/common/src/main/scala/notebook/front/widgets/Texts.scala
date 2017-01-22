@@ -5,9 +5,7 @@ import play.api.libs.json._
 import notebook._
 import notebook.front._
 import notebook.JsonCodec._
-import notebook.front.widgets.Utils
 import notebook.front.widgets.Utils.Defaults.DEFAULT_MAX_POINTS
-import notebook.front.widgets.magic
 import notebook.front.widgets.magic._
 import notebook.front.widgets.magic.Implicits._
 import notebook.front.widgets.magic.SamplerImplicits._
