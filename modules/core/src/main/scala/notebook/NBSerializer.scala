@@ -86,6 +86,7 @@ object NBSerializer extends Logging {
       case o: ScalaOutput => scalaOutputFormat.writes(o)
       case o: ScalaError => scalaErrorFormat.writes(o)
       case o: ScalaStream => scalaStreamFormat.writes(o)
+      case x => throw new IllegalStateException("Cannot read this output_type: " + x)
     }
   }
   implicit val outputFormat: Format[Output] = Format(outputReads, outputWrites)

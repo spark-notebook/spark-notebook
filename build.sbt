@@ -46,7 +46,7 @@ dockerExposedPorts ++= DockerProperties.ports
 
 dockerRepository := DockerProperties.registry //Docker
 
-packageName in Docker := "spark-notebook"
+packageName in Docker := MainProperties.name
 
 
 // DEBIAN PACKAGE
@@ -58,21 +58,21 @@ maintainer in Debian := DebianProperties.maintainer
 
 packageSummary in Debian := "Data Fellas Spark-notebook"
 
-packageDescription := "Interactive and Reactive Data Science using Scala and Spark. http://spark-notebook.io/"
+packageDescription := "Interactive and Reactive Data Science using Scala and Spark."
 
 debianPackageDependencies in Debian += "java7-runtime"
 
 serverLoading in Debian := DebianProperties.serverLoading
 
-daemonUser := MainProperties.name
+daemonUser in Linux := DebianProperties.daemonUser
 
-daemonGroup := (daemonUser in Debian).value
+daemonGroup in Linux := DebianProperties.daemonGroup
 
 version := sys.props.get("deb-version").getOrElse(version.value)
 
 import DebianConstants._
 maintainerScripts in Debian := maintainerScriptsAppend((maintainerScripts in Debian).value)(
-  Postinst -> s"chown -R ${MainProperties.name}:${MainProperties.name} /usr/share/${MainProperties.name}/notebooks/"
+  Postinst -> s"chown -R ${DebianProperties.daemonUser}:${DebianProperties.daemonGroup} /usr/share/${MainProperties.name}/notebooks/"
 )
 
 ivyScala := ivyScala.value map {
@@ -172,7 +172,6 @@ dependencyOverrides += log4j
 
 dependencyOverrides += guava
 
-
 sharedSettings
 
 libraryDependencies ++= playDeps
@@ -210,6 +209,8 @@ lazy val sbtDependencyManager = Project(id = "sbt-dependency-manager", base = fi
     version := version.value,
     publishArtifact in Test := false,
     publishMavenStyle := true
+  ).settings(
+    Extra.sbtDependencyManagerSettings
   )
 
 lazy val sparkNotebookCore = Project(id = "spark-notebook-core", base = file("modules/core"))
@@ -224,6 +225,9 @@ lazy val sparkNotebookCore = Project(id = "spark-notebook-core", base = file("mo
     libraryDependencies += commonsIO,
     libraryDependencies += scalaTest
   ).settings(sharedSettings: _*)
+  .settings(
+    Extra.sparkNotebookCoreSettings
+  )
 
 lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).enablePlugins(SbtWeb)
   .aggregate(sparkNotebookCore, sbtDependencyManager, subprocess, observable, common, spark, kernel)
@@ -245,8 +249,11 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).ena
   .settings(
     gitStampSettings: _*
   )
+  .settings(
+    Extra.sparkNotebookSettings
+  )
 
-lazy val subprocess = project.in(file("modules/subprocess"))
+lazy val subprocess = Project(id="subprocess", base=file("modules/subprocess"))
   .settings(libraryDependencies ++= playDeps)
   .settings(
     libraryDependencies ++= {
@@ -262,6 +269,9 @@ lazy val subprocess = project.in(file("modules/subprocess"))
   )
   .settings(sharedSettings: _*)
   .settings(sparkSettings: _*)
+  .settings(
+    Extra.subprocessSettings
+  )
 
 
 lazy val observable = Project(id = "observable", base = file("modules/observable"))
@@ -276,14 +286,16 @@ lazy val observable = Project(id = "observable", base = file("modules/observable
     )
   )
   .settings(sharedSettings: _*)
+  .settings(
+    Extra.observableSettings
+  )
 
 lazy val common = Project(id = "common", base = file("modules/common"))
   .dependsOn(observable, sbtDependencyManager)
   .settings(
     libraryDependencies ++= Seq(
       akka,
-      log4j,
-      scalaZ
+      log4j
     ),
     libraryDependencies += scalaTest,
     unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
@@ -312,6 +324,9 @@ lazy val common = Project(id = "common", base = file("modules/common"))
                         }
                       ),
     buildInfoPackage := "notebook"
+  )
+  .settings(
+    Extra.commonSettings
   )
 
 lazy val spark = Project(id = "spark", base = file("modules/spark"))
@@ -349,6 +364,9 @@ lazy val spark = Project(id = "spark", base = file("modules/spark"))
   )
   .settings(sharedSettings: _*)
   .settings(sparkSettings: _*)
+  .settings(
+    Extra.sparkSettings
+  )
 
 lazy val kernel = Project(id = "kernel", base = file("modules/kernel"))
   .dependsOn(common, sbtDependencyManager, subprocess, observable, spark)
@@ -363,3 +381,6 @@ lazy val kernel = Project(id = "kernel", base = file("modules/kernel"))
     unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
   )
   .settings(sharedSettings: _*)
+  .settings(
+    Extra.kernelSettings
+  )
