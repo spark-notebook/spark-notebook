@@ -110,6 +110,14 @@ class ReplCalculator(
     r
   }
 
+  private var _presentationCompiler: Option[PresentationCompiler] = None
+
+  private def presentationCompiler: PresentationCompiler = _presentationCompiler getOrElse {
+    val r = new PresentationCompiler(depsJars)
+    _presentationCompiler = Some(r)
+    r
+  }
+
   val chat = new notebook.front.gadgets.Chat()
 
   // +/- copied of https://github.com/scala/scala/blob/v2.11.4/src%2Flibrary%2Fscala%2Fconcurrent%2Fduration%2FDuration.scala
@@ -306,7 +314,7 @@ class ReplCalculator(
       """.stripMargin
     )
 
-    def eval(script: () => String):Unit = {
+    def eval(script: () => String): Option[String] = {
       val sc = script()
       log.debug("script is :\n" + sc)
       if (sc.trim.length > 0) {
@@ -314,17 +322,21 @@ class ReplCalculator(
         result match {
           case Failure(str) =>
             log.error("Error in init script: \n%s".format(str))
+            None
           case _ =>
             if (log.isDebugEnabled) log.debug("\n" + sc)
             log.info("Init script processed successfully")
+            Some(sc)
         }
-      } else ()
+      } else None
     }
 
     val allInitScrips: List[(String, () => String)] = dummyScript :: SparkHookScript :: depsScript :: ImportsScripts :: CustomSparkConfFromNotebookMD :: initScripts.map(x => (x._1, () => x._2))
     for ((name, script) <- allInitScrips) {
       log.info(s" INIT SCRIPT: $name")
-      eval(script)
+      eval(script).foreach { sc =>
+        presentationCompiler.addScripts(sc)
+      }
     }
   }
 
@@ -335,6 +347,7 @@ class ReplCalculator(
 
   override def postStop() {
     log.info("ReplCalculator postStop")
+    presentationCompiler.stop()
     super.postStop()
   }
 
@@ -363,7 +376,10 @@ class ReplCalculator(
         case req @ ExecuteRequest(_, _, code) => executor.forward(req)
 
         case CompletionRequest(line, cursorPosition) =>
-          val (matched, candidates) = repl.complete(line, cursorPosition)
+          // REPL completions seem broken. but presentationCompiler finally +/- works in 2.11
+          // val (matched, candidates) = repl.complete(line, cursorPosition)
+          val (matched, candidates) = presentationCompiler.complete(line, cursorPosition)
+
           sender ! CompletionResponse(cursorPosition, candidates, matched)
 
         case ObjectInfoRequest(code, position) =>
