@@ -16,7 +16,7 @@ object Dependencies {
     )
   )
   val playJson = Seq(
-    "com.typesafe.play" %% "play-json" % "2.3.7" withSources() excludeAll(
+    "com.typesafe.play" %% "play-json" % "2.3.10" withSources() excludeAll(
       ExclusionRule("com.typesafe.akka"),
       ExclusionRule("com.google.guava")
       )
@@ -24,10 +24,10 @@ object Dependencies {
 
   val rxScala = "io.reactivex" %% "rxscala" % "0.22.0"
 
-  val defaultHadoopVersion = sys.props.getOrElse("hadoop.version", "2.2.0")
+  val defaultHadoopVersion = sys.props.getOrElse("hadoop.version", "2.7.3")
 
   val akkaGroup = if (defaultHadoopVersion.startsWith("1")) "org.spark-project.akka" else "com.typesafe.akka"
-  val akkaVersion = if (defaultHadoopVersion.startsWith("1")) "2.3.4-spark" else "2.3.11"
+  val akkaVersion = if (defaultHadoopVersion.startsWith("1")) "2.3.4-spark" else "2.3.16"
   val akka = akkaGroup %% "akka-actor" % akkaVersion
   val akkaRemote = akkaGroup %% "akka-remote" % akkaVersion
   val akkaSlf4j = akkaGroup %% "akka-slf4j" % akkaVersion
@@ -36,7 +36,7 @@ object Dependencies {
   val spark_X_Y = "[a-zA-Z]*([0-9]+)\\.([0-9]+)\\.([0-9]+).*".r
   val extractVs = "[a-zA-Z]*(\\d+)\\.(\\d+)\\.(\\d+).*".r
 
-  val defaultSparkVersion = sys.props.getOrElse("spark.version", "2.0.1")
+  val defaultSparkVersion = sys.props.getOrElse("spark.version", "2.1.0")
 
   val sparkVersionTuple = defaultSparkVersion match { case extractVs(v, m, p) =>  (v.toInt, m.toInt, p.toInt)}
   val defaultScalaVersion = sys.props.getOrElse("scala.version", "2.10.6") match {
@@ -114,14 +114,14 @@ object Dependencies {
     "net.java.dev.jets3t" % "jets3t" % v force() excludeAll ExclusionRule()
   }
 
-  val commonsIO = "commons-io" % "commons-io" % "2.4"
+  val commonsIO = "commons-io" % "commons-io" % "2.5"
   val commonsHttp = "org.apache.httpcomponents" % "httpclient" % "4.3.4" excludeAll ExclusionRule("com.google.guava")
   val commonsExec = "org.apache.commons" % "commons-exec" % "1.3" force()
   val commonsCodec = "commons-codec" % "commons-codec" % "1.10" force()
 
   val defaultGuavaVersion = sys.props.getOrElse("guava.version", "16.0.1") // 16.0.1 for cassandra connector 1.6-M1
   val guava = "com.google.guava" % "guava" % defaultGuavaVersion force()
-  val slf4jLog4j = "org.slf4j" % "slf4j-log4j12" % "1.7.7"
+  val slf4jLog4j = "org.slf4j" % "slf4j-log4j12" % "1.7.22"
   val log4j = "log4j" % "log4j" % "1.2.17"
 
   // for aether only
