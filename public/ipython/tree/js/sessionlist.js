@@ -23,12 +23,16 @@ define([
         this.base_url = options.base_url || utils.get_body_data("baseUrl");
 
         // Add collapse arrows.
-        $('#running .panel-group .panel .panel-heading a').each(function(index, el) {
+        $('.tab-pane .panel-group .panel .panel-heading a').each(function(index, el) {
             var $link = $(el);
-            var $icon = $('<i />')
-                .addClass('fa fa-caret-down');
-            $link.append($icon);
+            var $icon = $('<i />');
+            $icon.addClass('fa fa-caret-down');
             $link.down = true;
+            if (!$($link.attr("href")).hasClass("in")) {
+                $icon.css('transform','rotate(-' + 90 + 'deg)');
+                $link.down = false;
+            }
+            $link.append($icon);
             $link.click(function () {
                 if ($link.down) {
                     $link.down = false;
@@ -37,7 +41,7 @@ define([
                     // to do the animation (borderSpacing).
                     $icon.animate({ borderSpacing: 90 }, {
                         step: function(now,fx) {
-                            $icon.css('transform','rotate(-' + now + 'deg)'); 
+                            $icon.css('transform','rotate(-' + now + 'deg)');
                         }
                     }, 250);
                 } else {
@@ -45,14 +49,14 @@ define([
                     // See comment above.
                     $icon.animate({ borderSpacing: 0 }, {
                         step: function(now,fx) {
-                            $icon.css('transform','rotate(-' + now + 'deg)'); 
+                            $icon.css('transform','rotate(-' + now + 'deg)');
                         }
                     }, 250);
                 }
             });
         });
     };
-    
+
     SesssionList.prototype.load_sessions = function(){
         var that = this;
         var settings = {

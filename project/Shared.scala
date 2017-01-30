@@ -13,9 +13,8 @@ object Shared {
 
   lazy val withHive = SettingKey[Boolean]("x-with-hive")
 
-  lazy val withParquet = SettingKey[Boolean]("x-with-parquet")
-
   lazy val sharedSettings: Seq[Def.Setting[_]] = Seq(
+    publishArtifact in Test := false,
     scalaVersion := defaultScalaVersion,
     sparkVersion := defaultSparkVersion,
     hadoopVersion := defaultHadoopVersion,
@@ -26,45 +25,16 @@ object Shared {
       ("jline", "2.12")
     }),
     withHive := defaultWithHive,
-    withParquet := defaultWithParquet,
     libraryDependencies += guava
-  )
-
-  val wispSettings: Seq[Def.Setting[_]] = Seq(
-    libraryDependencies += wispDepSumac,
-    unmanagedJars in Compile ++= (
-      if (scalaVersion.value.startsWith("2.10"))
-        Seq((baseDirectory in "sparkNotebook").value / "temp" / "wisp_2.10-0.0.5.jar")
-      else
-        Seq((baseDirectory in "sparkNotebook").value / "temp" / "wisp_2.11-0.0.5.jar")
-    )
   )
 
   val gisSettings: Seq[Def.Setting[_]] = Seq(
     libraryDependencies ++= geometryDeps
   )
 
-  val repl: Seq[Def.Setting[_]] = {
-    val lib = libraryDependencies <++= (sparkVersion, hadoopVersion, jets3tVersion) {
-      (sv, hv, jv) => if (sv != "1.2.0") Seq(sparkRepl(sv)) else Seq.empty
-    }
-    val unmanaged = unmanagedJars in Compile ++= (
-      if (sparkVersion.value == "1.2.0" && !scalaVersion.value.startsWith("2.11"))
-        Seq((baseDirectory in "sparkNotebook").value / "temp/spark-repl_2.10-1.2.0-notebook.jar")
-      else
-        Seq.empty
-      )
-
-    val repos = resolvers <++= sparkVersion { (sv) =>
-      if (sv == "1.2.0") {
-        Seq("Resolver for spark-yarn 1.2.0" at "https://github.com/adatao/mvnrepos/raw/master/releases") // spark-yarn 1.2.0 is not released
-      } else {
-        Nil
-      }
-    }
-
-    lib ++ unmanaged ++ repos
-  }
+  val repl: Seq[Def.Setting[_]] = Seq(
+    libraryDependencies <+= (sparkVersion) { sv => sparkRepl(sv) }
+  )
 
   val hive: Seq[Def.Setting[_]] = Seq(
     libraryDependencies <++= (withHive, sparkVersion) { (wh, sv) =>
@@ -88,14 +58,13 @@ object Shared {
       val jettyVersion = "8.1.14.v20131031"
 
       val libs = Seq(
-        breeze,
         sparkCore(sv),
         sparkYarn(sv),
         sparkSQL(sv),
         hadoopClient(hv),
         jets3tVersion,
         commonsCodec
-      ) ++ sparkCSV ++ (
+      ) ++ (
             if (!v.startsWith("2.10")) {
               // in 2.11
               //Boot.scala → HttpServer → eclipse
@@ -114,56 +83,4 @@ object Shared {
       libs
     }
   ) ++ repl ++ hive ++ yarnWebProxy
-
-  lazy val tachyonSettings: Seq[Def.Setting[_]] = {
-    def tachyonVersion(sv: String) =
-      sv.dropWhile(!_.isDigit) /*get rid of the v in v1.6.0 for instance */
-        .takeWhile(_ != '-' /*get rid of -SNAPSHOT, -RC or whatever*/)
-        .split("\\.")
-        .toList
-        .map(_.toInt) match {
-          case List(1, y, z) if y <= 3 => "0.5.0"
-          case List(1, 4, z) => "0.6.4"
-          case List(1, y, z) => "0.7.1"
-          case _ => throw new IllegalArgumentException("Bad spark version for tachyon: " + sv)
-        }
-
-    val exludes = Seq(
-      ExclusionRule("org.jboss.netty", "netty"),
-      ExclusionRule("org.apache.hadoop",  "hadoop-client"),
-      ExclusionRule("org.apache.curator", "curator-recipes"),
-      ExclusionRule("org.tachyonproject", "tachyon-underfs-glusterfs"),
-      ExclusionRule("org.tachyonproject", "tachyon-underfs-s3"),
-      ExclusionRule("com.fasterxml.jackson.module", "jackson-module-scala"),
-      ExclusionRule("com.fasterxml.jackson.core", "jackson-databind"),
-      ExclusionRule("com.fasterxml.jackson.core", "jackson-annotations"),
-      ExclusionRule("com.fasterxml.jackson.module", "jackson-module-jsonSchema"),
-      ExclusionRule("com.fasterxml.jackson.datatype", "jackson-datatype-joda")
-    )
-
-    val deps = sparkVersion { sv =>
-      tachyonVersion(sv) match {
-        case x@"0.7.1"           =>
-          Seq(
-          "org.tachyonproject" % "tachyon-common" % x excludeAll(exludes:_*),
-          "org.tachyonproject" % "tachyon-client" % x excludeAll(exludes:_*),
-          "org.tachyonproject" % "tachyon-servers" % x excludeAll(exludes:_*),
-          "org.tachyonproject" % "tachyon-minicluster" % x excludeAll(exludes:_*)
-        )
-        case x =>
-          Seq(
-          "org.tachyonproject" % "tachyon" % tachyonVersion(sv) excludeAll(exludes:_*),
-          "org.tachyonproject" % "tachyon-client" % tachyonVersion(sv) excludeAll(exludes:_*),
-          "org.tachyonproject" % "tachyon" % tachyonVersion(sv) classifier "tests" excludeAll(exludes:_*)
-        )
-      }
-    }
-
-    Seq(
-      unmanagedSourceDirectories in Compile <+= (sparkVersion, sourceDirectory in Compile) {
-        (sv, sd) => sd / ("tachyon_" + tachyonVersion(sv))
-      },
-      libraryDependencies <++= deps
-    )
-  }
 }

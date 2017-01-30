@@ -17,116 +17,151 @@
     "customSparkConf" : null
   },
   "cells" : [ {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "87907EDA2A104A6B80FBD4711008BEEB"
+    },
     "cell_type" : "markdown",
     "source" : "# DataFrame rendering"
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "23F1EE69F58A420585132EF491CF63AE"
+    },
     "cell_type" : "markdown",
     "source" : "## Setup the DataFrame context (sql) "
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "CF7654DF29474E5384025A6F49FCCC95"
     },
     "cell_type" : "code",
     "source" : "val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)\nimport sqlContext.implicits._",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "C2A06927C17A41498130EA4FA1852F0D"
+    },
     "cell_type" : "markdown",
     "source" : "## Create a custom type (`Person`) "
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "98D8776212B341F884C8F49774E29311"
     },
     "cell_type" : "code",
     "source" : "case class Person(name: String, age: Int)",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "043AA685459242949262D4CC66571190"
+    },
     "cell_type" : "markdown",
     "source" : "## Create some abstract data"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "9A4200FAD83541289D1193CF6796770F"
     },
     "cell_type" : "code",
     "source" : "val data = Seq.fill(100) {\n  val name = \"p\"+scala.util.Random.nextInt(10) // with duplicates, for fun\n  val age = 20+scala.util.Random.nextInt(10) //with diff ages ö_Ô\n  Person(name, age)\n}",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "4E9FF9B056AE4DB8899955EC66A1DDD5"
+    },
     "cell_type" : "markdown",
     "source" : "## Put the abstract data in Spark as DataFrame"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : false,
+      "id" : "E423740D550146C0A8E6EC7120FE963C"
     },
     "cell_type" : "code",
     "source" : "val people = sparkContext.parallelize(data).toDF()\npeople.registerTempTable(\"people\")",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "E2951C012683459AB7BF7FA9368C3459"
+    },
     "cell_type" : "markdown",
     "source" : "## Render the DataFrame using default parameters"
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "5DFC5651BC844A9485F078373B8FC255"
+    },
     "cell_type" : "markdown",
     "source" : "## Render the DataFrame, but only 10 points"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false,
+      "presentation" : {
+        "tabs_state" : "{\n  \"tab_id\": \"#tab653706373-0\"\n}",
+        "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [],\n  \"rows\": [],\n  \"vals\": [],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count\",\n  \"rendererName\": \"Table\"\n}"
+      },
+      "id" : "53A3C76C588A4E06857FA05AFAF2041E"
     },
     "cell_type" : "code",
     "source" : "widgets.display(people, maxPoints=10)",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "41EEBF69D2AF44BA81297945856F10E1"
+    },
     "cell_type" : "markdown",
     "source" : "## Render the DataFrame in a Bar plot, but only 40 points"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false,
+      "id" : "62049CDD6D3043C28F8891399FD2EFCB"
     },
     "cell_type" : "code",
-    "source" : "widgets.BarChart(people, Some((\"name\", \"age\")), maxPoints=40)",
+    "source" : "BarChart(people, Some((\"name\", \"age\")), maxPoints=40)",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "A0EDDDEA55794853BFE65FE71B081003"
+    },
     "cell_type" : "markdown",
     "source" : "## Render the DataFrame in a Bar plot, but only 40 **SAMPLED** points"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true
+      "collapsed" : false,
+      "id" : "4523B1D77E24467EA52A716F68CD4E53"
     },
     "cell_type" : "code",
-    "source" : "import notebook.front.widgets.magic.SamplerImplicits.Sampler\nimport org.apache.spark.sql.DataFrame\nimplicit val sampler = new Sampler[DataFrame] {\n  def apply(df:DataFrame, max:Int):DataFrame = {\n    val count = df.count\n    println(\"Sampling DF\")\n    df.sample(false, max/count.toDouble, 5555)\n  }\n}\nwidgets.BarChart(people, Some((\"name\", \"age\")), maxPoints=40)",
+    "source" : "import notebook.front.widgets.magic.SamplerImplicits.Sampler\nimport org.apache.spark.sql.DataFrame\nimplicit val sampler = new Sampler[DataFrame] {\n  def apply(df:DataFrame, max:Int):DataFrame = {\n    val count = df.count\n    println(\"Sampling DF\")\n    df.sample(false, max/count.toDouble, 5555)\n  }\n  override def samplingStrategy: SamplingStrategy = RandomSampling()\n}\nBarChart(people, Some((\"name\", \"age\")), maxPoints=40)",
     "outputs" : [ ]
   }, {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "0CE0D205B15D4E8587223941A050C4F3"
+    },
     "cell_type" : "markdown",
     "source" : "## Render the DataFrame in a Pivot chart"
   }, {
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : false
+      "collapsed" : false,
+      "presentation" : {
+        "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [],\n  \"rows\": [],\n  \"vals\": [],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count\",\n  \"rendererName\": \"Table\"\n}"
+      },
+      "id" : "45F0078E87E64FA08B44523F30FD2E9B"
     },
     "cell_type" : "code",
-    "source" : "PivotChart(people)",
+    "source" : "PivotChart(people, maxPoints=40)",
     "outputs" : [ ]
   } ],
   "nbformat" : 4

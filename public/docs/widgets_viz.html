@@ -1,0 +1,166 @@
+<head>
+	<link rel="stylesheet" type="text/css" href="styles/github.css">
+</head>
+<body><h1 id="documentation">Documentation</h1>
+<h2 id="widgets">Widgets</h2>
+<p>There're many widgets avaiable in the Spark Notebook that can be used to enrich the interaction with the data. Text-based widgets can help to sample or select data while graphical widgets will provide us data visualizations to help us build our intuition and understanding of the data.</p>
+<h3 id="graphical-widgets">Graphical Widgets</h3>
+<p>The easiest and fastest way to visualize data in the Spark Notebook is to return collections of data from the a cell and use the built-in visualization.</p>
+<p>The built-in visualizations will be automatically attempted on data collections of <code>Tuple</code>s and <code>case class</code>es. In particular, <code>case class</code>es definitions may be used to populate names of axes and other values (like colors, line styles, ...).</p>
+<p>For more advanced visualizations, the Spark Notebook comes packed with customizable charts ranging from simple line and bar charts to advanced pivot tables and geo-charts.</p>
+<h4 id="common-chart-api">Common Chart API</h4>
+<p>Charts can be reactively updated with new data through these methods:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="co">// updates the chart with the data provided, replacing existing data, if any.</span>
+<span class="kw">def</span> <span class="fu">applyOn</span>(newData:C)
+
+<span class="co">// adds new data points to the chart. </span>
+<span class="co">// Using resetInit=true will result in the data being replaced, like applyOn(...)</span>
+<span class="kw">def</span> <span class="fu">addAndApply</span>(otherData:C, resetInit:Boolean=<span class="kw">false</span>)
+
+<span class="co">// changes the maximum number of data points displayed by the chart</span>
+<span class="kw">def</span> <span class="fu">newMax</span>(max:Int)</code></pre></div>
+<h4 id="table-chart">Table Chart</h4>
+<p>A tabular visualization of the data.</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">case</span> <span class="kw">class</span> TableChart[C:ToPoints:Sampler](
+    originalData:C,
+    filterCol:Option[Seq[String]]=None,
+    <span class="kw">override</span> <span class="kw">val</span> sizes:(Int, Int)=(<span class="dv">600</span>, <span class="dv">400</span>),
+    maxPoints:Int = Utils.<span class="fu">Defaults</span>.<span class="fu">DEFAULT_MAX_POINTS</span>
+)</code></pre></div>
+<div class="figure">
+<img src="./images/charts-table.png" alt="Table chart" />
+<p class="caption">Table chart</p>
+</div>
+<h4 id="line-chart">Line Chart</h4>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">case</span> <span class="kw">class</span> LineChart[C:ToPoints:Sampler](
+    originalData:C,
+    fields:Option[(String, String)]=None,
+    <span class="kw">override</span> <span class="kw">val</span> sizes:(Int, Int)=(<span class="dv">600</span>, <span class="dv">400</span>),
+    maxPoints:Int = DEFAULT_MAX_POINTS,
+    groupField: Option[String]=None
+  )</code></pre></div>
+<div class="figure">
+<img src="./images/charts-line.png" alt="Line Chart" />
+<p class="caption">Line Chart</p>
+</div>
+<h4 id="scatter-chart">Scatter Chart</h4>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">case</span> <span class="kw">class</span> ScatterChart[C:ToPoints:Sampler](
+    originalData:C,
+    fields:Option[(String, String)]=None,
+    <span class="kw">override</span> <span class="kw">val</span> sizes:(Int, Int)=(<span class="dv">600</span>, <span class="dv">400</span>),
+    maxPoints:Int = DEFAULT_MAX_POINTS,
+    groupField: Option[String]=None
+  )</code></pre></div>
+<div class="figure">
+<img src="./images/charts-scatter.png" alt="Scatter Chart" />
+<p class="caption">Scatter Chart</p>
+</div>
+<h4 id="bar-chart">Bar Chart</h4>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">case</span> <span class="kw">class</span> BarChart[C:ToPoints:Sampler](
+    originalData:C,
+    fields:Option[(String, String)]=None,
+    <span class="kw">override</span> <span class="kw">val</span> sizes:(Int, Int)=(<span class="dv">600</span>, <span class="dv">400</span>),
+    maxPoints:Int = DEFAULT_MAX_POINTS,
+    groupField: Option[String]=None
+  )</code></pre></div>
+<div class="figure">
+<img src="./images/charts-bar.png" alt="Bar Chart" />
+<p class="caption">Bar Chart</p>
+</div>
+<h4 id="time-series-chart">Time Series Chart</h4>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">case</span> <span class="kw">class</span> TimeseriesChart[C:ToPoints:Sampler](
+    originalData:C,
+    fields:Option[(String, String)]=None,
+    <span class="kw">override</span> <span class="kw">val</span> sizes:(Int, Int)=(<span class="dv">600</span>, <span class="dv">400</span>),
+    maxPoints:Int = DEFAULT_MAX_POINTS,
+    groupField: Option[String]=None,
+    tickFormat:String = <span class="st">&quot;%Y-%m-%d %H:%M:%S&quot;</span>
+  )</code></pre></div>
+<div class="figure">
+<img src="./images/charts-timeseries.png" alt="Timeseries Chart" />
+<p class="caption">Timeseries Chart</p>
+</div>
+<h4 id="pie-chart">Pie Chart</h4>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">case</span> <span class="kw">class</span> PieChart[C:ToPoints:Sampler](
+    originalData:C, 
+    fields:Option[(String, String)]=None, 
+    <span class="kw">override</span> <span class="kw">val</span> sizes:(Int, Int)=(<span class="dv">600</span>, <span class="dv">400</span>),
+     maxPoints:Int = DEFAULT_MAX_POINTS
+)</code></pre></div>
+<div class="figure">
+<img src="./images/charts-pie.png" alt="Pie Chart" />
+<p class="caption">Pie Chart</p>
+</div>
+<h4 id="pivot-chart">Pivot Chart</h4>
+<p>The Pivot chart allows to 'pivot' over a selectable data column using a number of built-in aggregations. The &quot;show/hide&quot; options toggles the aggregation menu. When 'off', only the resulting chart will be displayed.</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">case</span> <span class="kw">class</span> PivotChart[C:ToPoints:Sampler](
+  originalData:C,
+  <span class="kw">override</span> <span class="kw">val</span> sizes:(Int, Int)=(<span class="dv">600</span>, <span class="dv">400</span>),
+  maxPoints:Int = DEFAULT_MAX_POINTS,
+  derivedAttributes:JsObject=play.<span class="fu">api</span>.<span class="fu">libs</span>.<span class="fu">json</span>.<span class="fu">Json</span>.<span class="fu">obj</span>(),
+  options: Map[String, String] = Map.<span class="fu">empty</span>
+)</code></pre></div>
+<div class="figure">
+<img src="./images/charts-pivot.png" alt="pivot chart" />
+<p class="caption">pivot chart</p>
+</div>
+<h4 id="graphs">Graphs</h4>
+<p>A graph is a common way to represent data where connections between elements is important.</p>
+<ul>
+<li><code>Graph[T]</code>: abstract class defining a graph component with an id of type T, a value of type Any and a color</li>
+<li><code>Node[T]</code>: defines a node as a circle which can be specified a radius and its position ( xx , yy ) (initial or static if it's fixed)</li>
+<li><code>Edge[T]</code>: defines an edge using the ids of both ends</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">case</span> <span class="kw">class</span> GraphChart[C:ToPoints:Sampler](
+    originalData:C, 
+    <span class="kw">override</span> <span class="kw">val</span> sizes:(Int, Int)=(<span class="dv">600</span>, <span class="dv">400</span>), 
+    maxPoints:Int = DEFAULT_MAX_POINTS,
+    charge:Int= -<span class="dv">30</span>, 
+    linkDistance:Int=<span class="dv">20</span>, 
+    linkStrength:Double=<span class="fl">1.0</span>
+)</code></pre></div>
+<div class="figure">
+<img src="./images/charts-graph.png" alt="Graph chart" />
+<p class="caption">Graph chart</p>
+</div>
+<h4 id="geo-charts">Geo Charts</h4>
+<p>There are two types of geo charts: * <code>GeoPointsChart</code> for simple points lat long points * <code>GeoChart</code> for GeoJSON or opengis data</p>
+<h5 id="geopointschart">GeoPointsChart</h5>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">case</span> <span class="kw">class</span> GeoPointsChart[C:ToPoints:Sampler](
+  originalData:C,
+  <span class="kw">override</span> <span class="kw">val</span> sizes:(Int, Int)=(<span class="dv">600</span>, <span class="dv">400</span>),
+  maxPoints:Int = DEFAULT_MAX_POINTS,
+  latLonFields:Option[(String, String)]=None,
+  rField:Option[String]=None,
+  colorField:Option[String]=None
+)</code></pre></div>
+<div class="figure">
+<img src="./images/charts-geopoints.png" alt="Geopoints chart" />
+<p class="caption">Geopoints chart</p>
+</div>
+<h5 id="geochart">GeoChart</h5>
+<p><code>scala case class GeoChart[C:ToPoints:Sampler](   originalData:C,   override val sizes:(Int, Int)=(600, 400),   maxPoints:Int = DEFAULT_MAX_POINTS,   geometryField:Option[String]=None,   rField:Option[String]=None,   colorField:Option[String]=None,   fillColorField:Option[String]=None)</code> <img src="./images/charts-geo.png" alt="Geochart" /> <em>note the Museum Gardens highlighted by a polygon</em></p>
+<h4 id="radar-chart">Radar Chart</h4>
+<p>Displays values across several axes. It provides a visual comparison of data points over several features at once.</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">case</span> <span class="kw">class</span> RadarChart[C:ToPoints:Sampler](
+    originalData:C,
+    labelField:Option[String]=None,
+    <span class="kw">override</span> <span class="kw">val</span> sizes:(Int, Int)=(<span class="dv">600</span>, <span class="dv">400</span>),
+    maxPoints:Int = DEFAULT_MAX_POINTS
+  )</code></pre></div>
+<div class="figure">
+<img src="./images/charts-radar.png" alt="Radar chart" />
+<p class="caption">Radar chart</p>
+</div>
+<h4 id="parallel-coordinates">Parallel Coordinates</h4>
+<p>Displays flows/connections among several steps</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">case</span> <span class="kw">class</span> ParallelCoordChart[C:ToPoints:Sampler](
+    originalData:C,
+    <span class="kw">override</span> <span class="kw">val</span> sizes:(Int, Int)=(<span class="dv">600</span>, <span class="dv">400</span>),
+    maxPoints:Int = DEFAULT_MAX_POINTS
+  )</code></pre></div>
+<div class="figure">
+<img src="./images/charts-parallel-coordinates.png" alt="Parallel Coordinates Chart" />
+<p class="caption">Parallel Coordinates Chart</p>
+</div>
+</body>

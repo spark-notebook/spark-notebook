@@ -1,0 +1,98 @@
+<head>
+	<link rel="stylesheet" type="text/css" href="styles/github.css">
+</head>
+<body><h1 id="documentation">Documentation</h1>
+<h2 id="the-notebook-metadata">The Notebook Metadata</h2>
+<p>The metadata in the notebook allows for the configuration of many runtime aspects of the Spark Notebook, the cluster it connects to (if any), specific library dependencies needed, JVM parameters and definition of variables that describe your environment.</p>
+<p>By using the metadata we also free up the Notebook of configuration noise and lets us focus on the core aspects of our work.</p>
+<p>To access the metadata, go to the menu &quot;Edit&quot; and pick the option &quot;Edit Metadata&quot;, leading to the metadata dialog:</p>
+<div class="figure">
+<img src="./images/notebook-metadata.png" alt="Edit Notebook Metadata" />
+<p class="caption">Edit Notebook Metadata</p>
+</div>
+<p>Most metadata content can be preconfigured and reused. See <a href="using_cluster_tab.html">Using <strong>clusters</strong></a> for more info on this feature.</p>
+<h3 id="set-local-repository">Set local repository</h3>
+<p>When adding dependencies, it can be interesting to preconfigure a repository where some dependencies have been already fetched.</p>
+<p>This will save the dependency manager to download the internet.</p>
+<div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json">    <span class="er">&quot;customLocalRepo&quot;</span> <span class="er">:</span> <span class="er">&quot;/&lt;home&gt;/.m2/repository&quot;,</span></code></pre></div>
+<h3 id="add-remote-repositories">Add remote repositories</h3>
+<p>The default repositories are: - Maven local repository (of the user account that launched the notebook server) - Maven Central - Spark Packages repository - Typesafe repository - JCenter repository</p>
+<p>Additional repositories may be added. While the context <code>:remote-repo</code> is available from the notebook, we can also add them right in the preconfiguration:</p>
+<div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json">    <span class="er">&quot;customRepos&quot;</span>     <span class="er">:</span> <span class="ot">[</span>
+      <span class="st">&quot;s3-repo % default % s3://&lt;bucket-name&gt;/&lt;path-to-repo&gt; % maven % (</span><span class="ch">\&quot;</span><span class="st">$AWS_ACCESS_KEY_ID</span><span class="ch">\&quot;</span><span class="st">, </span><span class="ch">\&quot;</span><span class="st">$AWS_SECRET_ACCESS_KEY</span><span class="ch">\&quot;</span><span class="st">)&quot;</span>
+    <span class="ot">]</span><span class="er">,</span></code></pre></div>
+<h3 id="import-download-dependencies">Import (download) dependencies</h3>
+<p>Adding dependencies in the classpath <strong>and</strong> in the spark context can be done, this way (see also <code>:dp</code>).</p>
+<div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json">    <span class="er">&quot;customDeps&quot;</span>      <span class="er">:</span> <span class="ot">[</span>
+      <span class="st">&quot;med-at-scale        %  ga4gh-model-java  % 0.1.0-SNAPSHOT&quot;</span><span class="ot">,</span>
+      <span class="st">&quot;org.apache.avro     %  avro-ipc          % 1.7.6&quot;</span><span class="ot">,</span>
+      <span class="st">&quot;- org.mortbay.jetty %  org.eclipse.jetty % _&quot;</span>
+    <span class="ot">]</span></code></pre></div>
+<p>Alternatively, we can also use Maven coordinates:</p>
+<div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json">    <span class="er">&quot;customDeps&quot;</span>      <span class="er">:</span> <span class="ot">[</span>
+      <span class="st">&quot;med-at-scale:ga4gh-model-java:0.1.0-SNAPSHOT&quot;</span><span class="ot">,</span>
+      <span class="st">&quot;org.apache.avro:avro-ipc:1.7.6&quot;</span><span class="ot">,</span>
+      <span class="st">&quot;- org.mortbay.jetty:org.eclipse.jetty:_&quot;</span>
+    <span class="ot">]</span></code></pre></div>
+<h3 id="add-spark-packages">Add Spark Packages</h3>
+<p>Spark Notebook supports the new Spark package repository at <a href="http://spark-packages.org">spark-packages.org</a>. Include a package in your notebook by adding its coordinates to the preconfiguration:</p>
+<div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json">    <span class="er">&quot;customDeps&quot;</span>      <span class="er">:</span> <span class="ot">[</span>
+      <span class="st">&quot;com.databricks:spark-avro_2.10:1.0.0&quot;</span>
+    <span class="ot">]</span></code></pre></div>
+<h3 id="default-import-statements">Default import statements</h3>
+<p>Some package, classes, types, functions and so forth could be automatically imported, by using:</p>
+<div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json">    <span class="er">&quot;customImports&quot;</span>   <span class="er">:</span> <span class="er">&quot;import</span> <span class="er">scala.util.Random\n&quot;,</span></code></pre></div>
+<h3 id="add-jvm-arguments">Add JVM arguments</h3>
+<p>Each notebook is actually running in a different JVM, hence you can add some parameters (like memory tuning and so on) like this:</p>
+<div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json">    <span class="er">&quot;customArgs&quot;</span>   <span class="er">:</span> <span class="ot">[</span>
+      <span class="st">&quot;-Dtest=ok&quot;</span><span class="ot">,</span>
+      <span class="st">&quot;-Dyarn.resourcemanager.am.max-attempts=1&quot;</span>
+    <span class="ot">]</span><span class="er">,</span></code></pre></div>
+<blockquote>
+<p><strong>NOTE</strong>: Don't add classpath arguments, e.g., <code>[&quot;-cp&quot;, &quot;/path/to/foo.jar&quot;]</code>, as this overrides the classpath, rather than adding jars to it. Use a cell with a <code>:cp /path/to/foo.jar</code> command instead.</p>
+</blockquote>
+<h3 id="spark-conf">Spark Conf</h3>
+<p>Apache Spark needs some configuration to access clusters, tune the memory and <a href="http://spark.apache.org/docs/latest/configuration.html">many others</a>.</p>
+<p>For this configuration to be shareable, and you don't want to use the <code>reset</code> functions, you can add:</p>
+<div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json">    <span class="er">&quot;customSparkConf&quot;</span> <span class="er">:</span> <span class="fu">{</span>
+      <span class="dt">&quot;spark.app.name&quot;</span><span class="fu">:</span> <span class="st">&quot;Notebook&quot;</span><span class="fu">,</span>
+      <span class="dt">&quot;spark.master&quot;</span><span class="fu">:</span> <span class="st">&quot;local[8]&quot;</span><span class="fu">,</span>
+      <span class="dt">&quot;spark.executor.memory&quot;</span><span class="fu">:</span> <span class="st">&quot;1G&quot;</span>
+    <span class="fu">}</span></code></pre></div>
+<h3 id="custom-variables">Custom Variables</h3>
+<p>Custom variables let us define common configuration values that permit us abstract out the Notebook logic from the system/environment where it's running in order to improve environment isolation and notebook portability across different installations.</p>
+<p>Variables declared here become Scala constants in the notebook that are directly accessible from code.</p>
+<p>e.g.</p>
+<div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json">   <span class="er">&quot;customVars&quot;</span> <span class="er">:</span> <span class="fu">{</span>
+       <span class="dt">&quot;HDFS_ROOT&quot;</span> <span class="fu">:</span> <span class="st">&quot;hdfs://server&quot;</span><span class="fu">,</span>
+       <span class="dt">&quot;ACCOUNT_SERVER&quot;</span> <span class="fu">:</span> <span class="st">&quot;http://server:port&quot;</span>
+    <span class="fu">}</span></code></pre></div>
+<p>These variables can be accessed from Scala code in the notebook:</p>
+<div class="figure">
+<img src="./images/custom_var_in_use.png" alt="Custom Variables in use" />
+<p class="caption">Custom Variables in use</p>
+</div>
+<h3 id="example">Example</h3>
+<div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
+  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;My cluster conf&quot;</span><span class="fu">,</span>
+  <span class="dt">&quot;profile&quot;</span><span class="fu">:</span> <span class="st">&quot;Local&quot;</span><span class="fu">,</span>
+  <span class="dt">&quot;template&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+    <span class="dt">&quot;customLocalRepo&quot;</span> <span class="fu">:</span> <span class="st">&quot;/&lt;home&gt;/.m2/repository&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;customRepos&quot;</span>     <span class="fu">:</span> <span class="ot">[</span>
+      <span class="st">&quot;s3-repo % default % s3://&lt;bucket-name&gt;/&lt;path-to-repo&gt; % (</span><span class="ch">\&quot;</span><span class="st">$AWS_ACCESS_KEY_ID</span><span class="ch">\&quot;</span><span class="st">, </span><span class="ch">\&quot;</span><span class="st">$AWS_SECRET_ACCESS_KEY</span><span class="ch">\&quot;</span><span class="st">)&quot;</span><span class="ot">,</span>
+      <span class="st">&quot;local % default % file://&lt;home&gt;/.m2/repository&quot;</span>
+    <span class="ot">]</span><span class="fu">,</span>
+    <span class="dt">&quot;customDeps&quot;</span>      <span class="fu">:</span> <span class="st">&quot;med-at-scale        %  ga4gh-model-java % 0.1.0-SNAPSHOT</span><span class="ch">\n</span><span class="st">org.apache.avro     %  avro-ipc         % 1.7.6</span><span class="ch">\n</span><span class="st">- org.mortbay.jetty % org.eclipse.jetty % _&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;customImports&quot;</span>   <span class="fu">:</span> <span class="st">&quot;import scala.util.Random</span><span class="ch">\n</span><span class="st">&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;customArgs&quot;</span>   <span class="fu">:</span> <span class="ot">[</span> <span class="st">&quot;-Dtest=ok&quot;</span><span class="ot">,</span> <span class="st">&quot;-Dyarn.resourcemanager.am.max-attempts=1&quot;</span> <span class="ot">]</span><span class="fu">,</span>
+    <span class="dt">&quot;customSparkConf&quot;</span> <span class="fu">:</span> <span class="fu">{</span>
+      <span class="dt">&quot;spark.app.name&quot;</span><span class="fu">:</span> <span class="st">&quot;Notebook&quot;</span><span class="fu">,</span>
+      <span class="dt">&quot;spark.master&quot;</span><span class="fu">:</span> <span class="st">&quot;local[8]&quot;</span><span class="fu">,</span>
+      <span class="dt">&quot;spark.executor.memory&quot;</span><span class="fu">:</span> <span class="st">&quot;1G&quot;</span>
+    <span class="fu">},</span>
+     <span class="dt">&quot;customVars&quot;</span> <span class="fu">:</span> <span class="fu">{</span>
+       <span class="dt">&quot;HDFS_ROOT&quot;</span> <span class="fu">:</span> <span class="st">&quot;hdfs://server&quot;</span>
+    <span class="fu">}</span>
+  <span class="fu">}</span>
+<span class="fu">}</span></code></pre></div>
+</body>

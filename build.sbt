@@ -8,11 +8,13 @@ name := MainProperties.name
 
 scalaVersion := defaultScalaVersion
 
-val SparkNotebookSimpleVersion = "0.7.0-SNAPSHOT"
+val SparkNotebookSimpleVersion = "0.8.0-SNAPSHOT"
 
-version in ThisBuild <<= (scalaVersion, sparkVersion, hadoopVersion, withHive, withParquet) { (sc, sv, hv, h, p) =>
-  s"$SparkNotebookSimpleVersion-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "") + (if (p) "-with-parquet" else "")
-}
+version in ThisBuild := SparkNotebookSimpleVersion
+
+play.PlayImport.PlayKeys.playDefaultPort := 9001
+
+updateOptions := updateOptions.value.withCachedResolution(true)
 
 maintainer := DockerProperties.maintainer //Docker
 
@@ -26,9 +28,9 @@ enablePlugins(GitBranchPrompt)
 
 import uk.gov.hmrc.gitstamp.GitStampPlugin._
 
-net.virtualvoid.sbt.graph.Plugin.graphSettings
-
 import com.typesafe.sbt.SbtNativePackager.autoImport.NativePackagerHelper._
+
+import com.typesafe.sbt.packager.archetypes.ServerLoader.{SystemV, Upstart, Systemd}
 
 import com.typesafe.sbt.packager.docker._
 
@@ -42,7 +44,32 @@ dockerExposedPorts ++= DockerProperties.ports
 
 dockerRepository := DockerProperties.registry //Docker
 
-packageName in Docker := "spark-notebook"
+packageName in Docker := MainProperties.name
+
+
+// DEBIAN PACKAGE
+enablePlugins(DebianPlugin)
+
+name in Debian := MainProperties.name
+
+maintainer in Debian := DebianProperties.maintainer
+
+packageDescription := "Interactive and Reactive Data Science using Scala and Spark."
+
+debianPackageDependencies in Debian += "java7-runtime"
+
+serverLoading in Debian := DebianProperties.serverLoading
+
+daemonUser in Linux := DebianProperties.daemonUser
+
+daemonGroup in Linux := DebianProperties.daemonGroup
+
+version := sys.props.get("deb-version").getOrElse(version.value)
+
+import DebianConstants._
+maintainerScripts in Debian := maintainerScriptsAppend((maintainerScripts in Debian).value)(
+  Postinst -> s"chown -R ${DebianProperties.daemonUser}:${DebianProperties.daemonGroup} /usr/share/${MainProperties.name}/notebooks/"
+)
 
 ivyScala := ivyScala.value map {
   _.copy(overrideScalaVersion = true)
@@ -71,6 +98,7 @@ resolvers in ThisBuild ++= Seq(
   Resolver.typesafeIvyRepo("releases"),
   Resolver.typesafeIvyRepo("snapshots"),
   "cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos",
+  "mapr" at "http://repository.mapr.com/maven",
   // docker
   "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
 ) ++ ((sparkResolver, searchSparkResolver, sparkVersion.value) match {
@@ -116,9 +144,11 @@ compileOrder := CompileOrder.Mixed
 
 publishMavenStyle := false
 
+publishArtifact in Test := false
+
 javacOptions ++= Seq("-Xlint:deprecation", "-g")
 
-scalacOptions += "-deprecation"
+scalacOptions ++= Seq("-deprecation", "-feature")
 
 scalacOptions ++= Seq("-Xmax-classfile-name", "100")
 
@@ -142,11 +172,9 @@ bashScriptDefines := bashScriptDefines.value.map {
   case entry => entry
 }
 
-dependencyOverrides += "log4j" % "log4j" % "1.2.16"
+dependencyOverrides += log4j
 
 dependencyOverrides += guava
-
-enablePlugins(DebianPlugin)
 
 sharedSettings
 
@@ -178,31 +206,59 @@ libraryDependencies <++= scalaBinaryVersion {
   )
 }
 
-lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).enablePlugins(SbtWeb)
-      .aggregate(tachyon, subprocess, observable, common, kernel)
-      .aggregate((if (!viewerMode) Seq[sbt.ProjectReference](spark) else Nil): _*)
-      .dependsOn(tachyon, subprocess, observable, common, kernel)
-      .dependsOn((if (!viewerMode) List[sbt.ClasspathDep[sbt.ProjectReference]](spark) else Nil): _*)
-      .settings(sharedSettings: _*)
-      .settings(
-        bashScriptExtraDefines <+= (version, scalaBinaryVersion, scalaVersion, sparkVersion, hadoopVersion, withHive, withParquet) map { (v, sbv, sv, pv, hv, wh, wp) =>
-          """export ADD_JARS="${ADD_JARS},${lib_dir}/$(ls ${lib_dir} | grep common.common | head)""""
-        },
-        mappings in Universal ++= directory("notebooks"),
-        mappings in Docker ++= directory("notebooks")
-      )
-      .settings(includeFilter in(Assets, LessKeys.less) := "*.less")
-      .settings(unmanagedSourceDirectories in Compile <<= (scalaSource in Compile)(Seq(_))) //avoid app-2.10 and co to be created
-      .settings(initialCommands += ConsoleHelpers.cleanAllOutputs)
-      .settings(
-        git.useGitDescribe := true,
-        git.baseVersion := SparkNotebookSimpleVersion
-      )
-      .settings(
-        gitStampSettings: _*
-      )
+lazy val sbtDependencyManager = Project(id = "sbt-dependency-manager", base = file("modules/sbt-dependency-manager"))
+  .settings(
+    scalaVersion := defaultScalaVersion,
+    organization := "io.kensu",
+    version := version.value,
+    publishMavenStyle := true
+  ).settings(
+    Extra.sbtDependencyManagerSettings
+  )
 
-lazy val subprocess = project.in(file("modules/subprocess"))
+lazy val sparkNotebookCore = Project(id = "spark-notebook-core", base = file("modules/core"))
+  .settings(
+    scalaVersion := defaultScalaVersion,
+    organization := "guru.data-fellas",
+    version := version.value,
+    publishMavenStyle := true,
+    libraryDependencies ++= playJson,
+    libraryDependencies += slf4jLog4j,
+    libraryDependencies += commonsIO,
+    libraryDependencies += scalaTest
+  ).settings(sharedSettings: _*)
+  .settings(
+    Extra.sparkNotebookCoreSettings
+  )
+
+lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).enablePlugins(SbtWeb)
+  .aggregate(sparkNotebookCore, sbtDependencyManager, subprocess, observable, common, spark, kernel)
+  .dependsOn(sparkNotebookCore, subprocess, observable, common, spark, kernel)
+  .settings(sharedSettings: _*)
+  .settings(
+    bashScriptExtraDefines <+= (version, scalaBinaryVersion, scalaVersion, sparkVersion, hadoopVersion, withHive) map { (v, sbv, sv, pv, hv, wh) =>
+      """export ADD_JARS="${ADD_JARS},${lib_dir}/$(ls ${lib_dir} | grep common.common | head)""""
+    },
+    mappings in Universal ++= directory("notebooks"),
+    version in Universal <<= (version in ThisBuild, scalaVersion, sparkVersion, hadoopVersion, withHive) { (v, sc, sv, hv, h) =>
+                                s"$v-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "")
+                              },
+    mappings in Docker ++= directory("notebooks")
+  )
+  .settings(includeFilter in(Assets, LessKeys.less) := "*.less")
+  .settings(unmanagedSourceDirectories in Compile <<= (scalaSource in Compile)(Seq(_))) //avoid app-2.10 and co to be created
+  .settings(
+    git.useGitDescribe := true,
+    git.baseVersion := SparkNotebookSimpleVersion
+  )
+  .settings(
+    gitStampSettings: _*
+  )
+  .settings(
+    Extra.sparkNotebookSettings
+  )
+
+lazy val subprocess = Project(id="subprocess", base=file("modules/subprocess"))
   .settings(libraryDependencies ++= playDeps)
   .settings(
     libraryDependencies ++= {
@@ -217,11 +273,14 @@ lazy val subprocess = project.in(file("modules/subprocess"))
     }
   )
   .settings(sharedSettings: _*)
-  .settings(sparkSettings: _*)
+  .settings(
+    Extra.subprocessSettings
+  )
 
 
 lazy val observable = Project(id = "observable", base = file("modules/observable"))
   .dependsOn(subprocess)
+  .dependsOn(sparkNotebookCore)
   .settings(
     libraryDependencies ++= Seq(
       akkaRemote,
@@ -231,29 +290,22 @@ lazy val observable = Project(id = "observable", base = file("modules/observable
     )
   )
   .settings(sharedSettings: _*)
+  .settings(
+    Extra.observableSettings
+  )
 
 lazy val common = Project(id = "common", base = file("modules/common"))
-  .dependsOn(observable)
+  .dependsOn(observable, sbtDependencyManager)
+  .settings(
+    version  <<= (version in ThisBuild, sparkVersion) { (v,sv) => s"${v}_$sv" }
+  )
   .settings(
     libraryDependencies ++= Seq(
       akka,
-      log4j,
-      scalaZ
+      log4j
     ),
-    libraryDependencies ++= depsToDownloadDeps(scalaBinaryVersion.value, sbtVersion.value),
-    // plotting functionality
-    libraryDependencies ++= Seq(
-      bokeh
-    ), // ++ customJacksonScala
-    unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value),
-    unmanagedSourceDirectories in Compile +=
-      (sourceDirectory in Compile).value / ((sparkVersion.value.takeWhile(_ != '-').split("\\.").toList match {
-        case "1"::x::_ if x.toInt < 3 => "pre-df"
-        case x                        => "post-df"
-      }))
-  )
-  .settings(
-    wispSettings
+    libraryDependencies += scalaTest,
+    unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
   )
   .settings(
     gisSettings
@@ -269,7 +321,6 @@ lazy val common = Project(id = "common", base = file("modules/common"))
                         sparkVersion,
                         hadoopVersion,
                         withHive,
-                        withParquet,
                         jets3tVersion,
                         jlineDef,
                         sbtVersion,
@@ -282,10 +333,16 @@ lazy val common = Project(id = "common", base = file("modules/common"))
                       ),
     buildInfoPackage := "notebook"
   )
+  .settings(
+    Extra.commonSettings
+  )
 
 lazy val spark = Project(id = "spark", base = file("modules/spark"))
   .dependsOn(common, subprocess, observable)
   .dependsOn(kernel)
+  .settings(
+    version  <<= (version in ThisBuild, sparkVersion) { (v,sv) => s"${v}_$sv" }
+  )
   .settings(
     libraryDependencies ++= Seq(
       akkaRemote,
@@ -305,8 +362,8 @@ lazy val spark = Project(id = "spark", base = file("modules/spark"))
           val scalaVerDir = (sourceDirectory in Compile).value / ("scala_" + v)
 
           tsv match {
-            // if spark.version < 1.5.0 use spark-pre1.5
-            case _ if versionCompare.lt(tsv, (1, 5, 0)) => scalaVerDir / "spark-pre1.5"
+            // THIS IS HOW WE CAN DEAL WITH RADICAL CHANGES
+            //case _ if versionCompare.lt(tsv, LAST_WORKING_VERSION) => scalaVerDir / "spark-pre"+LAST_WORKING_VERSION
             case _ => scalaVerDir / "spark-last"
           }
       }
@@ -319,20 +376,23 @@ lazy val spark = Project(id = "spark", base = file("modules/spark"))
   )
   .settings(sharedSettings: _*)
   .settings(sparkSettings: _*)
-
-lazy val tachyon = Project(id = "tachyon", base = file("modules/tachyon"))
-  .settings(sharedSettings: _*)
-  .settings(tachyonSettings: _*)
+  .settings(
+    Extra.sparkSettings
+  )
 
 lazy val kernel = Project(id = "kernel", base = file("modules/kernel"))
-                  .dependsOn(common, subprocess, observable)
-                  .settings(
-                    libraryDependencies ++= Seq(
-                      akkaRemote,
-                      akkaSlf4j,
-                      slf4jLog4j,
-                      commonsIO
-                    ),
-                    unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
-                  )
-                  .settings(sharedSettings: _*)
+  .dependsOn(common, sbtDependencyManager, subprocess, observable, spark)
+  .settings(
+    libraryDependencies ++= Seq(
+      akkaRemote,
+      akkaSlf4j,
+      slf4jLog4j,
+      commonsIO
+    ),
+    libraryDependencies += scalaTest,
+    unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
+  )
+  .settings(sharedSettings: _*)
+  .settings(
+    Extra.kernelSettings
+  )

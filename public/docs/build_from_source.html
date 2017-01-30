@@ -1,0 +1,72 @@
+<head>
+	<link rel="stylesheet" type="text/css" href="styles/github.css">
+</head>
+<body><h1 id="documentation">Documentation</h1>
+<h2 id="building-from-the-sources">Building from the sources</h2>
+<p>The Spark Notebook requires a <a href="http://en.wikipedia.org/wiki/Java_(programming_language)">Java(TM)</a> environment (aka JVM) as runtime and <a href="http://www.scala-sbt.org/">SBT</a> to build it.</p>
+<p>Of course, you will also need a working <a href="http://git-scm.com/">GIT</a> installation to download the code and build it.</p>
+<h3 id="procedure">Procedure</h3>
+<h4 id="download-the-code">Download the code</h4>
+<pre><code>git clone https://github.com/andypetrella/spark-notebook.git
+cd spark-notebook</code></pre>
+<h4 id="launch-the-server">Launch the server</h4>
+<p>Execute <code>sbt</code> within the <code>spark-notebook</code> folder:</p>
+<pre><code>[info] Loading global plugins from /home/noootsab/.sbt/0.13/plugins
+[info] Loading project definition from /home/Sources/noootsab/spark-notebook/project
+[info] Set current project to spark-notebook (in build file:/home/Sources/noootsab/spark-notebook/)
+       _
+ _ __ | | __ _ _  _
+| &#39;_ \| |/ _&#39; | || |
+|  __/|_|\____|\__ /
+|_|            |__/
+
+play 2.2.6 built with Scala 2.10.3 (running Java 1.7.0_72), http://www.playframework.com
+
+&gt; Type &quot;help play&quot; or &quot;license&quot; for more information.
+&gt; Type &quot;exit&quot; or use Ctrl+D to leave this console.
+
+[spark-notebook] $</code></pre>
+<p>Then you will need to execute the <code>run</code> command that will launch the server. In <code>run</code> mode, your changes in the code will be compiled behind the scene and will reload the application for you.</p>
+<h4 id="change-relevant-versions">Change relevant versions</h4>
+<p>When using <strong>Spark</strong> we generally have to take a lot of care with the <strong>Spark</strong> version itself but also the <strong>Hadoop</strong> version. There is another dependency which is tricky to update, the <strong>jets3t</strong> one.</p>
+<p>To update that, you can pass those version as properties, here is an example with the current default ones:</p>
+<pre><code>sbt -D&quot;spark.version&quot;=&quot;1.5.0&quot; -D&quot;hadoop.version&quot;=&quot;2.6.0&quot; -D&quot;jets3t.version&quot;=&quot;0.7.1&quot; -Dmesos.version=&quot;0.24.0&quot;</code></pre>
+<h4 id="create-your-distribution">Create your distribution</h4>
+<p>For a simple <code>zip</code> distro, you can run</p>
+<pre><code>[spark-notebook] $ dist</code></pre>
+<p>In order to develop on the Spark Notebook, you'll have to use the <code>run</code> command instead.</p>
+<h3 id="customizing-your-build">Customizing your build</h3>
+<p>If you want to change some build information like the <code>name</code> or the <code>organization</code> or even specific to <code>docker</code> for your builds. Preferably you would want to avoid having to change the source code of this project.</p>
+<p>You can do this by creating some hidden files being caught by the builder but kept out of git (added to <code>.gitignore</code>).</p>
+<p>Here are the supported configuration.</p>
+<h4 id="update-main-configuration">Update main configuration</h4>
+<p>To update main configuration, <code>name</code> or <code>organization</code> alike, you can create a <code>.main.build.conf</code> next to <code>build.sbt</code>.</p>
+<p>The structure of the file is the following:</p>
+<pre><code>main {
+  name = &quot;YourName&quot;
+  organization = &quot;YourOrganization&quot;
+}</code></pre>
+<p>Check <code>project/MainProperties.scala</code> for details.</p>
+<h6 id="update-docker-configuration">Update Docker configuration</h6>
+<p>Sometimes you may want to change the Docker image which is the result of the <code>sbt ... docker:publishLocal</code> command.</p>
+<p>Create a file called <code>.docker.build.conf</code> next to <code>build.sbt</code>, this file is added to <code>.gitignore</code>. The structure of the file is the following:</p>
+<pre><code>docker {
+  maintainer = &quot;Your maintainer details&quot;
+  registry = &quot;your custom registry&quot;
+  baseImage = &quot;your custom base image&quot;
+  commands = [
+    { .html = USER, arg = root },
+    { .html = RUN,  arg = &quot;apt-get update -y &amp;&amp; apt-get install -y ...&quot; },
+    { .html = ENV,  arg = &quot;MESOS_JAVA_NATIVE_LIBRARY /usr/lib/libmesos.so&quot; },
+    { .html = ENV,  arg = &quot;MESOS_LOG_DIR /var/log/mesos&quot; }
+  ]
+}</code></pre>
+<p>Check <code>project/DockerProperties.scala</code> for details.</p>
+<h4 id="using-unreleased-spark-version">Using unreleased Spark version</h4>
+<p>While using the repository from SBT, you can use any version of Apache Spark you want (<strong>up to 1.4 atm</strong>), this will require several these things:</p>
+<ul>
+<li>you have a local install (maven) of the version (let's say Spark 1.4-RC1 or even Spark-1.4-SNAPSHOT)</li>
+<li>you run the sbt command using the wanted version <code>sbt -Dspark.version=1.4.0-SNAPSHOT</code></li>
+<li>there is a folder in <code>modules/spark/src/main/scala-2.1X</code> that points to the base of the required version (excl. the classifier SNAPHOST or RC): <code>spark-1.6</code></li>
+</ul>
+</body>

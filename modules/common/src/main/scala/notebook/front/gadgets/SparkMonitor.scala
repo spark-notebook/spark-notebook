@@ -153,7 +153,7 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends
   def start() = {
     t.foreach(_.stop)
     t = Some(newT)
-    t.get.start
+    t.foreach(_.start)
   }
 
   def stop() = {

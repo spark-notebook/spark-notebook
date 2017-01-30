@@ -4,6 +4,8 @@ import java.io.{StringWriter, PrintWriter, ByteArrayOutputStream}
 import java.net.{URLDecoder, JarURLConnection}
 import java.util.ArrayList
 
+import org.apache.commons.lang3.exception.ExceptionUtils
+
 import scala.collection.JavaConversions
 import scala.collection.JavaConversions._
 import scala.xml.{NodeSeq, Text}
@@ -36,6 +38,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
 
   private var _initFinished: Boolean = false
   private var _evalsUntilInitFinished: Int = 0
+  // FG: never used !
   private var _needsDropOnReplay: Boolean = false
 
   def setInitFinished(): Unit = {
@@ -103,7 +106,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
       l.interpreter
     }
     //i.initializeSynchronous()
-    _classServerUri = Some(i.classServerUri)
+    _classServerUri = Some(i.getClassOutputDirectory.getAbsolutePath)
     i.asInstanceOf[org.apache.spark.repl.SparkIMain]
   }
 
@@ -156,7 +159,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
     val tpe = try {
       interp.typeOfTerm(termName).toString
     } catch {
-      case exc: RuntimeException => println("Unable to get symbol type", exc); "<notype>"
+      case exc: RuntimeException => println(("Unable to get symbol type", exc)); "<notype>"
     }
     tpe match {
       case "<notype>" => // "<notype>" can be also returned by typeOfTerm
@@ -166,7 +169,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
         Some(
           tpe
             .replace("iwC$", "")
-            .replaceAll("^\\(\\)" , "") // 2.11 return types prefixed, like `()Person`
+            .stripPrefix("\\(\\)") // 2.11 return types prefixed, like `()Person`
         )
     }
   }
@@ -222,7 +225,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
             val renderObjectCode =
               """object $rendered {
                 |  %s
-                |  val rendered: _root_.notebook.front.Widget = { %s }
+                |  val rendered: _root_.notebook.front.Widget = try { %s } catch { case t:Throwable => _root_.notebook.front.widgets.html(<div class='alert alert-danger'><div>Exception in implicit renderer: {t.getMessage}</div><pre>{t.getStackTrace.mkString("\n")}</pre></div>) }
                 |  %s
                 |}""".stripMargin.format(
                   request.importsPreamble,
@@ -233,11 +236,18 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
               try {
                 val classLoader = interp.getClass.getMethods.find(_.getName == "classLoader").map(_.invoke(interp)).get.asInstanceOf[java.lang.ClassLoader]
 
+                // spark looks for the compressor codec from the context class loader...
+                val cp = Thread.currentThread().getContextClassLoader
+                Thread.currentThread().setContextClassLoader( classLoader )
+
                 val renderedClass2 = Class.forName(
                   line.pathTo("$rendered")+"$", true, classLoader
                 )
 
-                val o = renderedClass2.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get()
+                // restore
+                Thread.currentThread().setContextClassLoader( cp )
+
+                val o = renderedClass2.getDeclaredField(interp.global.nme.MODULE_INSTANCE_FIELD.toString).get(())
 
                 def iws(o:Any):NodeSeq = {
                   val iw = o.getClass.getMethods.find(_.getName == "$iw")
@@ -255,15 +265,16 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
                 }
                 iws(o)
               } catch {
-                case e =>
+                case NonFatal(e) =>
                   e.printStackTrace
                   LOG.error("Ooops, exception in the cell", e)
                   <span style="color:red;">Ooops, exception in the cell: {e.getMessage}</span>
+                    <pre style="color:#999;">{ExceptionUtils.getStackTrace(e)}</pre>
               }
             } else {
               // a line like println(...) is technically a val, but returns null for some reason
               // so wrap it in an option in case that happens...
-              Option(line.call("$result")) map { result => Text(try { result.toString } catch { case e => "Fail to `toString` the result: " + e.getMessage }) } getOrElse NodeSeq.Empty
+              Option(line.call("$result")) map { result => Text(try { result.toString } catch { case NonFatal(e) => "Fail to `toString` the result: " + e.getMessage }) } getOrElse NodeSeq.Empty
             }
           } else {
             NodeSeq.Empty
@@ -291,7 +302,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
 
   def addCp(newJars:List[String]) = {
     val requests = interp.getClass.getMethods.find(_.getName == "prevRequestList").map(_.invoke(interp)).get.asInstanceOf[List[interp.Request]]
-    var prevCode = requests.map(_.originalLine).drop( _evalsUntilInitFinished )
+    val prevCode = requests.drop( _evalsUntilInitFinished ).map(_.originalLine)
     interp.close() // this will close the repl class server, which is needed in order to reuse `-Dspark.replClassServer.port`!
     val r = new Repl(compilerOpts, newJars:::jars)
     (r, () => prevCode foreach (c => r.evaluate(c, _ => ())))
@@ -324,7 +335,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
       case None =>
         val candidates = getCompletions(line, cursorPosition)
 
-        (matchedText, if (candidates.size > 0 && candidates.head.isEmpty) {
+        (matchedText, if (candidates.nonEmpty && candidates.head.isEmpty) {
           List()
         } else {
           candidates.map(Match(_))

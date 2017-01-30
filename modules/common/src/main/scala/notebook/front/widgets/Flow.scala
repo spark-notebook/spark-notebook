@@ -187,7 +187,7 @@ case class Flow() extends Updatable with JsWorld[PipeComponent[_], JsValue] {
         pc
       }
       p
-    }.map { case Some(x) => x }
+    }.flatten
     addAndApply(pcs)
   }
 

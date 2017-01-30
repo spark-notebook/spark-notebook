@@ -3,6 +3,8 @@ package client
 
 import java.io.{File, FileWriter}
 
+import org.joda.time.LocalDateTime
+
 import scala.collection.immutable.Queue
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -15,9 +17,11 @@ import org.sonatype.aether.repository.RemoteRepository
 
 import notebook.kernel.repl.common.ReplT
 import notebook.OutputTypes._
-import notebook.util.{Deps, Match, Repos}
+import com.datafellas.utils._
 import notebook.front._
 import notebook.front.widgets._
+import notebook.repl.{ReplCommand, command_interpreters}
+import notebook.repl.command_interpreters.combineIntepreters
 
 
 /**
@@ -41,32 +45,14 @@ class ReplCalculator(
   private val remoteLogger = context.actorSelection("/user/remote-logger")
   remoteLogger ! remoteActor
 
-  private val repoRegex = "(?s)^:local-repo\\s*(.+)\\s*$".r
-  private val remoteRegex = "(?s)^:remote-repo\\s*(.+)\\s*$".r
   private val authRegex = """(?s)^\s*\(([^\)]+)\)\s*$""".r
   private val credRegex = """"([^"]+)"\s*,\s*"([^"]+)"""".r //"
-
-  private def outputTypesRegex(ctx:String, outputType:String) = s"(?s)^:$ctx\\s*\n(.+)\\s*$$".r → outputType
-  private val htmlContext       = outputTypesRegex("html",       `text/html`)
-  private val plainContext      = outputTypesRegex("plain",      `text/plain`)
-  private val markdownContext   = outputTypesRegex("markdown",   `text/markdown`)
-  private val latexContext      = outputTypesRegex("latex",      `text/latex`)
-  private val svgContext        = outputTypesRegex("svg",        `image/svg+xml`)
-  private val pngContext        = outputTypesRegex("png",        `image/png`)
-  private val jpegContext       = outputTypesRegex("jpeg",       `image/jpeg`)
-  private val pdfContext        = outputTypesRegex("pdf",        `application/pdf`)
-  private val javascriptContext = outputTypesRegex("javascript", `application/javascript`)
-
-  private val cpRegex = "(?s)^:cp\\s*(.+)\\s*$".r
-  private val dpRegex = "(?s)^:(l?)dp\\s*(.+)\\s*$".r
-  private val sqlRegex = "(?s)^:sql(?:\\[([a-zA-Z0-9][a-zA-Z0-9]*)\\])?\\s*(.+)\\s*$".r
-  private val shRegex = "(?s)^:sh\\s*(.+)\\s*$".r
 
   private def remoreRepo(r:String):(String, RemoteRepository) = {
     val id::tpe::url::remaining = r.split("%").toList
     val rest = remaining.map(_.trim) match {
       case Nil => remaining
-      case "mvn"::r => r //skip the flavor → always maven in 2.11
+      case "maven"::r => r //skip the flavor → always maven in 2.11
       case xs => xs
     }
     val (username, password):(Option[String],Option[String]) = rest.headOption.map { auth =>
@@ -108,12 +94,11 @@ class ReplCalculator(
 
   val (depsJars, depsScript):(List[String],(String, ()=>String)) = customDeps.map { d =>
     val customDeps = d.mkString("\n")
-    val deps = Deps.script(customDeps, remotes, repo).toOption.getOrElse(List.empty[String])
-    (deps, ("deps", () => {
-      s"""
-         |val CustomJars = ${deps.mkString("Array(\"", "\",\"", "\")").replace("\\","\\\\")}
-      """.stripMargin
-    }))
+    val deps = Deps.script(customDeps, remotes, repo, notebook.BuildInfo.xSparkVersion).toOption.getOrElse(List.empty[String])
+    (deps, ("deps", () => s"""
+                    |val CustomJars = ${ deps.mkString("Array(\"", "\",\"", "\")").replace("\\","\\\\") }
+                    |
+                    """.stripMargin))
   }.getOrElse((List.empty[String], ("deps", () => "val CustomJars = Array.empty[String]\n")))
 
   val ImportsScripts = ("imports", () => customImports.map(_.mkString("\n") + "\n").getOrElse("\n"))
@@ -123,6 +108,14 @@ class ReplCalculator(
   private def repl: ReplT = _repl getOrElse {
     val r = ReplT.create(compilerArgs, depsJars)
     _repl = Some(r)
+    r
+  }
+
+  private var _presentationCompiler: Option[PresentationCompiler] = None
+
+  private def presentationCompiler: PresentationCompiler = _presentationCompiler getOrElse {
+    val r = new PresentationCompiler(depsJars)
+    _presentationCompiler = Some(r)
     r
   }
 
@@ -250,147 +243,10 @@ class ReplCalculator(
         )
     }
 
-    def execute(sender:ActorRef, er:ExecuteRequest):Unit = {
-      val (outputType, newCode) = er.code match {
-        case remoteRegex(r) =>
-          log.debug("Adding remote repo: " + r)
-          val (logR, remote) = remoreRepo(r)
-          remotes = remote :: remotes
-          (`text/plain`, s""" "Remote repo added: $logR!" """)
+    private var commandInterpreters = combineIntepreters(command_interpreters.defaultInterpreters)
 
-        case repoRegex(r) =>
-          log.debug("Updating local repo: " + r)
-          repo = new File(r.trim)
-          repo.mkdirs
-          (`text/plain`, s""" "Repo changed to ${repo.getAbsolutePath}!" """)
-
-        case dpRegex(local, cp) =>
-          log.debug(s"Fetching ${if(local == "l") "locally" else ""} deps using repos: " + remotes.mkString(" -- "))
-          val tryDeps = Deps.script(cp, remotes, repo)
-
-          tryDeps match {
-            case TSuccess(deps) =>
-              eval("""
-                globalScope.sparkContext.stop()
-              """)(
-                "CP reload processed successfully",
-                (str:String) => "Error in :dp: \n%s".format(str)
-              )
-              val (_r, replay) = repl.addCp(deps)
-              _repl = Some(_r)
-              preStartLogic()
-              replay()
-              val newJarList = if (local == "l") {
-                  "Nil"
-                } else {
-                  deps.map(x => x.replaceAll("\\\\", "\\\\\\\\")).mkString("List(\"", "\",\"", "\")")
-                }
-              (`text/html`,
-                s"""
-                   |//updating deps
-                   |globalScope.jars = ($newJarList ::: globalScope.jars.toList).distinct.toArray
-                   |//restarting spark
-                   |reset()
-                   |globalScope.jars.toList
-                 """.stripMargin
-              )
-            case TFailure(ex) =>
-              log.error(ex, "Cannot add dependencies")
-              (`text/html`, s""" <p style="color:red">${ex.getMessage}</p> """)
-          }
-
-        case cpRegex(cp) =>
-          val jars = cp.trim().split("\n").toList.map(_.trim()).filter(_.size > 0)
-          repl.evaluate("""
-            globalScope.sparkContext.stop()
-          """)._1 match {
-            case Failure(str) =>
-              log.error("Error in :cp: \n%s".format(str))
-            case _ =>
-              log.info("CP reload processed successfully")
-          }
-          val (_r, replay) = repl.addCp(jars)
-          _repl = Some(_r)
-          preStartLogic()
-          replay()
-          val newJarList = jars.map(x => x.replaceAll("\\\\", "\\\\\\\\")).mkString("List(\"", "\",\"", "\")")
-          (`text/html`,
-            s"""
-              |//updating deps
-              |globalScope.jars = ($newJarList ::: globalScope.jars.toList).distinct.toArray
-              |//restarting spark
-              |reset()
-              |globalScope.jars.toList
-            """.stripMargin
-          )
-
-        case shRegex(sh) =>
-          val ps = "s\"\"\""+sh.replaceAll("\\s*\\|\\s*", "\" #\\| \"").replaceAll("\\s*&&\\s*", "\" #&& \"")+"\"\"\""
-          val shCode =
-            s"""|import sys.process._
-                |println($ps.!!(ProcessLogger(out => (), err => println(err))))
-                |()
-                |""".stripMargin.trim
-          log.debug(s"Generated SH code: $shCode")
-          (`text/plain`, shCode)
-
-        case sqlRegex(n, sql) =>
-          log.debug(s"Received sql code: [$n] $sql")
-          val qs = "\"\"\""
-          val name = Option(n).map(nm => s"@transient val $nm = ").getOrElse ("")
-          (`text/html`,
-            s"""
-            import notebook.front.widgets.Sql
-            import notebook.front.widgets.Sql._
-            ${name}new Sql(sqlContext, s$qs$sql$qs)
-            """
-          )
-
-        case htmlContext._1(content)        =>
-          val ctx = htmlContext._2
-          val c = content.toString.replaceAll("\"", "&quot;")
-          (ctx, " scala.xml.XML.loadString(s\"\"\""+c+"\"\"\") ")
-
-        case plainContext._1(content)       =>
-          val ctx = plainContext._2
-          val c = content.toString.replaceAll("\"", "\\\\\\\"")
-          (ctx, " s\"\"\""+c+"\"\"\" ")
-
-        case markdownContext._1(content)    =>
-          val ctx = markdownContext._2
-          val c = content.toString.replaceAll("\\\"", "\"")
-          (ctx, " s\"\"\""+c+"\"\"\" ")
-
-        case latexContext._1(content)       =>
-          val ctx = latexContext._2
-          val c = content.toString.replaceAll("\\\"", "\"")
-          (ctx, " s\"\"\""+c+"\"\"\" ")
-
-        case svgContext._1(content)         =>
-          val ctx = svgContext._2
-          val c = content.toString.replaceAll("\"", "&quot;")
-          (ctx, " scala.xml.XML.loadString(s\"\"\""+c+"\"\"\") ")
-
-        case pngContext._1(content)         =>
-          val ctx = pngContext._2
-          (ctx, content.toString)
-
-        case jpegContext._1(content)        =>
-          val ctx = jpegContext._2
-          (ctx, content.toString)
-
-        case pdfContext._1(content)         =>
-          val ctx = pdfContext._2
-          (ctx, content.toString)
-
-        case javascriptContext._1(content)  =>
-          val ctx = javascriptContext._2
-          val c = content.toString//.replaceAll("\"", "\\\"")
-          (ctx, " s\"\"\""+c+"\"\"\" ")
-
-        case whatever => (`text/html`, whatever)
-      }
-
+    def execute(sender: ActorRef, er: ExecuteRequest): Unit = {
+      val generatedReplCode: ReplCommand = commandInterpreters(er)
       val start = System.currentTimeMillis
       val thisSelf = self
       val thisSender = sender
@@ -413,7 +269,7 @@ class ReplCalculator(
           }
           cellResult
         }
-        val result = replEvaluate(newCode, cellId)
+        val result = replEvaluate(generatedReplCode.replCommand, cellId)
         val d = toCoarsest(Duration(System.currentTimeMillis - start, MILLISECONDS))
         (d, result._1)
       }
@@ -421,7 +277,8 @@ class ReplCalculator(
 
       result foreach {
         case (timeToEval, Success(result)) =>
-          thisSender ! ExecuteResponse(outputType, result.toString, timeToEval)
+          val evalTimeStats = s"Took: $timeToEval, at ${new LocalDateTime().toString("Y-M-d H:m")}"
+          thisSender ! ExecuteResponse(generatedReplCode.outputType, result.toString, evalTimeStats)
         case (timeToEval, Failure(stackTrace)) =>
           thisSender ! ErrorResponse(stackTrace, incomplete = false)
         case (timeToEval, notebook.kernel.Incomplete) =>
@@ -438,9 +295,10 @@ class ReplCalculator(
     log.info("ReplCalculator preStart")
 
     val dummyScript = ("dummy", () => s"""val dummy = ();\n""")
-    val SparkHookScript = ("class server", () => s"""@transient val _5C4L4_N0T3800K_5P4RK_HOOK = "${repl.classServerUri.get}";\n""")
+    val SparkHookScript = ("class server", () => s"""@transient val _5C4L4_N0T3800K_5P4RK_HOOK = "${repl.classServerUri.get.replaceAll("\\\\", "\\\\\\\\")}";\n""")
 
-    val nbName = notebookName.replaceAll("\"", "")
+    // Must escape last remaining '\', which could be for windows paths.
+    val nbName = notebookName.replaceAll("\"", "").replace("\\", "\\\\")
 
     val SparkConfScript = {
       val m = customSparkConf .getOrElse(Map.empty[String, String])
@@ -457,7 +315,7 @@ class ReplCalculator(
       """.stripMargin
     )
 
-    def eval(script: () => String):Unit = {
+    def eval(script: () => String): Option[String] = {
       val sc = script()
       log.debug("script is :\n" + sc)
       if (sc.trim.length > 0) {
@@ -465,17 +323,21 @@ class ReplCalculator(
         result match {
           case Failure(str) =>
             log.error("Error in init script: \n%s".format(str))
+            None
           case _ =>
             if (log.isDebugEnabled) log.debug("\n" + sc)
             log.info("Init script processed successfully")
+            Some(sc)
         }
-      } else ()
+      } else None
     }
 
     val allInitScrips: List[(String, () => String)] = dummyScript :: SparkHookScript :: depsScript :: ImportsScripts :: CustomSparkConfFromNotebookMD :: initScripts.map(x => (x._1, () => x._2))
     for ((name, script) <- allInitScrips) {
       log.info(s" INIT SCRIPT: $name")
-      eval(script)
+      eval(script).foreach { sc =>
+        presentationCompiler.addScripts(sc)
+      }
     }
   }
 
@@ -486,6 +348,7 @@ class ReplCalculator(
 
   override def postStop() {
     log.info("ReplCalculator postStop")
+    presentationCompiler.stop()
     super.postStop()
   }
 
@@ -514,7 +377,10 @@ class ReplCalculator(
         case req @ ExecuteRequest(_, _, code) => executor.forward(req)
 
         case CompletionRequest(line, cursorPosition) =>
-          val (matched, candidates) = repl.complete(line, cursorPosition)
+          // REPL completions seem broken. but presentationCompiler finally +/- works in 2.11
+          // val (matched, candidates) = repl.complete(line, cursorPosition)
+          val (matched, candidates) = presentationCompiler.complete(line, cursorPosition)
+
           sender ! CompletionResponse(cursorPosition, candidates, matched)
 
         case ObjectInfoRequest(code, position) =>

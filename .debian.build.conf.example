@@ -1,0 +1,4 @@
+debian {
+  maintainer     = "Francois Bayart <francois.bayart@data-fellas.invalid>"
+  server_loading = "Upstart"
+}

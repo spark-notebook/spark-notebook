@@ -17,7 +17,7 @@ import scala.concurrent.Future
  */
 class RemoteActorProcess extends ForkableProcess {
   // http://stackoverflow.com/questions/14995834/programmatically-obtain-ephemeral-port-with-akka
-  var _system: ActorSystem = null
+  private var _system: ActorSystem = null
 
   def init(args: Seq[String]): String = {
     val configFile = args.head
@@ -37,7 +37,6 @@ class RemoteActorProcess extends ForkableProcess {
 
     val address = GetAddress(_system).address
     address.toString
-    // address.port.getOrElse(sys.error("not a remote actor system: %s".format(cfg))).toString
   }
 
   def waitForExit() {
@@ -71,24 +70,20 @@ class ShutdownActor extends Actor {
 /**
  * Represents a running remote actor system, with an address and the ability to kill it
  */
-class RemoteActorSystem(localSystem: ActorSystem, info: ProcessInfo,
-  remoteContext: ActorRefFactory) {
+class RemoteActorSystem(localSystem: ActorSystem, info: ProcessInfo, remoteContext: ActorRefFactory) {
+
   def this(localSystem: ActorSystem, info: ProcessInfo) = this(localSystem, info, localSystem)
 
   val address = AddressFromURIString(info.initReturn)
 
-  val shutdownActor = remoteContext.actorOf(Props(new ShutdownActor).withDeploy(Deploy(scope = RemoteScope(address))))
-
   def deploy = Deploy(scope = RemoteScope(address))
 
-  def actorOf(context: ActorRefFactory, props: Props) = context.actorOf(props.withDeploy(deploy))
+  // this guy can `sys.exit` the remote process
+  // since we use the `deploy` object to deploy it and its `postStop`
+  val shutdownActor = remoteContext.actorOf(Props(new ShutdownActor).withDeploy(deploy))
 
   def shutdownRemote() {
     shutdownActor ! PoisonPill
-  }
-
-  def killRemote() {
-    info.kill()
   }
 
 }

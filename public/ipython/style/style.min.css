@@ -8670,6 +8670,7 @@ ul.breadcrumb span {
 }
 .list_header {
   font-weight: bold;
+  background-color: #FFF;
 }
 .list_container {
   margin-top: 4px;
@@ -8826,11 +8827,11 @@ ul#new-menu {
 #tab_content {
   padding-top: 20px;
 }
-#running .panel-group .panel {
+.tab-pane .panel-group .panel {
   margin-top: 3px;
   margin-bottom: 1em;
 }
-#running .panel-group .panel .panel-heading {
+.tab-pane .panel-group .panel .panel-heading {
   background-color: #eeeeee;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -8838,23 +8839,23 @@ ul#new-menu {
   padding-right: 7px;
   line-height: 22px;
 }
-#running .panel-group .panel .panel-heading a:focus,
-#running .panel-group .panel .panel-heading a:hover {
+.tab-pane .panel-group .panel .panel-heading a:focus,
+.tab-pane .panel-group .panel .panel-heading a:hover {
   text-decoration: none;
 }
-#running .panel-group .panel .panel-body {
+.tab-pane .panel-group .panel .panel-body {
   padding: 0px;
 }
-#running .panel-group .panel .panel-body .list_container {
+.tab-pane .panel-group .panel .panel-body .list_container {
   margin-top: 0px;
   margin-bottom: 0px;
   border: 0px;
   border-radius: 0px;
 }
-#running .panel-group .panel .panel-body .list_container .list_item {
+.tab-pane .panel-group .panel .panel-body .list_container .list_item {
   border-bottom: 1px solid #dddddd;
 }
-#running .panel-group .panel .panel-body .list_container .list_item:last-child {
+.tab-pane .panel-group .panel .panel-body .list_container .list_item:last-child {
   border-bottom: 0px;
 }
 /*!
@@ -11236,4 +11237,8 @@ span.autosave_status {
 }
 .terminal-app #terminado-container {
   margin-top: 20px;
+}
+
+footer.footer {
+  margin-top: 25px;
 }

@@ -11,8 +11,7 @@ import org.slf4j.LoggerFactory
 import play.api.libs.iteratee._
 
 
-class ObsWebSocketService(system: ActorSystem, val channel: Concurrent.Channel[JsValue],
-  remoteDeployFuture: Future[Deploy]) {
+class ObsWebSocketService(system: ActorSystem, val channel: Concurrent.Channel[JsValue], remoteDeployFuture: Future[Deploy]) {
 
   val obsActor = system.actorOf(Props(new LocalActor))
 
@@ -28,15 +27,12 @@ class ObsWebSocketService(system: ActorSystem, val channel: Concurrent.Channel[J
 
     def receive = {
       case m@("add", channel: Concurrent.Channel[JsValue]) =>
-        //println(s"Adding channel $channel to channels $channels")
         channels = channel :: channels
 
       case m@("remove", channel: Concurrent.Channel[JsValue]) =>
-        //println(s"Removing channel $channel to channels $channels")
         channels = channels.filter(_ != channel)
         if (channels.isEmpty) {
-          println(s"WebSocketObservableActor: no more channels are attached, but not killing the actor")
-          //sender() ! akka.actor.PoisonPill
+          println(s"WebSocketObservableActor: no more channels are attached")
         }
 
       case msg@ObservableBrowserToVM(id, newValue) =>
@@ -44,9 +40,6 @@ class ObsWebSocketService(system: ActorSystem, val channel: Concurrent.Channel[J
 
       case ObservableVMToBrowser(id, value) =>
         val respJson = Json.obj("id" -> id, "new_value" -> value)
-        //println(s"Pushing respJson: $respJson")
-        //println(s"Channels are: $channels")
-
         channels foreach (channel => channel push respJson)
     }
   }

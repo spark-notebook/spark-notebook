@@ -14,8 +14,6 @@
   <link rel="stylesheet" href="@routes.Assets.at("ipython/style/style.min.css")" type="text/css"/>
   <link rel="stylesheet" href="@routes.Assets.at("ipython/notebook/css/override.css")" type="text/css" />
   <link rel="stylesheet" href=""  id='kernel-css'                             type="text/css" />
-  <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/bokeh.css")" type="text/css" />
-  <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/rickshaw/rickshaw.min.css")" type="text/css" />
   <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/leaflet.css")" type="text/css" />
   <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/L.Control.MousePosition.css")" type="text/css" />
   <!-- tweaks for report mode, if it is active -->
@@ -94,6 +92,7 @@
                                 <li id="download_scala"><a href="#">Scala</a></li>
                                 <!-- <li id="download_html"><a href="#">HTML (.html)</a></li>
                                 <li id="download_rst"><a href="#">reST (.rst)</a></li> -->
+                                <li id="download_markdown"><a href="#">Markdown (.md)</a></li>
                                 <li id="download_pdf"><a href="#">PDF (.pdf)</a></li>
                             </ul>
                         </li>
@@ -131,6 +130,13 @@
                 </li>
                 <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">View</a>
                     <ul id="view_menu" class="dropdown-menu">
+                        <li id="toggle-sidebar-menu-item">
+                            <a href="#" id="toggle-sidebar">Toggle sidebar (error logs, status, etc)</a>
+                        </li>
+                        <li id="link-to-spark-ui" class="disabled">
+                            <a href="#" target="_blank">Open Spark UI</a>
+                        </li>
+                        <li class="divider"></li>
                         <li id="read_only_view">
                             <a href="?read_only=1" target="_blank">
                                 Read-only (save resources, no autosave conflicts)
@@ -287,6 +293,7 @@
                         <li id="notebook_tour" title="A quick tour of the notebook user interface"><a href="#">User Interface Tour</a></li>
                         <li id="keyboard_shortcuts" title="Opens a tooltip with all keyboard shortcuts"><a href="#">Keyboard Shortcuts</a></li>
                         <li class="divider"></li>
+                        <li id="notebook_docs" title="documentation"><a href="/assets/docs/index.html" target="_blank">Docs</a></li>
                         <!--{% set
                             sections = (
                                 (
@@ -328,20 +335,27 @@
 } {
   <div id="ipython-main-app">
       <div id="notebook_panel" class="container-fluid">
-          <div id="notebook" class="col-md-9"></div>
+          <div id="notebook" class="col-md-12"></div>
 
           <div id="notebook-panels" class="col-md-3" >
-            <div id="sidebar" class="gridster">
+            <div id="sidebar" class="gridster hidden">
                 <ul>
-                    <li data-row="1" data-col="1" data-sizex="2" data-sizey="2">
-                        <h4 id="spark-jobs">Spark Job Progress&nbsp;&nbsp;<span id="spark-ui-link-container"></span></h4>
+                    <li class="widget" data-row="1" data-col="1" data-sizex="2" data-sizey="1">
+                        <h4 id="spark-jobs">Spark Job Progress</h4>
                         <div id="all-jobs-progress-bar"></div>
-
-                        <h4>Terms defined</h4>
-                        <div id="termDefinitions" style="overflow: auto; height: 200px"></div>
                     </li>
 
-                    <li data-row="3" data-col="1" data-sizex="2" data-sizey="1">
+                    <li class="widget" data-row="2" data-col="1" data-sizex="2" data-sizey="7">
+                        <h4>Terms defined</h4>
+                        <div id="termDefinitions" style="overflow: auto"></div>
+                    </li>
+
+                    <li class="widget" data-row="10" data-col="1" data-sizex="2" data-sizey="3">
+                        <h4>Error logs (see browser console for more)</h4>
+                        <ul id="logsPanel" style="overflow: auto;"></ul>
+                    </li>
+
+                    <li class="widget" data-row="14" data-col="1" data-sizex="2" data-sizey="4">
                         <div id="chat-room">
                             <h4>Chat Room</h4>
                             <input type="text" name="alias" class="form-control" data-bind="value: chat.alias, hasFocus: chat.aliasing" placeholder="Choose an alias"/>
@@ -353,44 +367,9 @@
                             </div>
                         </div>
                     </li>
-
-                    <li data-row="4" data-col="1" data-sizex="1" data-sizey="0"></li>
-                    <li data-row="4" data-col="2" data-sizex="1" data-sizey="0"></li>
                 </ul>
             </div>
           </div>
-
-          @if(utils.AppUtils.config.tachyonInfo.isDefined) {
-              <div id="notebook-tachyon-container" class="pull-right" data-bind="style: { width: tachyon.width() }, visible: tachyon.opened()" style="top: 0px; position: absolute; right: 0px; background-color: #74AFAD; color: #ECECEA">
-                <div style="height:22px; ">
-                  <strong>Tachyon</strong>
-                  <button type="button" class="btn btn-xs pull-right" style="background-color: #558C89" data-bind="click: tachyon.close">
-                    <i class="fa fa-close"></i>
-                  </button>
-                  <button type="button" class="btn btn-xs pull-right" style="background-color: #558C89" data-bind="click: tachyon.reload">
-                    <i class="fa fa-refresh"></i>
-                  </button>
-                  <button type="button" class="btn btn-xs pull-right" style="background-color: #558C89" data-bind="click: tachyon.resize">
-                    <i class="fa fa-expand"></i>
-                  </button>
-                </div>
-                <div id="notebook-tachyon">
-
-                  <ul class="breadcrumb" data-bind="foreach: tachyon.fragments()">
-                    <li><a href="#" data-bind="text: name, click: $parent.tachyon.list"></a> <span class="divider"></span></li>
-                  </ul>
-
-                  <ul data-bind="foreach: tachyon.paths">
-                    <li style="font-size: 13pt;">
-                      <span data-bind="text: path"></span>
-                      <button class="btn btn-xs pull-right" style="background-color: #558C89" type="button" data-bind="click: $parent.tachyon.list">
-                        <i class="fa fa-list"></i>
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-          }
       </div>
   </div>
 
@@ -407,10 +386,7 @@
   <script type="text/javascript">
       sys_info = "@{sys_info.getOrElse("missing: sys_info")}";
   </script>
-  <script src="@routes.Assets.at("javascripts/ipython/js/bokeh.js")" type="text/javascript" charset="utf-8"></script>
   <script src="@routes.Assets.at("ipython/components/text-encoding/lib/encoding.js")" charset="utf-8"></script>
-  <!-- tachyon routes -->
-  <script type="text/javascript" src="@controllers.routes.TachyonProxy.tachyonJavascriptRoutes()"></script>
   <!-- main app -->
   <script src="@routes.Assets.at("ipython/notebook/js/main.js")" charset="utf-8"></script>
 }

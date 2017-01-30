@@ -68,7 +68,7 @@ class PresentationCompiler(dependencies: List[String]) {
               val returnType = try {
                 m.tpe.resultType.toString
               } catch {
-                case exc: RuntimeException => println("Unable to get symbol type", exc); "?"
+                case exc: RuntimeException => println(("Unable to get symbol type", exc)); "?"
               }
               CompletionInformation(m.sym.nameString, params, returnType)
             }.toSeq

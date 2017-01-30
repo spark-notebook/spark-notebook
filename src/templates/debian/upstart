@@ -1,0 +1,25 @@
+# generated upstart config
+
+description "${{descr}}"
+author "${{author}}"
+
+# When to start the service
+start on runlevel [2345]
+start on (started networking)
+
+# When to stop the service
+stop on runlevel [016]
+stop on (stopping networking)
+
+pre-start script
+    [ -d /var/run/${{app_name}} ] || install -m 755 -o ${{daemon_user}} -g ${{daemon_user}} -d /var/run/${{app_name}}
+end script
+
+# Start the process
+script
+    . /etc/default/${{app_name}}
+    export MESOS_NATIVE_LIBRARY
+    export SPARK_HOME
+    export SPARK_LOCAL_DIRS
+    exec start-stop-daemon --start --chdir ${{chdir}} --chuid ${{daemon_user}} --exec bin/${{exec}} -- $JAVA_OPTS
+end script

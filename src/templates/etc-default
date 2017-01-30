@@ -1,0 +1,50 @@
+# Available replacements
+# ------------------------------------------------
+# ${{author}}           debian author
+# ${{descr}}            debian package description
+# ${{exec}}             startup script name
+# ${{chdir}}            app directory
+# ${{retries}}          retries for startup
+# ${{retryTimeout}}     retry timeout
+# ${{app_name}}         normalized app name
+# ${{daemon_user}}      daemon user
+# -------------------------------------------------
+# Setting JAVA_OPTS
+# -----------------
+# JAVA_OPTS="-Xms2048m -Xmx2048m $JAVA_OPTS"
+JAVA_OPTS="-Dpidfile.path=/var/run/${{app_name}}/play.pid $JAVA_OPTS"
+# JAVA_OPTS="-Dconfig.file=/etc/${{app_name}}/env.conf $JAVA_OPTS"
+# JAVA_OPTS="-DapplyEvolutions.default=false $JAVA_OPTS"
+# JAVA_OPTS="-Dhttp.port=9001 $JAVA_OPTS"
+# JAVA_OPTS="-Dhttp.address=127.0.0.1 $JAVA_OPTS"
+
+# Setting -Xmx and -Xms in Megabyte
+#-mem 2048
+
+# Setting -X directly (-J is stripped)
+# -J-X
+# -J-Xmx1024
+
+# Add additional jvm parameters
+# -Dkey=val
+
+# Since play uses separate pidfile we have to provide it with a proper path
+#-Dpidfile.path=/var/run/${{app_name}}/play.pid
+
+# Use separate configuration file for production environment
+#-Dconfig.file=/etc/${{app_name}}/production.conf
+
+# You may also want to include this setting if you use play evolutions
+#-DapplyEvolutions.default=true
+
+# Turn on JVM debugging, open at the given port
+# -jvm-debug <port>
+
+# Don't run the java version check
+# -no-version-check
+
+# enabling debug and sending -d as app argument
+# the '--' prevents app-parameter swalloing when
+# using a reserved parameter. See #184
+# -d -- -d
+

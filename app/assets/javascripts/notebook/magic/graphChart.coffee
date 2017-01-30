@@ -35,8 +35,8 @@ define([
                         .attr("cy", (d) -> d.y )
                   )
 
-    link = svg.selectAll(".link")
-    node = svg.selectAll(".node")
+    link = svg.selectAll("line")
+    node = svg.selectAll("circle")
 
     updateData = (data) =>
       graph.nodes.length = 0
@@ -61,26 +61,28 @@ define([
     updateView = () =>
       link = link.data(graph.links)
       link.enter().append("line")
-          #.attr("class", "link")
           .style("stroke", (d) -> d.color )
           .style("stroke-opacity", ".6")
           .style("stroke-width", 1) #1 could be replaced by a function
       link.exit().remove();
 
       node = node.data(graph.nodes)
-      node.enter().append("circle")
-          #.attr("class", "node")
-          .attr("r", 5)
+      node.exit().remove();
+      node.enter()
+            .append("circle")
+              .style("stroke", "#fff")
+              .style("stroke-width", "1.5px")
+              .call(force.drag)
+                .append("title")
+      node.attr("r", (d) -> d.r || 5 )
+          .attr("cx", (d) -> d.x || Math.random()*w )
+          .attr("cy", (d) -> d.y || Math.random()*h )
           .style("fill", (d) -> d.color )
-          .style("stroke", "#fff")
-          .style("stroke-width", "1.5px")
-          .call(force.drag)
-
-      node.append("title")
-          .text((d) ->
-            v = _.omit(d, ["index", "weight", "x", "y", "px", "py"])
-            JSON.stringify(v)
-          )
+          .select("title")
+            .text((d) ->
+              v = _.omit(d, ["index", "weight", "x", "y", "px", "py", "r", "fixed"])
+              JSON.stringify(v)
+            )
 
     update = (data) =>
       updateData(data)

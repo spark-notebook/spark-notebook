@@ -9,7 +9,8 @@ define([
     'base/js/keyboard',
     'notebook/js/mathjaxutils',
     'components/marked/lib/marked',
-], function(IPython, $, utils, security, keyboard, mathjaxutils, marked) {
+    'svgAsPng'
+], function(IPython, $, utils, security, keyboard, mathjaxutils, marked, svgAsPng) {
     "use strict";
 
     /**
@@ -853,6 +854,10 @@ define([
         return toinsert;
      };
 
+    var append_ignore = function (ig, md, element) {
+        return $("<span></span>");
+     };
+
     var append_latex = function (latex, md, element) {
         /**
          * This method cannot do the typesetting because the latex first has to
@@ -982,6 +987,48 @@ define([
         }
     };
 
+    OutputArea.prototype.convertSvg = function() {
+        var promises = [];
+        for (var i = 0; i < this.outputs.length; i++) {
+            var o = this.outputs[i];
+            if (o.output_type == 'execute_result') {
+                if (o.data["text/html"]) {
+                    if (!o.data_list) o.data_list  = {};
+                    o.data_list["application/svg+pngbase64"] = [];
+                    var h = o.data["text/html"];
+
+                    var svgs = this.element
+                      .find("svg")
+                      // exclude buttons and special SVGs from Plotly
+                      .filter(function (index, svg) {
+                        var isPlotly = $(svg).parents(".plotly").length > 0;
+                        var isPlotyButton = $(svg).parents(".modebar").length > 0;
+                        var isWeirdSvg = $(svg).find(".zoomlayer, .infolayer, .hoverlayer").length > 0;
+                        return  !isPlotly || (!isPlotyButton && !isWeirdSvg);
+                      });
+
+                    for (var i in svgs) {
+                        var s = svgs[i];
+                        try {
+                            var p = new Promise(function(resolve, reject) {
+                                svgAsPng.svgAsPngUri(s, {}, function(uri) {
+                                  var data = uri;
+                                  o.data_list["application/svg+pngbase64"].push(data);
+                                  resolve(true)
+                                });
+                            });
+                            promises.push(p);
+                        } catch(e) {
+                            alert("Couldn't generate markdown, check the javascript console for the error and report an issue if necessary... sorry.")
+                            console.error(e);
+                        }
+                    }
+                }
+            }
+        }
+        return Promise.all(promises);
+    }
+
 
     // JSON serialization
 
@@ -1063,7 +1110,8 @@ define([
         'image/png',
         'image/jpeg',
         'application/pdf',
-        'text/plain'
+        'text/plain',
+        'application/svg+pngbase64'
     ];
 
     OutputArea.append_map = {
@@ -1075,7 +1123,8 @@ define([
         "image/jpeg" : append_jpeg,
         "text/latex" : append_latex,
         "application/javascript" : append_javascript,
-        "application/pdf" : append_pdf
+        "application/pdf" : append_pdf,
+        "application/svg+pngbase64": append_ignore
     };
 
     // For backwards compatability.

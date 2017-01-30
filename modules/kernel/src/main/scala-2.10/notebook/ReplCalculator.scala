@@ -8,14 +8,18 @@ import notebook.PresentationCompiler
 import notebook.kernel._
 import notebook.JobTracking
 import notebook.kernel.repl.common.ReplT
-import notebook.util.{CustomResolvers, Deps}
+import org.joda.time.LocalDateTime
 
+import com.datafellas.utils.{CustomResolvers, Deps}
+import com.datafellas.utils._
 import sbt._
 
 import scala.collection.immutable.Queue
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.{Failure => TFailure, Success => TSuccess}
+import notebook.repl.{ReplCommand, command_interpreters}
+import notebook.repl.command_interpreters.combineIntepreters
 
 /**
  * @param _initScripts List of scala source strings to be executed during REPL startup.
@@ -30,41 +34,20 @@ class ReplCalculator(
   customImports: Option[List[String]],
   customArgs: Option[List[String]],
   customSparkConf: Option[Map[String, String]],
-  remoteActor:ActorRef,
+  remoteCalcActorRef:ActorRef, // From CalcWebSocketService !
   _initScripts: List[(String, String)],
   compilerArgs: List[String]
 ) extends Actor with akka.actor.ActorLogging {
 
   private val remoteLogger = context.actorSelection("/user/remote-logger")
-  remoteLogger ! remoteActor
+  remoteLogger ! remoteCalcActorRef
 
-  private val repoRegex = "(?s)^:local-repo\\s*(.+)\\s*$".r
-  private val resolverRegex = "(?s)^:remote-repo\\s*(.+)\\s*$".r
   private val authRegex = """(?s)^\s*\(([^\)]+)\)\s*$""".r
   private val credRegex = """"([^"]+)"\s*,\s*"([^"]+)"""".r //"
 
-  private def outputTypesRegex(ctx: String, outputType: String) = {
-    s"(?s)^:$ctx\\s*\n(.+)\\s*$$".r → outputType
-  }
-
-  private val htmlContext = outputTypesRegex("html", `text/html`)
-  private val plainContext = outputTypesRegex("plain", `text/plain`)
-  private val markdownContext = outputTypesRegex("markdown", `text/markdown`)
-  private val latexContext = outputTypesRegex("latex", `text/latex`)
-  private val svgContext = outputTypesRegex("svg", `image/svg+xml`)
-  private val pngContext = outputTypesRegex("png", `image/png`)
-  private val jpegContext = outputTypesRegex("jpeg", `image/jpeg`)
-  private val pdfContext = outputTypesRegex("pdf", `application/pdf`)
-  private val javascriptContext = outputTypesRegex("javascript", `application/javascript`)
-
-  private val cpRegex = "(?s)^:cp\\s*(.+)\\s*$".r
-  private val dpRegex = "(?s)^:(l?)dp\\s*(.+)\\s*$".r
-  private val sqlRegex = "(?s)^:sql(?:\\[([a-zA-Z0-9][a-zA-Z0-9]*)\\])?\\s*(.+)\\s*$".r
-  private val shRegex = "(?s)^:sh\\s*(.+)\\s*$".r
-
   // note: the resolver list is a superset of Spark's list in o.a.spark.deploy.SparkSubmit
   // except that the local ivy repo isn't included
-  var resolvers: List[Resolver] = {
+  private var resolvers: List[Resolver] = {
     val mavenLocal = Resolver.mavenLocal
     val defaultLocal = Resolver.defaultLocal
     val local = {
@@ -84,7 +67,7 @@ class ReplCalculator(
     customRepos.getOrElse(List.empty[String]).map(CustomResolvers.fromString).map(_._2) ::: defaults
   }
 
-  var repo: File =  customLocalRepo.map { x =>
+  private var repo: File =  customLocalRepo.map { x =>
                       new File(notebook.util.StringUtils.updateWithVarEnv(x))
                     }.getOrElse {
                       val tmp = new File(System.getProperty("java.io.tmpdir"))
@@ -105,7 +88,7 @@ class ReplCalculator(
 
   val (depsJars, depsScript): (List[String], (String, () => String)) = customDeps.map { d =>
     val customDeps = d.mkString("\n")
-    val deps = Deps.script(customDeps, resolvers, repo).toOption.getOrElse(List.empty[String])
+    val deps = Deps.script(customDeps, resolvers, repo, notebook.BuildInfo.xSparkVersion).toOption.getOrElse(List.empty[String])
     (deps, ("deps", () => {
       s"""
          |val CustomJars = ${deps.mkString("Array(\"", "\",\"", "\")").replace("\\","\\\\")}
@@ -180,12 +163,12 @@ class ReplCalculator(
       repl.evaluate(b)._1 match {
         case Failure(str) =>
           if (notify) {
-            eval( s"""""", notify = false)()
+            eval( """""", notify = false)()
           }
           log.error(failure(str))
         case _ =>
           if (notify) {
-            eval( s"""""", notify = false)()
+            eval( """""", notify = false)()
           }
           log.info(success)
       }
@@ -236,9 +219,9 @@ class ReplCalculator(
         }
 
         // StreamResponse shows error msg
-        sender() ! StreamResponse(s"The cell was cancelled.\n", "stderr")
+        sender() ! StreamResponse("The cell was cancelled.\n", "stderr")
         // ErrorResponse to marks cell as ended
-        sender() ! ErrorResponse(s"The cell was cancelled.\n", incomplete = false)
+        sender() ! ErrorResponse("The cell was cancelled.\n", incomplete = false)
 
       case InterruptRequest =>
         log.debug("Interrupting the spark context")
@@ -253,142 +236,10 @@ class ReplCalculator(
         )
     }
 
+    private var commandInterpreters = combineIntepreters(command_interpreters.defaultInterpreters)
+
     def execute(sender: ActorRef, er: ExecuteRequest): Unit = {
-      val (outputType, newCode) = er.code match {
-        case resolverRegex(r) =>
-          log.debug("Adding resolver: " + r)
-          val (logR, resolver) = CustomResolvers.fromString(r)
-          resolvers = resolver :: resolvers
-          (`text/plain`, s""" "Resolver added: $logR!" """)
-
-        case repoRegex(r) =>
-          log.debug("Updating local repo: " + r)
-          repo = new File(r.trim)
-          repo.mkdirs
-          (`text/plain`, s""" "Repo changed to ${repo.getAbsolutePath}!" """)
-
-        case dpRegex(local, cp) =>
-          log.debug(s"Fetching ${if(local == "l") "locally" else ""} deps using repos: " + resolvers.mkString(" -- "))
-          val tryDeps = Deps.script(cp, resolvers, repo)
-
-          tryDeps match {
-            case TSuccess(deps) =>
-              eval( """globalScope.sparkContext.stop() """)("CP reload processed successfully",
-                (str: String) => "Error in :dp: \n%s".format(str)
-              )
-              val (_r, replay) = repl.addCp(deps)
-              _repl = Some(_r)
-              preStartLogic()
-              replay()
-              val newJarList = if (local == "l") {
-                  "Nil"
-                } else {
-                  deps.map(x => x.replaceAll("\\\\", "\\\\\\\\")).mkString("List(\"", "\",\"", "\")")
-                }
-              (`text/html`,
-                s"""
-                   |//updating deps
-                   |globalScope.jars = ($newJarList ::: globalScope.jars.toList).distinct.toArray
-                   |//restarting spark
-                   |reset()
-                   |globalScope.jars.toList
-                 """.stripMargin
-              )
-            case TFailure(ex) =>
-              log.error(ex, "Cannot add dependencies")
-              (`text/html`, s""" <p style="color:red">${ex.getMessage}</p> """)
-          }
-
-        case cpRegex(cp) =>
-          val jars = cp.trim().split("\n").toList.map(_.trim()).filter(_.length > 0)
-          repl.evaluate( """globalScope.sparkContext.stop()""")._1 match {
-            case Failure(str) =>
-              log.error("Error in :cp: \n%s".format(str))
-            case _ =>
-              log.info("CP reload processed successfully")
-          }
-          val (_r, replay) = repl.addCp(jars)
-          _repl = Some(_r)
-          preStartLogic()
-          replay()
-          val newJarList = jars.map(x => x.replaceAll("\\\\", "\\\\\\\\")).mkString("List(\"", "\",\"", "\")")
-          (`text/html`,
-            s"""
-              |//updating deps
-              |globalScope.jars = ($newJarList ::: globalScope.jars.toList).distinct.toArray
-              |//restarting spark
-              |reset()
-              |globalScope.jars.toList
-            """.stripMargin
-          )
-
-        case shRegex(sh) =>
-          val ps = "s\"\"\"" + sh.replaceAll("\\s*\\|\\s*", "\" #\\| \"").replaceAll("\\s*&&\\s*", "\" #&& \"") + "\"\"\""
-
-          val shCode =
-            s"""|import sys.process._
-                |println($ps.!!(ProcessLogger(out => (), err => println(err))))
-                |()
-                |""".stripMargin.trim
-          log.debug(s"Generated SH code: $shCode")
-          (`text/plain`, shCode)
-
-        case sqlRegex(n, sql) =>
-          log.debug(s"Received sql code: [$n] $sql")
-          val qs = "\"\"\""
-          val name = Option(n).map(nm => s"@transient val $nm = ").getOrElse("")
-          (`text/html`,
-            s"""
-            import notebook.front.widgets.Sql
-            import notebook.front.widgets.Sql._
-            ${name}new Sql(sqlContext, s$qs$sql$qs)
-            """
-            )
-
-        case htmlContext._1(content) =>
-          val ctx = htmlContext._2
-          val c = content.toString.replaceAll("\"", "&quot;")
-          (ctx, " scala.xml.XML.loadString(s\"\"\"" + c + "\"\"\") ")
-
-        case plainContext._1(content) =>
-          val ctx = plainContext._2
-          val c = content.toString.replaceAll("\"", "\\\\\\\"")
-          (ctx, " s\"\"\"" + c + "\"\"\" ")
-
-        case markdownContext._1(content) =>
-          val ctx = markdownContext._2
-          val c = content.toString.replaceAll("\\\"", "\"")
-          (ctx, " s\"\"\"" + c + "\"\"\" ")
-
-        case latexContext._1(content) =>
-          val ctx = latexContext._2
-          val c = content.toString.replaceAll("\\\"", "\"")
-          (ctx, " s\"\"\"" + c + "\"\"\" ")
-
-        case svgContext._1(content) =>
-          val ctx = svgContext._2
-          val c = content.toString.replaceAll("\"", "&quot;")
-          (ctx, " scala.xml.XML.loadString(s\"\"\"" + c + "\"\"\") ")
-
-        case pngContext._1(content) =>
-          val ctx = pngContext._2
-          (ctx, content.toString)
-
-        case jpegContext._1(content) =>
-          val ctx = jpegContext._2
-          (ctx, content.toString)
-
-        case pdfContext._1(content) =>
-          val ctx = pdfContext._2
-          (ctx, content.toString)
-
-        case javascriptContext._1(content) =>
-          val ctx = javascriptContext._2
-          val c = content.toString //.replaceAll("\"", "\\\"")
-          (ctx, " s\"\"\"" + c + "\"\"\" ")
-
-        case whatever => (`text/html`, whatever)
-      }
+      val generatedReplCode: ReplCommand = commandInterpreters(er)
       val start = System.currentTimeMillis
       val thisSelf = self
       val thisSender = sender
@@ -411,7 +262,7 @@ class ReplCalculator(
           }
           cellResult
         }
-        val result = replEvaluate(newCode, cellId)
+        val result = replEvaluate(generatedReplCode.replCommand, cellId)
         val d = toCoarsest(Duration(System.currentTimeMillis - start, MILLISECONDS))
         (d, result._1)
       }
@@ -419,7 +270,8 @@ class ReplCalculator(
 
       result foreach {
         case (timeToEval, Success(result)) =>
-          thisSender ! ExecuteResponse(outputType, result.toString(), timeToEval)
+          val evalTimeStats = s"Took: $timeToEval, at ${new LocalDateTime().toString("Y-M-d H:m")}"
+          thisSender ! ExecuteResponse(generatedReplCode.outputType, result.toString(), evalTimeStats)
         case (timeToEval, Failure(stackTrace)) =>
           thisSender ! ErrorResponse(stackTrace, incomplete = false)
         case (timeToEval, notebook.kernel.Incomplete) =>
@@ -438,10 +290,11 @@ class ReplCalculator(
     val dummyScript = ("dummy", () => s"""val dummy = ();\n""")
     val SparkHookScript = (
       "class server",
-      () => s"""@transient val _5C4L4_N0T3800K_5P4RK_HOOK = "${repl.classServerUri.get}";\n"""
+      () => s"""@transient val _5C4L4_N0T3800K_5P4RK_HOOK = "${repl.classServerUri.get.replaceAll("\\\\", "\\\\\\\\")}";\n"""
       )
 
-    val nbName = notebookName.replaceAll("\"", "")
+    // Must escape last remaining '\', which could be for windows paths.
+    val nbName = notebookName.replaceAll("\"", "").replace("\\", "\\\\")
 
     val SparkConfScript = {
       val m = customSparkConf .getOrElse(Map.empty[String, String])

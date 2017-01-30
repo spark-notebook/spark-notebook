@@ -33,8 +33,8 @@ trait ForkableProcess {
 /**
  * I am so sick of this being a thing that gets implemented everywhere. Let's abstract.
  */
-class BetterFork[A <: ForkableProcess : reflect.ClassTag](config: Config,
-  executionContext: ExecutionContext, customArgs:Option[List[String]]) {
+class BetterFork[A <: ForkableProcess : reflect.ClassTag](config: Config, executionContext: ExecutionContext, customArgs:Option[List[String]]) {
+
   private implicit val ec = executionContext
 
   import BetterFork._
@@ -143,9 +143,10 @@ class BetterFork[A <: ForkableProcess : reflect.ClassTag](config: Config,
       val socket = ss.accept()
       serverSockets += socket
       try {
+        // we're waiting for RemoteActorProcess.init to write the address of the remote actor system on the socket
         val ois = new ObjectInputStream(socket.getInputStream)
-        val resp = ois.readObject().asInstanceOf[String]
-        new ProcessInfo(() => exec.kill(), resp, completion.future)
+        val address = ois.readObject().asInstanceOf[String]
+        new ProcessInfo(() => exec.kill(), address, completion.future)
       } catch {
         case ex: SocketException => throw new ExecuteException("Failed to start process %s".format(cmd), 1, ex)
         case ex: EOFException => throw new ExecuteException("Failed to start process %s".format(cmd), 1, ex)
@@ -171,8 +172,6 @@ object BetterFork {
     def urls(cl: ClassLoader, acc: IndexedSeq[String] = IndexedSeq.empty): IndexedSeq[String] = {
       if (cl != null) {
         val us = if (!cl.isInstanceOf[URLClassLoader]) {
-          //println(" ----- ")
-          //println(cl.getClass.getSimpleName)
           acc
         } else {
           acc ++ (cl.asInstanceOf[URLClassLoader].getURLs map { u =>

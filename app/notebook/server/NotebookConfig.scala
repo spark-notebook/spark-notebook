@@ -35,17 +35,15 @@ case class NotebookConfig(config: Configuration) {
 
   val serverResources = config.getStringList("resources").map(_.asScala).getOrElse(Nil).map(new File(_))
 
-  val tachyonInfo = config.getBoolean("tachyon.enabled").filter(identity).map { _ =>
-    TachyonInfo(config.getString("tachyon.url"), config.getString("tachyon.baseDir").getOrElse("/share"))
-  }
-
   val maxBytesInFlight = config.underlying.getBytes("maxBytesInFlight").toInt
 
   object kernel {
     val config = me.config.getConfig("kernel").getOrElse(Configuration.empty)
-    val defauldInitScript = config.getString("default.init").orElse(Some("init.sc")).flatMap {
-      init => current.resource("scripts/" + init).map(i => ScriptFromURL(i).toSource)
-    }
+    val defauldInitScript = config.getString("default.init")
+                                  .orElse(Some("init.sc"))
+                                  .flatMap { init =>
+                                    current.resource("scripts/" + init).map(i => ScriptFromURL(i).toSource)
+                                  }
     val kernelInit = {
       val scripts = config.getStringList("init").map(_.asScala).getOrElse(Nil).map(
         url => ScriptFromURL(new URL(url)))
@@ -95,8 +93,6 @@ object CustomConf {
     }
 
 }
-
-case class TachyonInfo(url: Option[String] = None, baseDir: String = "/share")
 
 trait Script {
   def name: String

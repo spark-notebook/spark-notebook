@@ -15,6 +15,8 @@
 
         <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/c3.min.css")" type="text/css" />
         <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/pivot.css")" type="text/css" />
+        <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/d3-radar/radar-chart.css")" type="text/css" />
+        <link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/d3-pc/d3.parcoords.css")" type="text/css" />
 
         @stylesheet
         @*<link rel="stylesheet" href="@routes.Assets.at("stylesheets/third/bootstrap/css/bootstrap.min.css")" type="text/css" />*@
@@ -27,6 +29,9 @@
 
         <script src="@routes.Assets.at("ipython/components/es6-promise/promise.min.js")" type="text/javascript" charset="utf-8"></script>
         <script src="@routes.Assets.at("ipython/components/requirejs/require.js")" type="text/javascript" charset="utf-8"></script>
+
+        <!-- needed to fix pivottable/C3 issues on chrome v48+, see https://github.com/masayuki0812/c3/issues/1566 -->
+        <script src="@routes.Assets.at("javascripts/third/pathseg-chrome-svg-fix.js")" type="text/javascript" charset="utf-8"></script>
         <script>
       require.config({
         @version_hash.map(v => s""" urlArgs: "v=$v", """)
@@ -35,6 +40,7 @@
           nbextensions : '/nbextensions',
           kernelspecs : '/kernelspecs',
           underscore : '@routes.Assets.at("javascripts/third/underscore-min")',
+          plotly: '@routes.Assets.at("javascripts/third/plotly-latest.min")',
           backbone : 'components/backbone/backbone-min',
           jquery: 'components/jquery/jquery.min',
           bootstrap: 'components/bootstrap/js/bootstrap.min',
@@ -51,10 +57,8 @@
           proj4: '@routes.Assets.at("javascripts/third/proj4")',
           epsg: '@routes.Assets.at("javascripts/third/epsg")',
           proj4leaflet: '@routes.Assets.at("javascripts/third/proj4leaflet")',
-          highcharts: '@routes.Assets.at("javascripts/third/highcharts")',
-          highchartsExporting: '@routes.Assets.at("javascripts/third/exporting")',
-          highchartsMore: '@routes.Assets.at("javascripts/third/highcharts-more")',
 
+          svgAsPng: '@routes.Assets.at("javascripts/third/saveSvgAsPng")',
           dynatable: '@routes.Assets.at("javascripts/third/dynatable/jquery.dynatable")',
           knockout: '@routes.Assets.at("javascripts/third/knockout")',
           'knockout-bootstrap': '@routes.Assets.at("javascripts/third/knockout-bootstrap.min")',
@@ -64,13 +68,14 @@
           pivot: '@routes.Assets.at("javascripts/third/pivot")',
           pivotD3: '@routes.Assets.at("javascripts/third/d3_renderers")',
           pivotC3: '@routes.Assets.at("javascripts/third/c3_renderers")',
-          rickshaw: '@routes.Assets.at("javascripts/third/rickshaw/rickshaw")',
+          pivotExport: '@routes.Assets.at("javascripts/third/export_renderers")',
+          parcoords: '@routes.Assets.at("javascripts/third/d3-pc/d3.parcoords")',
+          radarChart: '@routes.Assets.at("javascripts/third/d3-radar/radar-chart")',
           'jquery.gridster': '@routes.Assets.at("javascripts/third/jquery/js/jquery.gridster.min")',
           wizard: '@routes.Assets.at("javascripts/third/jquery/js/jquery.bootstrap.wizard.min")',
           observable: '@routes.Assets.at("javascripts/notebook/observable")',
           equiv: '@routes.Assets.at("javascripts/notebook/equiv")',
           chat: '@routes.Assets.at("javascripts/notebook/chat")',
-          tachyon: '@routes.Assets.at("javascripts/notebook/tachyon")',
           job_progress: '@routes.Assets.at("javascripts/notebook/job_progress")',
           sidebar: '@routes.Assets.at("javascripts/notebook/sidebar")',
           //'jwerty.js': '@routes.Assets.at("javascripts/third/jwerty.js")'
@@ -110,7 +115,7 @@
         @meta
     </head>
 
-        <!-- todo bodyclasses (=notebook_app for notebook.scala.html)  â†’ class="" -->
+        <!-- todo bodyclasses (=notebook_app for notebook.scala.html) class="" -->
     <body class="@{page.get} notebook_app data" @Html(params.map(x => s"""data-${x._1}="${x._2}"""").mkString(" "))>
 
         <noscript>

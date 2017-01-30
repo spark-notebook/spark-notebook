@@ -1,0 +1,287 @@
+<head>
+	<link rel="stylesheet" type="text/css" href="styles/github.css">
+</head>
+<body><h1 id="documentation">Documentation</h1>
+<h2 id="clusters-clouds">Clusters / Clouds</h2>
+<h3 id="amazon-emr">Amazon EMR</h3>
+<h4 id="description">Description</h4>
+<p>You can on Amazon EMR launch Spark Clusters from this <a href="https://console.aws.amazon.com/elasticmapreduce/">page</a> or using the <a href="https://docs.aws.amazon.com/ElasticMapReduce/latest/DeveloperGuide/emr-spark-launch.html">AWS CLI</a>.</p>
+<p><strong>NOTE</strong>: For reproductability, the notebook which was already created including examples use its own metadata. Hence you will need to create a new notebook that will be applied the template from application.conf as explained below or you have to change the metadata of the exisiting one([Edit] -&gt; [Edit Notebook Metadata]).</p>
+<h4 id="version-3.x">Version 3.x</h4>
+<h5 id="environment">Environment</h5>
+<p>At the writing time, the created clusters has this environmnent:</p>
+<ul>
+<li>Yarn as the cluster manager</li>
+<li>Hadoop 2.4.0</li>
+<li>Spark 1.3.1</li>
+<li>Hive 0.13.1</li>
+<li>Scala 2.10.4</li>
+</ul>
+<h5 id="spark-notebook">Spark Notebook</h5>
+<h6 id="install">Install</h6>
+<p>It's recommended to install the Spark Notebook on the master node. You will have to create your distro that copes with the environment above, but a tar version already exists <a href="https://s3.eu-central-1.amazonaws.com/spark-notebook/emr/spark-notebook-0.6.0-scala-2.10.4-spark-1.3.1-hadoop-2.4.0-with-hive-with-parquet.tgz">on S3 for you</a>.</p>
+<p>So when you're logged on the master, you can run:</p>
+<pre><code>wget https://s3.eu-central-1.amazonaws.com/spark-notebook/emr/spark-notebook-0.6.0-scala-2.10.4-spark-1.3.1-hadoop-2.4.0-with-hive-with-parquet.tgz
+tar xvzf spark-notebook-0.6.0-scala-2.10.4-spark-1.3.1-hadoop-2.4.0-with-hive-with-parquet.tgz
+mv spark-notebook-0.6.0-scala-2.10.4-spark-1.3.1-hadoop-2.4.0-with-hive-with-parquet spark-notebook
+rm spark-notebook-0.6.0-scala-2.10.4-spark-1.3.1-hadoop-2.4.0-with-hive-with-parquet.tgz</code></pre>
+<h6 id="configure">Configure</h6>
+<p>In order for all notebooks to use (including newly created) the Yarn cluster, you need, and it's highly recommended, to update the <code>application.conf</code> file with the relevant Spark settings:</p>
+<p>Edit the <code>conf/application.conf</code> file and add this configuration under the manager object (locate <code>custom</code>)</p>
+<pre><code>  custom {
+    sparkConf {
+      spark.local.dir=&quot;/mnt/spark,/mnt1/spark&quot;
+      spark.driver.extraClassPath=&quot;/home/hadoop/spark/conf:/home/hadoop/conf:/home/hadoop/spark/classpath/emr/*:/home/hadoop/spark/classpath/emrfs/*:/home/hadoop/share/hadoop/common/lib/*:/home/hadoop/share/hadoop/common/lib/hadoop-lzo.jar&quot;
+      spark.driver.extraJavaOptions=&quot;-Dspark.driver.log.level=DEBUG&quot;
+      spark.driver.host=&quot;&lt;MASTER LOCAL PRIVATE IP&gt;&quot; # looks like ip-XXX-XXX-XXX-XXX.eu-west-1.compute.internal for instance
+      spark.eventLog.dir=&quot;hdfs:///spark-logs/&quot;
+      spark.eventLog.enabled=&quot;true&quot;
+      spark.executor.extraClassPath=&quot;/home/hadoop/spark/conf:/home/hadoop/conf:/home/hadoop/spark/classpath/emr/*:/home/hadoop/spark/classpath/emrfs/*:/home/hadoop/share/hadoop/common/lib/*:/home/hadoop/share/hadoop/common/lib/hadoop-lzo.jar&quot;
+      spark.executor.extraJavaOptions=&quot;-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=70 -XX:MaxHeapFreeRatio=70&quot;
+      spark.yarn.jar=&quot;/home/hadoop/.versions/spark-1.3.1.d/lib/spark-assembly-1.3.1-hadoop2.4.0.jar&quot;
+      spark.master=&quot;yarn-client&quot;
+    }
+  }</code></pre>
+<blockquote>
+<p><strong>IMPORTANT:</strong> <code>&lt;MASTER LOCAL PRIVATE IP&gt;</code> has to be replaced by the private IP of your master node!</p>
+</blockquote>
+<p><em>Note</em>: the spark assembly is referred locally in <code>spark.yarn.jar</code>, you can also put it <code>HDFS</code> yourself and refer its path on hdfs.</p>
+<h6 id="run">Run</h6>
+<p>To run the notebook, it's <strong>important</strong> to update its classpath with the location of the configuration files for yarn, hadoop and hive, but also the different specific jars that the drivers will require to access the Yarn cluster.</p>
+<p>The port <code>9001</code> being already taken by Hadoop (hdfs), you'll need to run it on a different port, below we've arbitrarly chosen <code>8989</code>.</p>
+<p>Hence, the final launch is something like this:</p>
+<pre><code>export HADOOP_CONF_DIR=/home/hadoop/conf
+export EXTRA_CLASSPATH=/home/hadoop/share/hadoop/common/lib/hadoop-lzo.jar:/home/hadoop/hive/conf
+./bin/spark-notebook -Dconfig.file=./conf/application.conf -Dhttp.port=8989</code></pre>
+<p><strong>NOTE</strong>: it's better to run the notebook in a <code>screen</code> for instance, so that the shell is released and you can quit your ssh connection.</p>
+<pre><code>screen  -m -d -S &quot;snb&quot; bash -c &#39;export HADOOP_CONF_DIR=/home/hadoop/conf &amp;&amp; export EXTRA_CLASSPATH=/home/hadoop/share/hadoop/common/lib/hadoop-lzo.jar:/home/hadoop/hive/conf &amp;&amp; ./bin/spark-notebook -Dconfig.file=./conf/application.conf -Dhttp.port=8989 &gt;&gt; nohup.out&#39;</code></pre>
+<h4 id="version-4.x">Version 4.x</h4>
+<h5 id="version-4.0">Version 4.0</h5>
+<p><strong>Interesting page to check:</strong> <a href="http://docs.aws.amazon.com/ElasticMapReduce/latest/ReleaseGuide/emr-release-differences.html">differences with version 3</a>.</p>
+<h6 id="environment-1">Environment</h6>
+<p>At the writing time, the created clusters has this environmnent:</p>
+<ul>
+<li>Yarn as the cluster manager</li>
+<li>Hadoop 2.6.0</li>
+<li>Spark 1.4.1</li>
+<li>Hive 1.0.0</li>
+<li>Scala 2.10.4</li>
+</ul>
+<h6 id="spark-notebook-1">Spark Notebook</h6>
+<p id="install-1">Install</p>
+<p>It's recommended to install the Spark Notebook on the master node. You will have to create your distro that copes with the environment above, but a tar version already exists <a href="https://s3.eu-central-1.amazonaws.com/spark-notebook/emr/spark-notebook-0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet.tgz">on S3 for you</a>.</p>
+<p>So when you're logged on the master, you can run:</p>
+<pre><code>wget https://s3.eu-central-1.amazonaws.com/spark-notebook/emr/spark-notebook-0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet.tgz
+tar xvzf spark-notebook-0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet.tgz
+mv spark-notebook-0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet spark-notebook
+rm spark-notebook-0.6.0-scala-2.10.4-spark-1.4.1-hadoop-2.6.0-with-hive-with-parquet.tgz</code></pre>
+<p id="configure-1">Configure</p>
+<p>In order for all notebooks to use (including newly created) the Yarn cluster, you need, and it's highly recommended, to update the <code>application.conf</code> file with the relevant Spark settings:</p>
+<p>Edit the <code>conf/application.conf</code> file and add this configuration under the manager object (locate <code>custom</code>)</p>
+<pre><code>  custom {
+    sparkConf {
+      spark.local.dir=&quot;/mnt/spark,/mnt1/spark&quot;
+      spark.driver.log.level=INFO
+
+      spark.driver.extraClassPath=&quot;:/usr/lib/hadoop/*:/usr/lib/hadoop/../hadoop-hdfs/*:/usr/lib/hadoop/../hadoop-mapreduce/*:/usr/lib/hadoop/../hadoop-yarn/*:/usr/lib/hadoop/../hadoop-lzo/lib/*:/usr/share/aws/emr/emrfs/conf:/usr/share/aws/emr/emrfs/lib/*:/usr/share/aws/emr/emrfs/auxlib/*&quot;
+
+      spark.executor.extraClassPath=&quot;:/usr/lib/hadoop/*:/usr/lib/hadoop/../hadoop-hdfs/*:/usr/lib/hadoop/../hadoop-mapreduce/*:/usr/lib/hadoop/../hadoop-yarn/*:/usr/lib/hadoop/../hadoop-lzo/lib/*:/usr/share/aws/emr/emrfs/conf:/usr/share/aws/emr/emrfs/lib/*:/usr/share/aws/emr/emrfs/auxlib/*&quot;
+
+      spark.driver.extraJavaOptions=&quot;-Dspark.driver.log.level=INFO -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=70 -XX:MaxHeapFreeRatio=70 -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=512M&quot;
+
+      spark.executor.extraJavaOptions=&quot;-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=70 -XX:MaxHeapFreeRatio=70 -XX:+CMSClassUnloadingEnabled&quot;
+
+      spark.driver.host=&quot;&lt;MASTER LOCAL PRIVATE IP&gt;&quot; # looks like ip-XXX-XXX-XXX-XXX.eu-west-1.compute.internal for instance
+
+      spark.eventLog.dir=&quot;hdfs:///var/log/spark/apps&quot;
+      spark.eventLog.enabled=&quot;true&quot;
+
+      spark.executor.id=driver
+
+      spark.yarn.jar=&quot;/usr/lib/spark/lib/spark-assembly-1.4.1-hadoop2.6.0-amzn-0.jar&quot;
+
+      spark.master=&quot;yarn-client&quot;
+
+      spark.shuffle.service.enabled=true
+    }
+  }</code></pre>
+<blockquote>
+<p><strong>IMPORTANT:</strong> <code>&lt;MASTER LOCAL PRIVATE IP&gt;</code> has to be replaced by the private IP of your master node!</p>
+</blockquote>
+<p><em>Note</em>: the spark assembly is referred locally in <code>spark.yarn.jar</code>, you can also put it <code>HDFS</code> yourself and refer its path on hdfs.</p>
+<p id="run-1">Run</p>
+<p>To run the notebook, it's <strong>important</strong> to update its classpath with the location of the configuration files for yarn, hadoop and hive, but also the different specific jars that the drivers will require to access the Yarn cluster.</p>
+<p>The port <code>9001</code> being already taken by Hadoop (hdfs), you'll need to run it on a different port, below we've arbitrarly chosen <code>8989</code>.</p>
+<p>Hence, the final launch is something like this:</p>
+<pre><code>export HADOOP_CONF_DIR=/etc/hadoop/conf
+export SPARK_HOME=/usr/lib/spark
+export SPARK_WORKER_DIR=/var/run/spark/work
+export EXTRA_CLASSPATH=/usr/lib/hadoop-lzo/lib/hadoop-lzo.jar:/etc/hive/conf
+./bin/spark-notebook -Dconfig.file=./conf/application.conf -Dhttp.port=8989</code></pre>
+<p><strong>NOTE</strong>: it's better to run the notebook in a <code>screen</code> for instance, so that the shell is released and you can quit your ssh connection.</p>
+<pre><code>screen  -m -d -S &quot;snb&quot; bash -c &#39;export HADOOP_CONF_DIR=/etc/hadoop/conf &amp;&amp; export SPARK_HOME=/usr/lib/spark &amp;&amp; export SPARK_WORKER_DIR=/var/run/spark/work &amp;&amp; export EXTRA_CLASSPATH=/usr/lib/hadoop-lzo/lib/hadoop-lzo.jar:/etc/hive/conf &amp;&amp; ./bin/spark-notebook -Dconfig.file=./conf/application.conf -Dhttp.port=8989 &gt;&gt; nohup.out&#39;</code></pre>
+<p id="access">Access</p>
+<p>There are several manners to access the notebook UI on the port <code>8989</code> (see above):</p>
+<ul>
+<li>easiest: <code>ssh -i key.pem -L 8989:localhost:8989 hadoop@&lt;master&gt;</code> then access it locally on <a href="http://localhost:8989" class="uri">http://localhost:8989</a></li>
+<li>sustainable but unsecure: update/create the security group of the master node to open the <code>8989</code> port</li>
+<li>intermediate: use <strong>FoxyProxy</strong> in Chrome (f.i.) to redirect the url to your cluster, after having prealably open a tunnel to the master (<em>this is described in your cluster summary page</em>)</li>
+</ul>
+<blockquote>
+<p>You can also check the <strong>YARN UI</strong> wether your <strong>new</strong> notebooks are registering as applications.</p>
+<p>In version <strong>3</strong>, this UI is accessible from the master public DNS on port <code>8088</code>.</p>
+<p>In version <strong>4</strong>, this UI is accessible from the master public DNS on port <code>9026</code>.</p>
+</blockquote>
+<h5 id="version-4.2">Version 4.2</h5>
+<h6 id="environment-2">Environment</h6>
+<p>At the writing time, the created clusters has this environmnent:</p>
+<ul>
+<li>Yarn as the cluster manager</li>
+<li>Hadoop 2.6.0</li>
+<li>Spark 1.5.2</li>
+<li>Hive 1.0.0</li>
+<li>Scala 2.10.4</li>
+</ul>
+<h6 id="spark-notebook-2">Spark Notebook</h6>
+<p id="install-2">Install</p>
+<p>It's recommended to install the Spark Notebook on the master node. So you can start by <code>ssh</code>'ing to it.</p>
+<p>So when you're logged on the master, you can run:</p>
+<pre><code>wget https://s3.eu-central-1.amazonaws.com/spark-notebook/tgz/spark-notebook-0.6.2-scala-2.10.4-spark-1.5.2-hadoop-2.6.0-with-hive-with-parquet.tgz
+tar xvzf spark-notebook-0.6.2-scala-2.10.4-spark-1.5.2-hadoop-2.6.0-with-hive-with-parquet.tgz
+mv spark-notebook-0.6.2-scala-2.10.4-spark-1.5.2-hadoop-2.6.0-with-hive-with-parquet spark-notebook
+cd spark-notebook</code></pre>
+<p id="configure-2">Configure</p>
+<p>In order for all notebooks to use the Yarn cluster, edit the <code>application.conf</code> with the following:</p>
+<p>Locate the commented key <code>override</code> and paste:</p>
+<pre><code>    override {
+      sparkConf  = {
+
+        spark.driver.extraClassPath: &quot;/etc/hadoop/conf:/usr/lib/hadoop/*:/usr/lib/hadoop-hdfs/*:/usr/lib/hadoop-yarn/*:/usr/lib/hadoop-lzo/lib/*:/usr/share/aws/aws-java-sdk/*:/usr/share/aws/emr/emrfs/conf:/usr/share/aws/emr/emrfs/lib/*:/usr/share/aws/emr/emrfs/auxlib/*&quot;,
+
+        spark.driver.extraJavaOptions: &quot;-Dlog4j.configuration=file:///etc/spark/conf/log4j.properties -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=70 -XX:MaxHeapFreeRatio=70 -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=512M -XX:OnOutOfMemoryError=&#39;kill -9 %p&#39;&quot;,
+
+        spark.driver.extraLibraryPath: &quot;/usr/lib/hadoop/lib/native:/usr/lib/hadoop-lzo/lib/native&quot;,
+        spark.driver.host: &quot;${SPARK_LOCAL_IP}&quot;,
+
+        spark.eventLog.dir: &quot;hdfs:///var/log/spark/apps&quot;,
+        spark.eventLog.enabled: &quot;true&quot;,
+
+        # spark.executor.cores: &quot;8&quot;, #x2large
+
+        spark.executor.extraClassPath: &quot;/etc/hadoop/conf:/usr/lib/hadoop/*:/usr/lib/hadoop-hdfs/*:/usr/lib/hadoop-yarn/*:/usr/lib/hadoop-lzo/lib/*:/usr/share/aws/aws-java-sdk/*:/usr/share/aws/emr/emrfs/conf:/usr/share/aws/emr/emrfs/lib/*:/usr/share/aws/emr/emrfs/auxlib/*&quot;,
+        spark.executor.extraJavaOptions: &quot;-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=70 -XX:MaxHeapFreeRatio=70 -XX:+CMSClassUnloadingEnabled -XX:OnOutOfMemoryError=&#39;kill -9 %p&#39;&quot;,
+
+        spark.executor.extraLibraryPath: &quot;/usr/lib/hadoop/lib/native:/usr/lib/hadoop-lzo/lib/native&quot;,
+        spark.executor.instances: &quot;3&quot;,
+
+        # spark.executor.memory: &quot;19815M&quot;,  #x2large
+
+        spark.fileserver.host: &quot;${SPARK_LOCAL_IP}&quot;,
+
+        spark.history.fs.logDirectory: &quot;hdfs:///var/log/spark/apps&quot;,
+        spark.history.ui.port: &quot;18080&quot;,
+
+        spark.localProperties.clone: &quot;true&quot;,
+
+        spark.master: &quot;yarn-client&quot;,
+
+        spark.shuffle.service.enabled: &quot;true&quot;,
+
+        spark.yarn.executor.memoryOverhead: &quot;2201&quot;,
+        spark.yarn.historyServer.address: &quot;${SPARK_LOCAL_HOSTNAME}:18080&quot;,
+
+        spark.yarn.jar=&quot;/usr/lib/spark/lib/spark-assembly-1.5.2-hadoop2.6.0-amzn-2.jar&quot;
+      }
+    }</code></pre>
+<blockquote>
+<p><strong>NOTE</strong>: The spark assembly is referred locally in <code>spark.yarn.jar</code>, you can also put it <code>HDFS</code> yourself and refer its path on hdfs.</p>
+</blockquote>
+<p id="run-2">Run</p>
+<p>To run the notebook, it's <strong>important</strong> to update its classpath with the location of the configuration files for yarn, hadoop and hive, but also the different specific jars that the drivers will require to access the Yarn cluster.</p>
+<p>The port <code>9001</code> being already taken by Hadoop (hdfs), you'll need to run it on a different port, below we've arbitrarly chosen <code>8989</code>.</p>
+<p>Hence, the final launch is something like this (<strong>check</strong> below for how to use <code>screen</code> for persistence):</p>
+<pre><code>export SPARK_LOCAL_IP=$(ec2-metadata -o | cut -d &#39; &#39; -f2)
+export SPARK_LOCAL_HOSTNAME=$(ec2-metadata -h | cut -d &#39; &#39; -f2)
+export CLASSPATH_OVERRIDES=/usr/lib/hadoop-lzo/lib/hadoop-lzo.jar:/etc/hive/conf:/etc/hadoop/conf:/usr/lib/hadoop/*:/usr/lib/hadoop-hdfs/*:/usr/lib/hadoop-yarn/*:/usr/lib/hadoop-lzo/lib/*:/usr/share/aws/aws-java-sdk/*:/usr/share/aws/emr/emrfs/conf:/usr/share/aws/emr/emrfs/lib/*:/usr/share/aws/emr/emrfs/auxlib/*
+
+source /usr/lib/spark/conf/spark-env.sh
+
+./bin/spark-notebook -Dconfig.file=./conf/application.conf -Dhttp.port=8989</code></pre>
+<blockquote>
+<p><strong>NOTE</strong>: it's better to run the notebook in a <code>screen</code> for instance, so that the shell is released and you can quit your ssh connection.</p>
+<pre><code>screen  -m -d -S &quot;snb&quot; bash -c &quot;export SPARK_LOCAL_IP=$(ec2-metadata -o | cut -d &#39; &#39; -f2) &amp;&amp; export SPARK_LOCAL_HOSTNAME=$(ec2-metadata -h | cut -d &#39; &#39; -f2) &amp;&amp; export CLASSPATH_OVERRIDES=/usr/lib/hadoop-lzo/lib/hadoop-lzo.jar:/etc/hive/conf:/etc/hadoop/conf:/usr/lib/hadoop/*:/usr/lib/hadoop-hdfs/*:/usr/lib/hadoop-yarn/*:/usr/lib/hadoop-lzo/lib/*:/usr/share/aws/aws-java-sdk/*:/usr/share/aws/emr/emrfs/conf:/usr/share/aws/emr/emrfs/lib/*:/usr/share/aws/emr/emrfs/auxlib/* &amp;&amp; source /usr/lib/spark/conf/spark-env.sh &amp;&amp; ./bin/spark-notebook -Dconfig.file=./conf/application.conf -Dhttp.port=8989 &gt;&gt; nohup.out&quot;</code></pre>
+</blockquote>
+<p id="access-1">Access</p>
+<p>There are several manners to access the notebook UI on the port <code>8989</code> (see above):</p>
+<ul>
+<li>easiest: <code>ssh -i key.pem -L 8989:localhost:8989 hadoop@&lt;master&gt;</code> then access it locally on <a href="http://localhost:8989" class="uri">http://localhost:8989</a></li>
+<li>sustainable but unsecure: update/create the security group of the master node to open the <code>8989</code> port</li>
+<li>intermediate: use <strong>FoxyProxy</strong> in Chrome (f.i.) to redirect the url to your cluster, after having prealably open a tunnel to the master (<em>this is described in your cluster summary page</em>)</li>
+</ul>
+<blockquote>
+<p><strong>YARN UI</strong></p>
+<p>It is available on the port <code>8088</code> of your <strong>master</strong></p>
+</blockquote>
+<h5 id="version-4.2-1">Version 4.2</h5>
+<h6 id="environment-3">Environment</h6>
+<p>At the writing time, the created clusters has this environmnent:</p>
+<ul>
+<li>Yarn as the cluster manager</li>
+<li>Hadoop 2.7.2</li>
+<li>Spark 1.6.1</li>
+<li>Hive 1.0.0</li>
+<li>Scala 2.10.5</li>
+</ul>
+<h6 id="spark-notebook-3">Spark Notebook</h6>
+<p id="install-and-run">Install and Run</p>
+<p>And launch, connect to the <strong>master</strong> node and execute:</p>
+<pre><code>source &lt;(curl https://s3-us-west-1.amazonaws.com/spark-notebook-emr/4.6/emr-4.6.sh)</code></pre>
+<blockquote>
+<p>Note: The Spark Notebook runs in a <code>nohup</code> hence you will have to kill it using its PID.</p>
+</blockquote>
+<p id="access-2">Access</p>
+<p>There are several manners to access the notebook UI on the port <code>8989</code> (see above):</p>
+<ul>
+<li>easiest: <code>ssh -i key.pem -L 8989:localhost:8989 hadoop@&lt;master&gt;</code> then access it locally on <a href="http://localhost:8989" class="uri">http://localhost:8989</a></li>
+<li>sustainable but unsecure: update/create the security group of the master node to open the <code>8989</code> port</li>
+<li>intermediate: use <strong>FoxyProxy</strong> in Chrome (f.i.) to redirect the url to your cluster, after having prealably open a tunnel to the master (<em>this is described in your cluster summary page</em>)</li>
+</ul>
+<blockquote>
+<p><strong>YARN UI</strong></p>
+<p>It is available on the port <code>8088</code> of your <strong>master</strong></p>
+</blockquote>
+<h3 id="mesosphere-dcos">Mesosphere DCOS</h3>
+<h4 id="description-1">Description</h4>
+<p>DCOS, for Data Center Operating System, is the <em>the next-generation private cloud</em> as stated <a href="https://mesosphere.com/product/">here</a>.</p>
+<p>It is built on top of the open source Mesos but major improvements in the DCOS include its command line and web interfaces, its simple packaging and installation, and its growing ecosystem of technology partners.</p>
+<p>That gives you access to a personal cloud on different providers like AWS, Azure (soon), GCE (soon) and so on.</p>
+<p>Then a simplistic command line can install:</p>
+<ul>
+<li>cassandra</li>
+<li>kafka</li>
+<li>spark</li>
+<li>... and the Spark Notebook</li>
+</ul>
+<p>To create your own cluster on Amazon within minutes, jump to this <a href="https://mesosphere.com/amazon/">page</a>.</p>
+<h4 id="environment-4">Environment</h4>
+<p>There is not so much to do here besides following the instructions to install the CLI and access your public master interface.</p>
+<h4 id="spark-notebook-4">Spark Notebook</h4>
+<h5 id="install-3">Install</h5>
+<p>It requires the DCOS CLI interface installed and configured to access your new cluster.</p>
+<p>You'll need to add the current multiverse repo to your DCOS configuration (the Data Fellas fork until the PR is merged in the Mesosphere one).</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">dcos</span> config prepend package.sources https://github.com/data-fellas/multiverse/archive/spark-notebook.zip
+
+<span class="kw">dcos</span> package update --validate</code></pre></div>
+<p>Then, you can install the Spark Notebook, this way:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">dcos</span> package install --app spark-notebook --package-version=0.0.2</code></pre></div>
+<p>That's it.</p>
+<h5 id="access-3">Access</h5>
+<p>The Spark Notebook will be started on the public slave of the mesos cluster on the port <code>8899</code>. This should allow you to access it using the public DNS that the DCOS installation provides you at the end of the installation.</p>
+<p>But there are still some problem with this DNS, hence the easiest way to open the notebook is to use the public DNS reported in you ec2 interface, so go there and look for the node having a security group public, we'll use its DNS name (<code>{public-dns}</code>).</p>
+<p>Also the port will be dynamically assigned by Marathon, however here is a way to know it easily:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ot">id=</span><span class="kw">`dcos</span> marathon task list /spark-notebook <span class="kw">|</span> <span class="kw">tail</span> -n 1 <span class="kw">|</span> <span class="kw">tr</span> -s <span class="st">&#39; &#39;</span> <span class="kw">|</span> <span class="kw">cut</span> -d <span class="st">&#39; &#39;</span> -f5<span class="kw">`</span>
+
+<span class="ot">p=</span><span class="kw">`dcos</span> marathon task show <span class="ot">$id</span> <span class="kw">|</span> <span class="kw">jq</span> <span class="st">&quot;.ports[0]&quot;</span><span class="kw">`</span></code></pre></div>
+<p>Hence, you can access the notebook at this URL: <a href="http://%7Bpublic-dns%7D:$p" class="uri">http://{public-dns}:$p</a>.</p>
+<p>The newly created notebook will be created with all required Spark Configuration to access the mesos master, to declare the executor and so forth. So nothing is required on your side, you're ready to go!</p>
+</body>

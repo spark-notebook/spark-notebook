@@ -7,11 +7,12 @@ object AppUtils {
 
   import play.api.Play.current
 
-  lazy val config = NotebookConfig(current.configuration.getConfig("manager").get)
-  lazy val nbm = new NotebookManager(config.projectName, config.notebooksDir)
-  lazy val clustersConf = config.config.getConfig("clusters").get
+  lazy val baseConfig = current.configuration
 
-  lazy val nbServerConf = current.configuration.getConfig("notebook-server").get.underlying
+  lazy val notebookConfig = NotebookConfig(baseConfig.getConfig("manager").get)
+  lazy val notebookManager = new NotebookManager(notebookConfig.projectName, notebookConfig.notebooksDir)
+  lazy val clustersConf = notebookConfig.config.getConfig("clusters").get
+  lazy val nbServerConf = baseConfig.getConfig("notebook-server").get.underlying
   lazy val kernelSystem = ActorSystem(
     "NotebookServer",
     nbServerConf,
@@ -20,14 +21,15 @@ object AppUtils {
 
   object proxy {
     def proxyKeys(pre: String) = List(
-      pre + "_proxy",
-      pre + "_proxy_user",
-      pre + "_proxy_pass",
-      pre + ".proxyHost",
-      pre + ".proxyPort",
-      pre + ".proxyUser",
-      pre + ".proxyPassword"
-    )
+      "_proxy",
+      "_proxy_user",
+      "_proxy_pass",
+      ".proxyHost",
+      ".proxyPort",
+      ".proxyUser",
+      ".proxyPassword",
+      ".nonProxyHosts"
+    ).map(e => pre + e)
 
     def mapper = (path:String) => path → current.configuration.getString(path)
     def collecter:PartialFunction[(String, Option[String]),(String, String)] = { case (x:String, Some(y:String)) => x → y }

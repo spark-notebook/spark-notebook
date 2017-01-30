@@ -10,10 +10,9 @@ define([
     require(['observable'], function(O) {
       var progress = O.makeObservableArray("jobsProgress");
 
-      var updateSparkUiLink = function(sparkUi){
-        if (sparkUi != "") {
-          var sparkUiLink = $("<a href='" + sparkUi + "' id='spark-ui-link' target='_blank'>open SparkUI</a>")
-          $("#spark-ui-link-container").html(sparkUiLink);
+      var updateSparkUiLink = function(sparkUiUrl) {
+        if (sparkUiUrl != "") {
+          $('#link-to-spark-ui').removeClass('disabled').find('a').attr('href', sparkUiUrl);
         }
       };
 
