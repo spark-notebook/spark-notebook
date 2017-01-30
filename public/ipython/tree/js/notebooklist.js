@@ -275,7 +275,7 @@ define([
     };
 
 
-    NotebookList.prototype.read_only_url = function(url, force) {
+    NotebookList.prototype.maybe_read_only_url = function(url, force) {
         if (force || this.viewer) {
             return  url+'?read_only=1';
         } else {
@@ -296,7 +296,7 @@ define([
         item.find(".item_icon").addClass(icon).addClass('icon-fixed-width');
         var link = item.find("a.item_link")
             .attr('href',
-                this.read_only_url(
+                this.maybe_read_only_url(
                     utils.url_join_encode(
                         this.base_url,
                         uri_prefix,
@@ -379,7 +379,7 @@ define([
             uri_prefix,
             path
         );
-        url = this.read_only_url(url, true)
+        url = this.maybe_read_only_url(url, true)
         var view_button = $("<a target='_blank' href="+url+"/>").html("<span class='text text-warning'>View (read-only)</span>").addClass("btn btn-default btn-xs");
         item.find(".item_buttons").prepend(view_button);
     };

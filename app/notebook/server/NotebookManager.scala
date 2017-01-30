@@ -11,11 +11,16 @@ import notebook.NBSerializer._
 import org.apache.commons.io.FileUtils
 import play.api.Logger
 import play.api.libs.json._
+import utils.AppUtils
 import utils.Const.UTF_8
 
 class NotebookManager(val name: String, val notebookDir: File) {
 
   Logger.info("Notebook directory is: " + notebookDir.getCanonicalPath)
+
+  private lazy val config = AppUtils.notebookConfig
+  val viewer = config.viewer
+
 
   val extension = ".snb"
 
@@ -50,7 +55,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
     customImports: Option[List[String]] = None,
     customArgs: Option[List[String]] = None,
     customSparkConf: Option[JsObject] = None,
-    name:Option[String] = None) = {
+    name:Option[String] = None) = if (!viewer) {
     val sep = if (path.last == '/') "" else "/"
     val fpath = name.map(path + sep + _ + extension).getOrElse(incrementFileName(path + sep + "Untitled"))
     val nb = Notebook(
@@ -70,9 +75,11 @@ class NotebookManager(val name: String, val notebookDir: File) {
     )
     save(fpath, nb, overwrite = false)
     fpath
+  } else {
+    throw new IllegalStateException("Cannot create new notebook in viewer mode")
   }
 
-  def copyNotebook(nbPath: String) = {
+  def copyNotebook(nbPath: String) = if (!viewer) {
     getNotebook(nbPath).map { case (_, _, nbData, nbFilePath) =>
       val newPath = incrementFileName(nbFilePath.dropRight(extension.length))
       val newName = getName(newPath)
@@ -86,7 +93,10 @@ class NotebookManager(val name: String, val notebookDir: File) {
           newNotebook()
       }
     } getOrElse newNotebook()
+  } else {
+    throw new IllegalStateException("Cannot copy notebook in viewer mode")
   }
+
 
   def getNotebook(path: String) = {
     Logger.info(s"getNotebook at path $path")
@@ -98,15 +108,17 @@ class NotebookManager(val name: String, val notebookDir: File) {
     }
   }
 
-  def deleteNotebook(path: String) = {
+  def deleteNotebook(path: String) = if (!viewer) {
     Logger.info(s"deleteNotebook at path $path")
     val file = notebookFile(path)
     if (file.exists()) {
       file.delete()
     }
+  } else {
+    throw new IllegalStateException("Cannot delete notebook in viewer mode")
   }
 
-  def rename(path: String, newpath: String) = {
+  def rename(path: String, newpath: String) = if (!viewer) {
     Logger.info(s"rename from path $path to $newpath")
     val newname = getName(newpath)
     val oldfile = notebookFile(path)
@@ -125,9 +137,11 @@ class NotebookManager(val name: String, val notebookDir: File) {
       FileUtils.writeStringToFile(newfile, Notebook.serialize(nb))
     }
     (newname, newpath)
+  } else {
+    throw new IllegalStateException("Cannot rename notebook in viewer mode")
   }
 
-  def save(path: String, notebook: Notebook, overwrite: Boolean) = {
+  def save(path: String, notebook: Notebook, overwrite: Boolean) = if (!viewer) {
     Logger.info(s"save at path $path")
     val file = notebookFile(path)
     if (!overwrite && file.exists()) {
@@ -136,6 +150,8 @@ class NotebookManager(val name: String, val notebookDir: File) {
     FileUtils.writeStringToFile(file, Notebook.serialize(notebook), "UTF-8")
     val nb = load(path)
     (nb.get.metadata.get.name, path)
+  } else {
+    throw new IllegalStateException("Cannot rename notebook in viewer mode")
   }
 
   def load(path: String): Option[Notebook] = {

@@ -20,7 +20,7 @@ case class NotebookConfig(config: Configuration) {
     Logger.debug(s"Notebooks directory in the config is referring $confDir. Does it exist? ${new File(confDir).exists}")
   }
 
-  val viewer:Boolean = config.getBoolean("viewer").getOrElse(false)
+  val viewer:Boolean = config.getBoolean("viewer_mode").getOrElse(false)
 
   val customConf = CustomConf.fromConfig(config.getConfig("notebooks.custom"))
 
