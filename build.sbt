@@ -339,7 +339,6 @@ lazy val common = Project(id = "common", base = file("modules/common"))
 
 lazy val spark = Project(id = "spark", base = file("modules/spark"))
   .dependsOn(common, subprocess, observable)
-  .dependsOn(kernel)
   .settings(
     version  <<= (version in ThisBuild, sparkVersion) { (v,sv) => s"${v}_$sv" }
   )
