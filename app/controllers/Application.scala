@@ -225,15 +225,11 @@ object Application extends Controller {
   }
 
   def createSession() = Action(parse.tolerantJson) /* → posted as urlencoded form oO */ { request =>
-    if (!viewer) {
-      val json: JsValue = request.body
-      val kernelId = Try((json \ "kernel" \ "id").as[String]).toOption
-      val notebookPath = Try((json \ "notebook" \ "path").as[String]).toOption
-      val k = newSession(kernelId, notebookPath)
-      Ok(Json.obj("kernel" → k))
-    } else {
-      BadRequest("Cannot create session in viewer mode")
-    }
+    val json: JsValue = request.body
+    val kernelId = Try((json \ "kernel" \ "id").as[String]).toOption
+    val notebookPath = Try((json \ "notebook" \ "path").as[String]).toOption
+    val k = newSession(kernelId, notebookPath)
+    Ok(Json.obj("kernel" → k))
   }
 
   def sessions() = Action {
@@ -271,33 +267,25 @@ object Application extends Controller {
    * add a spark cluster by json meta
    */
   def addCluster() = Action.async(parse.tolerantJson) { request =>
+    val json = request.body
     implicit val ec = kernelSystem.dispatcher
-    if (!viewer) {
-      val json = request.body
-      json match {
-        case o: JsObject =>
-          (clustersActor ? NotebookClusters.Add((json \ "name").as[String], o)).map { case cluster: JsObject =>
-            Ok(cluster)
-          }
-        case _ => Future {
-          BadRequest("Add cluster needs an object, got: " + json)
+    json match {
+      case o: JsObject =>
+        (clustersActor ? NotebookClusters.Add((json \ "name").as[String], o)).map { case cluster: JsObject =>
+          Ok(cluster)
         }
+      case _ => Future {
+        BadRequest("Add cluster needs an object, got: " + json)
       }
-    } else {
-      Future(BadRequest("Cannot modify clusters in viewer mode"))
     }
   }
   /**
    * add a spark cluster by json meta
    */
   def deleteCluster(clusterName:String) = Action.async { request =>
-    implicit val ec = kernelSystem.dispatcher
-    if (!viewer) {
       Logger.debug("Delete a cluster")
+      implicit val ec = kernelSystem.dispatcher
       (clustersActor ? NotebookClusters.Remove(clusterName, null)).map{ item => Ok(Json.obj("result" → s"Cluster $clusterName deleted"))}
-    } else {
-      Future(BadRequest("Cannot delete clusters in viewer mode"))
-    }
   }
 
   def contents(tpe: String, uri: String = "/") = Action { request =>
@@ -414,19 +402,17 @@ object Application extends Controller {
   }
 
   def newContent(p: String = "/") = Action(parse.tolerantText) { request =>
-    if (!viewer){
-      val path = URLDecoder.decode(p, UTF_8)
-      val text = request.body
-      val tryJson = Try(Json.parse(request.body))
+    val path = URLDecoder.decode(p, UTF_8)
+    val text = request.body
+    val tryJson = Try(Json.parse(request.body))
 
-      tryJson.flatMap { json =>
-        (json \ "type").as[String] match {
-          case "directory" => newDirectory(path, (json \ "name").as[String])
-          case "notebook" => newNotebook(path, tryJson)
-          case "file" => newFile(path)
-        }
-      }.get
-    } else BadRequest("Cannot create content in viewer mode")
+    tryJson.flatMap { json =>
+      (json \ "type").as[String] match {
+        case "directory" => newDirectory(path, (json \ "name").as[String])
+        case "notebook" => newNotebook(path, tryJson)
+        case "file" => newFile(path)
+      }
+    }.get
   }
 
   def openNotebook(p: String, presentation: Option[String]) = Action { implicit request =>
@@ -520,87 +506,75 @@ object Application extends Controller {
   }
 
   def renameNotebook(p: String) = Action(parse.tolerantJson) { request =>
-    if (viewer){
-      BadRequest("Cannot rename notebook in viewer mode")
-    } else {
-      val oldPath = URLDecoder.decode(p, UTF_8)
-      val newPath = (request.body \ "path").as[String]
-      Logger.info("RENAME → " + oldPath + " to " + newPath)
-      try {
-        val (newname, newpath) = notebookManager.rename(oldPath, newPath)
+    val oldPath = URLDecoder.decode(p, UTF_8)
+    val newPath = (request.body \ "path").as[String]
+    Logger.info("RENAME → " + oldPath + " to " + newPath)
+    try {
+      val (newname, newpath) = notebookManager.rename(oldPath, newPath)
 
-        KernelManager.atPath(oldPath).foreach { case (_, kernel) =>
-          kernel.moveNotebook(newpath)
-        }
-
-        Ok(Json.obj(
-          "type" → "notebook",
-          "name" → newname,
-          "path" → newpath
-        ))
-      } catch {
-        case _: NotebookExistsException => Conflict
+      KernelManager.atPath(oldPath).foreach { case (_, kernel) =>
+        kernel.moveNotebook(newpath)
       }
+
+      Ok(Json.obj(
+        "type" → "notebook",
+        "name" → newname,
+        "path" → newpath
+      ))
+    } catch {
+      case _: NotebookExistsException => Conflict
     }
   }
 
   def saveNotebook(p: String) = Action(parse.tolerantJson(config.maxBytesInFlight)) { request =>
-    if (viewer){
-      BadRequest("Cannot save notebook in viewer mode")
-    } else {
-      val path = URLDecoder.decode(p, UTF_8)
-      Logger.info("SAVE → " + path)
+    val path = URLDecoder.decode(p, UTF_8)
+    Logger.info("SAVE → " + path)
 
-      Try {
-        val notebookJsObject = (request.body \ "content").asInstanceOf[JsObject]
-        NBSerializer.fromJson(notebookJsObject) match {
-          case Some(notebook) =>
-            Try {
-              val (name, savedPath) = notebookManager.save(path, notebook, overwrite = true)
-              Ok(Json.obj(
-                "type" → "notebook",
-                "name" → name,
-                "path" → savedPath
-              ))
-            } recover {
-              case _: NotebookExistsException => Conflict
-              case anyOther: Throwable =>
-                Logger.error(anyOther.getMessage)
-                InternalServerError
-            } getOrElse {
+    Try {
+      val notebookJsObject = (request.body \ "content").asInstanceOf[JsObject]
+      NBSerializer.fromJson(notebookJsObject) match {
+        case Some(notebook) =>
+          Try {
+            val (name, savedPath) = notebookManager.save(path, notebook, overwrite = true)
+            Ok(Json.obj(
+              "type" → "notebook",
+              "name" → name,
+              "path" → savedPath
+            ))
+          } recover {
+            case _: NotebookExistsException => Conflict
+            case anyOther: Throwable =>
+              Logger.error(anyOther.getMessage)
               InternalServerError
-            }
-          case None =>
-            BadRequest("Not a valid notebook.")
-        }
-      }.recover {
-        case e:ClassCastException =>
-          BadRequest("Not a notebook.")
-        case anyOther: Throwable =>
-          Logger.error(anyOther.getMessage)
-          InternalServerError
-      } getOrElse {
-        InternalServerError
+          } getOrElse {
+            InternalServerError
+          }
+        case None =>
+          BadRequest("Not a valid notebook.")
       }
+    }.recover {
+      case e:ClassCastException =>
+        BadRequest("Not a notebook.")
+      case anyOther: Throwable =>
+        Logger.error(anyOther.getMessage)
+        InternalServerError
+    } getOrElse {
+      InternalServerError
     }
   }
 
   def deleteNotebook(p: String) = Action { request =>
-    if (viewer) {
-      BadRequest("Cannot delete notebook in viewer mode")
-    } else {
-      val path = URLDecoder.decode(p, UTF_8)
-      Logger.info("DELETE → " + path)
-      try {
-        notebookManager.deleteNotebook(path)
+    val path = URLDecoder.decode(p, UTF_8)
+    Logger.info("DELETE → " + path)
+    try {
+      notebookManager.deleteNotebook(path)
 
-        Ok(Json.obj(
-          "type" → "notebook",
-          "path" → path
-        ))
-      } catch {
-        case _: NotebookExistsException => Conflict
-      }
+      Ok(Json.obj(
+        "type" → "notebook",
+        "path" → path
+      ))
+    } catch {
+      case _: NotebookExistsException => Conflict
     }
   }
 
