@@ -239,7 +239,7 @@ object Application extends Controller {
     kernelResponse(Some(kId))
   }
 
-  def createSession() = Action(parse.tolerantJson) /* → posted as urlencoded form oO */ { request =>
+  def createSession() = EditorOnlyAction(parse.tolerantJson) /* → posted as urlencoded form oO */ { request =>
     val json: JsValue = request.body
     val kernelId = Try((json \ "kernel" \ "id").as[String]).toOption
     val notebookPath = Try((json \ "notebook" \ "path").as[String]).toOption
@@ -281,7 +281,7 @@ object Application extends Controller {
   /**
    * add a spark cluster by json meta
    */
-  def addCluster() = Action.async(parse.tolerantJson) { request =>
+  def addCluster() = EditorOnlyAction.async(parse.tolerantJson) { request =>
     val json = request.body
     implicit val ec = kernelSystem.dispatcher
     json match {
@@ -297,7 +297,7 @@ object Application extends Controller {
   /**
    * add a spark cluster by json meta
    */
-  def deleteCluster(clusterName:String) = Action.async { request =>
+  def deleteCluster(clusterName:String) = EditorOnlyAction.async { request =>
       Logger.debug("Delete a cluster")
       implicit val ec = kernelSystem.dispatcher
       (clustersActor ? NotebookClusters.Remove(clusterName, null)).map{ item => Ok(Json.obj("result" → s"Cluster $clusterName deleted"))}
@@ -416,7 +416,7 @@ object Application extends Controller {
     Try(Ok(Json.obj("path" → newF.getAbsolutePath.drop(parent.getAbsolutePath.length))))
   }
 
-  def newContent(p: String = "/") = Action(parse.tolerantText) { request =>
+  def newContent(p: String = "/") = EditorOnlyAction(parse.tolerantText) { request =>
     val path = URLDecoder.decode(p, UTF_8)
     val text = request.body
     val tryJson = Try(Json.parse(request.body))
@@ -520,7 +520,7 @@ object Application extends Controller {
     ))
   }
 
-  def renameNotebook(p: String) = Action(parse.tolerantJson) { request =>
+  def renameNotebook(p: String) = EditorOnlyAction(parse.tolerantJson) { request =>
     val oldPath = URLDecoder.decode(p, UTF_8)
     val newPath = (request.body \ "path").as[String]
     Logger.info("RENAME → " + oldPath + " to " + newPath)
@@ -541,7 +541,7 @@ object Application extends Controller {
     }
   }
 
-  def saveNotebook(p: String) = Action(parse.tolerantJson(config.maxBytesInFlight)) { request =>
+  def saveNotebook(p: String) = EditorOnlyAction(parse.tolerantJson(config.maxBytesInFlight)) { request =>
     val path = URLDecoder.decode(p, UTF_8)
     Logger.info("SAVE → " + path)
 
@@ -578,7 +578,7 @@ object Application extends Controller {
     }
   }
 
-  def deleteNotebook(p: String) = Action { request =>
+  def deleteNotebook(p: String) = EditorOnlyAction { request =>
     val path = URLDecoder.decode(p, UTF_8)
     Logger.info("DELETE → " + path)
     try {
