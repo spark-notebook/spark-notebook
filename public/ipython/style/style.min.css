@@ -9580,6 +9580,7 @@ div.output_unrecognized a:hover {
 }
 .rendered_html {
   color: #000000;
+  overflow: auto;
   /* any extras will just be numbers: */
 }
 .rendered_html em {
