@@ -15,6 +15,7 @@ import kernel._
 
 import org.sonatype.aether.repository.RemoteRepository
 
+import notebook.kernel.repl.common.ReplT
 import notebook.OutputTypes._
 import com.datafellas.utils._
 import notebook.front._
@@ -102,10 +103,10 @@ class ReplCalculator(
 
   val ImportsScripts = ("imports", () => customImports.map(_.mkString("\n") + "\n").getOrElse("\n"))
 
-  private var _repl:Option[Repl] = None
+  private var _repl:Option[ReplT] = None
 
-  private def repl:Repl = _repl getOrElse {
-    val r = new Repl(compilerArgs, depsJars)
+  private def repl: ReplT = _repl getOrElse {
+    val r = ReplT.create(compilerArgs, depsJars)
     _repl = Some(r)
     r
   }
@@ -214,7 +215,7 @@ class ReplCalculator(
         log.debug(s"Interrupting the cell: $killCellId")
         val jobGroupId = JobTracking.jobGroupId(killCellId)
         // make sure sparkContext is already available!
-        if (jobsInQueueToKill.isEmpty && repl.interp.allDefinedNames.exists(_.toString == "globalScope")) {
+        if (jobsInQueueToKill.isEmpty && repl.sparkContextAvailable) {
           log.info(s"Killing job Group $jobGroupId")
           val thisSender = sender()
           repl.evaluate(
@@ -235,7 +236,7 @@ class ReplCalculator(
         log.debug("Clearing the queue of size " + queue.size)
         queue = scala.collection.immutable.Queue.empty
         repl.evaluate(
-          "sparkContext.cancelAllJobs()",
+          "globalScope.sparkContext.cancelAllJobs()",
           msg => {
             thisSender ! StreamResponse(msg, "stdout")
           }

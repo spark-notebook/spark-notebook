@@ -101,7 +101,7 @@ class ReplCalculator(
   private var _repl: Option[ReplT] = None
 
   private def repl: ReplT = _repl getOrElse {
-    val r = new Repl(compilerArgs, depsJars)
+    val r = ReplT.create(compilerArgs, depsJars)
     _repl = Some(r)
     r
   }
@@ -213,7 +213,7 @@ class ReplCalculator(
           log.info(s"Killing job Group $jobGroupId")
           val thisSender = sender()
           repl.evaluate(
-            s"""sparkContext.cancelJobGroup("${jobGroupId}")""",
+            s"""globalScope.sparkContext.cancelJobGroup("${jobGroupId}")""",
             msg => thisSender ! StreamResponse(msg, "stdout")
           )
         }
@@ -250,7 +250,7 @@ class ReplCalculator(
         def replEvaluate(code:String, cellId:String) = {
           val cellResult = try {
            repl.evaluate(s"""
-              |sparkContext.setJobGroup("${JobTracking.jobGroupId(cellId)}", "${JobTracking.jobDescription(code, start)}")
+              |globalScope.sparkContext.setJobGroup("${JobTracking.jobGroupId(cellId)}", "${JobTracking.jobDescription(code, start)}")
               |$code
               """.stripMargin,
               msg => thisSender ! StreamResponse(msg, "stdout"),
@@ -258,7 +258,7 @@ class ReplCalculator(
             )
           }
           finally {
-             repl.evaluate("sparkContext.clearJobGroup()")
+             repl.evaluate("globalScope.sparkContext.clearJobGroup()")
           }
           cellResult
         }
