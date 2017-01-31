@@ -25,11 +25,26 @@ import scala.concurrent.{Future, Promise}
 import scala.language.postfixOps
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
+import play.api.mvc._
 
 case class Crumb(url: String = "", name: String = "")
 
 case class Breadcrumbs(home: String = "/", crumbs: List[Crumb] = Nil)
 
+// see https://www.playframework.com/documentation/2.5.x/ScalaActionsComposition
+object EditorOnlyAction extends ActionBuilder[Request] {
+  private lazy val config = AppUtils.notebookConfig
+  val viewer = config.viewer
+
+  def invokeBlock[A](request: Request[A], block: (Request[A]) => Future[Result]): Future[Result] = {
+    if (viewer){
+      Future.successful(Results.BadRequest("This action not allowed in viewer mode"))
+    } else {
+      Logger.info("Calling action")
+      block(request)
+    }
+  }
+}
 
 object Application extends Controller {
 
@@ -50,6 +65,8 @@ object Application extends Controller {
   val base_kernel_url = "/"
   val base_observable_url = "observable"
   val read_only = false.toString
+  val viewer = config.viewer
+
   //  TODO: Ugh...
   val terminals_available = false.toString // TODO
 
@@ -222,7 +239,7 @@ object Application extends Controller {
     kernelResponse(Some(kId))
   }
 
-  def createSession() = Action(parse.tolerantJson) /* → posted as urlencoded form oO */ { request =>
+  def createSession() = EditorOnlyAction(parse.tolerantJson) /* → posted as urlencoded form oO */ { request =>
     val json: JsValue = request.body
     val kernelId = Try((json \ "kernel" \ "id").as[String]).toOption
     val notebookPath = Try((json \ "notebook" \ "path").as[String]).toOption
@@ -264,7 +281,7 @@ object Application extends Controller {
   /**
    * add a spark cluster by json meta
    */
-  def addCluster() = Action.async(parse.tolerantJson) { request =>
+  def addCluster() = EditorOnlyAction.async(parse.tolerantJson) { request =>
     val json = request.body
     implicit val ec = kernelSystem.dispatcher
     json match {
@@ -280,7 +297,7 @@ object Application extends Controller {
   /**
    * add a spark cluster by json meta
    */
-  def deleteCluster(clusterName:String) = Action.async { request =>
+  def deleteCluster(clusterName:String) = EditorOnlyAction.async { request =>
       Logger.debug("Delete a cluster")
       implicit val ec = kernelSystem.dispatcher
       (clustersActor ? NotebookClusters.Remove(clusterName, null)).map{ item => Ok(Json.obj("result" → s"Cluster $clusterName deleted"))}
@@ -399,7 +416,7 @@ object Application extends Controller {
     Try(Ok(Json.obj("path" → newF.getAbsolutePath.drop(parent.getAbsolutePath.length))))
   }
 
-  def newContent(p: String = "/") = Action(parse.tolerantText) { request =>
+  def newContent(p: String = "/") = EditorOnlyAction(parse.tolerantText) { request =>
     val path = URLDecoder.decode(p, UTF_8)
     val text = request.body
     val tryJson = Try(Json.parse(request.body))
@@ -503,7 +520,7 @@ object Application extends Controller {
     ))
   }
 
-  def renameNotebook(p: String) = Action(parse.tolerantJson) { request =>
+  def renameNotebook(p: String) = EditorOnlyAction(parse.tolerantJson) { request =>
     val oldPath = URLDecoder.decode(p, UTF_8)
     val newPath = (request.body \ "path").as[String]
     Logger.info("RENAME → " + oldPath + " to " + newPath)
@@ -524,7 +541,7 @@ object Application extends Controller {
     }
   }
 
-  def saveNotebook(p: String) = Action(parse.tolerantJson(config.maxBytesInFlight)) { request =>
+  def saveNotebook(p: String) = EditorOnlyAction(parse.tolerantJson(config.maxBytesInFlight)) { request =>
     val path = URLDecoder.decode(p, UTF_8)
     Logger.info("SAVE → " + path)
 
@@ -561,7 +578,7 @@ object Application extends Controller {
     }
   }
 
-  def deleteNotebook(p: String) = Action { request =>
+  def deleteNotebook(p: String) = EditorOnlyAction { request =>
     val path = URLDecoder.decode(p, UTF_8)
     Logger.info("DELETE → " + path)
     try {
@@ -595,6 +612,7 @@ object Application extends Controller {
         "read-only" → read_only,
         "base-url" → base_project_url,
         "notebook-path" → path,
+        "viewer_mode" → config.viewer.toString,
         "terminals-available" → terminals_available
       ),
       Breadcrumbs(
@@ -691,12 +709,12 @@ object Application extends Controller {
             NBSerializer.fromJson(Json.parse(data)) match {
               case Some(nb) =>
                 notebook.export.Markdown.generate(nb, name, false) match {
-                  case Some(Left(code)) =>  
+                  case Some(Left(code)) =>
                     Ok(code).withHeaders(
                       HeaderNames.CONTENT_DISPOSITION → s"""attachment; filename="$name.md" """,
                       HeaderNames.LAST_MODIFIED → lastMod
                     )
-                  case Some(Right(file)) => 
+                  case Some(Right(file)) =>
                     Ok.sendFile(
                       content = file,
                       fileName = _ => name+".zip"

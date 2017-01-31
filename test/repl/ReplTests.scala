@@ -15,6 +15,11 @@ class ReplTests extends Specification with BeforeAllAfterAll {
   def beforeAll = repl = new Repl()
   def afterAll = repl.stop()
 
+  "ReplT can build Repl" in {
+    ReplT.create(Nil, Nil)
+    success
+  }
+
   "fail when attempting to use undefined code" in {
     repl.evaluate("val x = new NotDefinedClass") match {
       case ( Failure(_), _ ) => success

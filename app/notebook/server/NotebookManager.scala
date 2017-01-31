@@ -11,13 +11,26 @@ import notebook.NBSerializer._
 import org.apache.commons.io.FileUtils
 import play.api.Logger
 import play.api.libs.json._
+import utils.AppUtils
 import utils.Const.UTF_8
 
 class NotebookManager(val name: String, val notebookDir: File) {
 
   Logger.info("Notebook directory is: " + notebookDir.getCanonicalPath)
 
+  private lazy val config = AppUtils.notebookConfig
+  val viewer = config.viewer
+
+
   val extension = ".snb"
+
+  def forbidInViewer[T](block: => T): T = {
+    if (!viewer){
+      block
+    } else {
+      throw new IllegalStateException("This action is not allowed in viewer mode")
+    }
+  }
 
   def getName(path: String) = path.split("/").filter(!_.isEmpty).last.dropRight(extension.length)
 
@@ -50,7 +63,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
     customImports: Option[List[String]] = None,
     customArgs: Option[List[String]] = None,
     customSparkConf: Option[JsObject] = None,
-    name:Option[String] = None) = {
+    name:Option[String] = None) = forbidInViewer {
     val sep = if (path.last == '/') "" else "/"
     val fpath = name.map(path + sep + _ + extension).getOrElse(incrementFileName(path + sep + "Untitled"))
     val nb = Notebook(
@@ -72,7 +85,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
     fpath
   }
 
-  def copyNotebook(nbPath: String) = {
+  def copyNotebook(nbPath: String) = forbidInViewer {
     getNotebook(nbPath).map { case (_, _, nbData, nbFilePath) =>
       val newPath = incrementFileName(nbFilePath.dropRight(extension.length))
       val newName = getName(newPath)
@@ -98,7 +111,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
     }
   }
 
-  def deleteNotebook(path: String) = {
+  def deleteNotebook(path: String) = forbidInViewer {
     Logger.info(s"deleteNotebook at path $path")
     val file = notebookFile(path)
     if (file.exists()) {
@@ -106,7 +119,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
     }
   }
 
-  def rename(path: String, newpath: String) = {
+  def rename(path: String, newpath: String) = forbidInViewer {
     Logger.info(s"rename from path $path to $newpath")
     val newname = getName(newpath)
     val oldfile = notebookFile(path)
@@ -127,7 +140,7 @@ class NotebookManager(val name: String, val notebookDir: File) {
     (newname, newpath)
   }
 
-  def save(path: String, notebook: Notebook, overwrite: Boolean) = {
+  def save(path: String, notebook: Notebook, overwrite: Boolean) = forbidInViewer {
     Logger.info(s"save at path $path")
     val file = notebookFile(path)
     if (!overwrite && file.exists()) {
