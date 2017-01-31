@@ -25,11 +25,26 @@ import scala.concurrent.{Future, Promise}
 import scala.language.postfixOps
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
+import play.api.mvc._
 
 case class Crumb(url: String = "", name: String = "")
 
 case class Breadcrumbs(home: String = "/", crumbs: List[Crumb] = Nil)
 
+// see https://www.playframework.com/documentation/2.5.x/ScalaActionsComposition
+object EditorOnlyAction extends ActionBuilder[Request] {
+  private lazy val config = AppUtils.notebookConfig
+  val viewer = config.viewer
+
+  def invokeBlock[A](request: Request[A], block: (Request[A]) => Future[Result]): Future[Result] = {
+    if (viewer){
+      Future.successful(Results.BadRequest("This action not allowed in viewer mode"))
+    } else {
+      Logger.info("Calling action")
+      block(request)
+    }
+  }
+}
 
 object Application extends Controller {
 
