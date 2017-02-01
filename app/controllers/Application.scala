@@ -58,14 +58,15 @@ object Application extends Controller {
 
   private implicit val GetClustersTimeout = Timeout(60 seconds)
 
+  val viewer = config.viewer
+
   val project = notebookManager.name
   val base_project_url = current.configuration.getString("application.context").getOrElse("/")
-  val autoStartKernel = current.configuration.getBoolean("manager.kernel.autostartOnNotebookOpen").getOrElse(true)
+  val autoStartKernel = current.configuration.getBoolean("manager.kernel.autostartOnNotebookOpen").getOrElse(true) && !viewer;
   val kernelKillTimeout = current.configuration.getMilliseconds("manager.kernel.killTimeout")
   val base_kernel_url = "/"
   val base_observable_url = "observable"
-  val read_only = false.toString
-  val viewer = config.viewer
+  val read_only = viewer.toString
 
   //  TODO: Ugh...
   val terminals_available = false.toString // TODO
@@ -455,10 +456,10 @@ object Application extends Controller {
         "base-project-url" -> base_project_url,
         "base-kernel-url" -> base_kernel_url,
         "base-observable-url" -> ws_url(Some(base_observable_url)),
-        "read-only" -> read_only,
+        "read-only" -> read_only, // FIXME
         "notebook-name" -> notebookManager.name,
         "notebook-path" -> path,
-        "notebook-writable" -> "true",
+        "notebook-writable" -> "true", //FIXME
         "presentation" -> presentation.getOrElse("edit")
       ),
       Some("notebook")
@@ -670,7 +671,7 @@ object Application extends Controller {
                 "name" → nbname,
                 "path" → fpath, //FIXME
                 "autoStartKernel" -> autoStartKernel,
-                "writable" -> true //TODO
+                "writable" -> !viewer
               )
             } else {
               j
