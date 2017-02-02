@@ -154,4 +154,42 @@ These variables can be accessed from Scala code in the notebook:
 }
 ```
 
+### ADAM configuration
+
+Spark-notebook is often used by bionformaticians to analyze *omics data with ADAM genomics analysis platform. 
+To works with ADAM you should add dependencies and also configure KryoSerializer to work with ADAMKryoRegistrator.
+
+Here is an example of typical ADAM configuration 
+```json
+{
+  "name": "hello-adam",
+  "language_info": {
+    "name": "scala",
+    "file_extension": "scala",
+    "codemirror_mode": "text/x-scala"
+  },
+  "trusted": true,
+  "customDeps": [
+    "org.bdgenomics.adam %% adam-core-spark2 % 0.21.0"
+  ],
+  "customImports": [
+    "import org.bdgenomics.adam.rdd.ADAMContext._ \n",
+    "import org.bdgenomics.adam.models._ \n",
+    "import org.bdgenomics.adam.rdd.feature._ \n",
+    "import org.bdgenomics.formats.avro._ \n"
+  ],
+  "customArgs": null,
+  "customSparkConf": {
+    "spark.app.name": "genetic-search",
+    "spark.serializer": "org.apache.spark.serializer.KryoSerializer",
+    "spark.kryo.registrator": "org.bdgenomics.adam.serialization.ADAMKryoRegistrator",
+    "spark.kryoserializer.buffer.mb": "4",
+    "spark.kryo.referenceTracking": "true"
+  },
+  "kernelspec": {
+    "name": "spark",
+    "display_name": "Scala [2.11.8] Spark [2.0.2] Hadoop [2.7.3] "
+  }
+}
+
 
