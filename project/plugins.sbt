@@ -17,26 +17,10 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-coffeescript" % "1.0.0")
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.8.2")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.1.0")
+addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.1.0-RC1")
 
 addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.3.2")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.8.5")
 
 addSbtPlugin("uk.gov.hmrc" % "sbt-git-stamp" % "5.2.0")
-
-/**
-  * coursier
-  *
-  * better and faster dependency resolution
-  * @see https://github.com/alexarchambault/coursier
-  */
-addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.0.0-M15-1")
-
-/**
-  * sbt-updates
-  *
-  * for easier dependency updates monitoring
-  * @see https://github.com/rtimush/sbt-updates
-  */
-addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.3.0")

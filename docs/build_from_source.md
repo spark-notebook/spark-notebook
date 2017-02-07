@@ -40,7 +40,7 @@ There is another dependency which is tricky to update, the **jets3t** one.
 
 To update that, you can pass those version as properties, here is an example with the current default ones:
 ```
-sbt -D"spark.version"="2.1.0" -D"hadoop.version"="2.7.3" -D"jets3t.version"="0.7.1" -Dmesos.version="0.26.0"
+sbt -D"spark.version"="1.5.0" -D"hadoop.version"="2.6.0" -D"jets3t.version"="0.7.1" -Dmesos.version="0.24.0"
 ```
 
 #### Create your distribution
