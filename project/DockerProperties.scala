@@ -13,7 +13,7 @@ object DockerProperties extends BuildConf {
 
   private val defaultCommands: Seq[Cmd] = Seq(
     Cmd("USER", "root"),
-    Cmd("RUN", s"apt-get update --fix-missing && apt-get install -y --no-install-recommends openjdk-8-jdk"),
+    Cmd("RUN", s"apt-get update --fix-missing && apt-get install -y -t jessie-backports --no-install-recommends openjdk-8-jdk"),
     Cmd("ENV", "JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64"),
     Cmd("RUN", s"apt-get install -y wget curl")
   )
