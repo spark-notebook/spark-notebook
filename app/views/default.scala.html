@@ -155,14 +155,16 @@
         @site
         <footer class="footer">
           <div class="container">
-            <p class="text-muted">Build: | @{_root_.notebook.BuildInfo.toMap.toList.sortBy(_._1).map{
+          @if(!_root_.utils.AppUtils.notebookConfig.viewer) {
+              <p class="text-muted">Build: | @{_root_.notebook.BuildInfo.toMap.toList.sortBy(_._1).map{
                 case (k, Some(v)) => <span>&nbsp;<strong>{k}</strong>-<em>{v}</em>&nbsp;|</span>
                 case (k, None) => <span>&nbsp;<strong>{k}</strong>-<em>Unknown...</em>&nbsp;|</span>
                 case (k, v) if k.trim.matches("^x[A-Z].*$") => <span>&nbsp;<strong>{k.drop(1).head.toString.toLowerCase+k.drop(1).tail}</strong>-<em>{v}</em>&nbsp;|</span>
                 case (k, v) => <span>&nbsp;<strong>{k}</strong>-<em>{v}</em>&nbsp;|</span>
-              }
-            }.
-            </p>
+                  }
+                }.
+              </p>
+          }
           </div>
         </footer>
         </div>
