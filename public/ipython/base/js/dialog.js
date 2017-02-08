@@ -178,6 +178,8 @@ define(function(require) {
             autoIndent: true,
             mode: 'application/json',
         });
+        editor.setSize("100%","400px");
+
         var modal_obj = modal({
             title: "Edit " + options.name + " Metadata",
             body: dialogform,
