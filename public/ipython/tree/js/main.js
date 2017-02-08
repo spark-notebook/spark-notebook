@@ -46,7 +46,7 @@ require([
     var common_options = {
         base_url: utils.get_body_data("baseUrl"),
         notebook_path: utils.get_body_data("notebookPath"),
-        viewer: utils.get_body_data("viewer"),
+        viewer: utils.get_body_data("viewer_mode"),
     };
     var cfg = new config.ConfigSection('tree', common_options);
     cfg.load();
