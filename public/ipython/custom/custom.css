@@ -166,3 +166,8 @@ div.output_area pre { color: #666; }
 .cm-sql-inside-scala-mode {
   background-color: #fffdea;
 }
+
+
+body[data-read-only="true"] .cell .progress, body[data-read-only="true"] #maintoolbar, body[data-read-only="true"] #menubar-container {
+  display: none !important; visibility: hidden!important;
+}

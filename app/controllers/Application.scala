@@ -66,7 +66,7 @@ object Application extends Controller {
   val kernelKillTimeout = current.configuration.getMilliseconds("manager.kernel.killTimeout")
   val base_kernel_url = "/"
   val base_observable_url = "observable"
-  val read_only = viewer.toString
+  val read_only = viewer
 
   //  TODO: Ugh...
   val terminals_available = false.toString // TODO
@@ -431,7 +431,7 @@ object Application extends Controller {
     }.get
   }
 
-  def openNotebook(p: String, presentation: Option[String]) = Action { implicit request =>
+  def openNotebook(p: String, presentation: Option[String], read_only: Option[Int]) = Action { implicit request =>
     val path = URLDecoder.decode(p, UTF_8)
     Logger.info(s"View notebook '$path', presentation: '$presentation'")
     val wsPath = base_project_url match {
@@ -456,7 +456,7 @@ object Application extends Controller {
         "base-project-url" -> base_project_url,
         "base-kernel-url" -> base_kernel_url,
         "base-observable-url" -> ws_url(Some(base_observable_url)),
-        "read-only" -> read_only, // FIXME
+        "read-only" -> (this.read_only || read_only.getOrElse(0) == 1).toString, // FIXME
         "notebook-name" -> notebookManager.name,
         "notebook-path" -> path,
         "presentation" -> presentation.getOrElse("edit")
@@ -609,7 +609,7 @@ object Application extends Controller {
         "project" → project,
         "base-project-url" → base_project_url,
         "base-kernel-url" → base_kernel_url,
-        "read-only" → read_only,
+        "read-only" → read_only.toString,
         "base-url" → base_project_url,
         "notebook-path" → path,
         "viewer_mode" → config.viewer.toString,
