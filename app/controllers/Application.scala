@@ -459,7 +459,6 @@ object Application extends Controller {
         "read-only" -> read_only, // FIXME
         "notebook-name" -> notebookManager.name,
         "notebook-path" -> path,
-        "notebook-writable" -> "true", //FIXME
         "presentation" -> presentation.getOrElse("edit")
       ),
       Some("notebook")
