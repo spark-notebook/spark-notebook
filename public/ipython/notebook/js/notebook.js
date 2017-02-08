@@ -2293,7 +2293,7 @@ define([
             this.nbformat_minor = nbmodel.nbformat_minor;
         }
 
-        if (this.session === null) {
+        if (this.session === null && this.autoStartKernel) {
             var kernel_name;
             if (this.metadata.kernelspec) {
                 var kernelspec = this.metadata.kernelspec || {};
@@ -2303,9 +2303,7 @@ define([
             }
             if (kernel_name) {
                 // setting kernel_name here triggers start_session
-                if (this.autoStartKernel) {
-                    this.kernel_selector.set_kernel(kernel_name);
-                }
+                this.kernel_selector.set_kernel(kernel_name);
             } else {
                 // start a new session with the server's default kernel
                 // spec_changed events will fire after kernel is loaded
