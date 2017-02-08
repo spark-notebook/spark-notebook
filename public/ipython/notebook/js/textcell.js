@@ -105,7 +105,6 @@ define([
             if (that.keyboard_manager) {
                 that.keyboard_manager.enable();
             }
-          that.code_mirror.setOption('readOnly', !that.notebook.writable);
         });
         this.code_mirror.on('keydown', $.proxy(this.handle_keyevent,this))
         // The tabindex=-1 makes this div focusable.

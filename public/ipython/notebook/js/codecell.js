@@ -111,7 +111,8 @@ define([
         this._widgets_live = true;
 
         Cell.apply(this,[{
-            config: $.extend({}, CodeCell.options_default),
+            // this needs a deep merge to pass this.config.cm_config.readOnly
+            config: $.extend(true, {}, CodeCell.options_default, this.config),
             keyboard_manager: options.keyboard_manager,
             events: this.events}]);
 
@@ -209,7 +210,6 @@ define([
             if (that.keyboard_manager) {
                 that.keyboard_manager.enable();
             }
-            that.code_mirror.setOption('readOnly', !that.notebook.writable);
         });
         this.code_mirror.on('keydown', $.proxy(this.handle_keyevent,this));
         $(this.code_mirror.getInputField()).attr("spellcheck", "false");
