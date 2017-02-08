@@ -2189,6 +2189,10 @@ define([
      */
     Notebook.prototype.load_notebook_success = function (data) {
         var failed, msg;
+        // we want cell/cm_config options to be set before creating them from JSON...
+        this.writable = data.writable && !this.is_read_only();
+        this.config.cm_config = { readOnly: !this.writable && "nocursor" };
+
         try {
             this.fromJSON(data);
         } catch (e) {
@@ -2247,7 +2251,6 @@ define([
         }
         this.set_dirty(false);
         this.scroll_to_top();
-        this.writable = data.writable && !this.is_read_only();
 
         // to save resources eagerly load the kernel only if configured-so in application.conf
         // must automatically start kernel it was requested to recompute the whole notebook immediately
@@ -2293,7 +2296,7 @@ define([
             this.nbformat_minor = nbmodel.nbformat_minor;
         }
 
-        if (this.session === null) {
+        if (this.session === null && this.autoStartKernel) {
             var kernel_name;
             if (this.metadata.kernelspec) {
                 var kernelspec = this.metadata.kernelspec || {};
@@ -2303,9 +2306,7 @@ define([
             }
             if (kernel_name) {
                 // setting kernel_name here triggers start_session
-                if (this.autoStartKernel) {
-                    this.kernel_selector.set_kernel(kernel_name);
-                }
+                this.kernel_selector.set_kernel(kernel_name);
             } else {
                 // start a new session with the server's default kernel
                 // spec_changed events will fire after kernel is loaded

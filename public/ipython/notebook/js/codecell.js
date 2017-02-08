@@ -111,7 +111,8 @@ define([
         this._widgets_live = true;
 
         Cell.apply(this,[{
-            config: $.extend({}, CodeCell.options_default),
+            // this needs a deep merge to pass this.config.cm_config.readOnly
+            config: $.extend(true, {}, CodeCell.options_default, this.config),
             keyboard_manager: options.keyboard_manager,
             events: this.events}]);
 
