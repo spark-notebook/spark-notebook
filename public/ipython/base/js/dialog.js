@@ -5,6 +5,7 @@ define(function(require) {
     "use strict";
 
     var CodeMirror = require('codemirror/lib/codemirror');
+    var CodeMirrorJsMode = require('codemirror/mode/javascript/javascript');
     var IPython = require('base/js/namespace');
     var $ = require('jquery');
     var ko = require('knockout');
@@ -177,6 +178,8 @@ define(function(require) {
             autoIndent: true,
             mode: 'application/json',
         });
+        editor.setSize("100%","400px");
+
         var modal_obj = modal({
             title: "Edit " + options.name + " Metadata",
             body: dialogform,
