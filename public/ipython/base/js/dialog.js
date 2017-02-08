@@ -5,6 +5,7 @@ define(function(require) {
     "use strict";
 
     var CodeMirror = require('codemirror/lib/codemirror');
+    var CodeMirrorJsMode = require('codemirror/mode/javascript/javascript');
     var IPython = require('base/js/namespace');
     var $ = require('jquery');
     var ko = require('knockout');
