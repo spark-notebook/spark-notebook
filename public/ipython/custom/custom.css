@@ -130,7 +130,7 @@ table.c3-tooltip th, #termDefinitions table th {
 }
 
 /* cell progress: based on http://getbootstrap.com/components/#progress-animated */
-.progress { margin: 0; }
+.progress { margin: 0; height: auto; /* hide when not used */ }
 div.progress-bar { text-align: left; }
 div.progress-bar a.cancel-cell-btn { font-weight: bold; color: #336699 !important; margin-left: 10px; }
 div.progress-bar.active a.cancel-cell-btn { color: #FFFFFF!important; }
@@ -140,23 +140,30 @@ h4#spark-jobs { margin-bottom: 0 !important; }
 
 .prompt { display: none; visibility: hidden; }
 /* new cell UI */
-div.cell.code_cell {
-  border: 2px solid #c1c1c1;
-  border-radius: 5px;
+div.cell.code_cell, div.cell.text_cell {
+  border-radius: 3px;
   padding: 0;
   margin-bottom: 10px;
 }
-div.cell.code_cell.selected {
-  border-color: #3e8f3e;
+div.cell.code_cell {
+  border: 1px solid #ddd;
+}
+div.cell.selected, div.cell.code_cell.selected, .edit_mode div.cell.selected {
+  border: 1px solid #ddd;
+  /* http://www.css3generator.in/box-shadow.html */
+  box-shadow: 2px 2px 9px 3px #bbb;
+  -webkit-box-shadow: 2px 2px 9px 3px #bbb;
+  -moz-box-shadow: 2px 2px 9px 3px #bbb;
+  -o-box-shadow: 2px 2px 9px 3px #bbb;
 }
 
 .code_cell div.input_area {
   border-color: #cfcfcf;
   border-right-width: 0;
-  border-bottom-width: 2px;
+  border-bottom-width: 1px;
   border-bottom-color: #EEEEEE;
   border-top-width: 0;
-  border-left-width: 5px;
+  border-left: 5px solid #eee;
   background: transparent;
 }
 /* make defined variables lighter, so it do not disturb from final result */
