@@ -57,6 +57,7 @@ class WebSocketKernelActor(
       val channel = json \ "channel"
 
       msgType match {
+          // This msg is sent after Browser Kernel/session is ready, should do well for init
         case JsString("kernel_info_request") =>
           ws.send(header, session_id, "info", "shell",
             Json.obj(
@@ -68,6 +69,7 @@ class WebSocketKernelActor(
               "extension" → "scala"
             )
           )
+          calcService.calcActor ! WebUIReadyNotification(ws)
         case JsString("interrupt_cell_request") =>
           val JsString(cellId) = content \ "cell_id"
           calcService.calcActor ! InterruptCell(cellId)

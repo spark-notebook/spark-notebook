@@ -11,6 +11,7 @@ import play.api.libs.json._
 
 import scala.concurrent._
 import scala.collection.immutable.Queue
+import scala.collection.mutable
 import scala.concurrent.duration._
 import scala.language.{postfixOps, reflectiveCalls}
 
@@ -49,6 +50,9 @@ class CalcWebSocketService(
 
     protected val notebookStartTime = LocalDateTime.now()
     private var lastCellExecutionTime: Option[LocalDateTime] = None
+
+    private val lastTypeDefinitions = mutable.Map[String, (TypeDefinition, JsObject)]()
+    private val lastNameDefinitions = mutable.Map[String, (NameDefinition, JsObject)]()
 
     val ws = new {
       def send(header: JsValue, session: JsValue /*ignored*/ , msgType: String, channel: String,
@@ -116,6 +120,29 @@ class CalcWebSocketService(
       context.watch(calculator)
     }
 
+    def sendTermDefinition(ws: WebSockWrapper, jsonInfo: JsObject) = {
+      ws.send(
+        obj(
+          "session" → "ignored"
+        ),
+        ws.session,
+        "definition",
+        "iopub",
+        jsonInfo
+      )
+    }
+
+    def sendAllNameDefinitions(ws: WebSockWrapper) = {
+      lastTypeDefinitions.values.map(_._2)
+        .foreach(sendTermDefinition(ws, _))
+
+      lastNameDefinitions.values.map(_._2)
+        .foreach(sendTermDefinition(ws, _))
+
+      Logger.debug(s"Sent defs to ($ws) in service ${this} (current are:  " +
+        s"${lastTypeDefinitions.keys} and ${lastNameDefinitions.keys})")
+    }
+
     def receive = {
       case Register(ws: WebSockWrapper) if wss.isEmpty && calculator == null =>
         Logger.info(s"Registering first web-socket ($ws) in service ${this}")
@@ -149,6 +176,9 @@ class CalcWebSocketService(
           }
         }
         currentSessionOperations = Queue.empty
+
+      case WebUIReadyNotification(newlyStartedWs) =>
+        sendAllNameDefinitions(newlyStartedWs)
 
       case req@SessionRequest(header, session, request) =>
         val operations = new SessionOperationActors(header, session)
@@ -240,6 +270,23 @@ class CalcWebSocketService(
               case TypeDefinition(_, _, _) => (JsNull, JsString(name))
               case _ => (JsNull, JsNull)
             }
+            val jsonInfo = obj(
+              "term" → te,
+              "type" → ty,
+              "tpe" → tpe,
+              "cell" → cellId,
+              "references" → references
+            )
+
+            // store the name definitions so they're not lost on browser reload
+            nameDefinition match {
+              case d: TermDefinition => lastNameDefinitions.put(name, (d, jsonInfo))
+              case d: TypeDefinition => lastTypeDefinitions.put(name, (d, jsonInfo))
+            }
+
+            Logger.debug(s"Registered a def. Current definitions:  " +
+              s"${lastTypeDefinitions.keys} and ${lastNameDefinitions.keys})")
+
             ws.send(
               obj(
                 "session" → "ignored"
@@ -247,13 +294,7 @@ class CalcWebSocketService(
               JsNull,
               "definition",
               "iopub",
-              obj(
-                "term" → te,
-                "type" → ty,
-                "tpe" → tpe,
-                "cell" → cellId,
-                "references" → references
-              )
+              jsonInfo
             )
 
           case ErrorResponse(msg, incomplete) =>
