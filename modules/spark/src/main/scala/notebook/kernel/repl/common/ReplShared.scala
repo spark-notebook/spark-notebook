@@ -7,16 +7,14 @@ import scala.concurrent.{Future, Promise}
 import notebook.kernel.EvaluationResult
 import notebook.util.Match
 
-abstract class NameDefinition {
-  def name: String
-  def tpe: String
-  def references: List[String]
+case class NameDefinition(name: String, tpe: String, references: List[String]) {
+  def definesType: Boolean = {
+    tpe == NameDefinition.TYPE_DEFINITION
+  }
 }
 object NameDefinition {
-  def unapply(nd: NameDefinition) = Some((nd.name, nd.tpe, nd.references))
+  val TYPE_DEFINITION = "type"
 }
-case class TypeDefinition(name: String, tpe: String, references: List[String]) extends NameDefinition
-case class TermDefinition(name: String, tpe: String, references: List[String]) extends NameDefinition
 
 class ReplOutputStream extends ByteArrayOutputStream {
   var aop: String => Unit = x => ()
