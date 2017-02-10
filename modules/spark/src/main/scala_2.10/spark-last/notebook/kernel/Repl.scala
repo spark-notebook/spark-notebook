@@ -147,9 +147,9 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
       (maybeTerm, maybeType) match {
         case (Some(term), _) =>
           val termType = getTypeNameOfTerm(term).getOrElse("<unknown>")
-          Some(TermDefinition(term, termType, references))
+          Some(NameDefinition(term, termType, references))
         case (_, Some(tpe)) =>
-          Some(TypeDefinition(tpe, "type", references))
+          Some(NameDefinition(tpe, NameDefinition.TYPE_DEFINITION, references))
         case _ => None
       }
     }

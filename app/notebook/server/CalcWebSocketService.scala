@@ -3,7 +3,7 @@ package notebook.server
 import akka.actor.{Terminated, _}
 import notebook.client._
 import notebook.Kernel
-import notebook.kernel.repl.common.{NameDefinition, TermDefinition, TypeDefinition}
+import notebook.kernel.repl.common.NameDefinition
 import org.joda.time.LocalDateTime
 import play.api._
 import play.api.libs.json.Json.{obj, arr}
@@ -51,8 +51,8 @@ class CalcWebSocketService(
     protected val notebookStartTime = LocalDateTime.now()
     private var lastCellExecutionTime: Option[LocalDateTime] = None
 
-    private val lastTypeDefinitions = mutable.Map[String, (TypeDefinition, JsObject)]()
-    private val lastNameDefinitions = mutable.Map[String, (NameDefinition, JsObject)]()
+    // name -> (definition, cellId)
+    private val lastTermDefinitions = mutable.Map[String, (NameDefinition, String)]()
 
     val ws = new {
       def send(header: JsValue, session: JsValue /*ignored*/ , msgType: String, channel: String,
@@ -120,27 +120,35 @@ class CalcWebSocketService(
       context.watch(calculator)
     }
 
-    def sendTermDefinition(ws: WebSockWrapper, jsonInfo: JsObject) = {
-      ws.send(
-        obj(
-          "session" → "ignored"
-        ),
-        ws.session,
-        "definition",
-        "iopub",
-        jsonInfo
-      )
+
+    def sendAllEarlierNameDefinitions(ws: WebSockWrapper): Unit = {
+      lastTermDefinitions.values.foreach { case (definition, cellId) =>
+        ws.send(
+          obj(
+            "session" → "ignored"
+          ),
+          ws.session,
+          "definition",
+          "iopub",
+          nameDefinitionJson(definition, cellId)
+        )
+      }
+      Logger.debug(s"Sent defs to ($ws) in service ${this} (current are: ${lastTermDefinitions.keys})")
     }
 
-    def sendAllNameDefinitions(ws: WebSockWrapper) = {
-      lastTypeDefinitions.values.map(_._2)
-        .foreach(sendTermDefinition(ws, _))
-
-      lastNameDefinitions.values.map(_._2)
-        .foreach(sendTermDefinition(ws, _))
-
-      Logger.debug(s"Sent defs to ($ws) in service ${this} (current are:  " +
-        s"${lastTypeDefinitions.keys} and ${lastNameDefinitions.keys})")
+    def nameDefinitionJson(nameDefinition: NameDefinition, cellId: String): JsObject ={
+      val NameDefinition(name, tpe, references) = nameDefinition
+      val (te, ty): (JsValue, JsValue) = nameDefinition match {
+        case d if !d.definesType => (JsString(name), JsNull)
+        case _ => (JsNull, JsString(name))
+      }
+      obj(
+        "term" → te,
+        "type" → ty,
+        "tpe" → tpe,
+        "cell" → cellId,
+        "references" → references
+      )
     }
 
     def receive = {
@@ -178,7 +186,7 @@ class CalcWebSocketService(
         currentSessionOperations = Queue.empty
 
       case WebUIReadyNotification(newlyStartedWs) =>
-        sendAllNameDefinitions(newlyStartedWs)
+        sendAllEarlierNameDefinitions(newlyStartedWs)
 
       case req@SessionRequest(header, session, request) =>
         val operations = new SessionOperationActors(header, session)
@@ -265,27 +273,9 @@ class CalcWebSocketService(
             context.stop(self)
 
           case nameDefinition@NameDefinition(name, tpe, references) =>
-            val (te, ty):(JsValue, JsValue) = nameDefinition match {
-              case TermDefinition(_, _, _) => (JsString(name), JsNull)
-              case TypeDefinition(_, _, _) => (JsNull, JsString(name))
-              case _ => (JsNull, JsNull)
-            }
-            val jsonInfo = obj(
-              "term" → te,
-              "type" → ty,
-              "tpe" → tpe,
-              "cell" → cellId,
-              "references" → references
-            )
-
             // store the name definitions so they're not lost on browser reload
-            nameDefinition match {
-              case d: TermDefinition => lastNameDefinitions.put(name, (d, jsonInfo))
-              case d: TypeDefinition => lastTypeDefinitions.put(name, (d, jsonInfo))
-            }
-
-            Logger.debug(s"Registered a def. Current definitions:  " +
-              s"${lastTypeDefinitions.keys} and ${lastNameDefinitions.keys})")
+            lastTermDefinitions.put(name, (nameDefinition, cellId))
+            Logger.debug(s"Registered a name definition. Current definitions: ${lastTermDefinitions.keys})")
 
             ws.send(
               obj(
@@ -294,7 +284,7 @@ class CalcWebSocketService(
               JsNull,
               "definition",
               "iopub",
-              jsonInfo
+              nameDefinitionJson(nameDefinition, cellId)
             )
 
           case ErrorResponse(msg, incomplete) =>
