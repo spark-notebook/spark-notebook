@@ -126,6 +126,122 @@ define([
     Cell.prototype.create_element = function () {
     };
 
+    Cell.prototype.set_cell_width = function (value) {
+        // we check that the presentation namespace exist and create it if needed
+        if (this.metadata.presentation === undefined) {
+            this.metadata.presentation = {};
+        }
+        // set the value
+        this.metadata.presentation.cell_width = value;
+        this.render();
+    };
+
+    Cell.prototype.get_cell_width = function () {
+        var ns = this.metadata.presentation;
+        // if the presentation namespace does not exist return `undefined`
+        // (will be interpreted as `false` by checkbox) otherwise
+        // return the value
+        return (ns === undefined) ? undefined : ns.cell_width;
+    };
+
+    Cell.prototype.create_context_menu = function() {
+        var theCell = this;
+        console.log("theCell-this:", theCell);
+        var context_menu = $(
+          '\
+          <div class="cell-context-buttons" style="text-align: right">\
+              <div class="btn-group">\
+                <a class="btn" data-menu-command="ipython.run-select-next"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></a>\
+          <a class="btn dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">\
+              <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>\
+          </a>\
+          <a class="btn" data-menu-command="ipython.delete-cell"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>\
+          <ul class="dropdown-menu cell-settings dropdown-menu-right">\
+            <li data-menu-command="ipython.cut-selected-cell"><a tabindex="-1" href="#"><i class="fa-cut fa"></i> Cut Cell</a></li>\
+            <li data-menu-command="ipython.copy-selected-cell"><a tabindex="-1" href="#"><i class="fa-copy fa"></i> Copy cell</a></li>\
+            <li data-menu-command="ipython.paste-cell-after"><a tabindex="-1" href="#"><i class="fa-paste fa"></i> Paste cell below</a></li>\
+            <li class="divider"></li>\
+            <li data-menu-command="ipython.insert-cell-after"><a tabindex="-1" href="#">\
+              <span class="glyphicon glyphicon-plus"></span> Insert cell below</a>\
+            </li>\
+            <li class="divider"></li>\
+            <li data-menu-command="ipython.move-selected-cell-up"><a tabindex="-1" href="#" class="">\
+                <span class="glyphicon glyphicon-chevron-up"></span> Move up</a></li>\
+            <li data-menu-command="ipython.move-selected-cell-down"><a tabindex="-1" href="#" class="">\
+                <span class="glyphicon glyphicon-chevron-down"></span> Move down</a></li>\
+            <li class="divider"></li>\
+            <li class="dropdown-submenu"\
+                title="All cells in the notebook have a cell type. By default, new cells are created as \'Code\' cells">\
+                <a href="#">Cell Type</a>\
+                <ul class="dropdown-menu">\
+                  <li data-menu-command="to_code"\
+                      title="Contents will be sent to the kernel for execution, and output will display in the footer of cell">\
+                      <a href="#">Code</a></li>\
+                  <li data-menu-command="to_markdown"\
+                      title="Contents will be rendered as HTML and serve as explanatory text">\
+                      <a href="#">Markdown</a></li>\
+                  <li data-menu-command="to_heading"\
+                      title="Headings can be linked via URL">\
+                      <a href="#">Heading</a></li>\
+                </ul>\
+            </li>\
+            <li class="dropdown-submenu">\
+                <a tabindex="-1" href="#"><span class="glyphicon glyphicon-resize-horizontal"></span> Set Cell width</a>\
+                <ul class="dropdown-menu">\
+                    <li data-menu-command="set_cell_width" data-cell-width="3"><a tabindex="-1" href="#" class="">25%</a></li>\
+                    <li data-menu-command="set_cell_width" data-cell-width="6"><a tabindex="-1" href="#" class="">50%</a></li>\
+                    <li data-menu-command="set_cell_width" data-cell-width="9"><a tabindex="-1" href="#" class="">75%</a></li>\
+                    <li data-menu-command="set_cell_width" data-cell-width="12"><a tabindex="-1" href="#" class="">100%</a></li>\
+                </ul>\
+            </li>\
+            <li class="divider"></li>\
+            <li data-menu-command="toggle_current_input"><a href="#">Toggle input (code)</a></li>\
+            <li data-menu-command="toggle_current_output"><a href="#">Toggle output</a></li>\
+            <li data-menu-command="clear_current_output"><a tabindex="-1" href="#">\
+              Clear current output</a>\
+            </li>\
+          </ul>\
+          \
+          </div>\
+          </div>\
+'
+        );
+        // bind events (valid only for the currently selected cell)
+        context_menu.find('[data-menu-command]').click(function (event) {
+            event.preventDefault();
+            var command = $(this).data('menu-command');
+            console.log("command:", command);
+            switch(command) {
+                case 'to_code':
+                    IPython.notebook.to_code();
+                    break;
+                case 'to_markdown':
+                    IPython.notebook.to_markdown();
+                    break;
+                case 'to_heading':
+                    IPython.notebook.to_heading();
+                    break;
+                case 'clear_current_output':
+                    IPython.notebook.clear_output();
+                    break;
+                case 'toggle_current_input':
+                    IPython.notebook.toggle_input();
+                    break;
+                case 'toggle_current_output':
+                    IPython.notebook.toggle_output();
+                    break;
+                case 'set_cell_width':
+                    var new_width = $(this).data('cell-width')
+                    theCell.set_cell_width(new_width);
+                    break;
+                default:
+                    IPython.toolbar.actions.call(command);
+            }
+        });
+        return context_menu;
+    };
+
+
     Cell.prototype.update_width_classes = function() {
         // remove old width classes
         for (var i = 1; i <= 12; i++) {
