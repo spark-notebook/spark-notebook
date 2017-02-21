@@ -46,6 +46,7 @@
           bootstrap: 'components/bootstrap/js/bootstrap.min',
           bootstraptour: 'components/bootstrap-tour/build/js/bootstrap-tour.min',
           jqueryui: 'components/jquery-ui/ui/minified/jquery-ui.min',
+          jquerysticky: '@routes.Assets.at("javascripts/third/jquery/js/jquery.sticky-kit.min")',
           moment: 'components/moment/moment',
           codemirror: 'components/codemirror',
           termjs: 'components/term.js/src/term',
@@ -99,6 +100,10 @@
           jqueryui: {
             deps: ["jquery"],
             exports: "$"
+          },
+          jquerysticky: {
+              deps: ["jquery"],
+              exports: "$"
           }
         }
       });

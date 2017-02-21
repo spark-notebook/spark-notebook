@@ -1,54 +1,28 @@
-require(["jquery", "jquery.gridster"], function($, gridster) {
-  var g = $("#notebook-panels");
-  var scrollWidth = 15;
-  var w = ($(document.body).width() - scrollWidth) * (3.0 / 12);
-  var m = 0;
-  var nbCols = 2;
-  var b = (w - (2 * nbCols)*m) / nbCols
+require(["jquery", "jquery.gridster", "jquerysticky"], function($, gridster, jquerysticky) {
+  $( document ).ready(function() {
+    $("#menubar-container").stick_in_parent({
+      parent: "body",
+      bottoming: false,
+    });
 
-  var ul = $("#notebook-panels .gridster > ul");
+    $("#notebook-panels").stick_in_parent({
+        parent: "body",
+        bottoming: false,
+        // used to position the sidebar below the menu
+        // FIXME: we shouldnt hardcode 61px but this returns too-low height if page is scrolled before it's fully loaded
+        offset_top: Math.max($("#menubar-container").outerHeight(), 61)
+    });
 
-  var site = $("#site");
-  var nb = $("#notebook");
-  var sb = $("#sidebar");
-  var hh = $("#header").height();
-  function sticky_relocate() {
-    if (nb.is(":visible")) {
-      var t = nb.offset().top;
-      if (t < 0) {
-        // allow to scroll the part of notebook which don't fit into window
-        // otherwise the sidebar would make the window scrollable forever
-        var maxOffset = Math.max(hh + nb.height() - $(window).height(), 0);
-        var offset = Math.min(maxOffset, Math.abs(t) + hh);
-        sb.css("top", offset+"px");
-      } else if (t < hh) {
-        sb.css("top", (hh-t)+"px");
-      } else {
-        sb.css("top", "20px");
-      }
-    }
-  }
+    $('a#toggle-sidebar').click(function(){
+      // expand the notebook when sidebar is hidden
+      $('#notebook').toggleClass('col-md-9').toggleClass('col-md-12');
+      $('#sidebar').toggleClass('hidden');
+      $("#notebook-panels").trigger("sticky_kit:recalc");
+    });
 
-  site.scroll(sticky_relocate);
-
-  var g = ul.gridster({
-    widget_margins: [m, m],
-    widget_base_dimensions: [b, 50],
-    max_size_x: 2,
-    helper: 'clone',
-    resize: {
-      enabled: true
-    }
-  }).data("gridster");
-
-  var sizeContent = function(id) {
-    var td = $("#"+id);
-    var wid = td.parents(".widget:first");
-    td.height((wid.data().sizey * 50 /*compute widget height*/) - (28+2*4 /*h4*/) + "px");
-  };
-
-  sizeContent("termDefinitions");
-  sizeContent("logsPanel");
+    // start with sidebar hidden for now
+    $('a#toggle-sidebar').click();
+  });
 });
 
 
@@ -130,6 +104,8 @@ require(["jquery", "underscore", "base/js/events", "knockout"], function($, _, e
         }
         self.definitions.data.remove(finder);
         self.definitions.data.push(def);
+        // update the counter inside the sidebar "vars" tab
+        $('#defined-terms-count').text(self.definitions.data().length);
       };
       self.findCell = function(def) {
         var cell = $("div.cell[data-cell-id='"+def.cell+"']");
@@ -191,13 +167,6 @@ require(["jquery", "underscore", "base/js/events", "knockout"], function($, _, e
           model.addDefinition({name: c.term || c.type, type: c.tpe, cell: c.cell, refs: c.references});
         }
       });
-    });
-
-    // toggle sidebar
-    $('a#toggle-sidebar').click(function(){
-      $('#sidebar').toggleClass('hidden');
-      // expand the notebook when sidebar is hidden
-      $('#notebook').toggleClass('col-md-9').toggleClass('col-md-12');
     });
   }
 });
