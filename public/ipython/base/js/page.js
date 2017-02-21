@@ -55,8 +55,9 @@ define([
     };
 
     Page.prototype._resize_site = function() {
-        // Update the site's size.
-        $('div#site').height(window.innerHeight - $('#header').height());
+        // No need to update the site's element size explicitly anymore,
+        // as header & sidebar positioning is much simpler with jquery-sticky
+        // $('div#site').height(window.innerHeight - $('#header').height());
     };
 
     // Register self in the global namespace for convenience.

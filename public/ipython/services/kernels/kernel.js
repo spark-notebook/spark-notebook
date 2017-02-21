@@ -984,6 +984,7 @@ define([
                 console[msg.content.level.toLowerCase()](detailedError);
             });
             logsPanel.append(errorMsg);
+            $("#errors-count").text(logsPanel.find("li").length);
         }
 
     };

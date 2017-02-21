@@ -8470,18 +8470,30 @@ body {
   height: 28px;
 }
 #site {
+  /*
+  disabled as ruins jquery-sticky (fixed below by translate3d):
   -webkit-transform: translateZ(0);
   -moz-transform: translateZ(0);
   -ms-transform: translateZ(0);
   -o-transform: translateZ(0);
   transform: translateZ(0);
+  overflow: auto;
+  */
+
   width: 100%;
   display: none;
   box-sizing: border-box;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
-  overflow: auto;
 }
+
+#notebook {
+  /* this is supposed to force 3D acceleration */
+  -webkit-transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  -webkit-perspective: 1000;
+}
+
 /* Smaller buttons */
 .ui-button .ui-button-text {
   padding: 0.2em 0.8em;
