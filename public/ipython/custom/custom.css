@@ -178,11 +178,34 @@ div.cell.selected, div.cell.code_cell.selected, .edit_mode div.cell.selected {
 /* make defined variables lighter, so it do not disturb from final result */
 div.output_area pre { color: #666; }
 
+/* code cell context-menu */
+.cell-context-buttons > .btn-group > .btn > .glyphicon { color: #aaa; }
+.cell-context-buttons .btn { padding: 0px 3px; }
+
+div.text_cell .cell-context-buttons { float: right; }
+div.text_cell.unselected .cell-context-buttons {
+  display: none !important; visibility: hidden !important;
+}
+div.text_cell {
+  display: block !important;
+
+  /* unset the flex layout, so buttons would render normaly */
+  -moz-box-orient: unset; -moz-box-align: unset; flex-direction: unset; align-items: unset; box-orient: unset; box-align: unset;
+}
+
+/* hide cell options in read-only view */
+body[data-read-only="true"]  div.cell .cell-context-buttons {
+    display: none !important; visibility: hidden !important;
+}
+
+
 /* codemirror syntax highlighting tweaks */
 .cm-sql-inside-scala-mode {
   background-color: #fffdea;
 }
 
+/* hide the useless main toolbar (with icons/buttons). brute-force for now. */
+#maintoolbar {display: none !important; visibility: hidden !important; }
 
 body[data-read-only="true"] .cell .progress, body[data-read-only="true"] #maintoolbar, body[data-read-only="true"] #menubar-container {
   display: none !important; visibility: hidden!important;

@@ -90,6 +90,8 @@ define([
         var cell = $("<div>").addClass('cell text_cell');
         cell.attr('tabindex','2');
 
+        cell.prepend(this.create_context_menu());
+
         var prompt = $('<div/>').addClass('prompt input_prompt');
         cell.append(prompt);
         var inner_cell = $('<div/>').addClass('inner_cell');

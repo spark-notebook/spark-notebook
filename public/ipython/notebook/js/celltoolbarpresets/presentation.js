@@ -18,22 +18,11 @@ define([
         ],
         // setter
         function (cell, value) {
-            // we check that the presentation namespace exist and create it if needed
-            if (cell.metadata.presentation === undefined) {
-                cell.metadata.presentation = {};
-            }
-            // set the value
-            cell.metadata.presentation.cell_width = value;
-
-            cell.render();
+            cell.set_cell_width(value);
         },
         //geter
         function (cell) {
-            var ns = cell.metadata.presentation;
-            // if the presentation namespace does not exist return `undefined`
-            // (will be interpreted as `false` by checkbox) otherwise
-            // return the value
-            return (ns === undefined) ? undefined : ns.cell_width;
+          return cell.get_cell_width();
         },
         "Cell width");
 
