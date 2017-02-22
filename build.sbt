@@ -56,7 +56,7 @@ maintainer in Debian := DebianProperties.maintainer
 
 packageDescription := "Interactive and Reactive Data Science using Scala and Spark."
 
-debianPackageDependencies in Debian += "java7-runtime"
+debianPackageDependencies in Debian += "java7-runtime | java7-runtime-headless"
 
 serverLoading in Debian := DebianProperties.serverLoading
 
