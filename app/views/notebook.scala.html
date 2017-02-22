@@ -68,8 +68,8 @@
                             title="Open a copy of this notebook's contents and start a new kernel">
                             <a href="#">Make a Copy...</a></li>
                         <li id="rename_notebook"><a href="#">Rename/move...</a></li>
+                        <li id="save_checkpoint"><a href="#">Save the file</a></li>
                         <!--
-                        <li id="save_checkpoint"><a href="#">Save and Checkpoint</a></li>
                         <hr/>
                         <li class="divider"></li>
                         <li id="restore_checkpoint" class="dropdown-submenu"><a href="#">Revert to Checkpoint</a>
@@ -186,30 +186,6 @@
                         <li id="run_all_cells_below" title="Run this cell and all cells below it">
                             <a href="#">Run All Below</a></li>
                         <li class="divider"></li>
-                        <li id="change_cell_type" class="dropdown-submenu"
-                            title="All cells in the notebook have a cell type. By default, new cells are created as 'Code' cells">
-                            <a href="#">Cell Type</a>
-                            <ul class="dropdown-menu">
-                              <li id="to_code"
-                                  title="Contents will be sent to the kernel for execution, and output will display in the footer of cell">
-                                  <a href="#">Code</a></li>
-                              <li id="to_markdown"
-                                  title="Contents will be rendered as HTML and serve as explanatory text">
-                                  <a href="#">Markdown</a></li>
-                              <li id="to_raw"
-                                  title="Contents will pass through nbconvert unmodified">
-                                  <a href="#">Raw NBConvert</a></li>
-                            </ul>
-                        </li>
-                        <li class="divider"></li>
-                        <li id="current_inputs" class="dropdown-submenu"><a href="#">Current Input</a>
-                            <ul class="dropdown-menu">
-                                <li id="toggle_current_input"
-                                    title="Hide/Show the input of the current cell">
-                                    <a href="#">Toggle</a>
-                                </li>
-                            </ul>
-                        </li>
                         <li id="all_inputs" class="dropdown-submenu"><a href="#">All Input</a>
                             <ul class="dropdown-menu">
                                 <li id="toggle_all_input"
@@ -228,22 +204,6 @@
                                 <li id="toggle_all_output_stream"
                                     title="Hide/Show the output stream of all cells">
                                     <a href="#">Toggle All</a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li id="current_outputs" class="dropdown-submenu"><a href="#">Current Output</a>
-                            <ul class="dropdown-menu">
-                                <li id="toggle_current_output"
-                                    title="Hide/Show the output of the current cell">
-                                    <a href="#">Toggle</a>
-                                </li>
-                                <li id="toggle_current_output_scroll"
-                                    title="Scroll the output of the current cell">
-                                    <a href="#">Toggle Scrolling</a>
-                                </li>
-                                <li id="clear_current_output"
-                                    title="Clear the output of the current cell">
-                                    <a href="#">Clear</a>
                                 </li>
                             </ul>
                         </li>

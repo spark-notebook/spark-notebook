@@ -186,6 +186,8 @@ define([
         cell.attr('tabindex','2');
         cell.attr("data-cell-id", this.cell_id);
 
+        cell.prepend(this.create_context_menu());
+
         var input = $('<div></div>').addClass('input');
         var prompt = $('<div/>').addClass('prompt input_prompt');
         var inner_cell = $('<div/>').addClass('inner_cell');

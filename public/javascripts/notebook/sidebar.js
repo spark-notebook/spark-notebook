@@ -9,8 +9,8 @@ require(["jquery", "jquery.gridster", "jquerysticky"], function($, gridster, jqu
         parent: "body",
         bottoming: false,
         // used to position the sidebar below the menu
-        // FIXME: we shouldnt hardcode 61px but this returns too-low height if page is scrolled before it's fully loaded
-        offset_top: Math.max($("#menubar-container").outerHeight(), 61)
+        // FIXME: we shouldnt hardcode 33px, but this returns too-low height if page is scrolled before it's fully loaded
+        offset_top: Math.max($("#menubar-container").outerHeight(), 33)
     });
 
     $('a#toggle-sidebar').click(function(){

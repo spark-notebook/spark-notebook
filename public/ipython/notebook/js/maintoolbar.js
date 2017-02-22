@@ -37,28 +37,12 @@ define([
             ['ipython.save-notebook'],
             'save-notbook'
           ],
-          [
-            ['ipython.insert-cell-after'],
-            'insert_above_below'],
-          [
-            ['ipython.cut-selected-cell',
-             'ipython.copy-selected-cell',
-             'ipython.paste-cell-after'
-            ] ,
-            'cut_copy_paste'],
-          [
-            ['ipython.move-selected-cell-up',
-             'ipython.move-selected-cell-down'
-            ],
-            'move_up_down'],
-          [ ['ipython.run-select-next',
+          [ [
              'ipython.stop-kernel',
              'ipython.restart-kernel',
              'ipython.interrupt-jobs'
             ],
             'run_int'],
-         ['<add_celltype_list>'],
-         ['<add_celltoolbar_list>']
         ];
         this.construct(grps);
     };
