@@ -4,30 +4,38 @@ import scala.reflect.runtime.universe
 import org.apache.log4j.AppenderSkeleton
 import org.apache.log4j.spi.LoggingEvent
 
+object SparkClosureUtilHack {
+  val CLEAN_SUSCCESS = "Object cleaned and serializable!"
+}
+
+/*
+ * See modules/spark/src/main/scala/notebook/spark/util/SparkClosureUtil.scala
+ */
 trait SparkClosureUtilHack {
   
   private val CC = org.apache.spark.util.ClosureCleaner
 
   def appendTo: String => Unit = println
 
-
-  private val YIPPEE = "Object cleaned and serializable!"
   def clean(o:Object) = {
     CC.clean(o, java.lang.Boolean.TRUE, java.lang.Boolean.TRUE)
     // if we reach this point... it's good!
-    YIPPEE
+    SparkClosureUtilHack.CLEAN_SUSCCESS
   }
 
-  private val logger:org.apache.log4j.Logger = {
+  private val sparkClosureUtilInternalLogger: org.apache.log4j.Logger = {
     // open the logger from the closure cleaner
     val logMethod = CC.getClass.getDeclaredMethod("log")
     logMethod.setAccessible(true)
     val logSlf4J = logMethod.invoke(CC)
     require(logSlf4J.isInstanceOf[org.slf4j.Logger])
+
     val loggerInF = logSlf4J.getClass.getDeclaredField("logger")
     loggerInF.setAccessible(true)
+
     val loggerIn = loggerInF.get(logSlf4J)
     require(loggerIn.isInstanceOf[org.apache.log4j.Logger])
+
     val logger = loggerIn.asInstanceOf[org.apache.log4j.Logger]
     logger
   }
@@ -40,24 +48,24 @@ trait SparkClosureUtilHack {
     override def close() {
     }
     override def requiresLayout() = {
-      false;
+      false
     }
   }
   // create appender added to logger and the capacity to restore the initial state
   private val hackAppender = new HackAppender()
   hackAppender.setThreshold(org.apache.log4j.Level.DEBUG)
   hackAppender.activateOptions()
-  logger.addAppender(hackAppender)
+  sparkClosureUtilInternalLogger.addAppender(hackAppender)
 
   private val restoreLogger = {
-    val level = logger.getLevel
+    val level = sparkClosureUtilInternalLogger.getLevel
     () => {
-      logger.removeAppender(hackAppender)
-      logger.setLevel(level)
+      sparkClosureUtilInternalLogger.removeAppender(hackAppender)
+      sparkClosureUtilInternalLogger.setLevel(level)
     }
   }
 
-  logger.setLevel(org.apache.log4j.Level.DEBUG)
+  sparkClosureUtilInternalLogger.setLevel(org.apache.log4j.Level.DEBUG)
 
   lazy val restore = restoreLogger()
 }
