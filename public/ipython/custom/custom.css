@@ -182,6 +182,11 @@ div.output_area pre { color: #666; }
 .cell-context-buttons > .btn-group > .btn > .glyphicon { color: #aaa; }
 .cell-context-buttons .btn { padding: 0px 3px; }
 
+.cell-context-buttons .dropdown-submenu .dropdown-menu {
+  /* allow submenu to be smaller, so it fits even when cell width is 25% */
+  min-width: 60px;
+}
+
 div.text_cell .cell-context-buttons { float: right; }
 div.text_cell.unselected .cell-context-buttons {
   display: none !important; visibility: hidden !important;

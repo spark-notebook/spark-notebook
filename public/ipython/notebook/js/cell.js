@@ -186,7 +186,7 @@ define([
                 </ul>\
             </li>\
             <li class="dropdown-submenu">\
-                <a tabindex="-1" href="#"><span class="glyphicon glyphicon-resize-horizontal"></span> Set Cell width</a>\
+                <a tabindex="-1" href="#">Set Cell width</a>\
                 <ul class="dropdown-menu">\
                     <li data-menu-command="set_cell_width" data-cell-width="3"><a tabindex="-1" href="#" class="">25%</a></li>\
                     <li data-menu-command="set_cell_width" data-cell-width="6"><a tabindex="-1" href="#" class="">50%</a></li>\
