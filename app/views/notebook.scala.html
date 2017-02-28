@@ -20,6 +20,8 @@
     @if(params.get("presentation") == Some("report")) {
         <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipython/css/reportmode_notebook.css")" type="text/css" />
     }
+  <!-- must come below ipython/style/style.min.css -->
+  <link rel="stylesheet" href="@routes.Assets.at("javascripts/third/bootstrap/css/bootstrap-submenu.css")" type="text/css" />
   <link rel="stylesheet" href="@routes.Assets.at("stylesheets/user_custom.css")" type="text/css" />
 }{
   <!-- meta -->
