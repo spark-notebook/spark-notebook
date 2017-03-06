@@ -191,7 +191,7 @@ class CalcWebSocketService(
       case req@SessionRequest(header, session, request) =>
         val operations = new SessionOperationActors(header, session)
         val (operationActor, cellId) = (request: @unchecked) match {
-          case ExecuteRequest(cellId, counter, code) =>
+          case ExecuteRequest(cellId, counter, code, _) =>
             markNotebookAsActive()
             ws.send(header, session, "status", "iopub", obj("execution_state" → "busy"))
             ws.send(header, session, "pyin", "iopub", obj("cell_id" → cellId, "execution_count" → counter, "code" → code))
