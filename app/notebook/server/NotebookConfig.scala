@@ -3,13 +3,18 @@ package notebook.server
 import java.io.{File, InputStream}
 import java.net.URL
 
+import notebook.Notebook
+import notebook.io.{NotebookProvider, NotebookProviderFactory}
+import notebook.util.StringUtils
 import org.apache.commons.io.FileUtils
 import play.api.libs.json._
 import play.api.{Logger, _}
+import utils.ConfigurationUtils._
 
 import scala.collection.JavaConverters._
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 import scala.util.control.Exception.allCatch
-
 
 case class NotebookConfig(config: Configuration) {
   me =>
@@ -32,6 +37,18 @@ case class NotebookConfig(config: Configuration) {
   Logger.info(s"Notebooks dir is $notebooksDir [at ${notebooksDir.getAbsolutePath}] ")
 
   val projectName = config.getString("name").getOrElse(notebooksDir.getPath)
+
+  val defaultIoProviderTimeout = 60.seconds.toMillis
+  val ioProviderTimeout: Long = {
+    val timeout = config.getMilliseconds("notebooks.io.provider_timeout").getOrElse(defaultIoProviderTimeout)
+    Logger.info(s"io.provider_timeout: $timeout ms")
+    timeout
+  }
+  val notebookIoProviderClass = config.tryGetString("notebooks.io.provider").get
+  val notebookIoProvider: NotebookProvider = {
+      val configuration = config.tryGetConfig(notebookIoProviderClass).get
+      NotebookProviderFactory.createNotebookIoProvider(notebookIoProviderClass, configuration.underlying, ioProviderTimeout)
+  }
 
   val serverResources = config.getStringList("resources").map(_.asScala).getOrElse(Nil).map(new File(_))
 

@@ -176,7 +176,7 @@ define([
             that.notebook.save_checkpoint();
         });
 
-        this.element.find('#restore_checkpoint').click(function () {
+        this.element.find('#restore_checkpoint').click(function (e) {
         });
 
         this.element.find('#trust_notebook').click(function () {
@@ -390,7 +390,8 @@ define([
                 $("<li/>").append(
                     $("<a/>")
                     .attr("href", "#")
-                    .text(moment(d).format("LLLL"))
+                    .attr("title", moment(d).format("LLLL"))
+                    .text(checkpoint.message)
                     .click(function () {
                         that.notebook.restore_checkpoint_dialog(checkpoint);
                     })

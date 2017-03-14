@@ -8,8 +8,9 @@ import akka.actor._
 import akka.pattern.ask
 import akka.util.Timeout
 import notebook.NBSerializer.Metadata
-import notebook._
+import notebook.io.Version
 import notebook.server._
+import notebook.{GenericFile, NotebookResource, Repository, _}
 import play.api.Play.current
 import play.api._
 import play.api.http.HeaderNames
@@ -25,7 +26,6 @@ import scala.concurrent.{Future, Promise}
 import scala.language.postfixOps
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
-import play.api.mvc._
 
 case class Crumb(url: String = "", name: String = "")
 
@@ -306,32 +306,18 @@ object Application extends Controller {
 
   def contents(tpe: String, uri: String = "/") = Action { request =>
     val path = URLDecoder.decode(uri, UTF_8)
-    val lengthToRoot = config.notebooksDir.getAbsolutePath.length
-    def dropRoot(f: java.io.File) = f.getAbsolutePath.drop(lengthToRoot).dropWhile(_ == '/')
-    val baseDir = new java.io.File(config.notebooksDir, path)
-
     if (tpe == "directory") {
-      val content = Option(baseDir.listFiles).getOrElse(Array.empty).map { f =>
-        val n = f.getName
-        if (f.isFile && n.endsWith(".snb")) {
-          Json.obj(
-            "type" -> "notebook",
-            "name" -> n.dropRight(".snb".length),
-            "path" -> dropRoot(f) //todo → build relative path
-          )
-        } else if (f.isFile) {
-          Json.obj(
-            "type" -> "file",
-            "name" -> n,
-            "path" -> dropRoot(f) //todo → build relative path
-          )
-        } else {
-          Json.obj(
-            "type" -> "directory",
-            "name" -> n,
-            "path" -> dropRoot(f) //todo → build relative path
-          )
+      val content = notebookManager.listResources(path).map { resource =>
+        val resourceType = resource match {
+          case g: GenericFile => g.tpe
+          case _: Repository => "directory"
+          case _: NotebookResource => "notebook"
         }
+        Json.obj(
+          "type" -> resourceType,
+          "name" -> resource.name,
+          "path" -> resource.path
+        )
       }
       Ok(Json.obj("content" → content))
     } else if (tpe == "notebook") {
@@ -400,12 +386,8 @@ object Application extends Controller {
   }
 
   def newDirectory(path: String, name:String) = {
-    Logger.info("New dir: " + path)
-    val base = new File(config.notebooksDir, path)
-    val parent = base
-    val newDir = new File(parent, name)
-    newDir.mkdirs()
-    Try(Ok(Json.obj("path" → newDir.getAbsolutePath.drop(parent.getAbsolutePath.length))))
+    Logger.info(s"Creating new directory:  [$path]/[$name]")
+    notebookManager.mkDir(path, name).map(dir => Ok(Json.obj("path" → dir)))
   }
 
   def newFile(path: String) = {
@@ -500,24 +482,26 @@ object Application extends Controller {
   }
 
   def listCheckpoints(snb: String) = Action { request =>
-    Ok(Json.parse(
-      """
-        |[
-        | { "id": "TODO", "last_modified": "2015-01-02T13:22:01.751Z" }
-        |]
-        | """.stripMargin.trim
-    ))
+    val path = URLDecoder.decode(snb, UTF_8)
+    val cs = notebookManager.checkpoints(path).map { case Version(id, message, ts) =>
+      Json.obj("id" -> id, "message" -> message, "last_modified" -> ts)
+    }
+    Ok(JsArray(cs))
   }
 
+  def restoreCheckpoint(snb:String, id:String) = Action { request =>
+    //TODO → retrieve checkpoint and overwritte the notebook locally (until next checkpoint)
+    val path = URLDecoder.decode(snb, UTF_8)
+    notebookManager.restoreCheckpoint(path, id)
+    // the notebook.js script will reload the notebook from the restored file using `load` again,
+    // hence an extra request → so that we can ignore the return of restoreCheckpoint
+    Ok(s"notebook $snb restored at $id")
+  }
+
+  // not used, saveNotebook is used for both
+  // → weird to checkpoint a notebook independently than it's save (not the reverse though)
   def saveCheckpoint(snb: String) = Action { request =>
-    //TODO
-    Ok(Json.parse(
-      """
-        |[
-        | { "id": "TODO", "last_modified": "2015-01-02T13:22:01.751Z" }
-        |]
-        | """.stripMargin.trim
-    ))
+    BadRequest("Use save notebook with a message instead")
   }
 
   def renameNotebook(p: String) = EditorOnlyAction(parse.tolerantJson) { request =>
@@ -543,14 +527,15 @@ object Application extends Controller {
 
   def saveNotebook(p: String) = EditorOnlyAction(parse.tolerantJson(config.maxBytesInFlight)) { request =>
     val path = URLDecoder.decode(p, UTF_8)
-    Logger.info("SAVE → " + path)
+    val message = (request.body \ "message").asOpt[String]
+    Logger.info("SAVE → " + path + " with message (?) " + message)
 
     Try {
       val notebookJsObject = (request.body \ "content").asInstanceOf[JsObject]
       NBSerializer.fromJson(notebookJsObject) match {
         case Some(notebook) =>
           Try {
-            val (name, savedPath) = notebookManager.save(path, notebook, overwrite = true)
+            val (name, savedPath) = notebookManager.save(path, notebook, message = message, overwrite = true)
             Ok(Json.obj(
               "type" → "notebook",
               "name" → name,
@@ -660,7 +645,7 @@ object Application extends Controller {
   def getNotebook(name: String, path: String, format: String, dl: Boolean = false) = {
     try {
       Logger.debug(s"getNotebook: name is '$name', path is '$path' and format is '$format'")
-      val response = notebookManager.getNotebook(path).map { case (lastMod, nbname, data, fpath) =>
+      val response = notebookManager.getNotebook(path).map { case NotebookInfo(lastMod, nbname, data, fpath) =>
         format match {
           case "json" =>
             val j = Json.parse(data)

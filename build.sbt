@@ -231,9 +231,21 @@ lazy val sparkNotebookCore = Project(id = "spark-notebook-core", base = file("mo
     Extra.sparkNotebookCoreSettings
   )
 
+lazy val gitNotebookProvider = Project(id = "git-notebook-provider", base = file("modules/git-notebook-provider"))
+  .settings(
+    scalaVersion := defaultScalaVersion,
+    organization := "guru.data-fellas",
+    version := version.value,
+    publishMavenStyle := true
+  )
+  .dependsOn(sparkNotebookCore)
+  .settings(
+    Extra.gitNotebookProviderSettings
+  )
+
 lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).enablePlugins(SbtWeb)
-  .aggregate(sparkNotebookCore, sbtDependencyManager, subprocess, observable, common, spark, kernel)
-  .dependsOn(sparkNotebookCore, subprocess, observable, common, spark, kernel)
+  .aggregate(sparkNotebookCore, gitNotebookProvider, sbtDependencyManager, subprocess, observable, common, spark, kernel)
+  .dependsOn(sparkNotebookCore, gitNotebookProvider, subprocess, observable, common, spark, kernel)
   .settings(sharedSettings: _*)
   .settings(
     bashScriptExtraDefines <+= (version, scalaBinaryVersion, scalaVersion, sparkVersion, hadoopVersion, withHive) map { (v, sbv, sv, pv, hv, wh) =>

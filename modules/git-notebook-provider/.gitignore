@@ -1,0 +1,6 @@
+.DS_Store
+**/.idea
+target
+git-notebook-provider/target
+git-notebook-provider/project/target
+git-notebook-provider/project/project
