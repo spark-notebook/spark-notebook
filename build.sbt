@@ -208,20 +208,16 @@ libraryDependencies <++= scalaBinaryVersion {
 
 lazy val sbtDependencyManager = Project(id = "sbt-dependency-manager", base = file("modules/sbt-dependency-manager"))
   .settings(
-    scalaVersion := defaultScalaVersion,
-    organization := "io.kensu",
-    version := version.value,
-    publishMavenStyle := true
-  ).settings(
+    version := version.value
+  )
+  .settings(sharedSettings: _*)
+  .settings(
     Extra.sbtDependencyManagerSettings
   )
 
 lazy val sparkNotebookCore = Project(id = "spark-notebook-core", base = file("modules/core"))
   .settings(
-    scalaVersion := defaultScalaVersion,
-    organization := "guru.data-fellas",
     version := version.value,
-    publishMavenStyle := true,
     libraryDependencies ++= playJson,
     libraryDependencies += slf4jLog4j,
     libraryDependencies += commonsIO,
@@ -233,11 +229,9 @@ lazy val sparkNotebookCore = Project(id = "spark-notebook-core", base = file("mo
 
 lazy val gitNotebookProvider = Project(id = "git-notebook-provider", base = file("modules/git-notebook-provider"))
   .settings(
-    scalaVersion := defaultScalaVersion,
-    organization := "guru.data-fellas",
-    version := version.value,
-    publishMavenStyle := true
+    version := version.value
   )
+  .settings(sharedSettings: _*)
   .dependsOn(sparkNotebookCore)
   .settings(
     Extra.gitNotebookProviderSettings
@@ -248,9 +242,10 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).ena
   .dependsOn(sparkNotebookCore, gitNotebookProvider, subprocess, observable, common, spark, kernel)
   .settings(sharedSettings: _*)
   .settings(
-    bashScriptExtraDefines <+= (version, scalaBinaryVersion, scalaVersion, sparkVersion, hadoopVersion, withHive) map { (v, sbv, sv, pv, hv, wh) =>
-      """export ADD_JARS="${ADD_JARS},${lib_dir}/$(ls ${lib_dir} | grep common.common | head)""""
+    bashScriptExtraDefines <+= (organization, version, scalaBinaryVersion, scalaVersion, sparkVersion, hadoopVersion, withHive) map { (org, v, sbv, sv, pv, hv, wh) =>
+      s"""export ADD_JARS="$${ADD_JARS},$${lib_dir}/$$(ls $${lib_dir} | ${org}.common | head)""""
     },
+    // configure the "universal" distribution package (i.e. spark-notebook.zip)
     mappings in Universal ++= directory("notebooks"),
     version in Universal <<= (version in ThisBuild, scalaVersion, sparkVersion, hadoopVersion, withHive) { (v, sc, sv, hv, h) =>
                                 s"$v-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "")

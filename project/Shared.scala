@@ -17,7 +17,7 @@ object Shared {
     publishArtifact in Test := false,
     publishMavenStyle := true,
 
-    organization := "guru.data-fellas",
+    organization := MainProperties.organization,
     scalaVersion := defaultScalaVersion,
     sparkVersion := defaultSparkVersion,
     hadoopVersion := defaultHadoopVersion,
