@@ -47,7 +47,7 @@ The Spark Notebook comes with dynamic charts and most (if not all) components ca
 Dynamic and reactive components mean that you don't have write the html, js, server code just for basic use cases.
 
 
-##Quick Start
+## Quick Start
 
 Go to [Quick Start](./docs/quick_start.md) for our 5-minutes guide to get up and running with the Spark Notebook.
 
@@ -60,8 +60,10 @@ to discuss things, to get some help, or to start contributing!
 * [HTML Widgets](./docs/widgets_html.md)
 * [Visualization Widgets](./docs/widgets_viz.md)
 * [Notebook Browser](./docs/notebook_browser.md)
-* [Configuration and Metadata](./docs/metadata.md)
+* Configuration
+    * [Notebook Configuration and Metadata](./docs/metadata.md)
     * [Using Cluster Configurations](./docs/using_cluster_tab.md)
+    * [Versioned notebook storage with Git(hub)](./modules/git-notebook-provider/README.md)
 * [Running on Clusters and Clouds](./docs/clusters_clouds.md)
 * [Community](./docs/community.md)
 * Advanced Topics
