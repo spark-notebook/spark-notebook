@@ -14,6 +14,8 @@ trait NotebookProvider {
 
   import NotebookProvider._
 
+  def isVersioningSupported: Boolean
+
   def verifyProvider(): Future[Unit] = Future.successful(())
 
   def root: Path

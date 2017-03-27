@@ -1,6 +1,5 @@
 <div id="checkpoints-ui">
-    <h4>Browse all versions</h4>
-    <input type="text" name="query" class="form-control" data-bind="value: checkpoints.query, hasFocus: checkpoints.isTyping" placeholder="Search in history..."/>
+    <input type="text" name="query" class="form-control" data-bind="value: checkpoints.query, hasFocus: checkpoints.isTyping" placeholder="Filter revisions..."/>
     <div class="checkpoints-result">
         <ul class="checkpoints" style="list-style:none; overflow: auto; height: 300px;" data-bind="foreach: checkpoints.renderedCheckpoints">
             <li class="result"><button class="btn btn-default btn-xs" data-bind="click: restore"><i class="fa fa-flag"></i></button> <span data-bind="text: message, attr:{ title: new Date(last_modified) }"></span></li>

@@ -20,6 +20,8 @@ object AppUtils {
     play.api.Play.classloader // todo more detail, this resolves the Play classloader problems w/ remoting
   )
 
+  def isVersioningSupported = notebookManager.provider.isVersioningSupported
+
   object proxy {
     def proxyKeys(pre: String) = List(
       "_proxy",

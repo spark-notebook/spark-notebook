@@ -24,6 +24,7 @@ class FileSystemNotebookProviderConfigurator extends Configurable[NotebookProvid
   }
 
   private[FileSystemNotebookProviderConfigurator] class FileSystemNotebookProvider(override val root: Path) extends NotebookProvider {
+    override def isVersioningSupported: Boolean = false
 
     override def delete(path: Path)(implicit ev: ExecutionContext): Future[Notebook] = {
       get(path).flatMap { notebook =>

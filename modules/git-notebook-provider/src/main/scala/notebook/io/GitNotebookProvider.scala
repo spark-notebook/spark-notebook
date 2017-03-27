@@ -34,6 +34,8 @@ class GitNotebookProviderConfigurator extends Configurable[NotebookProvider] {
 class ConfigurableGitNotebookProvider(val gitProvider: GitProvider, commitMsgs: CommitMessages) extends NotebookProvider {
   import GitNotebookProvider._
 
+  override def isVersioningSupported: Boolean = true
+
   override val root = gitProvider.gitContext.localPath
   def relativize(path:Path) = root.relativize(path)
 

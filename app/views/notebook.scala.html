@@ -302,7 +302,9 @@
                 <ul class="nav nav-tabs" style="padding-top: 5px">
                     <li class="active"><a data-toggle="tab" href="#defined-terms">Vars <span id="defined-terms-count" class="badge"></span></a></li>
                     <li><a data-toggle="tab" href="#error-logs">Errors <span id="errors-count" class="badge"></span></a></li>
-                    <li><a data-toggle="tab" href="#browse-checkpoints">Versions</a></li>
+                    @if(_root_.utils.AppUtils.isVersioningSupported) {
+                      <li><a data-toggle="tab" href="#browse-checkpoints">Edit history</a></li>
+                    }
                 </ul>
 
                 <div class="tab-content">
@@ -323,9 +325,11 @@
                         <ul id="logsPanel" style="overflow: auto;"></ul>
                     </div>
 
-                    <div id="browse-checkpoints" class="tab-pane fade">
-                        @notebookviews.browseCheckpoints()
-                    </div>
+                    @if(_root_.utils.AppUtils.isVersioningSupported) {
+                      <div id="browse-checkpoints" class="tab-pane fade">
+                      @notebookviews.browseCheckpoints()
+                      </div>
+                    }
 
                         <div id="chat-room" style="visibility: hidden; display: none">
                             <h4>Chat Room</h4>
