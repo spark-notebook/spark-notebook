@@ -297,11 +297,21 @@ object RemoteRepoConfiguration {
     }
   }
 
+  def parseRemote(repo: String): Try[URI] = {
+    val githubSshUriPrefix = "git@github.com:"
+    repo match {
+      case _ if repo.startsWith(githubSshUriPrefix) =>
+        parseRemote(repo.replace(githubSshUriPrefix, "ssh://git@github.com/"))
+
+      case _ => toURI(repo).flatMap(validateRepoUrl _)
+    }
+  }
+
   def parse(config:Config): Try[Option[LocalRepo => RemoteRepo]] = {
 
     def mkRepo(location: URI, auth: Auth): Try[Option[LocalRepo => RemoteRepo]] = Success(Some(localRepo => RemoteRepo(localRepo, location, auth)))
 
-    val remoteURI = config.getSafeString("remote").map(x=> toURI(x).flatMap(validateRepoUrl _))
+    val remoteURI = config.getSafeString("remote").map(parseRemote)
 
     val authKey = config.getSafeString("authentication.key_file").map(checkFileExists _ )
     val passphrase = config.getSafeString("authentication.key_file_passphrase")

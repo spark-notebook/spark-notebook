@@ -121,12 +121,11 @@ class GitNotebookProviderCloneHttpsTests extends TestBase {
 }
 
 @Ignore
-// This test is currently failing
 class GitNotebookProviderCloneSshTests extends TestBase {
 
   import TestData._
 
-  val remoteGitConfig = getRemoteGitConfig("ssh")
+  def remoteGitConfig = getRemoteGitConfig("ssh")
 
   implicit val defaultPatience = PatienceConfig(timeout = Span(10, Seconds), interval = Span(500, Millis))
   val testId = System.currentTimeMillis()
@@ -184,4 +183,16 @@ class GitNotebookProviderCloneSshTests extends TestBase {
 
   }
 
+}
+
+class GitNotebookProviderCloneSshWithGithubStyleURI extends GitNotebookProviderCloneSshTests {
+  // pass a Github style repo URL: git@github.com:organization/repo-name.git
+  override def remoteGitConfig() = {
+    super.remoteGitConfig.map { props =>
+      val githubStyleRemote = props.getProperty("remote").replace("ssh://git@github.com/", "git@github.com:")
+      println(s"Using Git remote: $githubStyleRemote")
+      props.setProperty("remote", githubStyleRemote)
+      props
+    }
+  }
 }
