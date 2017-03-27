@@ -41,7 +41,6 @@ object RemoteGitTestConfig {
   }
 }
 
-@Ignore
 class GitNotebookProviderCloneHttpsTests extends TestBase {
 
   import TestData._

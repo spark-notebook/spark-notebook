@@ -7,9 +7,13 @@ export SN_NOTEBOOKS_GIT_HTTPS_REPO
 export SN_NOTEBOOKS_GIT_USER
 export SN_NOTEBOOKS_GIT_TOKEN
 
-RUN_MODE="${1:-"local"}"
+RUN_MODE="$1"
 
-echo "USAGE: ./run-dev.sh [local|git]"
+if [ "$RUN_MODE" = "" ]
+then
+  echo "USAGE: ./run-dev.sh [local|git]"
+  exit -1
+fi
 
 get_abs_filename() {
   # $1 : relative filename
