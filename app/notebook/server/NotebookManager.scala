@@ -138,7 +138,7 @@ class NotebookManager(val notebookConfig: NotebookConfig) {
     Logger.info(s"getNotebook at path $path")
     for (notebook <- load(path)) yield {
       val data = FileUtils.readFileToString(notebookFile(path), "UTF-8")
-      val lastModified = NotebookInfo.formatTimestamp(new Date(notebookFile(path).lastModified()))
+      val lastModified = NotebookInfo.formatTimestamp(notebookFile(path).lastModified())
       NotebookInfo(lastModified, notebook.name, data, path)
     }
   }
@@ -201,8 +201,13 @@ class NotebookExistsException(message: String) extends IOException(message)
 class DirectoryCreationException(path: File) extends Exception("Could not create dir at: " + path.getCanonicalPath)
 
 case class NotebookInfo(lastModified: String, name: String, data: String, path: String)
-object NotebookInfo {
-  val dateTimeFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss z'('Z')'")
 
-  def formatTimestamp(timestamp: Date): String = dateTimeFormat.format(timestamp)
+object NotebookInfo {
+  def formatTimestamp(timestamp: Date): String = {
+    new SimpleDateFormat("dd-MM-yyyy HH:mm:ss z'('Z')'").format(timestamp)
+  }
+
+  def formatTimestamp(timestampMillis: Long): String = {
+    formatTimestamp(new Date(timestampMillis))
+  }
 }
