@@ -41,11 +41,12 @@ object RemoteGitTestConfig {
   }
 }
 
+@Ignore
 class GitNotebookProviderCloneHttpsTests extends TestBase {
 
   import TestData._
 
-  val remoteGitConfig = getRemoteGitConfig("https")
+  def remoteGitConfig = getRemoteGitConfig("https")
 
   implicit val defaultPatience = PatienceConfig(timeout = Span(10, Seconds), interval = Span(500, Millis))
   val testId = System.currentTimeMillis()
@@ -185,6 +186,7 @@ class GitNotebookProviderCloneSshTests extends TestBase {
 
 }
 
+@Ignore
 class GitNotebookProviderCloneSshWithGithubStyleURI extends GitNotebookProviderCloneSshTests {
   // pass a Github style repo URL: git@github.com:organization/repo-name.git
   override def remoteGitConfig() = {
