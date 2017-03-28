@@ -151,6 +151,10 @@ define([
         this._checkpoint_after_save = false;
         this.last_checkpoint = null;
         this.checkpoints = [];
+        this.list_checkpoints_interval = 0;
+        this.list_checkpoints_timer = null;
+        // list_checkpoints *at most* every 30 seconds
+        this.minimum_list_checkpoints_interval = 30000;
         this.autosave_interval = 0;
         this.autosave_timer = null;
         // autosave *at most* every two minutes
@@ -1902,6 +1906,34 @@ define([
     /**
      * Start an autosave timer which periodically saves the notebook.
      *
+     * @param {integer} interval - the autosave interval in milliseconds, 0 disables autosave
+     */
+    Notebook.prototype.set_list_checkpoints_interval = function (interval) {
+        var that = this;
+        // clear previous interval, so we don't get simultaneous timers
+        if (this.list_checkpoints_timer) {
+            clearInterval(this.list_checkpoints_timer);
+        }
+        if (!this.writable) {
+            // disable autosave if not writable
+            interval = 0;
+        }
+
+        this.list_checkpoints_interval = this.minimum_list_checkpoints_interval = interval;
+        if (interval) {
+            this.list_checkpoints_timer = setInterval(function() {
+                that.list_checkpoints();
+            }, interval);
+            //this.events.trigger("autosave_enabled.Notebook", interval);
+        } else {
+            this.list_checkpoints_timer = null;
+            //this.events.trigger("autosave_disabled.Notebook");
+        }
+    };
+
+    /**
+     * Start an autosave timer which periodically saves the notebook.
+     *
      * @param {integer} interval - the autosave interval in milliseconds
      */
     Notebook.prototype.set_autosave_interval = function (interval) {
@@ -1952,7 +1984,7 @@ define([
      * Save this notebook on the server. This becomes a notebook instance's
      * .save_notebook method *after* the entire notebook has been loaded.
      */
-    Notebook.prototype.save_notebook = function () {
+    Notebook.prototype.save_notebook = function (message) {
         if (!this._fully_loaded) {
             this.events.trigger('notebook_save_failed.Notebook',
                 new Error("Load failed, save is disabled")
@@ -1972,7 +2004,8 @@ define([
         // Create a JSON model to be sent to the server.
         var model = {
             type : "notebook",
-            content : this.toJSON()
+            content : this.toJSON(),
+            message: message
         };
         // time the ajax call for autosave tuning purposes.
         var start =  new Date().getTime();
@@ -1984,6 +2017,17 @@ define([
                     that.events.trigger('notebook_save_failed.Notebook', error);
                 }
             );
+    };
+    /**
+     * Save this notebook on the server. This becomes a notebook instance's
+     * .checkpoint_notebook method *after* the entire notebook has been loaded.
+     */
+    Notebook.prototype.checkpoint_notebook = function () {
+        var message = prompt("Enter a message describing this checkpoint:")
+        if (!message || !message.trim().length) {
+            return false;
+        }
+        return this.save_notebook(message);
     };
 
     /**
@@ -2020,10 +2064,7 @@ define([
         }
         this.events.trigger('notebook_saved.Notebook');
         this._update_autosave_interval(start);
-        if (this._checkpoint_after_save) {
-            this.create_checkpoint();
-            this._checkpoint_after_save = false;
-        }
+        this.relist_checkpoints_now();
     };
 
     /**
@@ -2368,11 +2409,10 @@ define([
     /*********************  checkpoint-related  ********************/
 
     /**
-     * Save the notebook then immediately create a checkpoint.
+     * Save the notebook with checkpoint / commit message.
      */
     Notebook.prototype.save_checkpoint = function () {
-        this._checkpoint_after_save = true;
-        this.save_notebook();
+        this.checkpoint_notebook();
     };
 
     /**
@@ -2407,12 +2447,26 @@ define([
         );
     };
 
+
+  /**
+   * List checkpoints now, if checkpointing is anable
+   */
+  Notebook.prototype.relist_checkpoints_now = function () {
+    if (this.list_checkpoints_interval > 0){
+        // reset the checkpoint listing timer to happen further in future
+        this.set_list_checkpoints_interval(this.list_checkpoints_interval);
+        this.list_checkpoints();
+    }
+  };
+
+
     /**
      * Success callback for listing checkpoints.
      *
      * @param {object} data - JSON representation of a checkpoint
      */
     Notebook.prototype.list_checkpoints_success = function (data) {
+        _.each(data, function(c) {c.last_modified = c.last_modified * 1000;});
         this.checkpoints = data;
         if (data.length) {
             this.last_checkpoint = data[data.length - 1];
@@ -2420,29 +2474,6 @@ define([
             this.last_checkpoint = null;
         }
         this.events.trigger('checkpoints_listed.Notebook', [data]);
-    };
-
-    /**
-     * Create a checkpoint of this notebook on the server from the most recent save.
-     */
-    Notebook.prototype.create_checkpoint = function () {
-        var that = this;
-        this.contents.create_checkpoint(this.notebook_path).then(
-            $.proxy(this.create_checkpoint_success, this),
-            function (error) {
-                that.events.trigger('checkpoint_failed.Notebook', error);
-            }
-        );
-    };
-
-    /**
-     * Success callback for creating a checkpoint.
-     *
-     * @param {object} data - JSON representation of a checkpoint
-     */
-    Notebook.prototype.create_checkpoint_success = function (data) {
-        this.add_checkpoint(data);
-        this.events.trigger('checkpoint_created.Notebook', data);
     };
 
     /**
@@ -2459,12 +2490,18 @@ define([
         var body = $('<div/>').append(
             $('<p/>').addClass("p-space").text(
                 "Are you sure you want to revert the notebook to " +
-                "the latest checkpoint?"
+                "the selected checkpoint?"
             ).append(
                 $("<strong/>").text(
-                    " This cannot be undone."
+                    " Unsaved changes will be lost."
                 )
             )
+        ).append(
+            $('<p/>').addClass("p-space").text("The checkpoint's message was:")
+        ).append(
+            $('<p/>').addClass("p-space").text(
+                checkpoint.message
+            ).css("text-align", "center")
         ).append(
             $('<p/>').addClass("p-space").text("The checkpoint was last updated at:")
         ).append(

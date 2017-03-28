@@ -69,6 +69,7 @@ define([
             'alt-enter'   : 'ipython.execute-and-insert-after',
             // cmd on mac, ctrl otherwise
             'cmdtrl-s'    : 'ipython.save-notebook',
+            'cmdtrl-shift-s'    : 'ipython.checkpoint-notebook',
         };
     };
 
@@ -120,6 +121,7 @@ define([
             't' : 'ipython.toggle-output-stream-visibility-selected-cell',
             'i' : 'ipython.toggle-input-visibility-selected-cell',
             's' : 'ipython.save-notebook',
+            'S' : 'ipython.checkpoint-notebook',
             'l' : 'ipython.toggle-line-number-selected-cell',
             'h' : 'ipython.show-keyboard-shortcut-help-dialog',
             'z' : 'ipython.undo-last-cell-deletion',

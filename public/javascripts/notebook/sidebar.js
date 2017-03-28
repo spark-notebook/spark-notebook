@@ -20,8 +20,8 @@ require(["jquery", "jquery.gridster", "jquerysticky"], function($, gridster, jqu
       $("#notebook-panels").trigger("sticky_kit:recalc");
     });
 
-    // start with sidebar hidden for now
-    $('a#toggle-sidebar').click();
+    // uncomment, to start with a hidden sidebar
+    // $('a#toggle-sidebar').click();
   });
 });
 

@@ -70,10 +70,10 @@
                             title="Open a copy of this notebook's contents and start a new kernel">
                             <a href="#">Make a Copy...</a></li>
                         <li id="rename_notebook"><a href="#">Rename/move...</a></li>
-                        <li id="save_checkpoint"><a href="#">Save the file</a></li>
-                        <!--
-                        <hr/>
+
                         <li class="divider"></li>
+                        <li id="checkpoint_notebook"><a href="#">Save</a></li>
+                        <li id="save_checkpoint"><a href="#">Save (with commit message)</a></li>
                         <li id="restore_checkpoint" class="dropdown-submenu"><a href="#">Revert to Checkpoint</a>
                           <ul class="dropdown-menu">
                             <li><a href="#"></a></li>
@@ -83,8 +83,6 @@
                             <li><a href="#"></a></li>
                           </ul>
                         </li>
-                        -->
-
                         <li class="divider"></li>
 
                         <!-- <li id="print_preview"><a href="#">Print Preview</a></li> -->
@@ -304,6 +302,9 @@
                 <ul class="nav nav-tabs" style="padding-top: 5px">
                     <li class="active"><a data-toggle="tab" href="#defined-terms">Vars <span id="defined-terms-count" class="badge"></span></a></li>
                     <li><a data-toggle="tab" href="#error-logs">Errors <span id="errors-count" class="badge"></span></a></li>
+                    @if(_root_.utils.AppUtils.isVersioningSupported) {
+                      <li><a data-toggle="tab" href="#browse-checkpoints">Edit history</a></li>
+                    }
                 </ul>
 
                 <div class="tab-content">
@@ -323,6 +324,12 @@
 
                         <ul id="logsPanel" style="overflow: auto;"></ul>
                     </div>
+
+                    @if(_root_.utils.AppUtils.isVersioningSupported) {
+                      <div id="browse-checkpoints" class="tab-pane fade">
+                      @notebookviews.browseCheckpoints()
+                      </div>
+                    }
 
                         <div id="chat-room" style="visibility: hidden; display: none">
                             <h4>Chat Room</h4>

@@ -22,11 +22,13 @@ require([
     'notebook/js/kernelselector',
     'codemirror/lib/codemirror',
     'notebook/js/about',
-    // only loaded, not used, please keep sure this is loaded last
+     // only loaded, not used, please keep sure this is loaded last
+    'observable',
     'custom/custom',
     'job_progress',
     'sidebar',
-    'chat'
+    'chat',
+    'checkpoints'
 ], function(
     IPython,
     $,
@@ -49,10 +51,13 @@ require([
     CodeMirror,
     about,
     // please keep sure that even if not used, this is loaded last
+    observable,
     custom,
     job_progress,
-    chat
-    ) {
+    sidebar,
+    chat,
+    checkpoints
+) {
     "use strict";
 
     // compat with old IPython, remove for IPython > 3.0
@@ -138,6 +143,7 @@ require([
             document.location.hash = hash;
         }
         notebook.set_autosave_interval(notebook.minimum_autosave_interval);
+        notebook.set_list_checkpoints_interval(notebook.minimum_list_checkpoints_interval);
         // only do this once
         events.off('notebook_loaded.Notebook', first_load);
     };

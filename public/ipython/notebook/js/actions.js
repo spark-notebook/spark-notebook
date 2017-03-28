@@ -388,17 +388,29 @@ define(function(require){
             },
         },
         'save-notebook':{
-            help: "Save and Checkpoint",
+            help: "Save",
             help_index : 'fb',
             icon: 'fa-save',
             handler : function (env, event) {
-                env.notebook.save_checkpoint();
+                env.notebook.save_notebook();
                 if(event){
                     event.preventDefault();
                 }
                 return false;
             }
         },
+        'checkpoint-notebook':{
+            help: "Save and Checkpoint",
+            help_index : 'ff',
+            icon: 'fa-flag',
+            handler : function (env, event) {
+                env.notebook.checkpoint_notebook();
+                if(event){
+                    event.preventDefault();
+                }
+                return false;
+            }
+        }
     };
 
     // private stuff that prepend `.ipython` to actions names

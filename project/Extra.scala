@@ -9,6 +9,7 @@ import scala.collection.mutable.ListBuffer
 object Extra {
   val sparkNotebookSettings: ListBuffer[Def.Setting[_]] = ListBuffer()
   val sparkNotebookCoreSettings: ListBuffer[Def.Setting[_]] = ListBuffer()
+  val gitNotebookProviderSettings: ListBuffer[Def.Setting[_]] = ListBuffer()
   val sbtDependencyManagerSettings: ListBuffer[Def.Setting[_]] = ListBuffer()
   val subprocessSettings: ListBuffer[Def.Setting[_]] = ListBuffer()
   val observableSettings: ListBuffer[Def.Setting[_]] = ListBuffer()

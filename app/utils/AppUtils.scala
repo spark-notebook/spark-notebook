@@ -3,21 +3,24 @@ package utils
 import akka.actor._
 import notebook.server._
 
+import ConfigurationUtils._
+
 object AppUtils {
 
   import play.api.Play.current
 
   lazy val baseConfig = current.configuration
-
-  lazy val notebookConfig = NotebookConfig(baseConfig.getConfig("manager").get)
-  lazy val notebookManager = new NotebookManager(notebookConfig.projectName, notebookConfig.notebooksDir)
-  lazy val clustersConf = notebookConfig.config.getConfig("clusters").get
-  lazy val nbServerConf = baseConfig.getConfig("notebook-server").get.underlying
+  lazy val notebookConfig = NotebookConfig(baseConfig.getMandatoryConfig("manager"))
+  lazy val notebookManager = new NotebookManager(notebookConfig)
+  lazy val clustersConf = baseConfig.getMandatoryConfig("clusters")
+  lazy val nbServerConf = baseConfig.getMandatoryConfig("notebook-server").underlying
   lazy val kernelSystem = ActorSystem(
     "NotebookServer",
     nbServerConf,
     play.api.Play.classloader // todo more detail, this resolves the Play classloader problems w/ remoting
   )
+
+  def isVersioningSupported = notebookManager.provider.isVersioningSupported
 
   object proxy {
     def proxyKeys(pre: String) = List(

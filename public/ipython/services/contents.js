@@ -206,15 +206,6 @@ define(function (require) {
    * Checkpointing Functions
    */
 
-  Contents.prototype.create_checkpoint = function (path) {
-    var url = this.api_url(path, 'checkpoints');
-    var settings = {
-      type: "POST",
-      dataType: "json",
-    };
-    return utils.promising_ajax(url, settings);
-  };
-
   Contents.prototype.list_checkpoints = function (path) {
     var url = this.api_url(path, 'checkpoints');
     var settings = {

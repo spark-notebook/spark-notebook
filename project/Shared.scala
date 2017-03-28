@@ -15,6 +15,9 @@ object Shared {
 
   lazy val sharedSettings: Seq[Def.Setting[_]] = Seq(
     publishArtifact in Test := false,
+    publishMavenStyle := true,
+
+    organization := MainProperties.organization,
     scalaVersion := defaultScalaVersion,
     sparkVersion := defaultSparkVersion,
     hadoopVersion := defaultHadoopVersion,
