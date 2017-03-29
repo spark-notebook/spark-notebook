@@ -66,3 +66,20 @@ object ReplT {
               .asInstanceOf[ReplT]
   }
 }
+
+object ReplHelpers {
+  final def formatShortDuration(durationMillis: Long): String = {
+    import org.joda.time._
+    import org.joda.time.format._
+    val duration = new Duration(durationMillis)
+    val formatter = new PeriodFormatterBuilder()
+      .appendHours
+      .appendSuffix("h")
+      .appendMinutes
+      .appendSuffix("m")
+      .appendSecondsWithOptionalMillis
+      .appendSuffix("s")
+      .toFormatter;
+    formatter.print(duration.toPeriod());
+  }
+}

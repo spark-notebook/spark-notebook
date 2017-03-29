@@ -16,6 +16,7 @@ import kernel._
 import org.sonatype.aether.repository.RemoteRepository
 
 import notebook.kernel.repl.common.ReplT
+import notebook.kernel.repl.common.ReplHelpers
 import notebook.OutputTypes._
 import com.datafellas.utils._
 import notebook.front._
@@ -120,41 +121,6 @@ class ReplCalculator(
   }
 
   val chat = new notebook.front.gadgets.Chat()
-
-  // +/- copied of https://github.com/scala/scala/blob/v2.11.4/src%2Flibrary%2Fscala%2Fconcurrent%2Fduration%2FDuration.scala
-  final def toCoarsest(d:FiniteDuration): String = {
-
-    def loop(length: Long, unit: TimeUnit, acc:String): String = {
-
-      def coarserOrThis(coarser: TimeUnit, divider: Int) = {
-        if (length == divider)
-          loop(1, coarser, acc)
-        else if (length < divider)
-          FiniteDuration(length, unit).toString + " " + acc
-        else {
-          val _acc = if (length % divider == 0) {
-            acc
-          } else {
-            FiniteDuration(length % divider, unit).toString + " " + acc
-          }
-          loop(length / divider, coarser, _acc)
-        }
-      }
-
-      unit match {
-        case DAYS         => d.toString + " " + acc
-        case HOURS        => coarserOrThis(DAYS, 24)
-        case MINUTES      => coarserOrThis(HOURS, 60)
-        case SECONDS      => coarserOrThis(MINUTES, 60)
-        case MILLISECONDS => coarserOrThis(SECONDS, 1000)
-        case MICROSECONDS => coarserOrThis(MILLISECONDS, 1000)
-        case NANOSECONDS  => coarserOrThis(MICROSECONDS, 1000)
-      }
-    }
-
-    if (d.unit == DAYS || d.length == 0) d.toString
-    else loop(d.length, d.unit, "").trim
-  }
 
   // Make a child actor so we don't block the execution on the main thread, so that interruption can work
   private val executor = context.actorOf(Props(new Actor {
@@ -270,7 +236,7 @@ class ReplCalculator(
           cellResult
         }
         val result = replEvaluate(generatedReplCode.replCommand, cellId)
-        val d = toCoarsest(Duration(System.currentTimeMillis - start, MILLISECONDS))
+        val d = ReplHelpers.formatShortDuration(durationMillis = System.currentTimeMillis - start)
         (d, result._1)
       }
       currentlyExecutingTask = Some(result)
