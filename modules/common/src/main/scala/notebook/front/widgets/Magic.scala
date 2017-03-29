@@ -6,6 +6,7 @@ import org.apache.spark.sql.{Row}
 
 import java.util.Date
 import java.sql.{Date => SqlDate}
+import java.sql.{Timestamp => SqlTimestamp}
 
 import com.vividsolutions.jts.geom.Geometry
 import org.wololo.geojson.GeoJSON
@@ -37,6 +38,7 @@ case class AnyPoint(any:Any, header:Option[String]=None) extends MagicRenderPoin
       case v: String      => Seq(header.getOrElse("String"))
       case v: Boolean     => Seq(header.getOrElse("Boolean"))
       case v: SqlDate     => Seq(header.getOrElse("Date"))
+      case v: SqlTimestamp => Seq(header.getOrElse("Timestamp"))
       case v: Date        => Seq(header.getOrElse("Date"))
       case v: Geometry    => Seq(header.getOrElse("Geometry"))
       case v: GeoJSON     => Seq(header.getOrElse("GeoJSON"))
@@ -49,13 +51,20 @@ case class AnyPoint(any:Any, header:Option[String]=None) extends MagicRenderPoin
       case v: Double      => Seq(v)
       case v: Long        => Seq(v)
       case v: BigDecimal  => Seq(v)
-      case v: SqlDate     => Seq(v.getTime)
-      case v: Date        => Seq(v.getTime)
+      case v: SqlDate     => Seq(v.toString)
+      case v: SqlTimestamp => Seq(v.toString)
+      case v: Date        => Seq(v.toString)
       case v: String      => Seq(v)
       case v: Boolean     => Seq(v)
       case v: Geometry    => Seq(v)
       case v: GeoJSON     => Seq(v)
-      case v: Any         => Reflector.toFieldValueArray(any)
+      case v: Any         => Reflector.toFieldValueArray(any).map {
+        // convert fields into "human-readable" format
+        case fieldValue @ (_: SqlDate | _: SqlTimestamp | _: Date) =>
+          // otherwise these would be displayed as integer timestamps...
+          fieldValue.toString
+        case fieldValue => fieldValue
+      }
   }
 }
 
