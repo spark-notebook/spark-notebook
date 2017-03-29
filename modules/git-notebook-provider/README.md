@@ -37,7 +37,7 @@ If using `password` based SSH authentication, specify `authentication.password` 
 
 If a `remote` is specified, all changes in the local repository will be pushed with `-f` (force) to the remote.
 
-## Using with the spark-notebook(-enterpise)
+## Configuring Spark-notebook for Git
 
 In the configuration of the spark-notebook, set the following properties:
 
@@ -54,6 +54,17 @@ In the configuration of the spark-notebook, set the following properties:
         key_file = "${MESOS_SANDBOX}/git.key"
       }
     }
+    
+See [conf/application-git-storage.conf](/conf/application-git-storage.conf) for a complete sample config.
+
+## Troubleshooting / known issues
+
+Please keep in mind that the Git storage is still experimental, even if we didn't notice any major issues so far. A few things to note:
+
+- you need Java 8 to use Git support
+- each auto-save currently creates a separate commit, so you might wish to disable notebook autosaving.
+- a single Git repository is used for all the notebooks. It was not yet tested on very large spark-notebook deployments (e.g.  more than 10 concurrent users).
+- configuring it for the first time might be slightly inconvenient, e.g. if you filled in the wrong `remote_url` or wrong authentication details, you'd need to restart the spark-notebook for the changes to take effect.
 
 ## Unit tests
 
