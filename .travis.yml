@@ -5,6 +5,9 @@ sudo: false
 
 language: scala
 
+jdk:
+  - oraclejdk8
+
 # These directories are cached to S3 at the end of the build
 #cache:
 #  directories:
