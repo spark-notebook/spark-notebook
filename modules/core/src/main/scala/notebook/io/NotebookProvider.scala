@@ -65,7 +65,8 @@ trait NotebookProvider {
   }
 
   def list(path: Path)(implicit ec: ExecutionContext): Future[List[Resource]] = {
-    def relativePath(f: java.io.File): String = root.relativize(Paths.get(f.getAbsolutePath)).toString
+    val absRoot = root.toAbsolutePath
+    def relativePath(f: java.io.File): String = absRoot.relativize(Paths.get(f.getAbsolutePath)).toString
     Future {
       Option(root.resolve(path).toFile.listFiles(listFilter))
         .filter(_.length > 0) //toList fails if listFiles is empty
