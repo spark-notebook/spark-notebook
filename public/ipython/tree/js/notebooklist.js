@@ -244,13 +244,15 @@ define([
         // item.addClass('list_item ui-widget ui-widget-content ui-helper-clearfix');
         // item.css('border-top-style','none');
         item.append($("<div/>").addClass("col-md-12").append(
+            '&nbsp;'
+        ).append(
             $('<i/>').addClass('item_icon')
         ).append(
             $("<a/>").addClass("item_link").append(
                 $("<span/>").addClass("item_name")
             )
         ).append(
-            $('<div/>').addClass("item_buttons  pull-right")
+            $('<div/>').addClass("item_buttons  pull-left")
         ));
 
         if (index === -1) {
