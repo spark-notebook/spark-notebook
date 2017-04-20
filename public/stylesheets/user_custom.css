@@ -1,0 +1,7 @@
+.notebook_app {
+  background-color: #FAFAFA;
+}
+
+
+.list_item.row:nth-child(even) {background: #FAFAFA}
+.list_item.row:nth-child(odd) {background: #FFFFFF}
