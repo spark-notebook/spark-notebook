@@ -15,6 +15,7 @@ import tools.nsc.Settings
 import tools.nsc.interpreter._
 import tools.nsc.interpreter.Completion.{Candidates, ScalaCompleter}
 import tools.nsc.interpreter.Results.{Incomplete => ReplIncomplete, Success => ReplSuccess, Error}
+import java.lang.reflect.Method
 import _root_.jline.console.completer.{ArgumentCompleter, Completer}
 import scala.tools.nsc.interpreter.jline.JLineDelimiter
 import notebook.front.Widget
@@ -259,14 +260,38 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
                   val tryClass = o.getName+"$$iw"
                   val o2 = Try{module.getClass.getClassLoader.loadClass(tryClass)}.toOption
 
-                  o2 match {
-                    case Some(o3) =>
+                  // in scala 2.11 class name formation seem changed:
+                  //   when number of $iw appended to the name reached threshold, it uses a hash instead
+                  // so we check if it has a method ".iw()", and if so - continue search.
+                  val maybeIwMethod: Option[Method] = o.getDeclaredMethods.toSeq.find(_.toString.endsWith(".$iw()"))
+
+                  (o2, maybeIwMethod) match {
+                    // e.g. this matching would expect
+                    //   $line90.$rendered$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw
+                    case (Some(o3), _) =>
                       val inst = o.getDeclaredMethod("$iw").invoke(instance)
                       iws(o3, inst)
-                    case None =>
-                      val r = o.getDeclaredMethod("rendered").invoke(instance)
-                      val h = r.asInstanceOf[Widget].toHtml
-                      h
+
+                    // but it might also have this shorter obfuscated name:
+                    //   $line90.$rendered$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$$$e6f274649681d770d72d6821dbf52a2c$$$$w$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw $line90.$rendered$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw$$iw.$iw()
+                    case (None, Some(iwMethod)) =>
+                      val inst = iwMethod.invoke(instance)
+                      val returnedClassType = iwMethod.getReturnType
+                      iws(returnedClassType, inst)
+
+                    case (None, None) =>
+                      try {
+                        val r = o.getDeclaredMethod("rendered").invoke(instance)
+                        val h = r.asInstanceOf[Widget].toHtml
+                        h
+                      } catch { case e: NoSuchMethodException =>
+                        val err = s"Error when rendering cell result: NoSuchMethodException: " +
+                          s"in ${o.getName} which has such methods: " +
+                          s"${o.getDeclaredMethods.toSeq.map(_.toString).sorted}"
+                        println(err)
+                        LOG.error(err, e)
+                        throw e
+                      }
                   }
                 }
 
