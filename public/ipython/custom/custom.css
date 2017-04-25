@@ -189,6 +189,12 @@ div.cell.selected, div.cell.code_cell.selected, .edit_mode div.cell.selected {
 div.output_area pre { color: #666; }
 
 /* code cell context-menu */
+.cell-context-buttons {
+  position: absolute; top: 0; right: 0;
+  background-color: #fff; border: 1px solid #eee;
+  border-bottom-left-radius: 5px;
+  z-index: 9999;
+}
 .cell-context-buttons > .btn-group > .btn > .glyphicon { color: #aaa; }
 .cell-context-buttons .btn { padding: 0px 3px; }
 
