@@ -149,6 +149,12 @@ define([
         console.log("theCell-this:", theCell);
         var context_menu = $(
           '\
+          <div class="insert-cell-btn-before insert-cell-btn">\
+             <a class="btn" data-menu-command="ipython.insert-cell-before"><span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span></a>\
+          </div>\
+          <div class="insert-cell-btn-after insert-cell-btn">\
+             <a class="btn" data-menu-command="ipython.insert-cell-after"><span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span></a>\
+          </div>\
           <div class="cell-context-buttons" style="text-align: right">\
               <div class="btn-group">\
                 <a class="btn" data-menu-command="ipython.run-select-next"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></a>\
