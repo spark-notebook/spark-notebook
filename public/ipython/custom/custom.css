@@ -149,6 +149,16 @@ h4#spark-jobs { margin-bottom: 0 !important; }
 
 .prompt { display: none; visibility: hidden; }
 /* new cell UI */
+
+/* to allow relative placement of + / - */
+div.cell { position: relative; }
+div.cell.unselected div.insert-cell-btn { visibility: hidden; display: none; }
+div.cell div.insert-cell-btn a.btn { padding: 0; color: #999; }
+div.cell.selected div.insert-cell-btn { position: absolute; border: none; z-index: 1000;  }
+div.cell.selected div.insert-cell-btn-before { top: -12px; left: 50%; }
+div.cell.selected div.insert-cell-btn-after { bottom: -12px; left: 50%; }
+
+
 div.cell.code_cell, div.cell.text_cell {
   border-radius: 3px;
   padding: 0;
