@@ -152,6 +152,8 @@ h4#spark-jobs { margin-bottom: 0 !important; }
 
 /* to allow relative placement of + / - */
 div.cell { position: relative; }
+/* this is needed so edit don't get on top of context-menu buttons */
+div.cell .CodeMirror { z-index: 0; }
 div.cell.unselected div.insert-cell-btn { visibility: hidden; display: none; }
 div.cell div.insert-cell-btn a.btn { padding: 0; color: #999; }
 div.cell.selected div.insert-cell-btn { position: absolute; border: none; z-index: 1000;  }
@@ -193,7 +195,9 @@ div.output_area pre { color: #666; }
   position: absolute; top: 0; right: 0;
   background-color: #fff; border: 1px solid #eee;
   border-bottom-left-radius: 5px;
-  z-index: 9999;
+  /* we've just added this element last, instead so its on top. */
+  /* z-index do not work because of a diffrent stacking context */
+  /* z-index: 9999; */
 }
 .cell-context-buttons > .btn-group > .btn > .glyphicon { color: #aaa; }
 .cell-context-buttons .btn { padding: 0px 3px; }

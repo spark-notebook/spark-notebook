@@ -186,8 +186,6 @@ define([
         cell.attr('tabindex','2');
         cell.attr("data-cell-id", this.cell_id);
 
-        cell.prepend(this.create_context_menu());
-
         var input = $('<div></div>').addClass('input');
         var prompt = $('<div/>').addClass('prompt input_prompt');
         var inner_cell = $('<div/>').addClass('inner_cell');
@@ -251,6 +249,11 @@ define([
 
         var output = $('<div></div>');
         cell.append(input).append(widget_area).append(output).append(progress_container);
+
+        // has to be last element added to be visible on top without setting the z-index
+        // (z-index cant be used because of different stacking contexts)
+        cell.append(this.create_context_menu());
+
         this.element = cell;
         this.output_area = new outputarea.OutputArea({
             selector: output,
