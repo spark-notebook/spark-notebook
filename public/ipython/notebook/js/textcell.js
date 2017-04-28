@@ -90,8 +90,6 @@ define([
         var cell = $("<div>").addClass('cell text_cell');
         cell.attr('tabindex','2');
 
-        cell.prepend(this.create_context_menu());
-
         var prompt = $('<div/>').addClass('prompt input_prompt');
         cell.append(prompt);
         var inner_cell = $('<div/>').addClass('inner_cell');
@@ -114,6 +112,10 @@ define([
             .attr('tabindex','-1');
         inner_cell.append(input_area).append(render_area);
         cell.append(inner_cell);
+
+        // has to be last element added to be visible on top without setting the z-index
+        // (z-index cant be used because of different stacking contexts)
+        cell.append(this.create_context_menu());
         this.element = cell;
     };
 
