@@ -555,6 +555,18 @@ define([
             // have at least one output to consider
             var last = this.outputs[this.outputs.length-1];
             if (last.output_type == 'stream' && json.name == last.name){
+                if (last.text.length > 10000) {
+                  // ignore further stream appending if reached more than 10K charts
+                  console.log("skipped rendering of long stdout (> 10K chars)");
+                  var output_area = this.element.find('div.'+subclass).last();
+                  var long_output_message = output_area.find('span.long_output_message');
+                  if (long_output_message.length === 0) {
+                    output_area.append(
+                      $('<span class="long_output_message">A long output stream was truncated...</span>')
+                    );
+                  }
+                  return false;
+                }
                 // latest output was in the same stream,
                 // so append directly into its pre tag
                 // escape ANSI & HTML specials:
