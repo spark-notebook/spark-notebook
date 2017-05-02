@@ -235,7 +235,7 @@ class ReplCalculator(
 
       result foreach {
         case (timeToEval, Success(result)) =>
-          val evalTimeStats = s"Took: $timeToEval, at ${new LocalDateTime().toString("Y-MM-d HH:mm")}"
+          val evalTimeStats = s"Took: $timeToEval, at ${new LocalDateTime().toString("Y-MM-dd HH:mm")}"
           thisSender ! ExecuteResponse(generatedReplCode.outputType, result.toString(), evalTimeStats)
         case (timeToEval, Failure(stackTrace)) =>
           thisSender ! ErrorResponse(stackTrace, incomplete = false)
