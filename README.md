@@ -71,6 +71,8 @@ to discuss things, to get some help, or to start contributing!
     * [Building from Sources](./docs/build_from_source.md)
     * [Creating Specific Distributions](./docs/build_specific_distros.md)
     * [Creating your own custom visualizations](./docs/custom_charts.md)
+* Advanced: How to Develop/improve `spark-notebook`
+    * [Overview of Project structure](./docs/code_structure.md)
 
 ## Testimonials
 ### Skymind - [Deeplearning4j](http://Deeplearning4j.org)
