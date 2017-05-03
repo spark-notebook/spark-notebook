@@ -1,11 +1,22 @@
-# Clusters / Clouds
+# Clusters / Clouds configuration
 
+**Table of Contents:**
+
+   * [Amazon EMR](#amazon-emr)
+      * [Version 3.x](#version-3x)
+      * [Version 4.x](#version-4x)
+         * [Version 4.0](#version-40)
+         * [Version 4.2](#version-42)
+         * [Version 4.5](#version-45)
+   * [Mesosphere DCOS](#mesosphere-dcos)
 
 # Amazon EMR
 
 You can on Amazon EMR launch Spark Clusters from this [page](https://console.aws.amazon.com/elasticmapreduce/) or using the [AWS CLI](https://docs.aws.amazon.com/ElasticMapReduce/latest/DeveloperGuide/emr-spark-launch.html).
 
 **NOTE**: For reproductability, the notebook which was already created including examples use its own metadata. Hence you will need to create a new notebook that will be applied the template from application.conf as explained below or you have to change the metadata of the exisiting one([Edit] -> [Edit Notebook Metadata]).
+
+For other EMR releases see [here](http://docs.aws.amazon.com/emr/latest/ReleaseGuide/emr-relguide-links.html) the versions included in the EMR release, and likely, all you need to change in the examples below is the versions of the dependencies.
 
 ## Version 3.x
 
@@ -291,7 +302,7 @@ There are several manners to access the notebook UI on the port `8989` (see abov
 >
 > It is available on the port `8088` of your **master**
 
-### Version 4.2
+### Version 4.5
 
 #### Environment
 At the writing time, the created clusters has this environmnent:
