@@ -31,11 +31,6 @@ case class NotebookConfig(config: Configuration) {
 
   val overrideConf = CustomConf.fromConfig(config.getConfig("notebooks.override"))
 
-  val notebooksDir = config.getString("notebooks.dir").map(new File(_)).filter(_.exists)
-    .orElse(Option(new File("./notebooks"))).filter(_.exists) // ./bin/spark-notebook
-    .getOrElse(new File("../notebooks")) // ./spark-notebook
-  Logger.info(s"Notebooks dir is $notebooksDir [at ${notebooksDir.getAbsolutePath}] ")
-
   val projectName = config.getString("name").getOrElse(notebooksDir.getPath)
 
   val defaultIoProviderTimeout = 60.seconds.toMillis
@@ -49,6 +44,9 @@ case class NotebookConfig(config: Configuration) {
       val configuration = config.tryGetConfig(notebookIoProviderClass).get
       NotebookProviderFactory.createNotebookIoProvider(notebookIoProviderClass, configuration.underlying, ioProviderTimeout)
   }
+
+  val notebooksDir = notebookIoProvider.root.toFile
+  Logger.info(s"Notebooks dir is $notebooksDir")
 
   val serverResources = config.getStringList("resources").map(_.asScala).getOrElse(Nil).map(new File(_))
 
