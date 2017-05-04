@@ -11,6 +11,9 @@ define([
 ], function(IPython, $, utils, dialog, events, keyboard) {
     "use strict";
 
+    var item_buttons_class = "item_buttons_inline";
+    var item_buttons_selector = '.' + item_buttons_class;
+
     var NotebookList = function (selector, options) {
         /**
          * Constructor
@@ -250,7 +253,7 @@ define([
                 $("<span/>").addClass("item_name")
             )
         ).append(
-            $('<div/>').addClass("item_buttons  pull-right")
+            $('<div/>').addClass(item_buttons_class)
         ));
 
         if (index === -1) {
@@ -369,7 +372,7 @@ define([
                 $.ajax(url, settings);
                 return false;
             });
-        item.find(".item_buttons").append(shutdown_button);
+        item.find(item_buttons_selector).append(shutdown_button);
     };
 
     NotebookList.prototype.add_view_button = function (model, item, path) {
@@ -381,7 +384,7 @@ define([
         );
         url = this.maybe_read_only_url(url, true)
         var view_button = $("<a target='_blank' href="+url+"/>").html("<span class='text text-warning'>View (read-only)</span>").addClass("btn btn-default btn-xs");
-        item.find(".item_buttons").prepend(view_button);
+        item.find(item_buttons_selector).prepend(view_button);
     };
 
     NotebookList.prototype.add_duplicate_button = function (item) {
@@ -411,7 +414,7 @@ define([
                 });
                 return false;
             });
-        item.find(".item_buttons").append(duplicate_button);
+        item.find(item_buttons_selector).append(duplicate_button);
     };
 
     NotebookList.prototype.add_delete_button = function (item) {
@@ -445,7 +448,7 @@ define([
                 });
                 return false;
             });
-        item.find(".item_buttons").append(delete_button);
+        item.find(item_buttons_selector).append(delete_button);
     };
 
     NotebookList.prototype.notebook_deleted = function(path) {
@@ -575,7 +578,7 @@ define([
                 item.remove();
                 return false;
             });
-        item.find(".item_buttons").empty()
+        item.find(item_buttons_selector).empty()
             .append(upload_button)
             .append(cancel_button);
     };
