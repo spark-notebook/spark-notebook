@@ -176,6 +176,11 @@ define([
             that.notebook.save_checkpoint();
         });
 
+        this.element.find('#save_notebook').click(function (e) {
+            that.notebook.save_notebook();
+            e.preventDefault();
+        });
+
         this.element.find('#restore_checkpoint').click(function (e) {
         });
 
