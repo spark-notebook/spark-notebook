@@ -15,7 +15,7 @@ class FileSystemNotebookProviderConfigurator extends Configurable[NotebookProvid
 
   override def apply(config: Config)(implicit ec:ExecutionContext): Future[NotebookProvider] = {
     val rootPath = Future {
-      Paths.get(config.getString(NotebooksDir))
+      getAbsoluteCanonicalPath(config.getString(NotebooksDir))
     }.recoverWith{ case t: Throwable =>
       Future.failed(new ConfigurationMissingException(NotebooksDir))
     }
@@ -67,4 +67,13 @@ class FileSystemNotebookProviderConfigurator extends Configurable[NotebookProvid
 }
 object FileSystemNotebookProviderConfigurator {
   val NotebooksDir = "notebooks.dir"
+
+  /**
+    * Get absolute path and remove any redundant ./ or ../../
+    */
+  def getAbsoluteCanonicalPath(path: String): Path = {
+    Paths.get(path)
+      .toAbsolutePath
+      .toFile.getCanonicalFile.toPath
+  }
 }
