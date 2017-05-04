@@ -215,3 +215,8 @@ body[data-read-only="true"]  div.cell .cell-context-buttons {
 body[data-read-only="true"] .cell .progress, body[data-read-only="true"] #maintoolbar, body[data-read-only="true"] #menubar-container {
   display: none !important; visibility: hidden!important;
 }
+
+
+/* notebook list */
+.item_buttons_inline { display: inline; margin-left: 20px; }
+.item_buttons_inline .btn { border: none; margin-left: 10px; border-radius: 7px; font-size: 0.75em; /* background-color: transparent; border: 1px solid #f0f0f0; */ }
