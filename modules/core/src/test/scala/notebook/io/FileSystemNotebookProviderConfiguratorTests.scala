@@ -15,11 +15,12 @@ class FileSystemNotebookProviderConfiguratorTests extends WordSpec with Matchers
   var notebookDir : String = _
   var tempDir: Path = _
 
+  val notebooksDirName = "notebook"
+
   override def beforeAll: Unit = {
     tempDir = Files.createTempDirectory("file-system-notebook-provider")
-    notebookDir = tempDir.toAbsolutePath.toFile.getAbsolutePath + "/notebook"
+    notebookDir = s"${tempDir.toAbsolutePath.toFile.getAbsolutePath}/$notebooksDirName"
   }
-
 
   "File system notebook provider configurator" should {
 
@@ -35,6 +36,20 @@ class FileSystemNotebookProviderConfiguratorTests extends WordSpec with Matchers
       val notebookProvider = configurator(dirConfig)
       whenReady(notebookProvider) { nbp =>
         nbp shouldBe a[NotebookProvider]
+      }
+    }
+
+    "accepts and cleans up non-cannonical relative paths" in {
+      val nonCanonicalNotebooksDir = notebookDir + s"/../$notebooksDirName"
+
+      val configurator = instantiateProvider()
+      val dirConfig = ConfigFactory.parseMap(Map("notebooks.dir" -> nonCanonicalNotebooksDir).asJava)
+      val notebookProvider = configurator(dirConfig)
+      whenReady(notebookProvider) { nbp =>
+        nbp shouldBe a[NotebookProvider]
+        // returns a root without notebook/../notebook
+        // (just ignore OSx tmpdir prefix '/private' for now)
+        nbp.root.toString.stripPrefix("/private") shouldBe notebookDir
       }
     }
 
