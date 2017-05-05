@@ -221,9 +221,11 @@ body[data-read-only="true"] .cell .progress, body[data-read-only="true"] #mainto
 .item_buttons_inline { display: inline; margin-left: 20px; }
 .item_buttons_inline .btn { border: none; margin-left: 10px; border-radius: 7px; font-size: 0.75em; /* background-color: transparent; border: 1px solid #f0f0f0; */ }
 
+
 .notebook_app {
-  background-color: #FAFAFA;
+  background-color: #fcfcfc;
 }
 
+.list_container > div.list_item.row { border: none!important; }
 .list_item.row:nth-child(even) {background: #FAFAFA}
 .list_item.row:nth-child(odd) {background: #FFFFFF}
