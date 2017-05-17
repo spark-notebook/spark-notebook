@@ -1,0 +1,107 @@
+{
+  "cells": [
+    {
+      "metadata": {
+        "trusted": true,
+        "input_collapsed": false,
+        "collapsed": false,
+        "id": "99EA30C352824AEA8E0FFB0BB80DF3C0"
+      },
+      "cell_type": "code",
+      "source": "val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)\nimport sqlContext.implicits._",
+      "execution_count": 1,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": "sqlContext: org.apache.spark.sql.SQLContext = org.apache.spark.sql.SQLContext@5d27a147\nimport sqlContext.implicits._\n",
+          "name": "stdout"
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": ""
+          },
+          "metadata": {},
+          "execution_count": 1,
+          "time": "Took: 1 second 544 milliseconds, at 2016-7-1 14:42"
+        }
+      ]
+    },
+    {
+      "metadata": {
+        "trusted": true,
+        "input_collapsed": false,
+        "collapsed": false,
+        "id": "6765C9EA0D9E4F2B9D932A158DF29518"
+      },
+      "cell_type": "code",
+      "source": "val df = (1 to 1000).map { i =>\n  (i, i.toLong, i.toDouble, i.toFloat, i % 2 == 0, \"\"+i)\n}.toDF(\"f_int\", \"f_long\", \"f_double\", \"f_float\", \"f_boolean\", \"f_string\")",
+      "execution_count": 2,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": "df: org.apache.spark.sql.DataFrame = [f_int: int, f_long: bigint, f_double: double, f_float: float, f_boolean: boolean, f_string: string]\n",
+          "name": "stdout"
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": ""
+          },
+          "metadata": {},
+          "execution_count": 2,
+          "time": "Took: 1 second 551 milliseconds, at 2016-7-1 14:42"
+        }
+      ]
+    },
+    {
+      "metadata": {
+        "id": "881104B050734087A97D90BBE3E7DC77",
+        "trusted": true,
+        "collapsed": true,
+        "input_collapsed": false
+      },
+      "cell_type": "code",
+      "source": "df.rdd.foreach(println)",
+      "execution_count": null,
+      "outputs": []
+    }
+  ],
+  "metadata": {
+    "name": "generator-simple",
+    "user_save_timestamp": "1969-12-31T16:00:00.000Z",
+    "auto_save_timestamp": "1969-12-31T16:00:00.000Z",
+    "language_info": {
+      "name": "scala",
+      "file_extension": "scala",
+      "codemirror_mode": "text/x-scala"
+    },
+    "trusted": true,
+    "customLocalRepo": "/home/noootsab/.ivy2",
+    "customRepos": null,
+    "customDeps": [
+      "com.datastax.spark:spark-cassandra-connector_2.10:1.4.0-M3",
+      "- org.apache.spark %% spark-core % _",
+      "- org.apache.spark %% spark-streaming % _",
+      "- org.apache.hadoop % _ % _",
+      "- org.scala-lang % _ % _"
+    ],
+    "customImports": null,
+    "customArgs": null,
+    "customSparkConf": {
+      "spark.cassandra.connection.host": "172.17.0.1",
+      "spark.scheduler.mode": "FAIR"
+    },
+    "customVars": {
+        "HDFS_ROOT": "/tmp",
+        "NOTEBOOK_USER": "${USER}"
+     },
+    "kernelspec": {
+      "name": "spark",
+      "display_name": "Scala [2.10.5] Spark [1.6.1] Hadoop [2.2.0]  "
+    },
+    "celltoolbar": "Edit Metadata"
+  },
+  "nbformat": 4,
+  "nbformat_minor": 0
+}

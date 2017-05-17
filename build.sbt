@@ -238,9 +238,45 @@ lazy val gitNotebookProvider = Project(id = "git-notebook-provider", base = file
     Extra.gitNotebookProviderSettings
   )
 
+lazy val sbtProjectGenerator = Project(id = "sbt-project-generator", base = file("modules/sbt-project-generator"))
+  .settings(
+    version := version.value
+  )
+.settings(sharedSettings: _*)
+.settings(
+  libraryDependencies += commonsIO,
+  libraryDependencies += scalaTest
+).dependsOn(
+  sbtDependencyManager,
+  sparkNotebookCore,
+  gitNotebookProvider
+) // FIXME: buildInfoKeys is now repeated
+  .settings(buildInfoSettings: _*)
+  .settings(
+    sourceGenerators in Compile <+= buildInfo,
+    buildInfoKeys :=  Seq[BuildInfoKey](
+      "sparkNotebookVersion" → SparkNotebookSimpleVersion,
+      scalaVersion,
+      sparkVersion,
+      hadoopVersion,
+      withHive,
+      jets3tVersion,
+      jlineDef,
+      sbtVersion,
+      git.formattedShaVersion,
+      BuildInfoKey.action("buildTime") {
+        val formatter = new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy")
+        formatter.format(new java.util.Date(System.currentTimeMillis))
+      },
+      "viewer" → viewerMode
+    ),
+    buildInfoPackage := "notebook"
+  )
+
+
 lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).enablePlugins(SbtWeb)
-  .aggregate(sparkNotebookCore, gitNotebookProvider, sbtDependencyManager, subprocess, observable, common, spark, kernel)
-  .dependsOn(sparkNotebookCore, gitNotebookProvider, subprocess, observable, common, spark, kernel)
+  .aggregate(sparkNotebookCore, gitNotebookProvider, sbtDependencyManager, sbtProjectGenerator, subprocess, observable, common, spark, kernel)
+  .dependsOn(sparkNotebookCore, gitNotebookProvider, subprocess, observable, sbtProjectGenerator, common, spark, kernel)
   .settings(sharedSettings: _*)
   .settings(
     bashScriptExtraDefines <+= (organization, version, scalaBinaryVersion, scalaVersion, sparkVersion, hadoopVersion, withHive) map { (org, v, sbv, sv, pv, hv, wh) =>
@@ -305,7 +341,7 @@ lazy val observable = Project(id = "observable", base = file("modules/observable
 lazy val common = Project(id = "common", base = file("modules/common"))
   .dependsOn(observable, sbtDependencyManager)
   .settings(
-    version  <<= (version in ThisBuild, sparkVersion) { (v,sv) => s"${v}_$sv" }
+    version  <<= (version in ThisBuild, sparkVersion) { (v,sv) => s"${sv}_${v}" }
   )
   .settings(
     libraryDependencies ++= Seq(
