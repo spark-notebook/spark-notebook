@@ -18,7 +18,7 @@ import play.api.libs.iteratee.Concurrent.Channel
 import play.api.libs.iteratee._
 import play.api.libs.json._
 import play.api.mvc._
-import utils.AppUtils
+import utils.{SbtProjectGenUtils, AppUtils}
 import utils.Const.UTF_8
 
 import scala.concurrent.duration._
@@ -64,6 +64,13 @@ object Application extends Controller {
   val base_project_url = current.configuration.getString("application.context").getOrElse("/")
   val autoStartKernel = current.configuration.getBoolean("manager.kernel.autostartOnNotebookOpen").getOrElse(true) && !viewer;
   val kernelKillTimeout = current.configuration.getMilliseconds("manager.kernel.killTimeout")
+
+  val sbt_project_gen_enabled = SbtProjectGenUtils.isConfigured
+  val docker_repo = current.configuration.getString("sbt-project-generation.publishing.dockerRepo").getOrElse("")
+  val maintainer = current.configuration.getString("sbt-project-generation.code-gen.maintainer").getOrElse("")
+  val deploy_package_base = current.configuration.getString("sbt-project-generation.code-gen.generatedPackageBase").getOrElse("generated")
+  val mesos_version = current.configuration.getString("sbt-project-generation.code-gen.mesosVersion").getOrElse("")
+
   val base_kernel_url = "/"
   val base_observable_url = "observable"
   val read_only = viewer
@@ -597,6 +604,11 @@ object Application extends Controller {
         "read-only" → read_only.toString,
         "base-url" → base_project_url,
         "notebook-path" → path,
+        "sbt_project_gen_enabled" -> sbt_project_gen_enabled.toString,
+        "docker-repo" → docker_repo,
+        "maintainer" → maintainer,
+        "deploy-package-base" → deploy_package_base,
+        "mesos-version" → mesos_version,
         "viewer_mode" → config.viewer.toString,
         "terminals-available" → terminals_available
       ),

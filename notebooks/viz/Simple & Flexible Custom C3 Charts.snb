@@ -75,7 +75,7 @@
       "collapsed" : false
     },
     "cell_type" : "code",
-    "source" : "val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)\nimport sqlContext.implicits._\n\nval salariesDf = Seq(\n  (\"ben\", 3000),\n  (\"boris\", 5000)\n).toDF(\"name\", \"salary_eur\")\n\nCustomC3Chart(salariesDf,\n             chartOptions = \"\"\"\n             { data: { x: 'name', \n                       type: 'bar'},\n               axis: {x: { type: 'categorical' }}\n             }\n             \"\"\")",
+    "source" : "//val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)\n// import sqlContext.implicits._\n\nval salariesDf = Seq(\n  (\"ben\", 3000),\n  (\"boris\", 5000)\n).toDF(\"name\", \"salary_eur\")\n\nCustomC3Chart(salariesDf,\n             chartOptions = \"\"\"\n             { data: { x: 'name', \n                       type: 'bar'},\n               axis: {x: { type: 'categorical' }}\n             }\n             \"\"\")",
     "outputs" : [ ]
   }, {
     "metadata" : {

@@ -1,0 +1,7 @@
+.DS_Store
+**/.idea
+target
+g3nerator/target
+g3nerator/project/target
+g3nerator/project/project
+git-notebook-provider/src/test/resources/test.user.properties

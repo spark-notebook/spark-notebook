@@ -237,9 +237,29 @@ lazy val gitNotebookProvider = Project(id = "git-notebook-provider", base = file
     Extra.gitNotebookProviderSettings
   )
 
+lazy val sbtProjectGenerator = Project(id = "sbt-project-generator", base = file("modules/sbt-project-generator"))
+  .settings(
+    scalaVersion := defaultScalaVersion,
+    organization := "io.kensu",
+    version := version.value,
+    publishMavenStyle := true
+  )
+.settings(sharedSettings: _*)
+.settings(
+  libraryDependencies ++= playDeps,
+  libraryDependencies += commonsIO,
+  libraryDependencies += scalaTest,
+  libraryDependencies += "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.3"
+).dependsOn(
+  sbtDependencyManager,
+  sparkNotebookCore,
+  gitNotebookProvider,
+  common
+)
+
 lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).enablePlugins(SbtWeb)
-  .aggregate(sparkNotebookCore, gitNotebookProvider, sbtDependencyManager, subprocess, observable, common, spark, kernel)
-  .dependsOn(sparkNotebookCore, gitNotebookProvider, subprocess, observable, common, spark, kernel)
+  .aggregate(sparkNotebookCore, gitNotebookProvider, sbtDependencyManager, sbtProjectGenerator, subprocess, observable, common, spark, kernel)
+  .dependsOn(sparkNotebookCore, gitNotebookProvider, subprocess, observable, sbtProjectGenerator, common, spark, kernel)
   .settings(sharedSettings: _*)
   .settings(
     bashScriptExtraDefines <+= (organization, version, scalaBinaryVersion, scalaVersion, sparkVersion, hadoopVersion, withHive) map { (org, v, sbv, sv, pv, hv, wh) =>
@@ -304,7 +324,7 @@ lazy val observable = Project(id = "observable", base = file("modules/observable
 lazy val common = Project(id = "common", base = file("modules/common"))
   .dependsOn(observable, sbtDependencyManager)
   .settings(
-    version  <<= (version in ThisBuild, sparkVersion) { (v,sv) => s"${v}_$sv" }
+    version  <<= (version in ThisBuild, sparkVersion) { (v,sv) => s"${sv}_${v}" }
   )
   .settings(
     libraryDependencies ++= Seq(
