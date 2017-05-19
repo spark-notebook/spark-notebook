@@ -15,7 +15,7 @@ jdk:
 #    - $HOME/.sbt/boot/
 
 scala:
-  - 2.10.5
+  - 2.10.6
   - 2.11.8
 env:
   # - SPARK_VER=1.6.1 spark 1.6 is not supported anymore
