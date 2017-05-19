@@ -20,6 +20,7 @@ scala:
 env:
   # - SPARK_VER=1.6.1 spark 1.6 is not supported anymore
   - SPARK_VER=2.0.2
+  - SPARK_VER=2.1.1
 script:
   - rm -Rf ~/.ivy2/*
   - rm -Rf ~/.sbt/*
