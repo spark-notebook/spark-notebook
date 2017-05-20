@@ -13,7 +13,6 @@ import com.datafellas.utils._
 import notebook.Notebook
 import com.datafellas.g3nerator.model.Artifact.State._
 import notebook.NBSerializer.CodeCell
-import notebook.util.ZipArchiveUtil
 
 import scala.util.{Success, Try}
 
@@ -525,10 +524,10 @@ class Job( val project: Project,
     val jars: Try[List[String]] = nbDepencyResolver.resolveJars(snb.metadata.get.customDeps.getOrElse(Nil), repo)
     LOG.info("Downloaded deps for job:\n" + jars)
     val libJars = jars.get.map { jar =>
-      import scalax.io._
-      import Resource._
+//      import scalax.io._
+//      import Resource._
       val name = new File(jar).getName
-      fromFile(jar) copyDataTo fromFile(`root/spark-lib`(name))
+      // FIXME: fromFile(jar) copyDataTo fromFile(`root/spark-lib`(name))
       name
     }
     libJars

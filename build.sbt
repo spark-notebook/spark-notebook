@@ -77,12 +77,6 @@ ivyScala := ivyScala.value map {
 
 parallelExecution in Test in ThisBuild := false
 
-// ref: https://github.com/sbt/junit-interface
-// -v log "test run started" / "test started" / "test run finished" events on log level "info" instead of "debug"
-// -q suppress stdout for successful tests
-// -a show stack traces and exception class name for AssertionErrors
-libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test"
-testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-q", "-a")
 
 // these java options are for the forked test JVMs
 javaOptions in ThisBuild ++= Seq("-Xmx512M", "-XX:MaxPermSize=128M")
@@ -215,7 +209,8 @@ libraryDependencies <++= scalaBinaryVersion {
 
 lazy val sbtDependencyManager = Project(id = "sbt-dependency-manager", base = file("modules/sbt-dependency-manager"))
   .settings(
-    version := version.value
+    version := version.value,
+    libraryDependencies += scalaTest
   )
   .settings(sharedSettings: _*)
   .settings(
@@ -252,14 +247,39 @@ lazy val sbtProjectGenerator = Project(id = "sbt-project-generator", base = file
 .settings(
   //libraryDependencies ++= playDeps,
   libraryDependencies += commonsIO,
-  libraryDependencies += scalaTest,
-  libraryDependencies += "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.3"
+  libraryDependencies += scalaTest
+//
+//  libraryDependencies += "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.3"
+//    exclude("org.jboss.netty", "netty")
+//    exclude("com.typesafe.akka", "akka-actor")
 ).dependsOn(
   sbtDependencyManager,
   sparkNotebookCore,
-  gitNotebookProvider,
-  common
-)
+  gitNotebookProvider
+  // , common
+) // FIXME: buildinfo is now repeated
+  .settings(buildInfoSettings: _*)
+  .settings(
+    sourceGenerators in Compile <+= buildInfo,
+    buildInfoKeys :=  Seq[BuildInfoKey](
+      "sparkNotebookVersion" → SparkNotebookSimpleVersion,
+      scalaVersion,
+      sparkVersion,
+      hadoopVersion,
+      withHive,
+      jets3tVersion,
+      jlineDef,
+      sbtVersion,
+      git.formattedShaVersion,
+      BuildInfoKey.action("buildTime") {
+        val formatter = new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy")
+        formatter.format(new java.util.Date(System.currentTimeMillis))
+      },
+      "viewer" → viewerMode
+    ),
+    buildInfoPackage := "notebook"
+  )
+
 
 lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).enablePlugins(SbtWeb)
   .aggregate(sparkNotebookCore, gitNotebookProvider, sbtDependencyManager, sbtProjectGenerator, subprocess, observable, common, spark, kernel)
