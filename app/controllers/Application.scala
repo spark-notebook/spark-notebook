@@ -18,8 +18,7 @@ import play.api.libs.iteratee.Concurrent.Channel
 import play.api.libs.iteratee._
 import play.api.libs.json._
 import play.api.mvc._
-//import utils.{SbtProjectGenUtils, AppUtils}
-import utils.AppUtils
+import utils.{SbtProjectGenUtils, AppUtils}
 import utils.Const.UTF_8
 
 import scala.concurrent.duration._
