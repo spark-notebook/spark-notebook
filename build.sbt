@@ -77,6 +77,13 @@ ivyScala := ivyScala.value map {
 
 parallelExecution in Test in ThisBuild := false
 
+// ref: https://github.com/sbt/junit-interface
+// -v log "test run started" / "test started" / "test run finished" events on log level "info" instead of "debug"
+// -q suppress stdout for successful tests
+// -a show stack traces and exception class name for AssertionErrors
+libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test"
+testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-q", "-a")
+
 // these java options are for the forked test JVMs
 javaOptions in ThisBuild ++= Seq("-Xmx512M", "-XX:MaxPermSize=128M")
 
