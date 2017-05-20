@@ -65,7 +65,7 @@ object Application extends Controller {
   val autoStartKernel = current.configuration.getBoolean("manager.kernel.autostartOnNotebookOpen").getOrElse(true) && !viewer;
   val kernelKillTimeout = current.configuration.getMilliseconds("manager.kernel.killTimeout")
 
-  val sbt_project_gen_enabled = SbtProjectGenUtils.isConfigured
+  lazy val sbt_project_gen_enabled = SbtProjectGenUtils.isConfigured
   val docker_repo = current.configuration.getString("sbt-project-generation.publishing.dockerRepo").getOrElse("")
   val maintainer = current.configuration.getString("sbt-project-generation.code-gen.maintainer").getOrElse("")
   val deploy_package_base = current.configuration.getString("sbt-project-generation.code-gen.generatedPackageBase").getOrElse("generated")
