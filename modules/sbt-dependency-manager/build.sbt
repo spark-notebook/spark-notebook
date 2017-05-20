@@ -32,7 +32,8 @@ def depsToDownloadDeps(scalaBinaryVersion: String, sbtVersion: String) = scalaBi
 //for aether
 libraryDependencies <++= scalaBinaryVersion {
   case "2.10" => Nil
-  case "2.11" => ("com.ning" % "async-http-client" % "[1.6.5, 1.6.5]" force())::Nil
+    // must exclude as netty moved from org.jboss.netty to io.netty
+  case "2.11" => ("com.ning" % "async-http-client" % "[1.6.5, 1.6.5]" force() exclude("org.jboss.netty", "netty"))::Nil
 }
 
 libraryDependencies ++= depsToDownloadDeps(scalaBinaryVersion.value, sbtVersion.value)
