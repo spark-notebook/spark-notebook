@@ -125,7 +125,8 @@ object Dependencies {
   val log4j = "log4j" % "log4j" % "1.2.17"
 
   // for aether only
-  val ningAsyncHttpClient = "com.ning" % "async-http-client" % "[1.6.5, 1.6.5]" force() //"1.8.10"//"[1.6.5, 1.6.5]" force()
+  // must exclude as netty moved from org.jboss.netty to io.netty
+  val ningAsyncHttpClient = "com.ning" % "async-http-client" % "[1.6.5, 1.6.5]" force() exclude("org.jboss.netty", "netty") //"1.8.10"//"[1.6.5, 1.6.5]" force()
 
   // Viz
   val geometryDeps = Seq(
