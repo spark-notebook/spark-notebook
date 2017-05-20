@@ -246,14 +246,11 @@ lazy val gitNotebookProvider = Project(id = "git-notebook-provider", base = file
 
 lazy val sbtProjectGenerator = Project(id = "sbt-project-generator", base = file("modules/sbt-project-generator"))
   .settings(
-    scalaVersion := defaultScalaVersion,
-    organization := "io.kensu",
-    version := version.value,
-    publishMavenStyle := true
+    version := version.value
   )
 .settings(sharedSettings: _*)
 .settings(
-  libraryDependencies ++= playDeps,
+  //libraryDependencies ++= playDeps,
   libraryDependencies += commonsIO,
   libraryDependencies += scalaTest,
   libraryDependencies += "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.3"
