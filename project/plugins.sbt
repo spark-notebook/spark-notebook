@@ -1,6 +1,6 @@
 // Comment to get more information during initialization
-//logLevel := Level.Warn
-logLevel := Level.Debug
+logLevel := Level.Warn
+//logLevel := Level.Debug
 
 // The Typesafe repository
 resolvers += "Typesafe repository" at "https://repo.typesafe.com/typesafe/releases/"
