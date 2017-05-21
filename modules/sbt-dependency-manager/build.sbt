@@ -24,7 +24,7 @@ def depsToDownloadDeps(scalaBinaryVersion: String, sbtVersion: String) = scalaBi
   )
   case _ =>
     val aetherApi = "org.sonatype.aether" % "aether-api" % "1.13"
-    val jcabiAether = "com.jcabi" % "jcabi-aether" % "0.10.1"
+    val jcabiAether = "com.jcabi" % "jcabi-aether" % "0.10.1" exclude("org.jboss.netty", "netty")
     val mavenCore = "org.apache.maven" % "maven-core" % "3.0.5"
     List(aetherApi, jcabiAether, mavenCore)
 }
@@ -32,7 +32,8 @@ def depsToDownloadDeps(scalaBinaryVersion: String, sbtVersion: String) = scalaBi
 //for aether
 libraryDependencies <++= scalaBinaryVersion {
   case "2.10" => Nil
-  case "2.11" => ("com.ning" % "async-http-client" % "[1.6.5, 1.6.5]" force())::Nil
+    // must exclude as netty moved from org.jboss.netty to io.netty
+  case "2.11" => ("com.ning" % "async-http-client" % "[1.6.5, 1.6.5]" force() exclude("org.jboss.netty", "netty"))::Nil
 }
 
 libraryDependencies ++= depsToDownloadDeps(scalaBinaryVersion.value, sbtVersion.value)
@@ -42,11 +43,9 @@ libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.12"
 libraryDependencies += "com.typesafe" % "config" % "1.2.1"
 
 libraryDependencies <++= scalaBinaryVersion {
-  case "2.11" => List("org.scala-lang.modules" %% "scala-xml" % "1.0.3")
+  case "2.11" => List("org.scala-lang.modules" %% "scala-xml" % "1.0.4")
   case "2.10" => Nil
 }
-
-libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 
 unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
 

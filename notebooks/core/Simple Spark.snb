@@ -1,68 +1,139 @@
 {
   "metadata" : {
+    "id" : "af838c83-8642-46b6-9358-12ee05e704e1",
     "name" : "Simple Spark",
     "user_save_timestamp" : "2014-10-11T17:33:45.703Z",
     "auto_save_timestamp" : "2015-01-10T00:02:12.659Z",
     "language_info" : {
-      "name" : "Scala",
+      "name" : "scala",
       "file_extension" : "scala",
       "codemirror_mode" : "text/x-scala"
     },
     "trusted" : true,
+    "sparkNotebook" : null,
     "customLocalRepo" : null,
     "customRepos" : null,
     "customDeps" : null,
     "customImports" : null,
     "customArgs" : null,
-    "customSparkConf" : null
+    "customSparkConf" : null,
+    "customVars" : null
   },
   "cells" : [ {
-    "metadata" : { },
+    "metadata" : {
+      "id" : "37DEEDC733044DD9972E9E4BA2F1B126"
+    },
     "cell_type" : "markdown",
     "source" : "### Spark config"
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : true,
+      "id" : "2A2F6AA618AC48018D01E7D2F4183B76"
     },
     "cell_type" : "code",
     "source" : "sparkContext.getConf.toDebugString",
     "outputs" : [ ]
   }, {
     "metadata" : {
-      "trusted" : true,
-      "collapsed" : false
+      "id" : "DAFA77C3B6D140FF8AAE30B94D2FC73E"
     },
-    "cell_type" : "code",
-    "source" : "val count = sparkContext.makeRDD((1 to 1000).toArray).count()\n()",
-    "outputs" : [ ]
-  }, {
-    "metadata" : { },
     "cell_type" : "markdown",
     "source" : "#### Counting"
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "9088B578DE2F4BA48DF323F11895488A"
     },
     "cell_type" : "code",
-    "source" : "<strong>{count} items</strong>",
+    "source" : "def transform(i: Int) = (i, i+1)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "transform: (i: Int)(Int, Int)\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 2,
+      "time" : "Took: 0.727s, at 2017-05-16 12:18"
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "presentation" : {
+        "tabs_state" : "{\n  \"tab_id\": \"#tab662761867-0\"\n}",
+        "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [],\n  \"rows\": [],\n  \"vals\": [],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count\",\n  \"rendererName\": \"Table\"\n}"
+      },
+      "id" : "BF434E47187740E78B7A7A521D2D87DD"
+    },
+    "cell_type" : "code",
+    "source" : "val dataset = sparkSession.createDataset(1 to 1000).map(transform)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "dataset: org.apache.spark.sql.Dataset[(Int, Int)] = [_1: int, _2: int]\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 9,
+      "time" : "Took: 1.466s, at 2017-05-16 12:20"
+    } ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "presentation" : {
+        "tabs_state" : "{\n  \"tab_id\": \"#tab1070475139-0\"\n}",
+        "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [],\n  \"rows\": [],\n  \"vals\": [],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count\",\n  \"rendererName\": \"Table\"\n}"
+      },
+      "id" : "EE80B60DB2C645D58B30EB2B793A5BEC"
+    },
+    "cell_type" : "code",
+    "source" : "display(dataset.toDF)",
     "outputs" : [ ]
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "7797C8DBEB7643D788F4D14F6C8E2B40"
     },
     "cell_type" : "code",
-    "source" : "val i:Int = 2",
-    "outputs" : [ ]
+    "source" : "val sum = dataset.map(_._2).reduce(_+_)\n\nprintln(sum)",
+    "outputs" : [ {
+      "name" : "stdout",
+      "output_type" : "stream",
+      "text" : "501500\nsum: Int = 501500\n"
+    }, {
+      "metadata" : { },
+      "data" : {
+        "text/html" : ""
+      },
+      "output_type" : "execute_result",
+      "execution_count" : 11,
+      "time" : "Took: 1.146s, at 2017-05-16 12:20"
+    } ]
   }, {
     "metadata" : {
       "trusted" : true,
-      "collapsed" : false
+      "input_collapsed" : false,
+      "collapsed" : true,
+      "id" : "73F60C7C9F2945E38AC0C252F2C3AC1E"
     },
     "cell_type" : "code",
-    "source" : "val sum = sparkContext.makeRDD((1 to 1000).toArray).map(_ + i).reduce(_+_)\n",
+    "source" : "",
     "outputs" : [ ]
   } ],
   "nbformat" : 4
