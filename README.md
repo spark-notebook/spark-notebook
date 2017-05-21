@@ -6,6 +6,8 @@ Spark Notebook
 
 The Spark Notebook is the open source notebook aimed at enterprise environments, providing Data Scientists and Data Engineers with  an interactive web-based editor that can combine Scala code, SQL queries, Markup and JavaScript in a collaborative manner to explore, analyse and learn from massive data sets.
 
+The Spark Notebook's only dependency is the JVM.
+
 ![notebook intro](./docs/images/geo-airports.png)
 
 The Spark Notebook allows performing [reproducible analysis](http://simplystatistics.org/2014/06/06/the-real-reason-reproducible-research-is-important/) with Scala, Apache Spark and the Big Data ecosystem.

@@ -6,7 +6,7 @@ machine:
 
 dependencies:
   override:
-    - sbt update # remove 'play update'
+    - sbt update # removes 'play update'
   cache_directories:
     - "~/.ivy2"
     - "~/.sbt"
