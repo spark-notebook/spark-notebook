@@ -82,6 +82,23 @@ javaOptions in ThisBuild ++= Seq("-Xmx512M", "-XX:MaxPermSize=128M")
 
 val viewerMode = Option(sys.env.getOrElse("VIEWER_MODE", "false")).get.toBoolean
 
+val buildInfoValues = Seq[BuildInfoKey](
+  "sparkNotebookVersion" → SparkNotebookSimpleVersion,
+  scalaVersion,
+  sparkVersion,
+  hadoopVersion,
+  withHive,
+  jets3tVersion,
+  jlineDef,
+  sbtVersion,
+  git.formattedShaVersion,
+  BuildInfoKey.action("buildTime") {
+    val formatter = new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy")
+    formatter.format(new java.util.Date(System.currentTimeMillis))
+  },
+  "viewer" → viewerMode
+)
+
 
 /*
   adding nightly build resolver like
@@ -254,22 +271,7 @@ lazy val sbtProjectGenerator = Project(id = "sbt-project-generator", base = file
   .settings(buildInfoSettings: _*)
   .settings(
     sourceGenerators in Compile <+= buildInfo,
-    buildInfoKeys :=  Seq[BuildInfoKey](
-      "sparkNotebookVersion" → SparkNotebookSimpleVersion,
-      scalaVersion,
-      sparkVersion,
-      hadoopVersion,
-      withHive,
-      jets3tVersion,
-      jlineDef,
-      sbtVersion,
-      git.formattedShaVersion,
-      BuildInfoKey.action("buildTime") {
-        val formatter = new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy")
-        formatter.format(new java.util.Date(System.currentTimeMillis))
-      },
-      "viewer" → viewerMode
-    ),
+    buildInfoKeys :=  buildInfoValues,
     buildInfoPackage := "notebook"
   )
 
@@ -359,22 +361,7 @@ lazy val common = Project(id = "common", base = file("modules/common"))
   .settings(buildInfoSettings: _*)
   .settings(
     sourceGenerators in Compile <+= buildInfo,
-    buildInfoKeys :=  Seq[BuildInfoKey](
-                        "sparkNotebookVersion" → SparkNotebookSimpleVersion,
-                        scalaVersion,
-                        sparkVersion,
-                        hadoopVersion,
-                        withHive,
-                        jets3tVersion,
-                        jlineDef,
-                        sbtVersion,
-                        git.formattedShaVersion,
-                        BuildInfoKey.action("buildTime") {
-                          val formatter = new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy")
-                          formatter.format(new java.util.Date(System.currentTimeMillis))
-                        },
-                        "viewer" → viewerMode
-                      ),
+    buildInfoKeys := buildInfoValues,
     buildInfoPackage := "notebook"
   )
   .settings(
