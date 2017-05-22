@@ -1,24 +1,34 @@
 machine:
   environment:
+    SKIP_WHEN_TRAVIS: "yes"
     SBT_OPTS: "-Xms512M -Xmx4G -XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC"
-    BUILD_OPTS: "-Dspark.resolver.search=false 'set offline := true'"
+    BUILD_OPTS: "-Dspark.resolver.search=false" # TODO:  check 'set offline := true'
+    SCALA2_10: "-Dscala.version=2.10.6"
+    SCALA2_11: "-Dscala.version=2.11.8"
+    SPARK2_0: "-Dspark.version=2.0.2"
+    SPARK2_1: "-Dspark.version=2.1.1"
+    BUILD0: "$SPARK2_0 $SCALA2_10 $BUILD_OPTS"
+    BUILD1: "$SPARK2_1 $SCALA2_10 $BUILD_OPTS"
+    BUILD2: "$SPARK2_0 $SCALA2_11 $BUILD_OPTS"
+    BUILD3: "$SPARK2_1 $SCALA2_11 $BUILD_OPTS"
   java:
     version: oraclejdk8
 
 dependencies:
   override:
-    - echo "Also skipped 'sbt update' for faster runs" # disables the auto-inferred 'play update' which do not work here
+    # disables the auto-inferred 'play update' which do not work here
+    # TODO: maybe pre-cache .sbt/.ivy for all build configurations (only first container is cached!)
+    - echo "Also skipped 'sbt update' for possibly faster runs"
   cache_directories:
-    - "~/.ivy2"
+    - "~/.ivy2/cache"
     - "~/.sbt"
+    - "~/.m2"
 
 test:
   override:
-    - export SKIP_WHEN_TRAVIS=yes; sbt -Dspark.version=2.0.2 -Dscala.version=2.10.6 $BUILD_OPTS clean test:
-        parallel: true
-    - export SKIP_WHEN_TRAVIS=yes; sbt -Dspark.version=2.1.1 -Dscala.version=2.10.6 $BUILD_OPTS clean test:
-        parallel: true
-    - export SKIP_WHEN_TRAVIS=yes; sbt -Dspark.version=2.0.2 -Dscala.version=2.11.8 $BUILD_OPTS clean test:
-        parallel: true
-    - export SKIP_WHEN_TRAVIS=yes; sbt -Dspark.version=2.1.1 -Dscala.version=2.11.8 $BUILD_OPTS clean test:
+    # nasty way to run test in parallel with different config
+    # FIXME: matrix-builds still not available even in CircleCI 2.0 Beta (yet). but improvement is planned
+    # https://circleci.com/docs/1.0/parallel-manual-setup/
+  override:
+    - case $CIRCLE_NODE_INDEX in 0) sbt $BUILD0 clean test ;; 1) sbt $BUILD1 clean test ;; 2) sbt $BUILD2 clean test ;; 3) sbt $BUILD3 clean test ;; esac:
         parallel: true
