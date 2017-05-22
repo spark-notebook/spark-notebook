@@ -208,7 +208,8 @@ libraryDependencies <++= scalaBinaryVersion {
 
 lazy val sbtDependencyManager = Project(id = "sbt-dependency-manager", base = file("modules/sbt-dependency-manager"))
   .settings(
-    version := version.value
+    version := version.value,
+    libraryDependencies += scalaTest
   )
   .settings(sharedSettings: _*)
   .settings(
