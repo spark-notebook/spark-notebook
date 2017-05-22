@@ -43,14 +43,6 @@ define([
         this.sessions = {};
         this.base_url = options.base_url || utils.get_body_data("baseUrl");
         this.notebook_path = options.notebook_path || utils.get_body_data("notebookPath");
-
-        // sbt-project-generation
-        this.sbt_project_gen_enabled = options.sbt_project_gen_enabled || utils.get_body_data("sbt_project_gen_enabled");
-        this.docker_repo = options.docker_repo || utils.get_body_data("dockerRepo");
-        this.maintainer = options.maintainer || utils.get_body_data("maintainer");
-        this.deploy_package_base = options.deploy_package_base || utils.get_body_data("deployPackageBase");
-        this.mesos_version = options.mesos_version || utils.get_body_data("mesosVersion");
-
         this.contents = options.contents;
         if (this.session_list && this.session_list.events) {
             this.session_list.events.on('sessions_loaded.Dashboard',
@@ -332,9 +324,6 @@ define([
             } else {
                 this.add_shutdown_button(item, this.sessions[path]);
             }
-            if (this.sbt_project_gen_enabled === "true") {
-                this.add_generate_button(item);
-            }
         }
     };
 
@@ -396,146 +385,6 @@ define([
         url = this.maybe_read_only_url(url, true)
         var view_button = $("<a target='_blank' href="+url+"/>").html("<span class='text text-warning'>View (read-only)</span>").addClass("btn btn-default btn-xs");
         item.find(item_buttons_selector).prepend(view_button);
-    };
-
-    // toISOString
-    // official toISOString returns the seconds and milliseconds we don't include here
-    function pad(number) {
-      if ( number < 10 ) {
-        return '0' + number;
-      }
-      return number;
-    }
-    function ISODate() {
-      var d = new Date();
-      return d.getUTCFullYear() +
-        '-' + pad( d.getUTCMonth() + 1 ) +
-        '-' + pad( d.getUTCDate() ) +
-        'T' + pad( d.getUTCHours() ) +
-        ':' + pad( d.getUTCMinutes() ) +
-        //':' + pad( d.getUTCSeconds() ) +
-        //'.' + (d.getUTCMilliseconds() / 1000).toFixed(3).slice(2, 5) +
-        'Z';
-    };
-    // \\ toISOString
-
-    NotebookList.prototype.add_generate_button = function (item) {
-        var notebooklist = this;
-        var generate_button = $("<button/>").text("Generate SBT project").addClass("btn btn-default btn-xs btn-success").
-            click(function (e) {
-                // $(this) is the button that was clicked.
-                var that = $(this);
-                var name = item.data('name');
-                var path = item.data('path');
-                var cronDef = ISODate();
-                var destDir = path.replace(".snb", "").replace(/\W+/g, "__")
-                var message = $(
-                    '<div>'+
-                        '<div class="hidden">'+
-                            '<label><strong>In which directory do you want to generate an SBT project?</strong></label>'+
-                            '<br>'+
-                            '<input class="to_dir" type="text" value="' + destDir + '" style="width: 85%" />'+
-                        '</div>'+
-
-                        '<label><strong>What is the package for the classes?</strong></label>'+
-                        '<br>'+
-                        '<input class="pkg" type="text" style="width: 85%" value="'+notebooklist.deploy_package_base+'"/>'+
-
-                        '<label><strong>What is the version of the project?</strong></label>'+
-                        '<br>'+
-                        '<input class="version" type="text" style="width: 85%" value="0.0.1-SNAPSHOT"/>'+
-
-                        '<div class="hidden sbt-gen-optional">'+
-                            '<label><strong>Who is the maintainer of the project?</strong></label>'+
-                            '<br>'+
-                            '<input class="maintainer" type="text" style="width: 85%" value="'+notebooklist.maintainer+'"/>'+
-                        '</div>'+
-
-                        '<div class="hidden sbt-gen-optional">'+
-                            '<label><strong>What is the docker repo for the generated project?</strong></label>'+
-                            '<br>'+
-                            '<input class="docker_repo" type="text" style="width: 85%" value="'+notebooklist.docker_repo+'"/>'+
-                        '</div>'+
-
-                        '<div class="hidden sbt-gen-optional">'+
-                            '<label><strong>What is the mesos version for the generated project?</strong></label>'+
-                            '<br>'+
-                            '<input class="mesos_version" type="text" style="width: 85%" value="'+notebooklist.mesos_version+'"/>'+
-                        '</div>'+
-
-                        '<div>'+
-                            '<a href="#" id="sbt-gen-more-settings-showhide">More settings (show/hide)</a>'+
-                        '</div>'+
-                    '</div>'
-                );
-                message.find("#sbt-gen-more-settings-showhide").click(function (event) {
-                  event.preventDefault();
-                  $(".sbt-gen-optional").toggleClass("hidden");
-                });
-                IPython.dialog.modal({
-                    title : "Generate SBT project for " + name,
-                    body : message,
-                    buttons : {
-                        Generate : {
-                            class: "btn-primary",
-                            click: function() {
-                                var to_dir             = this.find("input.to_dir").val();
-                                var pkg                = this.find("input.pkg").val();
-                                var version            = this.find("input.version").val();
-                                var maintainer         = this.find("input.maintainer").val();
-                                var docker_repo        = this.find("input.docker_repo").val();
-                                var mesos_version      = this.find("input.mesos_version").val();
-                                notebooklist.generate_nb_project(
-                                                            path, pkg, version, maintainer,
-                                                            docker_repo, mesos_version, to_dir
-                                                        ).then(
-                                                            function() {
-                                                                notebooklist.project_generated(name, to_dir);
-                                                            }
-                                                        );
-                            }
-                        },
-                        Cancel : {}
-                    }
-                });
-                return false;
-            });
-        item.find(item_buttons_selector).append(generate_button);
-    };
-
-    /**
-    * Generate the notebook job/service project at `nb_path` into a given directory `to_dir` via POST
-    */
-    NotebookList.prototype.generate_nb_project = function (nb_path, pkg, version, maintainer,
-                                                       docker_repo, mesos_version, to_dir) {
-        var url = utils.url_join_encode(this.base_url, 'adastyx', nb_path, 'generate_nb_project');
-        var settings = {
-          processData: false,
-          type: "POST",
-          data: JSON.stringify({
-            type: "notebook",
-            pkg : pkg,
-            version : version,
-            maintainer : maintainer,
-            docker_repo : docker_repo,
-            mesos_version : mesos_version,
-            to_dir: to_dir
-          }),
-          dataType: "json",
-        };
-        return utils.promising_ajax(url, settings);
-    };
-
-    NotebookList.prototype.project_generated = function(name, to) {
-        $('#tabs a[href=#projects]').tab('show');
-        var alertMsg = "Project " + name + " will be generated in '" + to + "' dir!";
-        var alert = $('<div class="alert alert-success alert-dismissible" role="alert" style="margin: 5px;">\
-           <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>\
-           <strong>' + alertMsg + '.\
-         </div>');
-        $('#projects').prepend(alert);
-        setInterval(function(){ $('#refresh_project_list').click(); }, 500);
-        // alert(alertMsg);
     };
 
     NotebookList.prototype.add_duplicate_button = function (item) {

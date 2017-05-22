@@ -21,13 +21,7 @@ GET            /api/sessions/path/*path                  controllers.Application
 POST           /api/kernels/:kernelId/interrupt          controllers.Application.terminateKernel(kernelId:String)
 POST           /api/kernels/:kernelId/restart            controllers.Application.restartKernel(kernelId:String)
 
-# Sbt project generation
-POST           /adastyx/*path/generate_nb_project        controllers.GeneratedSbtProjects.generateNbProject(path:String)
-GET            /projects                                 controllers.GeneratedSbtProjects.projects()
-GET            /projects/:name/job                       controllers.GeneratedSbtProjects.projectInfo(name:String, from:Int)
-GET            /projects/:name/zip/:filename             controllers.GeneratedSbtProjects.downloadFile(name:String, filename:String)
 
-#Classic
 GET            /api/contents                             controllers.Application.contents(type:String, path:String="/")
 GET            /api/contents/                            controllers.Application.contents(type:String, path:String="/")
 GET            /api/contents/*snb/checkpoints            controllers.Application.listCheckpoints(snb:String)

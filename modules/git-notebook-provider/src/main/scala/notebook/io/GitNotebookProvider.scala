@@ -112,7 +112,6 @@ class ConfigurableGitNotebookProvider(val gitProvider: GitProvider, commitMsgs: 
   }
 }
 
-// FIXME: move this as a separate class
 object ConfigUtils {
 
   implicit class ConfigOps(val config:Config) extends AnyRef {
@@ -120,14 +119,6 @@ object ConfigUtils {
     def tryGetString(path: String) : Try[String] = {
       if (config.hasPath(path)) {
         Success(config.getString(path))
-      } else {
-        Failure(new ConfigurationMissingException(path))
-      }
-    }
-
-    def tryGetPath(path: String): Try[Config] = {
-      if (config.hasPath(path)) {
-        Success(config.getConfig(path))
       } else {
         Failure(new ConfigurationMissingException(path))
       }

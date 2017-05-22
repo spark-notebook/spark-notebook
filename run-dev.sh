@@ -34,7 +34,6 @@ echo "Notebooks dir: $NOTEBOOKS_DIR . Config: $CONFIG_FILE"
 # "set offline := true"  \
 HADOOP_CONF_DIR=/etc/hadoop/conf:/etc/hive/conf sbt \
   -Dconfig.file=${CONFIG_FILE} \
-  -Dscala.version=2.10.6 \
   -Dwith.hive=true \
   -Dwith.parquet=true \
   -Dmanager.notebooks.override.sparkConf.spark.port.maxRetries=100 \

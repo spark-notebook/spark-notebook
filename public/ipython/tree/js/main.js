@@ -13,7 +13,6 @@ require([
     'tree/js/notebooklist',
     'tree/js/clusterlist',
     'tree/js/dockerlist',
-    '../javascripts/adalog/tree/projectlist',
     'tree/js/sessionlist',
     'tree/js/kernellist',
     'tree/js/terminallist',
@@ -35,7 +34,6 @@ require([
     notebooklist,
     clusterlist,
     dockerlist,
-    projectlist,
     sesssionlist,
     kernellist,
     terminallist,
@@ -88,12 +86,6 @@ require([
         new_notebook: new_buttons},
         common_options));
 
-    // SBT project generation
-    var project_list = new projectlist.ProjectList('#project_list', $.extend({
-        contents: contents},
-        common_options));
-    // end of SBT project generation
-
     var docker_list = new dockerlist.DockerList('#docker_list', $.extend({
             contents: contents,
             new_docker: null//new_buttons
@@ -110,7 +102,6 @@ require([
          *refresh immediately , then start interval
          */
         session_list.load_sessions();
-        project_list.load_list();
         cluster_list.load_list();
         if (terminal_list) {
             terminal_list.load_terminals();
@@ -150,7 +141,6 @@ require([
     IPython.page = page;
     IPython.notebook_list = notebook_list;
     IPython.cluster_list = cluster_list;
-    IPython.project_list = project_list;
     IPython.session_list = session_list;
     IPython.kernel_list = kernel_list;
     IPython.login_widget = login_widget;
