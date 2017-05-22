@@ -1,19 +1,24 @@
 machine:
   environment:
     SBT_OPTS: "-Xms512M -Xmx4G -XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC"
+    BUILD_OPTS: "-Dspark.resolver.search=false 'set offline := true'"
   java:
     version: oraclejdk8
 
 dependencies:
   override:
-    - sbt update # disables the auto-inferred 'play update' which do not work here
+    - echo "Also skipped 'sbt update' for faster runs" # disables the auto-inferred 'play update' which do not work here
   cache_directories:
     - "~/.ivy2"
     - "~/.sbt"
 
 test:
   override:
-    - export SKIP_WHEN_TRAVIS=yes; sbt -Dspark.version=2.0.2 -Dscala.version=2.10.6 -Dspark.resolver.search=false clean test
-    - export SKIP_WHEN_TRAVIS=yes; sbt -Dspark.version=2.1.1 -Dscala.version=2.10.6 -Dspark.resolver.search=false clean test
-    - export SKIP_WHEN_TRAVIS=yes; sbt -Dspark.version=2.0.2 -Dscala.version=2.11.8 -Dspark.resolver.search=false clean test
-    - export SKIP_WHEN_TRAVIS=yes; sbt -Dspark.version=2.1.1 -Dscala.version=2.11.8 -Dspark.resolver.search=false clean test
+    - export SKIP_WHEN_TRAVIS=yes; sbt -Dspark.version=2.0.2 -Dscala.version=2.10.6 $BUILD_OPTS clean test:
+        parallel: true
+    - export SKIP_WHEN_TRAVIS=yes; sbt -Dspark.version=2.1.1 -Dscala.version=2.10.6 $BUILD_OPTS clean test:
+        parallel: true
+    - export SKIP_WHEN_TRAVIS=yes; sbt -Dspark.version=2.0.2 -Dscala.version=2.11.8 $BUILD_OPTS clean test:
+        parallel: true
+    - export SKIP_WHEN_TRAVIS=yes; sbt -Dspark.version=2.1.1 -Dscala.version=2.11.8 $BUILD_OPTS clean test:
+        parallel: true
