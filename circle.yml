@@ -30,5 +30,5 @@ test:
     # FIXME: matrix-builds still not available even in CircleCI 2.0 Beta (yet). but improvement is planned
     # https://circleci.com/docs/1.0/parallel-manual-setup/
   override:
-    - case $CIRCLE_NODE_INDEX in 0) sbt $BUILD0 clean test ;; 1) sbt $BUILD1 clean test ;; 2) sbt $BUILD2 clean test ;; 3) sbt $BUILD3 clean test ;; esac:
+    - case $CIRCLE_NODE_INDEX in 0) sbt -v $BUILD0 clean test ;; 1) sbt -v $BUILD1 clean test ;; 2) sbt -v $BUILD2 clean test ;; 3) sbt -v $BUILD3 clean test ;; esac:
         parallel: true
