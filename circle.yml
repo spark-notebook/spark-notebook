@@ -1,7 +1,9 @@
 machine:
   environment:
     SKIP_WHEN_TRAVIS: "yes"
-    SBT_OPTS: "-Xms512M -Xmx4G -XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC"
+    # needed to override some bad defaults, otherwise 'sbt -v' runs with only 1GB mem
+    JAVA_OPTS: "-Xms512M -Xmx4G -XX:MaxMetaspaceSize=512M -XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC"
+    SBT_OPTS: "$JAVA_OPTS"
     BUILD_OPTS: "-Dspark.resolver.search=false" # TODO:  check 'set offline := true'
     SCALA2_10: "-Dscala.version=2.10.6"
     SCALA2_11: "-Dscala.version=2.11.8"
