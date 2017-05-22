@@ -524,11 +524,11 @@ class Job( val project: Project,
     val jars: Try[List[String]] = nbDepencyResolver.resolveJars(snb.metadata.get.customDeps.getOrElse(Nil), repo)
     LOG.info("Downloaded deps for job:\n" + jars)
     val libJars = jars.get.map { jar =>
-//      import scalax.io._
-//      import Resource._
-      val name = new File(jar).getName
-      // FIXME: fromFile(jar) copyDataTo fromFile(`root/spark-lib`(name))
-      name
+      val srcFile = new File(jar)
+      val destDir = `root/spark-lib`
+      val preserveFileDate = false
+      org.apache.commons.io.FileUtils.copyFileToDirectory(srcFile: File, destDir, preserveFileDate)
+      srcFile.getName
     }
     libJars
   }
