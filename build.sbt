@@ -276,7 +276,8 @@ lazy val subprocess = Project(id="subprocess", base=file("modules/subprocess"))
         akkaSlf4j,
         commonsIO,
         commonsExec,
-        log4j
+        log4j,
+        hadoopClient(defaultHadoopVersion)
       )
     }
   )

@@ -210,7 +210,44 @@ object BetterFork {
 
   private lazy val log = LoggerFactory.getLogger(getClass)
 
-  private[pfork] def main(args: Array[String]) {
+  private[pfork] def main(args: Array[String]): Unit = {
+    val maybeProxyUser: Option[String] = Some("vidma") // FIXME: set the proxyUser if any (!)
+    maybeProxyUser match {
+      case None =>
+        doMain(args)
+
+      case Some(proxyUserName) =>
+        // based on code from spark-submit, see https://github.com/apache/spark/pull/4405/files
+        // and https://github.com/apache/spark/blob/c622a87c/core/src/main/scala/org/apache/spark/deploy/SparkSubmit.scala#L154-L180
+        import org.apache.hadoop.security.UserGroupInformation
+        import java.security.PrivilegedExceptionAction
+        val proxyUser = UserGroupInformation.createProxyUser(proxyUserName, UserGroupInformation.getCurrentUser())
+        try {
+          proxyUser.doAs(new PrivilegedExceptionAction[Unit]() {
+            override def run(): Unit = {
+              doMain(args)
+            }
+          })
+        } catch {
+          case e: Exception =>
+            // Hadoop's AuthorizationException suppresses the exception's stack trace, which
+            // makes the message printed to the output by the JVM not very helpful. Instead,
+            // detect exceptions with empty stack traces here, and treat them differently.
+            if (e.getStackTrace().length == 0) {
+              // scalastyle:off println
+              // FIXME: printStream.println(s"ERROR: ${e.getClass().getName()}: ${e.getMessage()}")
+              println(s"ERROR: ${e.getClass().getName()}: ${e.getMessage()}")
+              // scalastyle:on println
+              // FIXME: exitFn(1)
+              throw e
+            } else {
+              throw e
+            }
+        }
+    }
+  }
+
+  private[pfork] def doMain(args: Array[String]): Unit = {
     val className = args(0)
     val parentPort = args(1).toInt
     val logLevel = args(2)
