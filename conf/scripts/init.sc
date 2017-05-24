@@ -1,4 +1,5 @@
 import java.io.{File, FileReader, BufferedReader}
+import java.lang.IllegalArgumentException
 import java.net.URI
 
 import notebook._
@@ -116,6 +117,8 @@ import scala.util.matching.Regex
   import org.apache.spark.ui.notebook.front.gadgets.SparkMonitor
   @transient var sparkMonitor:Option[SparkMonitor] = _
 
+  private def initScriptLogger = org.slf4j.LoggerFactory.getLogger("init.sc")
+
   def reset(appName:String=notebookName, lastChanges:(SparkConf=>Unit)=(_:SparkConf)=>()):Unit = {
     conf = new SparkConf()
     conf.setMaster(sparkMaster.getOrElse("local[*]"))
@@ -134,7 +137,19 @@ import scala.util.matching.Regex
     if (sparkSession != null) {
       sparkSession.stop()
     }
-    sparkSession = SparkSession.builder().config(conf).getOrCreate
+
+    var sessionBuilder = SparkSession.builder().config(conf)
+    // try enable hive support automatically, if notebook was built with Hive (i.e. hive libs available)
+    try {
+      sessionBuilder = sessionBuilder.enableHiveSupport()
+      initScriptLogger.info("Will instantiate SparkSession with Hive support")
+    } catch {
+      // we'll get IllegalArgumentException when Hive libs unavailable
+      case exception: IllegalArgumentException =>
+        initScriptLogger.warn(s"Creating a SparkSession without Hive support because:\n${exception.getMessage}")
+    }
+    sparkSession = sessionBuilder.getOrCreate
+
     sparkContext = sparkSession.sparkContext
     sparkMonitor = Some(new SparkMonitor(sparkContext))
     sparkMonitor.get.start
