@@ -176,7 +176,7 @@ case class Flow() extends Updatable with JsWorld[PipeComponent[_], JsValue] {
   def load(js:JsValue) = {
     val JsArray(array) = js
     val pcs = array.map { j =>
-      val JsString(name) = j \ "name"
+      val JsString(name) = (j \ "name").get
       val pc = if (name == "link") {//hackish :-S
         Some(new LinkPipe())
       } else {

@@ -8,11 +8,12 @@ name := MainProperties.name
 
 scalaVersion := defaultScalaVersion
 
-val SparkNotebookSimpleVersion = "0.8.0-SNAPSHOT"
+val SparkNotebookSimpleVersion = "0.9.0-SNAPSHOT"
 
 version in ThisBuild := SparkNotebookSimpleVersion
 
-play.PlayImport.PlayKeys.playDefaultPort := 9001
+import play.sbt.PlayImport._
+play.sbt.PlayImport.PlayKeys.playDefaultPort := 9001
 
 updateOptions := updateOptions.value.withCachedResolution(true)
 
@@ -116,6 +117,8 @@ resolvers in ThisBuild ++= Seq(
   Resolver.typesafeIvyRepo("snapshots"),
   "cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos",
   "mapr" at "http://repository.mapr.com/maven",
+  // for specs2 support in play tests
+  "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases",
   // docker
   "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
 ) ++ ((sparkResolver, searchSparkResolver, sparkVersion.value) match {
@@ -155,7 +158,10 @@ resolvers in ThisBuild ++= Seq(
   case (None, false, _) => Nil
 })
 
-EclipseKeys.skipParents in ThisBuild := false
+libraryDependencies += specs2 % Test
+
+// FIXME: see https://www.playframework.com/documentation/2.5.x/IDE#Eclipse
+// EclipseKeys.skipParents in ThisBuild := false
 
 compileOrder := CompileOrder.Mixed
 
@@ -196,6 +202,10 @@ dependencyOverrides += guava
 sharedSettings
 
 libraryDependencies ++= playDeps
+
+// P.S. Using static controllers with the static routes generator is not deprecated,
+// but it is recommended that you migrate to using classes with dependency injection.
+routesGenerator := StaticRoutesGenerator
 
 libraryDependencies ++= List(
   akka,
@@ -276,7 +286,9 @@ lazy val sbtProjectGenerator = Project(id = "sbt-project-generator", base = file
   )
 
 
-lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).enablePlugins(SbtWeb)
+lazy val sparkNotebook = project.in(file(".")).enablePlugins(PlayScala).enablePlugins(SbtWeb)
+  // https://www.playframework.com/documentation/2.5.x/SettingsLogger#Using-a-Custom-Logging-Framework
+  .disablePlugins(PlayLogback)
   .aggregate(sparkNotebookCore, gitNotebookProvider, sbtDependencyManager, sbtProjectGenerator, subprocess, observable, common, spark, kernel)
   .dependsOn(sparkNotebookCore, gitNotebookProvider, subprocess, observable, sbtProjectGenerator, common, spark, kernel)
   .settings(sharedSettings: _*)

@@ -21,16 +21,8 @@ node {
             sh "/usr/bin/sbt clean"
         }
 
-        stage('Test 2.10'){
-            sh "/usr/bin/sbt -Dspark.version=2.0.2 -Dscala.version=2.10.6 test"
-        }
-
         stage('Test 2.11'){
             sh "/usr/bin/sbt -Dspark.version=2.0.2 -Dscala.version=2.11.8 test"
-        }
-
-        stage('Test 2.10 spark 2.1.1'){
-            sh "/usr/bin/sbt -Dspark.version=2.1.1 -Dscala.version=2.10.6 test"
         }
 
         stage('Test 2.11 spark 2.1.1'){
