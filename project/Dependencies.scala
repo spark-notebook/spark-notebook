@@ -9,20 +9,21 @@ object Dependencies {
     module.excludeAll(ExclusionRule(organization = "org.specs2"))
 
   val playDeps = Seq(
-    "com.typesafe.play" %% "play" % "2.3.10" withSources() excludeAll(
+    "com.typesafe.play" %% "play" % "2.5.15" withSources() excludeAll(
       ExclusionRule("com.typesafe.akka"),
       ExclusionRule("com.google.guava")
-    )
-    ,
-    "com.typesafe.play" %% "play-test" % "2.3.10" % "test" withSources() excludeAll(
+    ),
+    "com.typesafe.play" %% "play-test" % "2.5.15" % "test" withSources() excludeAll(
       ExclusionRule("com.typesafe.akka"),
       ExclusionRule("com.google.guava"),
-      ExclusionRule(organization = "org.specs2"),
-      ExclusionRule(organization = "org.scalaz")
+      // FIXME: maybe not needed anymore
+      // ExclusionRule(organization = "org.specs2"),
+      // ExclusionRule(organization = "org.scalaz")
     )
   )
+  // FIXME
   val playJson = Seq(
-    "com.typesafe.play" %% "play-json" % "2.3.7" withSources() excludeAll(
+    "com.typesafe.play" %% "play-json" % "2.5.15" withSources() excludeAll(
       ExclusionRule("com.typesafe.akka"),
       ExclusionRule("com.google.guava")
       )
@@ -33,7 +34,7 @@ object Dependencies {
   val defaultHadoopVersion = sys.props.getOrElse("hadoop.version", "2.7.3")
 
   val akkaGroup = if (defaultHadoopVersion.startsWith("1")) "org.spark-project.akka" else "com.typesafe.akka"
-  val akkaVersion = if (defaultHadoopVersion.startsWith("1")) "2.3.4-spark" else "2.3.11"
+  val akkaVersion = if (defaultHadoopVersion.startsWith("1")) "2.3.4-spark" else "2.4.18"
   val akka = akkaGroup %% "akka-actor" % akkaVersion
   val akkaRemote = akkaGroup %% "akka-remote" % akkaVersion
   val akkaSlf4j = akkaGroup %% "akka-slf4j" % akkaVersion
@@ -45,12 +46,16 @@ object Dependencies {
   val defaultSparkVersion = sys.props.getOrElse("spark.version", "2.1.1")
 
   val sparkVersionTuple = defaultSparkVersion match { case extractVs(v, m, p) =>  (v.toInt, m.toInt, p.toInt)}
-  // we still see a few REPL bugs in 2.11, so use scala 2.10 as default even if spark 2.x is focusing on 2.11
-  val defaultScalaVersion = sys.props.getOrElse("scala.version", "2.10.6") match {
-    case x@scala_2_1X("0") => defaultSparkVersion match {
-      case spark_X_Y("2", _, _)                => "2.10.6"
-      case spark_X_Y(_, _, _)                  => x
-    }
+  val defaultScalaVersion = sys.props.getOrElse("scala.version", "2.11.8") match {
+    case x@scala_2_1X("0") =>
+      throw new IllegalArgumentException(
+        "Scala 2.10 is not supported anymore.\n" +
+        "Use scala 2.10 or an older version of spark-notebook (<= 0.8.x)"
+      )
+      //      defaultSparkVersion match {
+      //        case spark_X_Y("2", _, _)                => "2.10.6"
+      //        case spark_X_Y(_, _, _)                  => x
+      //      }
     case x@scala_2_1X("1") => defaultSparkVersion match {
       case spark_X_Y("2", _, _) => "2.11.8"
       case spark_X_Y(_, _, _) => x
@@ -126,6 +131,7 @@ object Dependencies {
   val commonsExec = "org.apache.commons" % "commons-exec" % "1.3" force()
   val commonsCodec = "commons-codec" % "commons-codec" % "1.10" force()
 
+  // FIXME: Play 2.4 uses guava 18.0 !!! play 2.5 uses 19.0.
   val defaultGuavaVersion = sys.props.getOrElse("guava.version", "16.0.1") // 16.0.1 for cassandra connector 1.6-M1
   val guava = "com.google.guava" % "guava" % defaultGuavaVersion force()
   val slf4jLog4j = "org.slf4j" % "slf4j-log4j12" % "1.7.7"

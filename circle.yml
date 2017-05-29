@@ -5,25 +5,23 @@ machine:
     JAVA_OPTS: "-Xms512M -Xmx4G -XX:MaxMetaspaceSize=512M -XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC"
     SBT_OPTS: "$JAVA_OPTS"
     BUILD_OPTS: "-Dspark.resolver.search=false" # TODO:  check 'set offline := true'
-    SCALA2_10: "-Dscala.version=2.10.6"
+    #    SCALA2_10: "-Dscala.version=2.10.6"
     SCALA2_11: "-Dscala.version=2.11.8"
     SPARK2_0: "-Dspark.version=2.0.2"
     SPARK2_1: "-Dspark.version=2.1.1"
-    BUILD0: "$SPARK2_0 $SCALA2_10 $BUILD_OPTS"
-    BUILD1: "$SPARK2_1 $SCALA2_10 $BUILD_OPTS"
-    BUILD2: "$SPARK2_0 $SCALA2_11 $BUILD_OPTS"
-    BUILD3: "$SPARK2_1 $SCALA2_11 $BUILD_OPTS"
+    #    BUILD0: "$SPARK2_0 $SCALA2_10 $BUILD_OPTS"
+    #    BUILD1: "$SPARK2_1 $SCALA2_10 $BUILD_OPTS"
+    BUILD_SPARK_2_0: "$SPARK2_0 $SCALA2_11 $BUILD_OPTS"
+    BUILD_SPARK_2_1: "$SPARK2_1 $SCALA2_11 $BUILD_OPTS"
   java:
     version: oraclejdk8
 
 dependencies:
   override:
     # disables the auto-inferred 'play update' which do not work here
-    # TODO: maybe pre-cache .sbt/.ivy for all build configurations (only first container is cached!)
-    - sbt $BUILD0 update
-    - sbt $BUILD1 update
-    - sbt $BUILD2 update
-    - sbt $BUILD3 update
+    # pre-cache stuff for all build configurations (only first container is cached!)
+    - sbt $BUILD_SPARK_2_0 update
+    - sbt $BUILD_SPARK_2_1 update
   cache_directories:
     - "~/.ivy2/cache"
     - "~/.sbt"
@@ -36,5 +34,5 @@ test:
     # FIXME: matrix-builds still not available even in CircleCI 2.0 Beta (yet). but improvement is planned
     # https://circleci.com/docs/1.0/parallel-manual-setup/
   override:
-    - case $CIRCLE_NODE_INDEX in 0) sbt $BUILD0 clean test ;; 1) sbt $BUILD1 clean test ;; 2) sbt $BUILD2 clean test ;; 3) sbt $BUILD3 clean test ;; esac:
+    - case $CIRCLE_NODE_INDEX in 0) sbt $BUILD_SPARK_2_0 clean test ;; 1) sbt $BUILD_SPARK_2_1 clean test ;; esac:
         parallel: true
