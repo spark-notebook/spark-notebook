@@ -50,13 +50,12 @@ class WebSocketKernelActor(
    */
   def receive = {
     case json: JsValue =>
-      val header = json \ "header"
-      val session = header \ "session"
+      val header = (json \ "header").get
+      val session = (header \ "session").get
       val msgType = header \ "msg_type"
       val content = json \ "content"
-      val channel = json \ "channel"
 
-      msgType match {
+      msgType.get match {
           // This msg is sent after Browser Kernel/session is ready, should do well for init
         case JsString("kernel_info_request") =>
           ws.send(header, session_id, "info", "shell",
@@ -71,23 +70,23 @@ class WebSocketKernelActor(
           )
           calcService.calcActor ! WebUIReadyNotification(ws)
         case JsString("interrupt_cell_request") =>
-          val JsString(cellId) = content \ "cell_id"
+          val JsString(cellId) = (content \ "cell_id").get
           calcService.calcActor ! InterruptCell(cellId)
         case JsString("interrupt_request") =>
           calcService.calcActor ! InterruptCalculator
         case JsString("execute_request") =>
-          val JsString(cellId) = content \ "cell_id"
-          val JsString(code) = content \ "code"
+          val JsString(cellId) = (content \ "cell_id").get
+          val JsString(code) = (content \ "code").get
           val execCounter = executionCounter.incrementAndGet()
           calcService.calcActor ! SessionRequest(header, session, ExecuteRequest(cellId, execCounter, code))
         case JsString("complete_request") =>
-          val JsString(line) = content \ "code"
-          val JsNumber(cursorPos) = content \ "cursor_pos"
+          val JsString(line) = (content \ "code").get
+          val JsNumber(cursorPos) = (content \ "cursor_pos").get
           calcService.calcActor ! SessionRequest(header, session, CompletionRequest(line, cursorPos.toInt))
         case JsString("inspect_request") =>
-          val JsString(code) = content \ "code"
-          val JsNumber(position) = content \ "cursor_pos"
-          val JsNumber(detailLevel) = content \ "detail_level" //0,1,2,3
+          val JsString(code) = (content \ "code").get
+          val JsNumber(position) = (content \ "cursor_pos").get
+          val JsNumber(detailLevel) = (content \ "detail_level").get //0,1,2,3
           calcService.calcActor ! SessionRequest(header, session, ObjectInfoRequest(code, position.toInt))
         case x => log.warning("Unrecognized websocket message: " + json)
       }

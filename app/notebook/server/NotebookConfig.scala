@@ -104,7 +104,7 @@ object CustomConf {
       case (k, JsNumber(v))    => k → v.toString
       case (k, o@JsObject(v))  => k → o.toString
       case (k, JsString(v))    => k → v
-      case (k, v:JsUndefined)  => k → s"Undefined: ${v.error}"
+      // FIXME: case (k, v:JsUndefined)  => k → s"Undefined: ${v.error}"
     }
 
 }

@@ -122,7 +122,7 @@ object ProjectConfigJsonSupport {
 
   implicit val readSecuredUrl:Reads[SecuredUrl] = (
     (JsPath \ SecuredUrl.Url).read[URL] and
-      (JsPath \ SecuredUrl.Authentication).read[Option[Credentials]]
+      (JsPath \ SecuredUrl.Authentication).readNullable[Credentials]
     )(SecuredUrl.apply _)
 
   implicit val writeSecuredUrl:Writes[SecuredUrl] = (

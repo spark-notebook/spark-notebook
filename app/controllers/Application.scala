@@ -345,8 +345,9 @@ object Application extends Controller {
     val customImports = Try((custom \ "customImports").as[List[String]]).toOption.filterNot(_.isEmpty)
     val customArgs = Try((custom \ "customArgs").as[List[String]]).toOption.filterNot(_.isEmpty)
 
+
     val customMetadata = (for {
-      j <- Try(custom \ "customSparkConf") if j.isInstanceOf[JsObject]
+      j <- Try((custom \ "customSparkConf").get) if j.isInstanceOf[JsObject]
     } yield j.asInstanceOf[JsObject]).toOption
 
     val fpath = notebookManager.newNotebook(
@@ -370,11 +371,11 @@ object Application extends Controller {
 
   def newNotebook(path: String, tryJson: Try[JsValue]) = {
     def findkey[T](x: JsValue, k: String)(init: Option[T])(implicit m: ClassTag[T]): Try[T] =
-      (x \ k) match {
-        case j: JsUndefined => Failure(new IllegalArgumentException("No " + k))
-        case JsNull => init.map(x => Success(x)).getOrElse(Failure(new IllegalStateException("Got JsNull ")))
-        case o if m.runtimeClass == o.getClass => Success(o.asInstanceOf[T])
-        case x => Failure(new IllegalArgumentException("Bad type: " + x))
+      (x \ k).toOption match {
+        case None => Failure(new IllegalArgumentException("No " + k))
+        //case None => init.map(x => Success(x)).getOrElse(Failure(new IllegalStateException("Got JsNull ")))
+        case Some(o) if m.runtimeClass == o.getClass => Success(o.asInstanceOf[T])
+        case Some(x) => Failure(new IllegalArgumentException("Bad type: " + x))
       }
 
     lazy val custom = for {
@@ -538,7 +539,7 @@ object Application extends Controller {
     Logger.info("SAVE → " + path + " with message (?) " + message)
 
     Try {
-      val notebookJsObject = (request.body \ "content").asInstanceOf[JsObject]
+      val notebookJsObject = (request.body \ "content").get.asInstanceOf[JsObject]
       NBSerializer.fromJson(notebookJsObject) match {
         case Some(notebook) =>
           Try {
@@ -561,7 +562,7 @@ object Application extends Controller {
       }
     }.recover {
       case e:ClassCastException =>
-        BadRequest("Not a notebook.")
+        BadRequest(s"Not a notebook.\n$e")
       case anyOther: Throwable =>
         Logger.error(anyOther.getMessage)
         InternalServerError
@@ -757,7 +758,7 @@ object Application extends Controller {
       onMessage: (E, ActorRef) => Unit,
       onClose: (Channel[E], ActorRef) => Unit,
       onError: (String, Input[E]) => Unit = (e: String, _: Input[E]) => Logger.error(e)
-    ): WebSocket[E, E] = {
+    ): WebSocket = {
       implicit val sys = kernelSystem.dispatcher
 
       val promiseIn = Promise[Iteratee[E, Unit]]()
