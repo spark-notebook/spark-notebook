@@ -45,7 +45,7 @@ object Dependencies {
       case spark_X_Y(_, _, _)                  => x
     }
     case x@scala_2_1X("1") => defaultSparkVersion match {
-      case spark_X_Y("2", _, _) => "2.10.6" // we still see a few REPL bugs in 2.11, otherwise "2.11.8"
+      case spark_X_Y("2", _, _) => "2.11.8" // we still see a few REPL bugs in 2.11, otherwise "2.11.8"
       case spark_X_Y(_, _, _) => x
     }
   }
