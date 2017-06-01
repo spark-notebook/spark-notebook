@@ -39,13 +39,14 @@ object Dependencies {
   val defaultSparkVersion = sys.props.getOrElse("spark.version", "2.0.1")
 
   val sparkVersionTuple = defaultSparkVersion match { case extractVs(v, m, p) =>  (v.toInt, m.toInt, p.toInt)}
-  val defaultScalaVersion = sys.props.getOrElse("scala.version", "2.11.8") match {
+  // we still see a few REPL bugs in 2.11, so still use scala 2.10 as default
+  val defaultScalaVersion = sys.props.getOrElse("scala.version", "2.10.6") match {
     case x@scala_2_1X("0") => defaultSparkVersion match {
       case spark_X_Y("2", _, _)                => "2.10.6"
       case spark_X_Y(_, _, _)                  => x
     }
     case x@scala_2_1X("1") => defaultSparkVersion match {
-      case spark_X_Y("2", _, _) => "2.11.8" // we still see a few REPL bugs in 2.11, otherwise "2.11.8"
+      case spark_X_Y("2", _, _) => "2.11.8"
       case spark_X_Y(_, _, _) => x
     }
   }
