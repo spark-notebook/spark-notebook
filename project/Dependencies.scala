@@ -24,7 +24,7 @@ object Dependencies {
 
   val rxScala = "io.reactivex" %% "rxscala" % "0.22.0"
 
-  val defaultHadoopVersion = sys.props.getOrElse("hadoop.version", "2.2.0")
+  val defaultHadoopVersion = sys.props.getOrElse("hadoop.version", "2.7.3")
 
   val akkaGroup = if (defaultHadoopVersion.startsWith("1")) "org.spark-project.akka" else "com.typesafe.akka"
   val akkaVersion = if (defaultHadoopVersion.startsWith("1")) "2.3.4-spark" else "2.3.11"
