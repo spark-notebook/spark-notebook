@@ -617,7 +617,8 @@ object Application extends Controller {
         path.split("/").toList.scanLeft(("", "")) {
           case ((accPath, accName), p) => (accPath + "/" + p, p)
         }.drop(1).map { case (p, x) =>
-          Crumb(controllers.routes.Application.dash(p.tail).url, x)
+          // FIXME Reverse routes don't work with cursier: Crumb(controllers.routes.Application.dash(p.tail).url, x)
+          Crumb("/notebooks/" + p.tail, x)
         }
       ),
       Some("dashboard")

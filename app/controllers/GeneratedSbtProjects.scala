@@ -58,7 +58,9 @@ object GeneratedSbtProjects extends Controller {
       val outputDir = (new File(projectManager.projectDir, generatedProject.outputDirectory.get)).toPath.toRealPath().toFile
       val projectName = generatedProject.name.get
 
-      val downloadUrl: String = controllers.routes.GeneratedSbtProjects.downloadFile(projectName, sourcesFileName).url
+      // FIXME coursier val downloadUrl: String = controllers.routes.GeneratedSbtProjects.downloadFile(projectName, sourcesFileName).url
+      val downloadUrl: String = s"/projects/$projectName/zip/$sourcesFileName"
+
       val logO: Option[Array[String]] = for {
         jobOut <- at(outputDir, "out")
       } yield fileContent(jobOut, from = 0)
