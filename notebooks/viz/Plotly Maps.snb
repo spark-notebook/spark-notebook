@@ -1,0 +1,196 @@
+{
+  "metadata" : {
+    "id" : "b0b9b128-4f54-425c-8536-0f7f7558ac1b",
+    "name" : "Plotly Maps",
+    "user_save_timestamp" : "1111-10-12T09:00:00.000Z",
+    "auto_save_timestamp" : "1970-01-01T03:00:00.000Z",
+    "language_info" : {
+      "name" : "scala",
+      "file_extension" : "scala",
+      "codemirror_mode" : "text/x-scala"
+    },
+    "trusted" : true,
+    "sparkNotebook" : null,
+    "customLocalRepo" : null,
+    "customRepos" : null,
+    "customDeps" : null,
+    "customImports" : null,
+    "customArgs" : null,
+    "customSparkConf" : null,
+    "customVars" : null
+  },
+  "cells" : [ {
+    "metadata" : {
+      "id" : "F228721650324F8DBAD83A7B5E819626"
+    },
+    "cell_type" : "markdown",
+    "source" : "# Bubble Maps"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "B6F54D790665495D8E4057FAA89AC971"
+    },
+    "cell_type" : "code",
+    "source" : "val spark = sparkSession\nimport spark.implicits._\nimport org.apache.spark.sql.functions._",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "id" : "FCB3D5F0ACDE41C087AC451E612785AE"
+    },
+    "cell_type" : "markdown",
+    "source" : "## Europe Bubble Map"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "C3E32F69033541C58431C1D8F3AEA53D"
+    },
+    "cell_type" : "code",
+    "source" : "val geoBubbles = Seq(\n  (\"FRA\", 20, 10), (\"DEU\", 30, 20), (\"RUS\", 15, 40), (\"ESP\", 10, 50)\n).toDF(\"loc\", \"bubbleSize\", \"color\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "29C22E15668A4E688BB4A52723D7867C"
+    },
+    "cell_type" : "code",
+    "source" : "CustomPlotlyChart(\n  geoBubbles, \n  layout=\"{title: 'Europe data', geo: {scope: 'europe', resolution: 50}}\",\n  dataOptions=\"\"\"{\n    type: 'scattergeo',\n    mode: 'markers',\n    marker: {\n        cmin: 0,\n        cmax: 50,\n        colorscale: 'Greens',\n        colorbar: {\n            title: 'Some rate',\n            ticksuffix: '%',\n            showticksuffix: 'last'\n        },\n        line: {\n            color: 'black'\n        }}}\"\"\",\n  dataSources=\"{locations: 'loc', marker: {size: 'bubbleSize', color: 'color'}}\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "id" : "9F79F9FF1FFC49B48016815911E26C88"
+    },
+    "cell_type" : "markdown",
+    "source" : "## USA Bubble Map"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "presentation" : {
+        "tabs_state" : "{\n  \"tab_id\": \"#tab1311696795-0\"\n}",
+        "pivot_chart_state" : "{\n  \"hiddenAttributes\": [],\n  \"menuLimit\": 200,\n  \"cols\": [],\n  \"rows\": [],\n  \"vals\": [],\n  \"exclusions\": {},\n  \"inclusions\": {},\n  \"unusedAttrsVertical\": 85,\n  \"autoSortUnusedAttrs\": false,\n  \"inclusionsInfo\": {},\n  \"aggregatorName\": \"Count\",\n  \"rendererName\": \"Table\"\n}"
+      },
+      "id" : "00119B23DAE34BD28E62C715A2BE6DEB"
+    },
+    "cell_type" : "code",
+    "source" : "val scale = 50000\nval populationData = scala.io.Source.fromURL(\"https://raw.githubusercontent.com/plotly/datasets/master/2014_us_cities.csv\")\n  .mkString.split(\"\\n\").drop(1)\n  .map{line => \n       val Array(city, pop, lat, lon) = line.split(\",\")\n       (city.trim, pop.trim.toInt, lat.trim.toDouble, lon.trim.toDouble)\n      }.toSeq\n  .toDF(\"city\", \"pop\", \"cityLat\", \"cityLon\")\n  .withColumn(\"citySize\", $\"pop\" / scale)\n  .withColumn(\"hoverText\", concat($\"city\", lit(\" pop: \"), $\"pop\"))\n  .drop(\"city\").drop(\"pop\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "69443643D0E64D34B2A7F129EC835548"
+    },
+    "cell_type" : "code",
+    "source" : "CustomPlotlyChart(\n  populationData, \n  layout=\"\"\"{\n        title: '2014 US City Populations',\n        showlegend: false,\n        geo: {\n            scope: 'usa',\n            projection: {\n                type: 'albers usa'\n            },\n            showland: true,\n            landcolor: 'rgb(217, 217, 217)',\n            subunitwidth: 1,\n            countrywidth: 1,\n            subunitcolor: 'rgb(255,255,255)',\n            countrycolor: 'rgb(255,255,255)'\n        },\n    }\"\"\",\n  dataOptions=\"\"\"{\n    type: 'scattergeo',\n    locationmode: 'USA-states',\n    hoverinfo: 'text',\n    marker: {\n        line: {\n            color: 'black',\n            width: 2\n        }}}\"\"\",\n  dataSources=\"{lat: 'cityLat', lon: 'cityLon', text: 'hoverText', marker: {size: 'citySize'}}\",\n  maxPoints=3500)",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "id" : "4D8308053BF444B386A63B7D940ADB04"
+    },
+    "cell_type" : "markdown",
+    "source" : "# Choropleth Maps"
+  }, {
+    "metadata" : {
+      "id" : "B4A41A716E3F433898AC89C96A37595C"
+    },
+    "cell_type" : "markdown",
+    "source" : "## World Choropleth Map (Robinson Projection)"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "E434B016D6534101A934A815873025AE"
+    },
+    "cell_type" : "code",
+    "source" : "val alcoholConsumption = scala.io.Source.fromURL(\"https://raw.githubusercontent.com/plotly/datasets/master/2010_alcohol_consumption_by_country.csv\")\n  .mkString.split(\"\\n\").drop(1)\n  .map{line => \n       val Array(location, alcohol) = line.split(\",\")\n       (location.trim, alcohol.trim.toDouble)\n      }.toSeq\n  .toDF(\"location\", \"alcohol\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "EBE171F4464441C1840E1EDDACAB3DAE"
+    },
+    "cell_type" : "code",
+    "source" : "CustomPlotlyChart(\n  alcoholConsumption, \n  layout=\"\"\"{\n        title: 'Pure alcohol consumption among adults (age 15+) in 2010',\n        geo: {\n            projection: {\n                type: 'robinson'\n            }\n        }\n    }\"\"\",\n  dataOptions=\"\"\"{\n    type: 'choropleth',\n    locationmode: 'country names',\n    hoverinfo: 'text',\n    autocolorscale: true}\"\"\",\n  dataSources=\"{locations: 'location', z: 'alcohol', text: 'location'}\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "id" : "1854F2EAEC9F477F8830065C6B7E6E6C"
+    },
+    "cell_type" : "markdown",
+    "source" : "## USA Choropleth Map"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "BB58E2CC31DC40AF89074939C17A11D9"
+    },
+    "cell_type" : "code",
+    "source" : "val exportData = scala.io.Source.fromURL(\"https://raw.githubusercontent.com/plotly/datasets/master/2011_us_ag_exports.csv\")\n  .mkString.split(\"\\n\").drop(1)\n  .map{line => \n       val Array(code, state, _, total, _*) = line.split(\",\")\n       (code.trim, state.trim, total.trim.toDouble)\n      }.toSeq\n  .toDF(\"code\", \"state\", \"totalExport\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "1EC85A864BCD4B25A999DF0B3A33557B"
+    },
+    "cell_type" : "code",
+    "source" : "CustomPlotlyChart(\n  exportData, \n  layout=\"\"\"{\n        title: '2011 US Agriculture Exports by State',\n        geo: {\n            scope: 'usa',\n            showlakes: true,\n            lakecolor: 'rgb(255,255,255)'\n        }\n    }\"\"\",\n  dataOptions=\"\"\"{\n    type: 'choropleth',\n    locationmode: 'USA-states',\n    colorscale: 'Hot',\n    reversescale: true,\n    colorbar: {\n        title: 'Millions USD',\n        thickness: 8.0\n    },\n    marker: {\n        line:{\n            color: 'rgb(255,255,255)',\n           width: 2\n        }\n    }}\"\"\",\n  dataSources=\"{locations: 'code', z: 'totalExport', text: 'state'}\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "id" : "5D88BDFDD581490289B8318B2A40EBDB"
+    },
+    "cell_type" : "markdown",
+    "source" : "# Mapbox"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "284B1AEFFC5244948EDE8CE9E6909993"
+    },
+    "cell_type" : "code",
+    "source" : "val mapboxAccessToken = sys.env(\"MAPBOX_TOKEN\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "id" : "FBBE8B7B198E491D848FCF209B74332F"
+    },
+    "cell_type" : "markdown",
+    "source" : "## Multiple Markers"
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "5F733C4411124CEE8900883DE4C5E746"
+    },
+    "cell_type" : "code",
+    "source" : "val cafeData = Seq(\n  (\"38.91427\", \"-77.02827\", \"The coffee bar\"),\n  (\"38.91538\", \"-77.02013\", \"Bistro Bohem\"),\n  (\"38.91458\", \"-77.03155\", \"Black Cat\"),\n  (\"38.92239\", \"-77.04227\", \"Snap\"),\n  (\"38.93222\", \"-77.02854\", \"Columbia Heights Coffee\"),\n  (\"38.90842\", \"-77.02419\", \"Azi's Cafe\"),\n  (\"38.91931\", \"-77.02518\", \"Blind Dog Cafe\"),\n  (\"38.93260\", \"-77.03304\", \"Le Caprice\"),\n  (\"38.91368\", \"-77.04509\", \"Filter\"),\n  (\"38.88516\", \"-76.99656\", \"Peregrine\"),\n  (\"38.921894\", \"-77.042438\", \"Tryst\"),\n  (\"38.93206\", \"-77.02821\", \"The Coupe\"),\n  (\"38.91275\", \"-77.01239\", \"Big Bear Cafe\")\n).toDF(\"lat\", \"lon\", \"text\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "6C3C1EAD76B94D2D8A4B2AC22E341221"
+    },
+    "cell_type" : "code",
+    "source" : "CustomPlotlyChart(\n  cafeData, \n  layout=\"\"\"{\n      title: \"Washington D.C. Cafe\",\n      height: 600,\n      mapbox: {\n        center: {\n          lat: 38.90,\n          lon: -77.01\n        },\n        zoom: 11.0,\n        style: 'streets'\n      }\n    }\"\"\",\n  dataOptions=\"\"\"{\n    type: 'scattermapbox',\n    hovermode: 'closest',\n    mode: 'markers',\n    marker: {\n      size: 11\n    }}\"\"\",\n  dataSources=\"{lat: 'lat', lon: 'lon', text: 'text'}\",\n  extraOptions=s\"{mapboxAccessToken: '$mapboxAccessToken'}\")",
+    "outputs" : [ ]
+  } ],
+  "nbformat" : 4
+}

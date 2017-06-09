@@ -15,6 +15,7 @@ case class CustomPlotlyChart[C:ToPoints:Sampler](
   layout: String = "{}",
   dataOptions: String = "{}",
   dataSources: String = "{}",
+  extraOptions: String = "{}",
   override val sizes:(Int, Int)=(600, 400),
   maxPoints:Int = DEFAULT_MAX_POINTS
 ) extends Chart[C](originalData, maxPoints) {
@@ -23,7 +24,7 @@ case class CustomPlotlyChart[C:ToPoints:Sampler](
 
   override val scripts = List(Script( "magic/customPlotlyChart",
     Json.obj(
-      "js" → s"var layout = $layout; var dataSources=$dataSources; var dataOptions = $dataOptions",
+      "js" → s"var layout = $layout; var dataSources=$dataSources; var dataOptions = $dataOptions; var extraOptions = $extraOptions",
       "headers" → headers,
       "height" → sizes._2)))
 }

@@ -5,7 +5,7 @@ define([
 ], ($, _, Plotly) ->
   (dataO, container, options) ->
 
-    formatData = (dataPoints, dataSources, dataOptions) ->
+    formatData = (dataPoints, dataSources, dataOptions, extraOptions) ->
         splitBy = dataOptions.splitBy
         delete dataOptions.splitBy
         data = if splitBy? then {} else {unk: {}}
@@ -61,11 +61,13 @@ define([
           console.log(error)
 
         plotlyData = formatData(data, dataSources, dataOptions)
-
+        extras = {displayLogo: false}
+        for option, value of extraOptions
+          extras[option] = value
         chart = Plotly.newPlot(chart_container.attr("id"),
                                plotlyData,
                                layout,
-                                {displaylogo: false})
+                               extras)
 
     plot(@dataInit)
 
