@@ -121,7 +121,7 @@
       "id" : "EBE171F4464441C1840E1EDDACAB3DAE"
     },
     "cell_type" : "code",
-    "source" : "CustomPlotlyChart(\n  alcoholConsumption, \n  layout=\"\"\"{\n        title: 'Pure alcohol consumption among adults (age 15+) in 2010',\n        geo: {\n            projection: {\n                type: 'robinson'\n            }\n        }\n    }\"\"\",\n  dataOptions=\"\"\"{\n    type: 'choropleth',\n    locationmode: 'country names',\n    hoverinfo: 'text',\n    autocolorscale: true}\"\"\",\n  dataSources=\"{locations: 'location', z: 'alcohol', text: 'location', marker: {size: 'citySize'}}\")",
+    "source" : "CustomPlotlyChart(\n  alcoholConsumption, \n  layout=\"\"\"{\n        title: 'Pure alcohol consumption among adults (age 15+) in 2010',\n        geo: {\n            projection: {\n                type: 'robinson'\n            }\n        }\n    }\"\"\",\n  dataOptions=\"\"\"{\n    type: 'choropleth',\n    locationmode: 'country names',\n    hoverinfo: 'text',\n    autocolorscale: true}\"\"\",\n  dataSources=\"{locations: 'location', z: 'alcohol', text: 'location'}\")",
     "outputs" : [ ]
   }, {
     "metadata" : {
@@ -159,7 +159,7 @@
     "metadata" : {
       "trusted" : true,
       "input_collapsed" : false,
-      "collapsed" : true,
+      "collapsed" : false,
       "id" : "284B1AEFFC5244948EDE8CE9E6909993"
     },
     "cell_type" : "code",
