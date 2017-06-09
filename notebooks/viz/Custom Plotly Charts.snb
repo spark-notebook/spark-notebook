@@ -1,5 +1,6 @@
 {
   "metadata" : {
+    "id" : "3e35c4c1-fcc9-4ab6-9f6d-6aedd16060d1",
     "name" : "Custom Plotly Charts",
     "user_save_timestamp" : "1111-10-12T09:00:00.000Z",
     "auto_save_timestamp" : "1970-01-01T03:00:00.000Z",
@@ -9,12 +10,14 @@
       "codemirror_mode" : "text/x-scala"
     },
     "trusted" : true,
+    "sparkNotebook" : null,
     "customLocalRepo" : null,
     "customRepos" : null,
     "customDeps" : null,
     "customImports" : null,
     "customArgs" : null,
-    "customSparkConf" : null
+    "customSparkConf" : null,
+    "customVars" : null
   },
   "cells" : [ {
     "metadata" : {
@@ -425,6 +428,16 @@
     },
     "cell_type" : "code",
     "source" : "val measurement = Seq(\n  (1, 6, 1), (3, 10, 3), (5, 2, 2)\n).toDF(\"x\", \"value\", \"error\")",
+    "outputs" : [ ]
+  }, {
+    "metadata" : {
+      "trusted" : true,
+      "input_collapsed" : false,
+      "collapsed" : false,
+      "id" : "CC7A5B95A6A14DC691604B70701E1428"
+    },
+    "cell_type" : "code",
+    "source" : "",
     "outputs" : [ ]
   }, {
     "metadata" : {
