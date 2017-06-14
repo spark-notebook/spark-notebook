@@ -19,12 +19,15 @@ machine:
 dependencies:
   override:
     # disables the auto-inferred 'play update' which do not work here
-    # TODO: maybe pre-cache .sbt/.ivy for all build configurations (only first container is cached!)
-    - echo "Also skipped 'sbt update' for possibly faster runs"
+    # pre-cache stuff for all build configurations (only first container is cached!)
+    # TODO: shall we disable this once already cached or not (?)
+    - sbt $BUILD_SPARK_2_0 update
+    - sbt $BUILD_SPARK_2_1 update
   cache_directories:
     - "~/.ivy2/cache"
     - "~/.sbt"
     - "~/.m2"
+    - ".coursier/cache"
 
 test:
   override:
@@ -32,5 +35,5 @@ test:
     # FIXME: matrix-builds still not available even in CircleCI 2.0 Beta (yet). but improvement is planned
     # https://circleci.com/docs/1.0/parallel-manual-setup/
   override:
-    - case $CIRCLE_NODE_INDEX in 0) sbt -v $BUILD_SPARK_2_0 clean test ;; 1) sbt -v $BUILD_SPARK_2_1 clean test ;; esac:
+    - case $CIRCLE_NODE_INDEX in 0) sbt $BUILD_SPARK_2_0 clean test ;; 1) sbt $BUILD_SPARK_2_1 clean test ;; esac:
         parallel: true
