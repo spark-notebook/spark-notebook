@@ -158,6 +158,8 @@ resolvers in ThisBuild ++= Seq(
   case (None, false, _) => Nil
 })
 
+libraryDependencies += specs2 % Test
+
 // FIXME: see https://www.playframework.com/documentation/2.5.x/IDE#Eclipse
 // EclipseKeys.skipParents in ThisBuild := false
 
