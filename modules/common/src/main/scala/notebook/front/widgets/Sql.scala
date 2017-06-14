@@ -1,15 +1,15 @@
 package notebook.front.widgets
 
-import play.api.Logger
 import play.api.libs.json._
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import notebook._
 import notebook.front._
 import notebook.JsonCodec._
+import notebook.util.Logging
 
 import scala.util._
 
-class Sql(sqlContext: SQLContext, call: String) extends Widget with Utils {
+class Sql(sqlContext: SQLContext, call: String) extends Widget with Utils with Logging {
 
   private[this] val sqlInputRegex = "(\\{[^\\}]+\\})".r
   private[this] val sqlTypedInputRegex = "^\\{([^:]+):(.*)\\}$".r
@@ -48,11 +48,11 @@ class Sql(sqlContext: SQLContext, call: String) extends Widget with Utils {
       val ob = p._2.widget.currentData.observable.inner //.doOnEach(x => Logger.debug("########:"+x.toString))
     val o: RxObservable[(String, Any)] = ob.map((d: Any) => (p._2.name, d))
       o.doOnError { t =>
-        Logger.warn(s"$p._1 is errored with ${t.getMessage}")
+        logWarn(s"$p._1 is errored with ${t.getMessage}")
         //t.printStackTrace()
       }
       o.doOnCompleted(
-        Logger.warn(s"$p._1 is completed")
+        logWarn(s"$p._1 is completed")
       )
       o
     }
@@ -97,7 +97,7 @@ class Sql(sqlContext: SQLContext, call: String) extends Widget with Utils {
     val tried: Option[Try[DataFrame]] = Some(Try {
       sqlContext.sql(c)
     })
-    Logger.info(" Tried => " + tried.toString)
+    logInfo(" Tried => " + tried.toString)
     subject.onNext(tried)
     sql(tried)
     tried
@@ -118,7 +118,7 @@ class Sql(sqlContext: SQLContext, call: String) extends Widget with Utils {
             val r = f(s)
             result.onNext(r)
           case x =>
-            Logger.error("ARRrrggllll → " + x.toString)
+            logError("ARRrrggllll → " + x.toString)
         }
       }
     subject.subscribe(sub)
@@ -140,13 +140,13 @@ class Sql(sqlContext: SQLContext, call: String) extends Widget with Utils {
     }
 
     override def onError(error: Throwable): Unit = {
-      Logger.warn(s"Merged errored with ${error.getMessage}")
+      logWarn(s"Merged errored with ${error.getMessage}")
       //error.printStackTrace()
       super.onError(error)
     }
 
     override def onCompleted(): Unit = {
-      Logger.warn(s"Merged completed!")
+      logWarn(s"Merged completed!")
       super.onCompleted()
     }
   })

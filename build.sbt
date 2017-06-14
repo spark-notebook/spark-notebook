@@ -313,7 +313,7 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(PlayScala).enablePl
   )
 
 lazy val subprocess = Project(id="subprocess", base=file("modules/subprocess"))
-  .settings(libraryDependencies ++= playDeps)
+  .settings(libraryDependencies ++= playJson)
   .settings(
     libraryDependencies ++= {
       Seq(
@@ -340,6 +340,7 @@ lazy val observable = Project(id = "observable", base = file("modules/observable
       akkaRemote,
       akkaSlf4j,
       slf4jLog4j,
+      commonsCodec,
       rxScala
     )
   )
