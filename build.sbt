@@ -287,6 +287,8 @@ lazy val sbtProjectGenerator = Project(id = "sbt-project-generator", base = file
 
 
 lazy val sparkNotebook = project.in(file(".")).enablePlugins(PlayScala).enablePlugins(SbtWeb)
+  // https://www.playframework.com/documentation/2.5.x/SettingsLogger#Using-a-Custom-Logging-Framework
+  .disablePlugins(PlayLogback)
   .aggregate(sparkNotebookCore, gitNotebookProvider, sbtDependencyManager, sbtProjectGenerator, subprocess, observable, common, spark, kernel)
   .dependsOn(sparkNotebookCore, gitNotebookProvider, subprocess, observable, sbtProjectGenerator, common, spark, kernel)
   .settings(sharedSettings: _*)
