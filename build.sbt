@@ -81,6 +81,10 @@ parallelExecution in Test in ThisBuild := false
 // these java options are for the forked test JVMs
 javaOptions in ThisBuild ++= Seq("-Xmx512M", "-XX:MaxPermSize=128M")
 
+javaOptions in Test ++= Seq("-Xmx512M", "-XX:MaxPermSize=128M", "-Dconfig.file=conf/test.conf", "-Dnet.sf.ehcache.disabled=true")
+fork in ThisBuild := true
+
+
 val viewerMode = Option(sys.env.getOrElse("VIEWER_MODE", "false")).get.toBoolean
 
 val buildInfoValues = Seq[BuildInfoKey](
