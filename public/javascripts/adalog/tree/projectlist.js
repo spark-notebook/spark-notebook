@@ -9,8 +9,9 @@ define([
 
   var ProjectList = function (selector, options) {
     this.selector = selector;
-    this.enabled = options.sbt_project_gen_enabled || utils.get_body_data("sbt_project_gen_enabled");
-    if (this.enabled === "true") {
+    this.enabled = options.sbt_project_gen_enabled === "true" || utils.get_body_data("sbt_project_gen_enabled") === "true";
+    console.log("is Sbt project generation enabled:" + this.enabled);
+    if (this.enabled) {
       this.element = $(selector);
       this.style();
       this.bind_events();
