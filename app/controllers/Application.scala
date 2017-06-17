@@ -50,8 +50,8 @@ object Application extends Controller {
 
   private lazy val config = AppUtils.notebookConfig
   private lazy val notebookManager = AppUtils.notebookManager
-  private val kernelIdToCalcService = collection.mutable.Map[String, CalcWebSocketService]()
-  private val kernelIdToObservableActor = collection.mutable.Map[String, ActorRef]()
+  private val kernelIdToCalcService = new collection.concurrent.TrieMap[String, CalcWebSocketService]()
+  private val kernelIdToObservableActor = new collection.concurrent.TrieMap[String, ActorRef]()
   private val clustersActor = kernelSystem.actorOf(Props(NotebookClusters(AppUtils.clustersConf)))
 
   private implicit def kernelSystem: ActorSystem = AppUtils.kernelSystem
