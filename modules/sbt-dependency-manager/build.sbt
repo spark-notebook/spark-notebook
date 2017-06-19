@@ -36,6 +36,11 @@ libraryDependencies <++= scalaBinaryVersion {
   case "2.11" => ("com.ning" % "async-http-client" % "[1.6.5, 1.6.5]" force() exclude("org.jboss.netty", "netty"))::Nil
 }
 
+libraryDependencies ++= Seq(
+  "io.get-coursier" %% "coursier" % "1.0.0-RC3",
+  "io.get-coursier" %% "coursier-cache" % "1.0.0-RC3"
+)
+
 libraryDependencies ++= depsToDownloadDeps(scalaBinaryVersion.value, sbtVersion.value)
 
 libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.12"
