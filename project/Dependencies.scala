@@ -51,15 +51,40 @@ object Dependencies {
     }
   }
 
-  def sparkExclusions =  Seq(
+  def sparkCore(v: String) = "org.apache.spark" %% "spark-core" % v excludeAll(
+    ExclusionRule("org.apache.hadoop"),
+    ExclusionRule("org.apache.ivy", "ivy")
+  )
+  def sparkYarn(v: String) = "org.apache.spark" %% "spark-yarn" % v excludeAll(
+      ExclusionRule("org.apache.hadoop"),
+      ExclusionRule("javax.servlet", "servlet-api"),
+      ExclusionRule("javax.servlet", "javax.servlet-api"),
+      ExclusionRule("org.mortbay.jetty", "servlet-api"),
+      ExclusionRule("org.apache.ivy", "ivy")
+    )
+
+  val defaultWithHive = sys.props.getOrElse("with.hive", "false").toBoolean
+
+  def sparkHive(v: String) = "org.apache.spark" %% "spark-hive" % v excludeAll(
     ExclusionRule("org.apache.hadoop"),
     ExclusionRule("org.apache.ivy", "ivy"),
     ExclusionRule("javax.servlet", "servlet-api"),
     ExclusionRule("javax.servlet", "javax.servlet-api"),
     ExclusionRule("org.mortbay.jetty", "servlet-api")
   )
+  def sparkRepl(v: String) = "org.apache.spark" %% "spark-repl" % v excludeAll (
+      ExclusionRule("org.apache.hadoop"),
+      ExclusionRule("javax.servlet", "servlet-api"),
+      ExclusionRule("javax.servlet", "javax.servlet-api")
+    )
 
-  def hadoopExclusions = Seq(
+  def sparkSQL(v: String) = "org.apache.spark" %% "spark-sql" % v excludeAll(
+    ExclusionRule("org.apache.hadoop"),
+    ExclusionRule("javax.servlet", "servlet-api"),
+    ExclusionRule("javax.servlet", "javax.servlet-api")
+  )
+
+  def hadoopClient(v: String) = "org.apache.hadoop" % "hadoop-client" % v excludeAll(
     ExclusionRule("org.apache.commons", "commons-exec"),
     ExclusionRule("commons-codec", "commons-codec"),
     ExclusionRule("javax.servlet", "servlet-api"),
@@ -67,21 +92,13 @@ object Dependencies {
     ExclusionRule("com.google.guava", "guava")
   )
 
-  def sparkCore(v: String) = "org.apache.spark" %% "spark-core" % v excludeAll(sparkExclusions: _*)
-
-  def sparkYarn(v: String) = "org.apache.spark" %% "spark-yarn" % v excludeAll(sparkExclusions: _*)
-
-  val defaultWithHive = sys.props.getOrElse("with.hive", "false").toBoolean
-
-  def sparkHive(v: String) = "org.apache.spark" %% "spark-hive" % v excludeAll(sparkExclusions: _*)
-
-  def sparkRepl(v: String) = "org.apache.spark" %% "spark-repl" % v excludeAll(sparkExclusions: _*)
-
-  def sparkSQL(v: String) = "org.apache.spark" %% "spark-sql" % v excludeAll(sparkExclusions: _*)
-
-  def hadoopClient(v: String) = "org.apache.hadoop" % "hadoop-client" % v excludeAll(hadoopExclusions: _*)
-
-  def yarnProxy(v: String) = "org.apache.hadoop" % "hadoop-yarn-server-web-proxy" % v excludeAll(hadoopExclusions: _*)
+  def yarnProxy(v: String) = "org.apache.hadoop" % "hadoop-yarn-server-web-proxy" % v excludeAll(
+      ExclusionRule("org.apache.commons", "commons-exec"),
+      ExclusionRule("commons-codec", "commons-codec"),
+      ExclusionRule("javax.servlet", "servlet-api"),
+      ExclusionRule("javax.servlet", "javax.servlet-api"),
+      ExclusionRule("com.google.guava", "guava")
+  )
 
   val defaultJets3tVersion = sys.props.getOrElse("jets3t.version", "0.7.1")
 
