@@ -23,6 +23,7 @@ import notebook.front._
 import notebook.front.widgets._
 import notebook.repl.{ReplCommand, command_interpreters}
 import notebook.repl.command_interpreters.combineIntepreters
+import notebook.util.CoursierDeps
 
 
 /**
@@ -95,7 +96,7 @@ class ReplCalculator(
 
   val (depsJars, depsScript):(List[String],(String, ()=>String)) = customDeps.map { d =>
     val customDeps = d.mkString("\n")
-    val deps = Deps.script(customDeps, remotes, repo, notebook.BuildInfo.xSparkVersion).toOption.getOrElse(List.empty[String])
+    val deps = CoursierDeps.script(customDeps, remotes, repo, notebook.BuildInfo.xSparkVersion).toOption.getOrElse(List.empty[String])
     (deps, ("deps", () => s"""
                     |val CustomJars = ${ deps.mkString("Array(\"", "\",\"", "\")").replace("\\","\\\\") }
                     |
