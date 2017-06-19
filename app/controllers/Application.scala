@@ -151,7 +151,8 @@ object Application extends Controller {
     val existing = for {
       path <- notebookPath
       (id, kernel) <- KernelManager.atPath(path)
-    } yield (id, kernel, kernelIdToCalcService(id))
+      calcService <- kernelIdToCalcService.get(id)
+    } yield (id, kernel, calcService)
 
     val (kId, kernel, service) = existing.getOrElse {
       Logger.info(s"Starting kernel/session because nothing for $kernelId and $notebookPath")
