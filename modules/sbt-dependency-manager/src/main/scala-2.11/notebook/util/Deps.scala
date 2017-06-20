@@ -150,12 +150,13 @@ object Deps extends java.io.Serializable {
     case ""  => None
     case x   => Some(x)
   }
+
   def parseExclude(s:String):Option[ArtifactSelector] = {
     s.headOption.filter(_ == '-').map(_ => s.dropWhile(_=='-').trim).flatMap { line =>
       line.replaceAll("\"", "") match {
-        case PATTERN_MODULEID_1(g, "", a, v) =>
+        case PATTERN_MODULEID_1(g, "", a, v, _) =>
           Some(ArtifactSelector(parsePartialExclude(g), parsePartialExclude(a), parsePartialExclude(v)))
-        case PATTERN_MODULEID_1(g, "%", a, v) =>
+        case PATTERN_MODULEID_1(g, "%", a, v, _) =>
           Some(ArtifactSelector(parsePartialExclude(g), Some(a+"_2.11"), parsePartialExclude(v)))
         case PATTERN_COORDINATE_1(g, a, v) =>
           Some(ArtifactSelector(parsePartialExclude(g), parsePartialExclude(a), parsePartialExclude(v)))
