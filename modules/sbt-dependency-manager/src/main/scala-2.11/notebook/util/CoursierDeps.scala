@@ -14,7 +14,6 @@ import scalaz.concurrent.Task
 
 // FIXME: do we need a unique tmp dir per Kernel session !?
 // FIXME: remove aether leftovers
-// FIXME: handle classifiers, exclusions (need to rewrite everything)
 object CoursierDeps {
 
 
@@ -35,14 +34,32 @@ object CoursierDeps {
              remotes: List[RemoteRepository],
              repo: java.io.File,
              sparkVersion: String): Try[List[String]] = {
-    // convert aether crap to coursier
-    val (includes, excludes) = Deps.parse(cp, sparkVersion)
-    val repositories = makeRepositories(remotes)
-    val artifacts = includes.map { dep =>
-      coursier.Dependency(Module(organization = dep.group, name = dep.artifact), dep.version)
-    }
+    val (repositories, artifacts) = parseCoursierDependencies(cp, remotes, sparkVersion)
 
     fetchLocalJars(repositories, artifacts)
+  }
+
+  /**
+    * convert aether crap to coursier
+    * */
+  private[util] def parseCoursierDependencies(cp: String, remotes: List[RemoteRepository], sparkVersion: String): (Seq[Repository], Set[Dependency]) = {
+    val (includes, excludes) = Deps.parse(cp, sparkVersion)
+    val repositories = makeRepositories(remotes)
+    // P.S. this excludes transitive deps ignoring the `version`, however it's fine
+    // as sbt-dependency-manager in 2.10 also ignores it...
+    val exclusions: Set[(String, String)] = excludes
+      .filter(rule => rule.group.isDefined || rule.artifact.isDefined)
+      .map(rule => (rule.group.getOrElse("*"), rule.artifact.getOrElse("*")))
+
+    val artifacts = includes.map { dep =>
+      coursier.Dependency(
+        module = Module(organization = dep.group, name = dep.artifact),
+        version = dep.version,
+        exclusions = exclusions,
+        attributes = Attributes(classifier = dep.classifier.getOrElse(""))
+      )
+    }
+    (repositories, artifacts)
   }
 
   private def fetchLocalJars(repositories: Seq[Repository], deps: Set[Dependency]): Try[List[String]] = {

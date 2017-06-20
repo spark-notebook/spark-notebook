@@ -47,8 +47,7 @@ object Repos extends java.io.Serializable {
     mavenLocalDir.toURI.toString
   )
 
-  val config = ConfigFactory.load().getConfig("remote-repos")
-  val proxy = Try(config.getConfig("proxy")).toOption
+  val proxy = Try(ConfigFactory.load().getConfig("remote-repos").getConfig("proxy")).toOption
 
   // helper
   def apply(id:String, name:String, url:String, username:Option[String] = None, password:Option[String] = None) = {
@@ -78,7 +77,7 @@ object Repos extends java.io.Serializable {
   //alias for clarity
   def s3(id:String, name:String, url:String, key:String, secret:String) = Repos.apply(id, name, url, Some(key), Some(secret))
 
-  private[this] def mavenLocalDir: File = {
+  protected[utils] def mavenLocalDir: File = {
     val userHome = new File(System.getProperty("user.home"))
     def loadHomeFromSettings(f: () => File): Option[File] =
       try {
