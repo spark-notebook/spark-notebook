@@ -5,14 +5,20 @@ object Dependencies {
 
   val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 
+  def excludeSpecs2(module: ModuleID): ModuleID =
+    module.excludeAll(ExclusionRule(organization = "org.specs2"))
+
   val playDeps = Seq(
     "com.typesafe.play" %% "play" % "2.3.10" withSources() excludeAll(
       ExclusionRule("com.typesafe.akka"),
       ExclusionRule("com.google.guava")
-    ),
+    )
+    ,
     "com.typesafe.play" %% "play-test" % "2.3.10" % "test" withSources() excludeAll(
       ExclusionRule("com.typesafe.akka"),
-      ExclusionRule("com.google.guava")
+      ExclusionRule("com.google.guava"),
+      ExclusionRule(organization = "org.specs2"),
+      ExclusionRule(organization = "org.scalaz")
     )
   )
   val playJson = Seq(
