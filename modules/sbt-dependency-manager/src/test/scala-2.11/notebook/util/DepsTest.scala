@@ -4,7 +4,7 @@ import org.sonatype.aether.artifact.Artifact
 import org.sonatype.aether.util.artifact.DefaultArtifact
 import org.scalatest._
 
-class SimpleSpec extends FlatSpec with Matchers with BeforeAndAfterAll with Inside {
+class DepsTest extends FlatSpec with Matchers with BeforeAndAfterAll with Inside {
   val sparkVersion = "10.0.0"
   val groupId = "com.example"
   val artifactId = "art"
@@ -47,4 +47,20 @@ class SimpleSpec extends FlatSpec with Matchers with BeforeAndAfterAll with Insi
     val t = ArtifactMD.from(new DefaultArtifact(groupId, artifactId, classifier, "jar", version))
     checkDependencyMatch(d, t)
   }
+
+  "parse sbt style exclude" should "be parsed correctly" in {
+    val d = Deps.parseExclude(s"- $groupId % $artifactId % $version")
+    d shouldBe Some(ArtifactSelector(Some(groupId),Some(artifactId),Some(version)))
+  }
+
+  "parse sbt/scala style  exclude" should "be parsed correctly" in {
+    val d = Deps.parseExclude(s"- $groupId %% $artifactId % $version")
+    d shouldBe Some(ArtifactSelector(Some(groupId),Some(s"${artifactId}_2.11"),Some(version)))
+  }
+
+  "parse maven style exclude" should "be parsed correctly" in {
+    val d = Deps.parseExclude(s"- $groupId : $artifactId : $version")
+    d shouldBe Some(ArtifactSelector(Some(groupId),Some(artifactId),Some(version)))
+  }
+
 }
