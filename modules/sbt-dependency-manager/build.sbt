@@ -37,8 +37,8 @@ libraryDependencies <++= scalaBinaryVersion {
 }
 
 libraryDependencies ++= Seq(
-  "io.get-coursier" %% "coursier" % "1.0.0-RC3",
-  "io.get-coursier" %% "coursier-cache" % "1.0.0-RC3"
+  "io.get-coursier" %% "coursier" % "1.0.0-RC4",
+  "io.get-coursier" %% "coursier-cache" % "1.0.0-RC4"
 )
 
 libraryDependencies ++= depsToDownloadDeps(scalaBinaryVersion.value, sbtVersion.value)
