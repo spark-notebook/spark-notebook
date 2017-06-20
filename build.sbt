@@ -222,6 +222,7 @@ libraryDependencies <++= scalaBinaryVersion {
     "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
   )
 }
+libraryDependencies ~= (_.map(excludeSpecs2))
 
 lazy val sbtDependencyManager = Project(id = "sbt-dependency-manager", base = file("modules/sbt-dependency-manager"))
   .settings(
@@ -303,6 +304,7 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).ena
   .settings(
     Extra.sparkNotebookSettings
   )
+  .settings(libraryDependencies ~= (_.map(excludeSpecs2)))
 
 lazy val subprocess = Project(id="subprocess", base=file("modules/subprocess"))
   .settings(libraryDependencies ++= playDeps)
@@ -322,6 +324,7 @@ lazy val subprocess = Project(id="subprocess", base=file("modules/subprocess"))
   .settings(
     Extra.subprocessSettings
   )
+  .settings(libraryDependencies ~= (_.map(excludeSpecs2)))
 
 
 lazy val observable = Project(id = "observable", base = file("modules/observable"))
