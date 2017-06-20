@@ -196,6 +196,7 @@ dependencyOverrides += guava
 sharedSettings
 
 libraryDependencies ++= playDeps
+libraryDependencies += scalaTest
 
 libraryDependencies ++= List(
   akka,

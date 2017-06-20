@@ -1,17 +1,14 @@
 package notebook
 
-import org.junit.runner.RunWith
-import org.specs2.mutable._
-import org.specs2.runner.JUnitRunner
+import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
 
-@RunWith(classOf[JUnitRunner])
-class JobTrackingTests extends Specification {
+class JobTrackingTests extends WordSpec with Matchers with BeforeAndAfterAll {
   "encodes jobGroup" in {
-    JobTracking.jobGroupId(cellId = "abc") must beEqualTo("cell-abc")
+    JobTracking.jobGroupId(cellId = "abc") shouldBe "cell-abc"
   }
 
   "decodes cellId" in {
-    JobTracking.toCellId(Option("cell-abc")) must beEqualTo(Some("abc"))
+    JobTracking.toCellId(Option("cell-abc")) shouldBe Some("abc")
   }
 
   "encodes jobDescription" in {
@@ -22,10 +19,10 @@ class JobTrackingTests extends Specification {
     val expected = "run-1234567: val x = sqlContext.sql('select * from users').collect().map { x: Row = s'x'' }"
     JobTracking.jobDescription(
       cellCode = code,
-      runId = 1234567) must beEqualTo(expected)
+      runId = 1234567) shouldBe expected
   }
 
   "decodes runId" in {
-    JobTracking.getCellRunId(Option("run-1234567: val abc=rdd map x")) should beEqualTo(Some(1234567L))
+    JobTracking.getCellRunId(Option("run-1234567: val abc=rdd map x")) shouldBe Some(1234567L)
   }
 }
