@@ -338,7 +338,7 @@ define(function(require) {
             var info = div();
             var reposInfo = p();
             reposInfo.append(
-                "This is equivalent to the context `:remote-repo` in a notebook, and thus can take one of the following forms, for examples:"
+                "Some examples:"
             )
             var remoteRepoForms=lis([
                 "my-repo % default % file:///path-to/ivy2 % ivy",

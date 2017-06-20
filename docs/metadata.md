@@ -30,7 +30,7 @@ The default repositories are:
 - Typesafe repository
 - JCenter repository
 
-Additional repositories may be added.  While the context `:remote-repo` is available from the notebook, we can also add them right in the preconfiguration:
+Additional repositories may be added in the "Notebook metadata":
 
 ```json
     "customRepos"     : [
@@ -40,7 +40,7 @@ Additional repositories may be added.  While the context `:remote-repo` is avail
 
 ### Import (download) dependencies
 
-Adding dependencies in the classpath **and** in the spark context can be done, this way (see also `:dp`).
+Adding dependencies in the classpath **and** in the spark context can be done, this way.
 
 ```json
     "customDeps"      : [
@@ -91,7 +91,7 @@ Each notebook is actually running in a different JVM, hence you can add some par
 ```
 
 > **NOTE**:
-> Don't add classpath arguments, e.g., `["-cp", "/path/to/foo.jar"]`, as this overrides the classpath, rather than adding jars to it. Use a cell with a `:cp /path/to/foo.jar` command instead.
+> Don't add classpath arguments, e.g., `["-cp", "/path/to/foo.jar"]`, as this overrides the classpath, rather than adding jars to it.
 
 ### Spark Conf
 
@@ -113,7 +113,7 @@ Custom variables let us define common configuration values that permit us abstra
 
 Variables declared here become Scala constants in the notebook that are directly accessible from code.
 
-e.g. 
+e.g.
 
 ```json
    "customVars" : {
