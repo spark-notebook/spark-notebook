@@ -11,7 +11,7 @@
     "trusted" : true,
     "customLocalRepo" : "/home/noootsab/.ivy2",
     "customRepos" : null,
-    "customDeps" : [ "org.apache.spark % spark-mllib_2.10 % 1.4.1", "com.cra.figaro % figaro % 2.1.0.0", "- org.apache.spark % spark-core_2.10 % _", "- org.apache.hadoop % _ % _" ],
+    "customDeps" : [ "org.apache.spark %% spark-mllib % _", "com.cra.figaro % figaro % 2.1.0.0", "- org.apache.spark %% spark-core % _", "- org.apache.hadoop % _ % _" ],
     "customImports" : null,
     "customArgs" : null,
     "customSparkConf" : null
