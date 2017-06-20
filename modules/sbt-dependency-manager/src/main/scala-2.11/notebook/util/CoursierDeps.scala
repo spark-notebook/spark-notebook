@@ -19,17 +19,6 @@ object CoursierDeps {
 
   private[this] val log = LoggerFactory.getLogger(this.getClass)
 
-  def makeRepositories(remotes: List[RemoteRepository]): Seq[Repository] = {
-    //    val repositories_example: Seq[Repository] = Seq(
-    //      Cache.ivy2Local,
-    //      MavenRepository("https://repo1.maven.org/maven2")
-    //    )
-    remotes.map { remote =>
-      val auth = Option(remote.getAuthentication).map(auth => coursier.core.Authentication(auth.getUsername, auth.getPassword))
-      MavenRepository(remote.getUrl, authentication = auth)
-    }
-  }
-
   def script(cp: String,
              remotes: List[RemoteRepository],
              repo: java.io.File,
@@ -43,13 +32,18 @@ object CoursierDeps {
     * convert aether crap to coursier
     * */
   private[util] def parseCoursierDependencies(cp: String, remotes: List[RemoteRepository], sparkVersion: String): (Seq[Repository], Set[Dependency]) = {
+    val repositories = remotes.map { remote =>
+      val auth = Option(remote.getAuthentication).map(auth => coursier.core.Authentication(auth.getUsername, auth.getPassword))
+      MavenRepository(remote.getUrl, authentication = auth)
+    }
+
     val (includes, excludes) = Deps.parse(cp, sparkVersion)
-    val repositories = makeRepositories(remotes)
     // P.S. this excludes transitive deps ignoring the `version`, however it's fine
     // as sbt-dependency-manager in 2.10 also ignores it...
     val exclusions: Set[(String, String)] = excludes
       .filter(rule => rule.group.isDefined || rule.artifact.isDefined)
       .map(rule => (rule.group.getOrElse("*"), rule.artifact.getOrElse("*")))
+    log.info("When downloading customDeps using these execusions:" + exclusions)
 
     val artifacts = includes.map { dep =>
       coursier.Dependency(
