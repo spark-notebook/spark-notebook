@@ -1,17 +1,15 @@
 package notebook
 
 import notebook.util.Match
-import org.junit.runner._
-import org.specs2.mutable._
-import org.specs2.runner._
+import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
 
-@RunWith(classOf[JUnitRunner])
-class PresentationCompilerTests extends Specification {
+class PresentationCompilerTests extends WordSpec with Matchers with BeforeAndAfterAll {
 
   def complete(pc:PresentationCompiler)(s:String, i:Int) = {
     val (st, com) = pc.complete(s, i)
     (st, com.toSet)
   }
+
   "complete" should {
     val cz = """|
       |class AnExample(val aField:Int, notAField:Boolean=true) {
@@ -31,7 +29,7 @@ class PresentationCompilerTests extends Specification {
 
     "return the correct completions" in {
       if ( sys.env.contains("SKIP_WHEN_TRAVIS") ) {
-        skipped(": Test skipped on CI, causes StackOverflowError (REPL compiler bug).")
+        cancel(": Test skipped on CI, causes StackOverflowError (REPL compiler bug).")
       }
 
       val line = "test.toS"
@@ -41,11 +39,11 @@ class PresentationCompilerTests extends Specification {
       pc.addScripts(cz)
 
       val c = complete(pc) _
-      c(code, code.size) must beEqualTo("toS", Set(
+      c(code, code.size) shouldBe ("toS", Set(
         Match("toSchwarz", Map("display_text" -> "toSchwarz: Float")),
         Match("toString", Map("display_text" -> "toString: String"))
       ))
-      val r = c(code + "\nval testAsSt$ring = test.toString()", code.size) must beEqualTo("toS", Set(
+      val r = c(code + "\nval testAsSt$ring = test.toString()", code.size) shouldBe ("toS", Set(
         Match("toSchwarz", Map("display_text" -> "toSchwarz: Float")),
         Match("toString", Map("display_text" -> "toString: String"))
       ))
@@ -61,7 +59,7 @@ class PresentationCompilerTests extends Specification {
       pc.addScripts(cz)
       val c = complete(pc) _
 
-      val r = c(code, code.size) must beEqualTo("testMeth", Set(
+      val r = c(code, code.size) shouldBe ("testMeth", Set(
         Match("testMethod(a: Int, [optionalB: String])",
           Map("display_text" -> "testMethod(a: Int, [optionalB: String]): String")),
         Match("testMethod(a: String)", Map("display_text" -> "testMethod(a: String): String")),
@@ -75,7 +73,7 @@ class PresentationCompilerTests extends Specification {
       if ( sys.env.contains("SKIP_WHEN_TRAVIS") ) {
         // Compiler exception during call to 'ask'  (PresentationCompiler.scala:59)
         // 	at scala.tools.nsc.interactive.Global.pollForWork(Global.scala:324)
-        skipped(": Test skipped on CI, causes StackOverflowError (REPL compiler bug).")
+        cancel(": Test skipped on CI, causes StackOverflowError (REPL compiler bug).")
       }
 
 
@@ -88,7 +86,7 @@ class PresentationCompilerTests extends Specification {
       val suggestions: Set[String] = c(code1, code1.size)._2.map {case Match(s, _) => s }
       println(suggestions.map(s=> s""""${s}""""))
 
-      val r = suggestions must containAllOf(Seq(
+      val r = suggestions should contain allElementsOf Seq(
         "+(other: String)",
         "clone",
         "hashCode",
@@ -96,7 +94,7 @@ class PresentationCompilerTests extends Specification {
         "getClass",
         "isInstanceOf",
         "implicitMethod(a: Int)"
-      ))
+      )
 
       pc.stop()
       r

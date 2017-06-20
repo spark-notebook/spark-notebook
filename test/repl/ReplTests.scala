@@ -1,43 +1,42 @@
 package repl
 
 import notebook.kernel.repl.common.ReplT
-import notebook.kernel.{Failure, Incomplete, Success, Repl}
+import notebook.kernel.{Failure, Incomplete, Repl, Success}
 import notebook.util.Match
-import org.junit.runner.RunWith
-import org.specs2.mutable._
-import org.specs2.runner.JUnitRunner
-import utils.BeforeAllAfterAll
+import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
 
-@RunWith(classOf[JUnitRunner])
-class ReplTests extends Specification with BeforeAllAfterAll {
+class ReplTests extends WordSpec with Matchers with BeforeAndAfterAll {
 
   var repl: ReplT = _
-  def beforeAll = repl = new Repl()
-  def afterAll = repl.stop()
+  override def beforeAll() = {
+    repl = new Repl()
+  }
+  override def afterAll() = {
+    repl.stop()
+  }
 
   "ReplT can build Repl" in {
     ReplT.create(Nil, Nil)
-    success
   }
 
   "fail when attempting to use undefined code" in {
     repl.evaluate("val x = new NotDefinedClass") match {
-      case ( Failure(_), _ ) => success
-      case _ => failure("Expected Failure from evaluation")
+      case ( Failure(_), _ ) => succeed
+      case _ => fail("Expected Failure from evaluation")
     }
   }
 
   "fail with incomplete code" in {
     repl.evaluate("case class ReplTestClass(va") match {
-      case ( Incomplete, _ ) => success
-      case _ => failure("Expected Incomplete from evaluation")
+      case ( Incomplete, _ ) => succeed
+      case _ => fail("Expected Incomplete from evaluation")
     }
   }
 
   "successfully evaluate coplete code" in {
     repl.evaluate("case class ReplTestClass(val x:Int)") match {
-      case ( Success(_), _ ) => success
-      case _ => failure("Expected Success from evaluation")
+      case ( Success(_), _ ) => succeed
+      case _ => fail("Expected Success from evaluation")
     }
   }
 
@@ -46,33 +45,33 @@ class ReplTests extends Specification with BeforeAllAfterAll {
       case ( Success(_), _ ) =>
         repl.getTypeNameOfTerm("x") match {
           case None =>
-            failure("Expected Some type name")
+            fail("Expected Some type name")
           case Some(typeName) =>
-            typeName must contain("ReplTestClassGetTypeName")
-            success
+            typeName should endWith("ReplTestClassGetTypeName")
+            succeed
         }
       case _ =>
-        failure("Expected Success from evaluation")
+        fail("Expected Success from evaluation")
     }
   }
 
   "do not render the last defined variable when cell returns nothing" in {
     repl.evaluate("val seq = Seq(1, 2, 3)") match {
       case ( Success(resultWidgets), _ ) =>
-        resultWidgets.size must beEqualTo(0)
-        success
+        resultWidgets.size shouldBe 0
+        succeed
       case _ =>
-        failure("Expected not to render the last defined variable")
+        fail("Expected not to render the last defined variable")
     }
   }
 
   "render the return value of a cell (if one exists)" in {
     repl.evaluate("Seq(1, 2, 3)") match {
       case ( Success(resultWidgets), _ ) =>
-        resultWidgets.size must beEqualTo(1)
-        success
+        resultWidgets.size shouldBe 1
+        succeed
       case _ =>
-        failure("Expected to render the result value")
+        fail("Expected to render the result value")
     }
   }
 
@@ -86,10 +85,10 @@ class ReplTests extends Specification with BeforeAllAfterAll {
       """.stripMargin
     repl.evaluate(code) match {
       case ( Success(_), _ ) =>
-        repl.objectInfo("x.du", 4) must beEqualTo( List("dummy") )
-        success
+        repl.objectInfo("x.du", 4) shouldBe List("dummy")
+        succeed
       case _ =>
-        failure("Expected Success from evaluation")
+        fail("Expected Success from evaluation")
     }
   }
 
@@ -104,16 +103,16 @@ class ReplTests extends Specification with BeforeAllAfterAll {
     repl.evaluate(code) match {
       case ( Success(_), _ ) =>
         var completed = repl.complete("x.du", 4)
-        completed must beEqualTo( ("du", List( Match("dummy", Map.empty[String, String]) ) ) )
-        success
+        completed shouldBe ("du", List( Match("dummy", Map.empty[String, String]) ) )
+        succeed
       case _ =>
-        failure("Expected Success from evaluation")
+        fail("Expected Success from evaluation")
     }
   }
 
   "adding a jar must keep defined code intact" in {
     if ( sys.env.contains("SKIP_WHEN_TRAVIS") ) {
-      skipped(": Test skipped on TravisCI, causes OOM.")
+      cancel(": Test skipped on TravisCI, causes OOM.")
     } else {
       val privRepl = new Repl()
       privRepl.evaluate("case class MyTestClassToKeep()")
@@ -122,9 +121,9 @@ class ReplTests extends Specification with BeforeAllAfterAll {
       replInit._2.apply() // calls the replay logic on the new repl...
       val res = newRepl.evaluate("val x = new MyTestClassToKeep") match {
         case (Success(_), _) =>
-          success
+          succeed
         case ex =>
-          failure(s"Expected Success from evaluation but received $ex")
+          fail(s"Expected Success from evaluation but received $ex")
       }
       newRepl.stop()
       res
