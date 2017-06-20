@@ -42,7 +42,7 @@ object Dependencies {
   val spark_X_Y = "[a-zA-Z]*([0-9]+)\\.([0-9]+)\\.([0-9]+).*".r
   val extractVs = "[a-zA-Z]*(\\d+)\\.(\\d+)\\.(\\d+).*".r
 
-  val defaultSparkVersion = sys.props.getOrElse("spark.version", "2.0.1")
+  val defaultSparkVersion = sys.props.getOrElse("spark.version", "2.1.1")
 
   val sparkVersionTuple = defaultSparkVersion match { case extractVs(v, m, p) =>  (v.toInt, m.toInt, p.toInt)}
   // we still see a few REPL bugs in 2.11, so use scala 2.10 as default even if spark 2.x is focusing on 2.11
