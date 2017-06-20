@@ -109,7 +109,8 @@ val searchSparkResolver = Option(sys.props.getOrElse("spark.resolver.search", "f
 val sparkResolver = Option(sys.props.getOrElse("spark.resolver.id", null))
 
 resolvers in ThisBuild ++= Seq(
-  // FIXME: coursier don't work well with mavenLocal https://goo.gl/FeKuEo : Resolver.mavenLocal,
+  // P.S. coursier was not working well with mavenLocal (FIXED recently in 1.0.0-RC4) https://goo.gl/FeKuEo
+  Resolver.mavenLocal,
   Resolver.typesafeRepo("releases"),
   Resolver.sonatypeRepo("releases"),
   Resolver.typesafeIvyRepo("releases"),
