@@ -6,7 +6,6 @@ import coursier.maven.MavenRepository
 import org.scalatest._
 import org.sonatype.aether.repository.RemoteRepository
 
-// FIXME: missing scala-style exclusions
 class CoursierDepsTest extends WordSpec with Matchers with BeforeAndAfterAll with Inside {
   val sparkVersion = "10.0.0"
   val version = "0.1.1"
@@ -23,7 +22,9 @@ class CoursierDepsTest extends WordSpec with Matchers with BeforeAndAfterAll wit
           |com.someorg %% scala-artifact-cl % $version classifier $classifier
           |- org.excludeme : excluded-artifact-mavenlike : _
           |- org.excluded.org : _ : _
-          |- org.excludeme % excluded-artifact-scalalike % _
+          |- org.excludeme % excluded-artifact-java-sbtlike % _
+          |- org.excludeme %% excluded-artifact-scala-sbtlike % _
+          |- org.excludeme.sbtlike % _ % _
           |""".stripMargin,
     remotes = remotes,
     sparkVersion = "2.1.1"
@@ -40,8 +41,11 @@ class CoursierDepsTest extends WordSpec with Matchers with BeforeAndAfterAll wit
 
   "yield dependencies with excludes (ignoring version in exclude)" in {
     val expectedExcludes = Set(
+      ("org.excludeme", "excluded-artifact-java-sbtlike"),
+      ("org.excludeme", "excluded-artifact-scala-sbtlike_2.11"),
       ("org.excludeme", "excluded-artifact-mavenlike"),
       // '*' denotes an exclude by org, see https://goo.gl/mKGKoz
+      ("org.excludeme.sbtlike", "*"),
       ("org.excluded.org", "*")
     )
     deps shouldBe Set(
