@@ -16,6 +16,7 @@ import scalaz.concurrent.Task
 // FIXME: remove aether leftovers
 object CoursierDeps {
 
+  val DEFAULT_REPOSITORIES = Seq(Cache.ivy2Local) // in addition to ones in Deps.scala
 
   private[this] val log = LoggerFactory.getLogger(this.getClass)
 
@@ -35,7 +36,7 @@ object CoursierDeps {
     val repositories = remotes.map { remote =>
       val auth = Option(remote.getAuthentication).map(auth => coursier.core.Authentication(auth.getUsername, auth.getPassword))
       MavenRepository(remote.getUrl, authentication = auth)
-    }
+    } ++ DEFAULT_REPOSITORIES
 
     val (includes, excludes) = Deps.parse(cp, sparkVersion)
     // P.S. this excludes transitive deps ignoring the `version`, however it's fine

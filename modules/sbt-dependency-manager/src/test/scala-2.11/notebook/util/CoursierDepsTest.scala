@@ -1,7 +1,7 @@
 package notebook.util
 
 import com.datafellas.utils.Repos
-import coursier.{Attributes, Dependency, Module}
+import coursier.{Attributes, Cache, Dependency, Module}
 import coursier.maven.MavenRepository
 import org.scalatest._
 import org.sonatype.aether.repository.RemoteRepository
@@ -35,7 +35,8 @@ class CoursierDepsTest extends WordSpec with Matchers with BeforeAndAfterAll wit
       MavenRepository(Repos.mavenLocal.getUrl),
       MavenRepository("http://repo1.maven.org/maven2/"),
       MavenRepository("http://dl.bintray.com/spark-packages/maven/"),
-      MavenRepository("https://oss.sonatype.org/content/repositories/releases/")
+      MavenRepository("https://oss.sonatype.org/content/repositories/releases/"),
+      Cache.ivy2Local
     )
   }
 
