@@ -26,6 +26,8 @@ object CoursierDeps {
              sparkVersion: String): Try[List[String]] = {
     val (repositories, artifacts) = parseCoursierDependencies(cp, remotes, sparkVersion)
 
+    log.info("Will fetch these customDeps from repositories:" + repositories)
+    log.info("Will fetch these customDeps artifacts:" + artifacts)
     fetchLocalJars(repositories, artifacts)
   }
 
@@ -62,7 +64,7 @@ object CoursierDeps {
     val fetch = Fetch.from(repositories, Cache.fetch())
     val resolution = resolutionStart.process.run(fetch).run
     resolution.metadataErrors.foreach { resoveError =>
-      log.error("Cannot resolve custom dependency: ", resoveError)
+      log.error("Cannot resolve custom dependency: "+ resoveError)
     }
     val localArtifacts: Seq[FileError \/ File] = Task.gatherUnordered(
       resolution.artifacts.map(Cache.file(_).run)
