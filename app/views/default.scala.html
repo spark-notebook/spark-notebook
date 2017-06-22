@@ -135,19 +135,18 @@
             <div id="header-container" class="container">
                 <div id="ipython_notebook" class="nav navbar-brand pull-left"><a href="@routes.Application.dash("/")" title='dashboard'><img src='@routes.Assets.at("images/logo.png")' alt='Spark Notebook'/> @project</a></div>
 
-  <!--
-  {% block login_widget %}
+
 
   <span id="login_widget">
-    {% if logged_in %}
-    <button id="logout" class="btn btn-sm navbar-btn">Logout</button>
-    {% elif login_available and not logged_in %}
-    <button id="login" class="btn btn-sm navbar-btn">Login</button>
-    {% endif %}
+    <!-- login is always forced for now -->
+    <span id="current-user-name">
+      @{ params.getOrElse("notebook-user", "") }
+    </span>
+    @if(params.getOrElse("notebook-user", "").nonEmpty) {
+      <a id="logout" class="btn btn-sm navbar-btn" href="/logout">Logout</a>
+    }
   </span>
 
-  {% endblock %}
-  -->
 
                 @headercontainer
             </div>

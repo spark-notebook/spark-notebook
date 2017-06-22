@@ -61,6 +61,13 @@ OPTIONS        /dockers                                  controllers.Application
 GET            /dockers                                  controllers.Application.dockerList()
 
 
+# Pac4j Authentication
+GET           /loginForm                        controllers.Application.loginForm()
+GET           /callback                         @org.pac4j.play.CallbackController.callback()
+POST          /callback                         @org.pac4j.play.CallbackController.callback()
+GET           /logout                           @org.pac4j.play.LogoutController.logout()
+
+
 # Web Sockets
 GET            /ws/observable/:contextId                 controllers.Application.openObservable(contextId:String)
 GET            /ws/api/kernels/:kernelId/channels        controllers.Application.openKernel(kernelId:String,session_id:String)

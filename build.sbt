@@ -199,6 +199,10 @@ dependencyOverrides += guava
 sharedSettings
 
 libraryDependencies ++= playDeps
+
+resolvers ++= Seq("Sonatype snapshots repository" at "https://oss.sonatype.org/content/repositories/snapshots/")
+libraryDependencies ++= pac4jSecurity
+
 libraryDependencies += scalaTest
 
 // P.S. Using static controllers with the static routes generator is not deprecated,
