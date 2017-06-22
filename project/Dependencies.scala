@@ -8,32 +8,54 @@ object Dependencies {
   def excludeSpecs2(module: ModuleID): ModuleID =
     module.excludeAll(ExclusionRule(organization = "org.specs2"))
 
+  // must hard-force the jackson version in play-json to the one in spark
+  // play v2.5 uses jackson "2.7.8" which conflicts with "2.6.5" used in spark
+  // otherwise it would give java.lang.NoClassDefFoundError: Could not initialize class org.apache.spark.rdd.RDDOperationScope$
+  // FIXME: even better long-term solution would be to separate repl-server and play-ui
+  val jacksonVer = "[2.6.5, 2.6.5]" // as in spark v2.1
+  val customJacksonScala = Seq(
+    "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVer force() excludeAll ExclusionRule("com.google.guava"),
+    "com.fasterxml.jackson.core" % "jackson-annotations" % jacksonVer force() excludeAll ExclusionRule("com.google.guava"),
+    "com.fasterxml.jackson.core" % "jackson-databind" % jacksonVer force() excludeAll ExclusionRule("com.google.guava"),
+    "com.fasterxml.jackson.module" % "jackson-module-jsonSchema" % jacksonVer force() excludeAll ExclusionRule("com.google.guava"),
+    "com.fasterxml.jackson.core" % "jackson-core" % jacksonVer force() excludeAll ExclusionRule("com.google.guava"),
+    "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % jacksonVer force() excludeAll ExclusionRule("com.google.guava"),
+    "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8" % jacksonVer force() excludeAll ExclusionRule("com.google.guava"),
+    "com.fasterxml.jackson.datatype" % "jackson-datatype-joda" % jacksonVer force() excludeAll ExclusionRule("com.google.guava")
+  )
+
+  val jacksonExclusions =  Seq(
+    ExclusionRule("com.fasterxml.jackson.module", "jackson-module-scala"),
+    ExclusionRule("com.fasterxml.jackson.core", "jackson-core"),
+    ExclusionRule("com.fasterxml.jackson.datatype", "jackson-datatype-jsr310"),
+    ExclusionRule("com.fasterxml.jackson.datatype", "jackson-datatype-jdk8"),
+    ExclusionRule("com.fasterxml.jackson.core", "jackson-annotations"),
+    ExclusionRule("com.fasterxml.jackson.core", "jackson-databind"),
+    ExclusionRule("com.fasterxml.jackson.module", "jackson-module-jsonSchema"),
+    ExclusionRule("com.fasterxml.jackson.datatype", "jackson-datatype-joda")
+  )
+
+  val akkaGuavaExclusions = Seq(
+    ExclusionRule("com.typesafe.akka"),
+    ExclusionRule("com.google.guava"))
+
+  val playExclusions = akkaGuavaExclusions ++ jacksonExclusions
+
   val playDeps = Seq(
-    "com.typesafe.play" %% "play" % "2.3.10" withSources() excludeAll(
-      ExclusionRule("com.typesafe.akka"),
-      ExclusionRule("com.google.guava")
-    )
-    ,
-    "com.typesafe.play" %% "play-test" % "2.3.10" % "test" withSources() excludeAll(
-      ExclusionRule("com.typesafe.akka"),
-      ExclusionRule("com.google.guava"),
-      ExclusionRule(organization = "org.specs2"),
-      ExclusionRule(organization = "org.scalaz")
-    )
-  )
+    "com.typesafe.play" %% "play" % "2.5.15" withSources() excludeAll(playExclusions: _*),
+    "com.typesafe.play" %% "play-test" % "2.5.15" % "test" withSources() excludeAll(playExclusions: _*)
+  ) ++ customJacksonScala
+
   val playJson = Seq(
-    "com.typesafe.play" %% "play-json" % "2.3.7" withSources() excludeAll(
-      ExclusionRule("com.typesafe.akka"),
-      ExclusionRule("com.google.guava")
-      )
-  )
+    "com.typesafe.play" %% "play-json" % "2.5.15" withSources() excludeAll(playExclusions: _*)
+  ) ++ customJacksonScala
 
   val rxScala = "io.reactivex" %% "rxscala" % "0.22.0"
 
   val defaultHadoopVersion = sys.props.getOrElse("hadoop.version", "2.7.3")
 
   val akkaGroup = if (defaultHadoopVersion.startsWith("1")) "org.spark-project.akka" else "com.typesafe.akka"
-  val akkaVersion = if (defaultHadoopVersion.startsWith("1")) "2.3.4-spark" else "2.3.11"
+  val akkaVersion = if (defaultHadoopVersion.startsWith("1")) "2.3.4-spark" else "2.4.18"
   val akka = akkaGroup %% "akka-actor" % akkaVersion
   val akkaRemote = akkaGroup %% "akka-remote" % akkaVersion
   val akkaSlf4j = akkaGroup %% "akka-slf4j" % akkaVersion
@@ -45,12 +67,16 @@ object Dependencies {
   val defaultSparkVersion = sys.props.getOrElse("spark.version", "2.1.1")
 
   val sparkVersionTuple = defaultSparkVersion match { case extractVs(v, m, p) =>  (v.toInt, m.toInt, p.toInt)}
-  // we still see a few REPL bugs in 2.11, so use scala 2.10 as default even if spark 2.x is focusing on 2.11
-  val defaultScalaVersion = sys.props.getOrElse("scala.version", "2.10.6") match {
-    case x@scala_2_1X("0") => defaultSparkVersion match {
-      case spark_X_Y("2", _, _)                => "2.10.6"
-      case spark_X_Y(_, _, _)                  => x
-    }
+  val defaultScalaVersion = sys.props.getOrElse("scala.version", "2.11.8") match {
+    case x@scala_2_1X("0") =>
+      throw new IllegalArgumentException(
+        "Scala 2.10 is not supported anymore.\n" +
+        "Use scala 2.10 or an older version of spark-notebook (<= 0.8.x)"
+      )
+      //      defaultSparkVersion match {
+      //        case spark_X_Y("2", _, _)                => "2.10.6"
+      //        case spark_X_Y(_, _, _)                  => x
+      //      }
     case x@scala_2_1X("1") => defaultSparkVersion match {
       case spark_X_Y("2", _, _) => "2.11.8"
       case spark_X_Y(_, _, _) => x
@@ -126,6 +152,7 @@ object Dependencies {
   val commonsExec = "org.apache.commons" % "commons-exec" % "1.3" force()
   val commonsCodec = "commons-codec" % "commons-codec" % "1.10" force()
 
+  // P.S. Play 2.4 uses guava 18.0; play 2.5 uses 19.0. seems OK for force it.
   val defaultGuavaVersion = sys.props.getOrElse("guava.version", "16.0.1") // 16.0.1 for cassandra connector 1.6-M1
   val guava = "com.google.guava" % "guava" % defaultGuavaVersion force()
   val slf4jLog4j = "org.slf4j" % "slf4j-log4j12" % "1.7.7"
@@ -137,20 +164,8 @@ object Dependencies {
 
   // Viz
   val geometryDeps = Seq(
-    "org.wololo" % "jts2geojson" % "0.7.0" excludeAll (
-        ExclusionRule("com.fasterxml.jackson.module", "jackson-module-scala"),
-        ExclusionRule("com.fasterxml.jackson.core", "jackson-annotations"),
-        ExclusionRule("com.fasterxml.jackson.core", "jackson-databind"),
-        ExclusionRule("com.fasterxml.jackson.module", "jackson-module-jsonSchema"),
-        ExclusionRule("com.fasterxml.jackson.datatype", "jackson-datatype-joda")
-      )
-  )
+    // it uses jackson 2.8.1
+    "org.wololo" % "jts2geojson" % "0.8.0" excludeAll(jacksonExclusions: _*)
+  ) ++ customJacksonScala
 
-  val customJacksonScala = Seq(
-    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.4.4" force() excludeAll ExclusionRule("com.google.guava"),
-    "com.fasterxml.jackson.core" % "jackson-annotations" % "2.4.4" force() excludeAll ExclusionRule("com.google.guava"),
-    "com.fasterxml.jackson.core" % "jackson-databind" % "2.4.4" force() excludeAll ExclusionRule("com.google.guava"),
-    "com.fasterxml.jackson.module" % "jackson-module-jsonSchema" % "2.4.4" force() excludeAll ExclusionRule("com.google.guava"),
-    "com.fasterxml.jackson.datatype" % "jackson-datatype-joda" % "2.4.4" force() excludeAll ExclusionRule("com.google.guava")
-  )
 }
