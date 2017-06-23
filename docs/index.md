@@ -16,3 +16,5 @@
 	* [Building from Sources](./build_from_source.md)
 	* [Creating Specific Distributions](./build_specific_distros.md)
 	* [Creating your own custom visualizations](./custom_charts.md)
+  * [User Authentication](./authentication.md)
+    - Supports: Basic, Form & Kerberos auth, and more [(OAuth, OpendID, ...) via `pac4j` / `play-pac4j`](https://github.com/pac4j/pac4j)

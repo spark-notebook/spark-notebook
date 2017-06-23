@@ -11,6 +11,9 @@ import notebook.NBSerializer.Metadata
 import notebook.io.Version
 import notebook.server._
 import notebook.{GenericFile, NotebookResource, Repository, _}
+import org.pac4j.core.profile.{CommonProfile, ProfileManager}
+import org.pac4j.play.PlayWebContext
+import org.pac4j.play.store.PlaySessionStore
 import play.api.Play.current
 import play.api._
 import play.api.http.HeaderNames
@@ -46,6 +49,11 @@ object EditorOnlyAction extends ActionBuilder[Request] {
   }
 }
 
+object ApplicationHacks {
+  // FIXME: Use DI instead (need to migrate controllers)
+  var playPac4jSessionStoreOption: Option[PlaySessionStore] = None
+}
+
 object Application extends Controller {
 
   private lazy val config = AppUtils.notebookConfig
@@ -77,6 +85,27 @@ object Application extends Controller {
 
   //  TODO: Ugh...
   val terminals_available = false.toString // TODO
+
+  def loginForm = Action { implicit request =>
+    // FIXME: pac4j config should be injected (need to refactor controllers to use DI)
+    // val callbackUrl = config.findClient("FormClient").asInstanceOf[FormClient].getCallbackUrl
+    val callbackUrl = "/callback?client_name=FormClient"
+    Ok(views.html.loginForm.render(callbackUrl))
+  }
+
+  private def getProfile(implicit request: RequestHeader): Option[CommonProfile] = {
+    ApplicationHacks.playPac4jSessionStoreOption.flatMap { pac4jSessionStore =>
+      import scala.collection.JavaConversions._
+      val webContext = new PlayWebContext(request, pac4jSessionStore)
+      val profileManager = new ProfileManager[CommonProfile](webContext)
+      val profiles = profileManager.getAll(true)
+      asScalaBuffer(profiles).headOption
+    }
+  }
+
+  private def getCurrentUserName(implicit request: RequestHeader): String = {
+    getProfile.map(_.getId).getOrElse("")
+  }
 
   def configTree() = Action {
     Ok(Json.obj())
@@ -449,6 +478,7 @@ object Application extends Controller {
         "base-observable-url" -> ws_url(Some(base_observable_url)),
         "read-only" -> (this.read_only || read_only.getOrElse(0) == 1).toString, // FIXME
         "notebook-name" -> notebookManager.name,
+        "notebook-user" -> getCurrentUserName,
         "notebook-path" -> path,
         "presentation" -> presentation.getOrElse("edit")
       ),
@@ -593,7 +623,7 @@ object Application extends Controller {
     getNotebook(path.dropRight(".snb".length), path, format, dl = true)
   }
 
-  def dash(p: String = base_kernel_url) = Action {
+  def dash(p: String = base_kernel_url) = Action { implicit request =>
     val path = URLDecoder.decode(p, UTF_8)
     Logger.debug("DASH → " + path)
     Ok(views.html.projectdashboard(
@@ -606,6 +636,7 @@ object Application extends Controller {
         "read-only" → read_only.toString,
         "base-url" → base_project_url,
         "notebook-path" → path,
+        "notebook-user" → getCurrentUserName,
         "sbt_project_gen_enabled" -> sbt_project_gen_enabled.toString,
         "docker-repo" → docker_repo,
         "maintainer" → maintainer,
