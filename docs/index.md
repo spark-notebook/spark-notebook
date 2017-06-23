@@ -10,6 +10,9 @@
 * [Configuration and Metadata](./metadata.md)
 	* [Using Cluster Configurations](./using_cluster_tab.md)
 * [Running on Clusters and Clouds](./clusters_clouds.md)
+  - (Secured) YARN
+  - Amazon EMR (YARN)
+  - Mesosphere DCOS (Mesos)
 * [Community](./community.md)
 * Advanced Topics
 	* [Using Releases](./using_releases.md)
@@ -18,3 +21,4 @@
 	* [Creating your own custom visualizations](./custom_charts.md)
   * [User Authentication](./authentication.md)
     - Supports: Basic, Form & Kerberos auth, and more [(OAuth, OpendID, ...) via `pac4j` / `play-pac4j`](https://github.com/pac4j/pac4j)
+    - Passing the logged in user to Secure Hadoop+YARN clusters via [`proxy-user` impersonation](./proxyuser_impersonation.md)

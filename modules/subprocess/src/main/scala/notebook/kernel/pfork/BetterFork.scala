@@ -210,14 +210,56 @@ object BetterFork {
 
   private lazy val log = LoggerFactory.getLogger(getClass)
 
-  private[pfork] def main(args: Array[String]) {
+  private[pfork] def main(args: Array[String]): Unit = {
     val className = args(0)
     val parentPort = args(1).toInt
     val logLevel = args(2)
     val kernelId = args(3)
     val path = args(4)
-    val remainingArgs = args.drop(5).toIndexedSeq
+    // P.S. this arg is not passed to doMain
+    val maybeProxyUser = args(5) match {
+      case "NONE" => None
+      case userName => Some(userName)
+    }
+    val remainingArgs = args.drop(6).toIndexedSeq
 
+    maybeProxyUser match {
+      case None =>
+        doMain(className, parentPort, logLevel, kernelId, path, remainingArgs)
+
+      case Some(proxyUserName) =>
+        println(s"Impersonating the REPL as user: $proxyUserName")
+        // based on code from spark-submit, see https://github.com/apache/spark/pull/4405/files
+        // and https://github.com/apache/spark/blob/c622a87c/core/src/main/scala/org/apache/spark/deploy/SparkSubmit.scala#L154-L180
+        import org.apache.hadoop.security.UserGroupInformation
+        import java.security.PrivilegedExceptionAction
+        val proxyUser = UserGroupInformation.createProxyUser(proxyUserName, UserGroupInformation.getCurrentUser())
+        try {
+          proxyUser.doAs(new PrivilegedExceptionAction[Unit]() {
+            override def run(): Unit = {
+              doMain(className, parentPort, logLevel, kernelId, path, remainingArgs)
+            }
+          })
+        } catch {
+          case e: Exception =>
+            // Hadoop's AuthorizationException suppresses the exception's stack trace, which
+            // makes the message printed to the output by the JVM not very helpful. Instead,
+            // detect exceptions with empty stack traces here, and treat them differently.
+            if (e.getStackTrace().length == 0) {
+              // scalastyle:off println
+              // FIXME: printStream.println(s"ERROR: ${e.getClass().getName()}: ${e.getMessage()}")
+              println(s"ERROR: ${e.getClass().getName()}: ${e.getMessage()}")
+              // scalastyle:on println
+              // FIXME: exitFn(1)
+              throw e
+            } else {
+              throw e
+            }
+        }
+    }
+  }
+
+  private[pfork] def doMain(className: String, parentPort: Int, logLevel: String, kernelId: String, path: String, remainingArgs: Seq[String]): Unit = {
     val propLog = new java.util.Properties()
     propLog.load(getClass().getResourceAsStream("/log4j.subprocess.properties"))
     val cleanPath = path.replaceAll("/", "\\\\").replaceAll("\"", "").replaceAll("'", "")

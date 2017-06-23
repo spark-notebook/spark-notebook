@@ -78,6 +78,7 @@ object Application extends Controller {
   val maintainer = current.configuration.getString("sbt-project-generation.code-gen.maintainer").getOrElse("")
   val deploy_package_base = current.configuration.getString("sbt-project-generation.code-gen.generatedPackageBase").getOrElse("generated")
   val mesos_version = current.configuration.getString("sbt-project-generation.code-gen.mesosVersion").getOrElse("")
+  lazy val hadoopProxyUserEnabled: Boolean = current.configuration.getBoolean("notebook.hadoop-auth.proxyuser-impersonate").getOrElse(false)
 
   val base_kernel_url = "/"
   val base_observable_url = "observable"
@@ -176,7 +177,7 @@ object Application extends Controller {
     Ok(Json.obj("kernel" → kernelResponse(id)))
   }
 
-  private[this] def newSession(kernelId: Option[String] = None, notebookPath: Option[String] = None) = {
+  private[this] def newSession(userName: Option[String], kernelId: Option[String] = None, notebookPath: Option[String] = None) = {
     val existing = for {
       path <- notebookPath
       (id, kernel) <- KernelManager.atPath(path)
@@ -246,6 +247,8 @@ object Application extends Controller {
         }
       }
 
+      val impersonatedUser = if (hadoopProxyUserEnabled) userName else None
+
       val kernel = new Kernel(config.kernel.config.underlying,
                               kernelSystem,
                               kId,
@@ -253,7 +256,8 @@ object Application extends Controller {
                               Some(
                                 customArgs.getOrElse(List.empty[String]) :::
                                 AppUtils.proxy.all.map{ case (k,v) => s"""-D$k=$v"""}
-                              ))
+                              ),
+                              impersonatedUser)
       KernelManager.add(kId, kernel)
 
       val service = new CalcWebSocketService(kernelSystem,
@@ -277,11 +281,13 @@ object Application extends Controller {
     kernelResponse(Some(kId))
   }
 
-  def createSession() = EditorOnlyAction(parse.tolerantJson) /* → posted as urlencoded form oO */ { request =>
+  def createSession() = EditorOnlyAction(parse.tolerantJson) /* → posted as urlencoded form oO */ { implicit request =>
     val json: JsValue = request.body
     val kernelId = Try((json \ "kernel" \ "id").as[String]).toOption
     val notebookPath = Try((json \ "notebook" \ "path").as[String]).toOption
-    val k = newSession(kernelId, notebookPath)
+    val currentUserName = getProfile.map(_.getId)
+    Logger.info(s"createSession for user: $currentUserName  for NB: $notebookPath")
+    val k = newSession(currentUserName, kernelId, notebookPath)
     Ok(Json.obj("kernel" → k))
   }
 
@@ -511,13 +517,15 @@ object Application extends Controller {
     Ok(s"""{"$kernelId": "closed"}""")
   }
 
-  def restartKernel(kernelId: String) = Action(parse.tolerantJson) { request =>
+  def restartKernel(kernelId: String) = Action(parse.tolerantJson) { implicit request =>
     val k = KernelManager.get(kernelId)
     closeKernel(kernelId)
     val p = (request.body \ "notebook_path").as[String]
     val path = URLDecoder.decode(p, UTF_8)
     val notebookPath = k.flatMap(_.notebookPath).getOrElse(p)
-    Ok(newSession(notebookPath = Some(notebookPath)))
+    val currentUserName = getProfile.map(_.getId)
+    Logger.info(s"restartKernel by user: $currentUserName NB: $notebookPath")
+    Ok(newSession(userName = currentUserName, notebookPath = Some(notebookPath)))
   }
 
   def listCheckpoints(snb: String) = Action { request =>
