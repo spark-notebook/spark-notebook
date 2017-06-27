@@ -36,5 +36,6 @@ HADOOP_CONF_DIR=/etc/hadoop/conf:/etc/hive/conf sbt \
   -Dconfig.file=${CONFIG_FILE} \
   -Dwith.hive=true \
   -Dwith.parquet=true \
+  -Dwith.mesos=true \
   -Dmanager.notebooks.override.sparkConf.spark.port.maxRetries=100 \
   clean run

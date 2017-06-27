@@ -82,7 +82,7 @@ object Shared {
                 "org.eclipse.jetty" % "jetty-server"       % jettyVersion
               )
             } else Nil
-          )
+          ) ++ sparkMesos(sv)
       libs
     }
   ) ++ repl ++ hive ++ yarnWebProxy
