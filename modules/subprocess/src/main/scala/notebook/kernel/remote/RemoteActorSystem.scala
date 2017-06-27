@@ -94,11 +94,16 @@ class RemoteActorSystem(localSystem: ActorSystem, info: ProcessInfo, remoteConte
 object RemoteActorSystem {
   val nextId = new AtomicInteger(1)
 
-  def spawn(config: Config, system: ActorSystem, configFile: String, kernelId: String,
-    notebookPath: Option[String], customArgs:Option[List[String]]): Future[RemoteActorSystem] = {
+  def spawn(config: Config,
+            system: ActorSystem,
+            configFile: String,
+            kernelId: String,
+            notebookPath: Option[String],
+            customArgs:Option[List[String]],
+            impersonatedUser: Option[String]): Future[RemoteActorSystem] = {
     val cookiePath = ""
     new BetterFork[RemoteActorProcess](config, system.dispatcher, customArgs)
-      .execute(kernelId, notebookPath.getOrElse("no-path"), configFile, cookiePath)
+      .execute(kernelId, notebookPath.getOrElse("no-path"), impersonatedUser.getOrElse("NONE"), configFile, cookiePath)
       .map {
         new RemoteActorSystem(system, _)
       }

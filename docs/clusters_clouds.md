@@ -1,14 +1,70 @@
 # Clusters / Clouds configuration
 
 **Table of Contents:**
-
-   * [Amazon EMR](#amazon-emr)
+   * [Secured YARN cluster](#secured-yarn-cluster)
+   * [Amazon EMR (with YARN)](#amazon-emr)
       * [Version 3.x](#version-3x)
       * [Version 4.x](#version-4x)
          * [Version 4.0](#version-40)
          * [Version 4.2](#version-42)
          * [Version 4.5](#version-45)
    * [Mesosphere DCOS](#mesosphere-dcos)
+
+# Secured YARN cluster
+
+Run spark-notebook like this:
+```bash
+# sometimes needed for link to SparkUI to work
+# export SPARK_LOCAL_IP=ip-of-sparknotebook-server-reachable-from-cluster
+
+export HADOOP_CONF_DIR=/etc/hadoop/ # update
+# export HADOOP_JAAS_DEBUG=true # only when debugging; print extra info about current Kerberos user/errors
+
+# run spark-notebook (e.g. `./run-dev local` or if using distribution `bin/spark-notebook`)
+bin/spark-notebook
+```
+  * Tune the default memory overhead settings, if needed
+    - explicitly set a larger than default value for `spark.yarn.am.memoryOverhead` & `spark.yarn.executor.memoryOverhead`
+  * Add a `spark.yarn.archive` (can use one from `Apache Spark` of exactly same version of Spark, Scala & Hadoop)
+
+A `notebook metadata` for YARN would look like this:
+```json
+{
+  "customSparkConf": {
+    "spark.app.name": "Notebook",
+    "spark.master": "yarn-client",
+    "spark.executor.memory": "4G",
+    "spark.driver.memory": "4G",
+    "spark.yarn.am.memoryOverhead": "1024",
+    "spark.yarn.executor.memoryOverhead": "1024",
+    "spark.yarn.driver.memoryOverhead": "1024",
+    "spark.warehouse.dir": "/users/spark/warehouse",
+    "spark.yarn.archive": "hdfs:/user/spark/spark_yarn_archive.zip"
+  }
+ }
+```
+These settings could be forced for all notebooks by adding to the command which starts the notebook, e.g.:
+
+```
+bin/spark-notebook \
+  -Dmanager.notebooks.override.spark.warehouse.dir=/users/spark/warehouse \
+  -Dmanager.notebooks.override.spark.yarn.am.memoryOverhead=1024 \
+```
+
+To access a secured cluster, the `spark-notebook` should be started with Kerberos credentials available  
+(i.e. `kinit` should be run periodically by the same user by which the `spark-notebook` was launched).
+
+For example, you may add something like this to the `cron`:
+
+```
+ kinit -V -k -t /some-path/spark.headless.keytab -r 7d spark@somerealm.com
+```
+
+If multiple users accesses the Spark notebook,
+ check the [Authentication](./authentication.md) and  [User Impersonation](./proxyuser_impersonation.md) sections, for how to set up the 
+`spark-notebook` so that the currently logged-in user would be passed to the cluster.
+
+Also, see below for YARN usage on EMR.
 
 # Amazon EMR
 
