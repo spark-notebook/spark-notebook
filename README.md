@@ -71,9 +71,9 @@ to discuss things, to get some help, or to start contributing!
     * [Building from Sources](./docs/build_from_source.md)
     * [Creating Specific Distributions](./docs/build_specific_distros.md)
     * [Creating your own custom visualizations](./docs/custom_charts.md)
-    * [User Authentication](./authentication.md)
+    * [User Authentication](./docs/authentication.md)
       - Supports: `Basic, Form & Kerberos` auth, and many more [via `pac4j` (OAuth, OpendID, ...)](https://github.com/pac4j/pac4j)
-      - Passing the logged in user to Secure Hadoop+YARN clusters via the [`proxy-user` impersonation](./proxyuser_impersonation.md)
+      - Passing the logged in user to Secure Hadoop+YARN clusters via the [`proxy-user` impersonation](./docs/proxyuser_impersonation.md)
 * Advanced: How to Develop/improve `spark-notebook`
     * [Overview of Project structure](./docs/code_structure.md)
 
