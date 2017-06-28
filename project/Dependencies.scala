@@ -126,6 +126,23 @@ object Dependencies {
     ExclusionRule("javax.servlet", "javax.servlet-api")
   )
 
+  val defaultWithMesos = sys.props.getOrElse("with.mesos", "true").toBoolean
+
+  def sparkMesos(v: String) = {
+    if (!defaultWithMesos) {
+      Seq()
+    } else {
+      v match {
+        case spark_X_Y("1", _, _) => Seq()
+        case spark_X_Y("2", "0", _) => Seq()
+        case _ => // since spark 2.1.x, we should add spark-mesos:
+          Seq(
+            "org.apache.spark" %% "spark-mesos" % v
+          )
+      }
+    }
+  }
+
   def hadoopClient(v: String) = "org.apache.hadoop" % "hadoop-client" % v excludeAll(
     ExclusionRule("org.apache.commons", "commons-exec"),
     ExclusionRule("commons-codec", "commons-codec"),
