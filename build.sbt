@@ -8,7 +8,7 @@ name := MainProperties.name
 
 scalaVersion := defaultScalaVersion
 
-val SparkNotebookSimpleVersion = "0.8.1"
+val SparkNotebookSimpleVersion = "0.8.2"
 
 version in ThisBuild := SparkNotebookSimpleVersion
 
