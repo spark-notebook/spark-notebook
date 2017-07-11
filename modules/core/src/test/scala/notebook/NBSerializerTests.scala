@@ -52,9 +52,15 @@ class NBSerializerTests extends WordSpec with Matchers with BeforeAndAfterAll {
       |      "build" : "unit-tests"
       |    },
       |    "customLocalRepo" : "local-repo",
-      |    "customRepos" : [ "custom-repo" ],
-      |    "customDeps" : [ "\"org.custom\" % \"dependency\" % \"1.0.0\"" ],
-      |    "customImports" : [ "import org.cusom.dependency.SomeClass" ],
+      |    "customRepos" : [
+      |      "custom-repo"
+      |    ],
+      |    "customDeps" : [
+      |      "\"org.custom\" % \"dependency\" % \"1.0.0\""
+      |    ],
+      |    "customImports" : [
+      |      "import org.cusom.dependency.SomeClass"
+      |    ],
       |    "customArgs" : [ ],
       |    "customSparkConf" : {
       |      "spark.driverPort" : 1234

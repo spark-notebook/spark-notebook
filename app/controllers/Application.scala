@@ -725,11 +725,11 @@ object Application extends Controller {
             NBSerializer.fromJson(Json.parse(data)) match {
               case Some(nb) =>
                 val code = nb.cells.map { cells =>
-                  val cs = cells.collect {
-                    case NBSerializer.CodeCell(md, "code", i, Some("scala"), _, _) => i
-                    case NBSerializer.CodeCell(md, "code", i, None, _, _) => i
+                  val codeLines = cells.collect {
+                    case NBSerializer.CodeCell(md, "code", sourceLines, Some("scala"), _, _) => sourceLines
+                    case NBSerializer.CodeCell(md, "code", sourceLines, None, _, _) => sourceLines
                   }
-                  val fc = cs.map(_.split("\n").map { s => s"  $s" }.mkString("\n")).mkString("\n\n  /* ... new cell ... */\n\n").trim
+                  val fc = codeLines.map(_.map { s => s"  $s" }.mkString("\n")).mkString("\n\n  /* ... new cell ... */\n\n").trim
                   val code = s"""
                   |object Cells {
                   |  $fc

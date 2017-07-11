@@ -112,13 +112,30 @@ object NBSerializer extends Logging {
   case class CodeCell(
     metadata: CellMetadata,
     cell_type: String = "code",
-    source: String,
+    source: List[String],
     language: Option[String],
     prompt_number: Option[Int] = None,
     outputs: Option[List[Output]] = None
-  ) extends Cell
+  ) extends Cell {
+    def sourceString: String = this.source.mkString("\n")
+  }
 
-  implicit val codeCellFormat = Json.format[CodeCell]
+
+  // read source as a string "line1\nline2" or a ["line1\n", "line2"]
+  val readSourceFromList = (JsPath \ "source").read[List[String]]
+  val readSourceFromString = (JsPath \ "source").read[String].map(_.split("\n").map(_ + "\n").toList)
+  val sourceFieldReader: Reads[List[String]] = readSourceFromString.or(readSourceFromList)
+
+  val codeCellReadsFromJson: Reads[CodeCell] = (
+    (JsPath \ "metadata").read[CellMetadata] and
+      (JsPath \ "cell_type").readNullable[String].map(_.getOrElse("code")) and
+      sourceFieldReader and
+      (JsPath \ "language").readNullable[String] and
+      (JsPath \ "prompt_number").readNullable[Int] and
+      (JsPath \ "outputs").readNullable[List[Output]]
+    )(CodeCell.apply _)
+  implicit val codeCellWrites = Json.writes[CodeCell]
+  implicit val codeCellFormat = Format(codeCellReadsFromJson, codeCellWrites)
 
   case class MarkdownCell(
     metadata: CellMetadata,
@@ -274,7 +291,7 @@ object NBSerializer extends Logging {
   }
 
   def toJson(n: Notebook): String = {
-    Json.prettyPrint(notebookFormat.writes(n))
+    import com.fasterxml.jackson.core.util.JsonPrettyPrintHacks
+    JsonPrettyPrintHacks.prettyPrintArrays(notebookFormat.writes(n))
   }
-
 }
