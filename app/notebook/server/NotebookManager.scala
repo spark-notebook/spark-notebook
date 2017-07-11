@@ -33,7 +33,7 @@ class NotebookManager(val notebookConfig: NotebookConfig) {
   private lazy val config = AppUtils.notebookConfig
   val viewer = config.viewer
 
-  val extension = ".snb"
+  val extension = Notebook.EXTENSION_SNB_IPYNB
 
   val name = notebookConfig.projectName // TODO: Whatever uses this name, should be using config.projectName directly, for sure...
 
@@ -45,7 +45,10 @@ class NotebookManager(val notebookConfig: NotebookConfig) {
     }
   }
 
-  def getName(path: String) = path.split("/").filter(!_.isEmpty).last.dropRight(extension.length)
+  def getName(path: String) = {
+    val fileName = path.split("/").filter(!_.isEmpty).last
+    Notebook.notebookName(fileName)
+  }
 
   def notebookFile(path: String): File = {
     val basePath = notebookDir.getCanonicalPath
@@ -101,7 +104,7 @@ class NotebookManager(val notebookConfig: NotebookConfig) {
   def copyNotebook(nbPath: String): String = forbidInViewer {
     val nbData = getNotebook(nbPath)
     nbData.map { nb =>
-      val newPath = incrementFileName(nb.path.dropRight(extension.length))
+      val newPath = incrementFileName(Notebook.notebookName(nb.path))
       val newName = getName(newPath)
       val readExistingAndSaveNewNb: Future[String] = Notebook.deserializeFuture(nb.data).map { oldNB =>
         val newNb = Notebook(oldNB.metadata.map(_.copy(id = Notebook.getNewUUID, name = newName)), oldNB.cells, oldNB.worksheets, oldNB.autosaved, None)

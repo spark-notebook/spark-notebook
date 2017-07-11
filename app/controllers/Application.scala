@@ -55,6 +55,7 @@ object ApplicationHacks {
 }
 
 object Application extends Controller {
+  import Notebook.notebookName
 
   private lazy val config = AppUtils.notebookConfig
   private lazy val notebookManager = AppUtils.notebookManager
@@ -365,7 +366,7 @@ object Application extends Controller {
       Ok(Json.obj("content" → content))
     } else if (tpe == "notebook") {
       Logger.debug("content: " + path)
-      val name = if (path.endsWith(".snb")) path.dropRight(".snb".length) else path
+      val name = notebookName(path)
       getNotebook(name, path, "json")
     } else {
       BadRequest("Dunno what to do with contents for " + tpe + "at " + path)
@@ -628,7 +629,7 @@ object Application extends Controller {
   def dlNotebookAs(p: String, format: String) = Action {
     val path = URLDecoder.decode(p, UTF_8)
     Logger.info("DL → " + path + " as " + format)
-    getNotebook(path.dropRight(".snb".length), path, format, dl = true)
+    getNotebook(notebookName(path), path, format, dl = true)
   }
 
   def dash(p: String = base_kernel_url) = Action { implicit request =>
