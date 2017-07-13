@@ -775,6 +775,27 @@ define([
         };
     };
 
+    var is_spark_notebook_file = function(filename) {
+        return filename.endsWith(".snb") || filename.endsWith(".snb.ipynb");
+    };
+
+    var get_fullpath_notebook_title = function(filename) {
+      return filename.replace(/\.snb\.ipynb$/, "").replace(/\.snb$/, "");
+    };
+
+    // x.snb -> [.snb].ipynb
+    // x -> [x].snb.ipynb
+    // x.snb.ipynb -> [x.snb.ipynb]
+    var ensure_nbfile_extension = function(name){
+      if (!name.match(/\.snb\.ipynb$/)) {
+        if (name.match(/\.snb$/)) {
+          return name + ".ipynb";
+        } else {
+          return  name + ".snb.ipynb";
+        }
+      }
+    };
+
     var typeset = function (element, text) {
         /**
          * Apply MathJax rendering to an element, and optionally set its text
@@ -874,6 +895,9 @@ define([
         resolve_promises_dict: resolve_promises_dict,
         reject: reject,
         typeset: typeset,
+        is_spark_notebook_file: is_spark_notebook_file,
+        get_fullpath_notebook_title: get_fullpath_notebook_title,
+        ensure_nbfile_extension: ensure_nbfile_extension,
         time: time,
     };
 

@@ -115,10 +115,10 @@ define([
         for (var i = 0; i < files.length; i++) {
             var f = files[i];
             var name_and_ext = utils.splitext(f.name);
-            var file_ext = name_and_ext[1];
+            var is_notebook_file = utils.is_spark_notebook_file(f.name);
 
             var reader = new FileReader();
-            if (file_ext === '.snb') {
+            if (is_notebook_file) {
                 reader.readAsText(f);
             } else {
                 // read non-notebook files as binary
@@ -126,7 +126,7 @@ define([
             }
             var item = that.new_item(0);
             item.addClass('new-file');
-            that.add_name_input(f.name, item, file_ext == '.snb' ? 'notebook' : 'file');
+            that.add_name_input(f.name, item, is_notebook_file ? 'notebook' : 'file');
             // Store the list item in the reader so we can use it later
             // to know which item it belongs to.
             $(reader).data('item', item);
@@ -428,7 +428,7 @@ define([
                 var name = item.data('name');
                 var path = item.data('path');
                 var cronDef = ISODate();
-                var destDir = path.replace(".snb", "").replace(/\W+/g, "__")
+                var destDir = utils.get_fullpath_notebook_title(path).replace(/\W+/g, "__");
                 var message = $(
                     '<div>'+
                         '<div class="hidden">'+
@@ -646,10 +646,9 @@ define([
                 }
                 var model = {};
 
-                var name_and_ext = utils.splitext(filename);
-                var file_ext = name_and_ext[1];
+                var is_notebook = utils.is_notebook_file(filename);
                 var content_type;
-                if (file_ext === '.snb') {
+                if (is_notebook) {
                     model.type = 'notebook';
                     model.format = 'json';
                     try {

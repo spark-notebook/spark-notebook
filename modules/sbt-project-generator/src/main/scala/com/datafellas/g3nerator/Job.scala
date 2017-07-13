@@ -70,7 +70,7 @@ class Job( val project: Project,
   lazy val `root/src/main/scala/App.scala` = `root/src/main/scala`("App.scala")
   lazy val `root/src/main/scala/Classes.scala` = `root/src/main/scala`("Classes.scala")
   lazy val `root/src/main/resources` = root/ "src/main/resources/"
-  lazy val `root/src/main/resources/notebook.snb` = `root/src/main/resources`("notebook.snb")
+  lazy val `root/src/main/resources/notebook.snb.ipynb` = `root/src/main/resources`("notebook.snb.ipynb")
   lazy val `root/src/main/resources/application.conf` = `root/src/main/resources`("application.conf")
   lazy val `root/target` = root / "target"
   lazy val `root/target/debian_pkg.deb` = `root/target`(library.debianPackage)
@@ -117,7 +117,7 @@ class Job( val project: Project,
       Artifact(`root/gen.sh`, genScript(local))
     )
     snb.rawContent.foldLeft(jobArtifacts)((artifacts, raw) =>
-      Artifact(`root/src/main/resources/notebook.snb`, raw) :: artifacts)
+      Artifact(`root/src/main/resources/notebook.snb.ipynb`, raw) :: artifacts)
   }
 
   def materialize(artifacts: List[Artifact[Unmaterialized]]): List[Try[Artifact[Materialized]]] = {

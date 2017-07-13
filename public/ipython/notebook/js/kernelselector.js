@@ -184,7 +184,7 @@ define([
         // notebook's path.
         var that = this;
         var parent = utils.url_path_split(that.notebook.notebook_path)[0];
-        that.notebook.contents.new_untitled(parent, {type: "notebook"}).then(
+        that.notebook.contents.new_untitled(parent, {type: "notebook", custom: {} }).then(
             function (data) {
                 var url = utils.url_join_encode(
                     that.notebook.base_url, 'notebooks', data.path

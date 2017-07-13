@@ -43,6 +43,7 @@ DELETE         /api/contents/*path                       controllers.Application
 
 # The presentation parameter is optional. E.g. /notebooks/abc.snb?presentation=report
 GET            /notebooks/$snb<.+\.snb>                  controllers.Application.openNotebook(snb:String, presentation: Option[String], read_only: Option[Int])
+GET            /notebooks/$snb<.+\.snb.ipynb>            controllers.Application.openNotebook(snb:String, presentation: Option[String], read_only: Option[Int])
 GET            /edit/:snb                                controllers.Application.openNotebook(snb:String, presentation: Option[String], read_only: Option[Int])
 GET            /notebooks/                               controllers.Application.dash(path:String="/")
 GET            /notebooks/*path                          controllers.Application.dash(path:String)

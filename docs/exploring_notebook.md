@@ -2,10 +2,10 @@
 
 ## Exploring the Notebook interface
 
-For this introductory guide, we are, we are going to use [core/spark-101](http://localhost:9001/notebooks/core/Spark-101.snb)
+For this introductory guide, we are, we are going to use [core/spark-101](http://localhost:9001/notebooks/core/Spark-101.snb.ipynb)
 *(for the links in this page to work, we assume that the Spark Notebook is running on localhost on the default port (9001))*
 
-Click on the folder [core](http://localhost:9001/tree/core) and then click on the [spark-101](http://localhost:9001/notebooks/core/Spark-101.snb) notebook.
+Click on the folder [core](http://localhost:9001/tree/core) and then click on the [spark-101](http://localhost:9001/notebooks/core/Spark-101.snb.ipynb) notebook.
 
 The Spark Notebook main abstraction is a _cell_. A cell can contain text, in the form of Markdown or Scala/Spark code.
 

@@ -1790,11 +1790,7 @@ define([
      * @return {string} This notebook's name (excluding file extension)
      */
     Notebook.prototype.get_notebook_name = function () {
-        var nbname = this.notebook_name;
-        if (nbname.indexOf(".snb") !== -1) {
-            nbname = nbname.substring(0,nbname.length-".snb".length);
-        }
-        return nbname;
+        return utils.get_fullpath_notebook_title(this.notebook_name);
     };
 
     /**
@@ -1824,7 +1820,7 @@ define([
     };
 
     /**
-     * Load a notebook from JSON (.snb).
+     * Load a notebook from JSON (.snb or .snb.ipynb).
      *
      * @param {object} data - JSON representation of a notebook
      */
@@ -2160,10 +2156,7 @@ define([
      * Returns the filename with the appropriate extension, appending if necessary.
      */
     Notebook.prototype.ensure_extension = function (name) {
-        if (!name.match(/\.snb$/)) {
-            name = name + ".snb";
-        }
-        return name;
+        return utils.ensure_nbfile_extension(name);
     };
 
     Notebook.prototype.get_notebook_dir = function() {

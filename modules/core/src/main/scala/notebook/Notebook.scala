@@ -21,6 +21,22 @@ case class Notebook(
 }
 
 object Notebook {
+  val EXTENSION_SNB_IPYNB = ".snb.ipynb"
+  val EXTENSION_SNB = ".snb"
+  val FILE_EXTENSIONS = Seq(EXTENSION_SNB_IPYNB, EXTENSION_SNB)
+
+  def notebookName(path: String): String = {
+    path match {
+      case _ if path.endsWith(EXTENSION_SNB_IPYNB) => path.dropRight(EXTENSION_SNB_IPYNB.length)
+      case _ if path.endsWith(EXTENSION_SNB) => path.dropRight(EXTENSION_SNB.length)
+      case _ => path // FIXME: or exception?
+    }
+  }
+
+  def isNotebookFile(path: String): Boolean = {
+    FILE_EXTENSIONS.exists(ext => path.endsWith(ext))
+  }
+
   def getNewUUID: String = java.util.UUID.randomUUID.toString
 
   def deserialize(str: String): Option[Notebook] = NBSerializer.fromJson(str)

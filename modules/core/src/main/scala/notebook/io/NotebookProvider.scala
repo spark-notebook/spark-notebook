@@ -76,7 +76,7 @@ trait NotebookProvider {
         .collect {
           case (name, relPath, file) =>
             if (isNotebookFile(file))
-              NotebookResource(name.dropRight(".snb".length), relPath)
+              NotebookResource(Notebook.notebookName(name), relPath)
             else if (file.isFile)
               GenericFile(name, relPath, "file")
             else
@@ -90,7 +90,7 @@ case class Version (id: String, message: String, timestamp: Long)
 
 
 object NotebookProvider {
-  def isNotebookFile(f: File): Boolean = f.isFile && f.getName.endsWith(".snb")
+  def isNotebookFile(f: File): Boolean = f.isFile && Notebook.isNotebookFile(f.getName)
   def isVisibleDirectory(f: File): Boolean = f.isDirectory && !f.getName.startsWith(".")
   def DefaultListingPolicy(f:File): Boolean = isNotebookFile(f) || isVisibleDirectory(f)
 }
