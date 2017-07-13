@@ -1026,6 +1026,8 @@ define([
                                 svgAsPng.svgAsPngUri(s, {}, function(uri) {
                                   var data = uri;
                                   o.data_list["application/svg+pngbase64"].push(data);
+                                  // P.S. this stores ONLY the LAST SVG per cell to the nbviewer
+                                  o.data["image/svg"] = data;
                                   resolve(true)
                                 });
                             });
