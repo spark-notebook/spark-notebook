@@ -1001,6 +1001,8 @@ define([
 
     OutputArea.prototype.convertSvg = function() {
         var promises = [];
+        var outputs = this.outputs;
+        // FIXME: remove existing display_data entries
         for (var i = 0; i < this.outputs.length; i++) {
             var o = this.outputs[i];
             if (o.output_type == 'execute_result') {
@@ -1026,9 +1028,15 @@ define([
                                 svgAsPng.svgAsPngUri(s, {}, function(uri) {
                                   var data = uri;
                                   o.data_list["application/svg+pngbase64"].push(data);
-                                  // P.S. this stores ONLY the LAST SVG per cell to the nbviewer
                                   var base64_encoded_png_image = data.replace("data:image/png;base64,", "");
-                                  o.data["image/png"] = base64_encoded_png_image;
+                                  var display_data_entry = {
+                                    metadata: {},
+                                    data: {
+                                      "image/png": base64_encoded_png_image
+                                    },
+                                    output_type: "display_data"
+                                  };
+                                  outputs.push(display_data_entry);
                                   resolve(true)
                                 });
                             });

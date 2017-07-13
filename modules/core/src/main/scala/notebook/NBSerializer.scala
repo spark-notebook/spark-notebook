@@ -71,6 +71,7 @@ object NBSerializer extends Logging {
     val tpe = (js \ "output_type").as[String]
     tpe match {
       case "execute_result" => scalaExecuteResultFormat.reads(js)
+      case "display_data" => scalaExecuteResultFormat.reads(js) // FIXME
       case "stout" => scalaOutputFormat.reads(js)
       case "pyerr"  => pyErrorFormat.reads(js)
       case "error" => scalaErrorFormat.reads(js)
