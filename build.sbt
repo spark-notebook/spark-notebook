@@ -292,6 +292,12 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(play.PlayScala).ena
     version in Universal <<= (version in ThisBuild, scalaVersion, sparkVersion, hadoopVersion, withHive) { (v, sc, sv, hv, h) =>
                                 s"$v-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "")
                               },
+    version in Docker <<= (version in ThisBuild, scalaVersion, sparkVersion, hadoopVersion, withHive) { (v, sc, sv, hv, h) =>
+                                s"$v-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "")
+                              },
+    version in Debian <<= (version in ThisBuild, scalaVersion, sparkVersion, hadoopVersion, withHive) { (v, sc, sv, hv, h) =>
+                                s"$v-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "")
+                              },
     mappings in Docker ++= directory("notebooks")
   )
   .settings(includeFilter in(Assets, LessKeys.less) := "*.less")
