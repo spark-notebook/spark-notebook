@@ -12,6 +12,10 @@ import org.joda.time.format.DateTimeFormat
 class NotebookDeserializationError(msg: String) extends RuntimeException(msg)
 
 object NBSerializer extends Logging {
+  // Shall the notebooks be saved in a backwards compatible SNB/IPYNB format?
+  // (by default it will use the new multiline format which is more diffable)
+  val USE_BACKWARDS_COMPATIBLE_FORMAT = false
+
   val DATETIME_FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
 
   def parseDateTime(str: String): Date = DATETIME_FORMAT.parseDateTime(str).toDate
@@ -117,7 +121,7 @@ object NBSerializer extends Logging {
     prompt_number: Option[Int] = None,
     outputs: Option[List[Output]] = None
   ) extends Cell {
-    def sourceString: String = this.source.mkString("\n")
+    def sourceString: String = this.source.mkString("")
   }
 
 
@@ -134,7 +138,19 @@ object NBSerializer extends Logging {
       (JsPath \ "prompt_number").readNullable[Int] and
       (JsPath \ "outputs").readNullable[List[Output]]
     )(CodeCell.apply _)
-  implicit val codeCellWrites = Json.writes[CodeCell]
+
+  private def codeCellWritesMultiline = Json.writes[CodeCell]
+  private def codeCellWritesSingleLine = OWrites { (c: CodeCell) =>
+    Json.obj(
+      "metadata" → c.metadata,
+      "cell_type" → c.cell_type,
+      "source" → c.sourceString,
+      "language" → c.language,
+      "prompt_number" → c.prompt_number,
+      "outputs" → c.outputs
+    )
+  }
+  implicit val codeCellWrites: Writes[CodeCell] = if (USE_BACKWARDS_COMPATIBLE_FORMAT) codeCellWritesSingleLine else codeCellWritesMultiline
   implicit val codeCellFormat = Format(codeCellReadsFromJson, codeCellWrites)
 
   case class MarkdownCell(
