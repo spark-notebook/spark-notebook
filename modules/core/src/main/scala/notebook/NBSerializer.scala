@@ -127,7 +127,10 @@ object NBSerializer extends Logging {
 
   // read source as a string "line1\nline2" or a ["line1\n", "line2"]
   val readSourceFromList = (JsPath \ "source").read[List[String]]
-  val readSourceFromString = (JsPath \ "source").read[String].map(_.split("\n").map(_ + "\n").toList)
+  val readSourceFromString = (JsPath \ "source").read[String]
+    // split by newline, and keep the separator, see https://stackoverflow.com/a/2206432/1276782
+    .map(_.split("(?<=\\n)").toList)
+
   val sourceFieldReader: Reads[List[String]] = readSourceFromString.or(readSourceFromList)
 
   val codeCellReadsFromJson: Reads[CodeCell] = (
