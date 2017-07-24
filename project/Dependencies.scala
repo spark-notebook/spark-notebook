@@ -81,7 +81,7 @@ object Dependencies {
     case x@scala_2_1X("0") =>
       throw new IllegalArgumentException(
         "Scala 2.10 is not supported anymore.\n" +
-        "Use scala 2.10 or an older version of spark-notebook (<= 0.8.x)"
+        "Use scala 2.11 or an older version of spark-notebook (<= 0.8.x)"
       )
       //      defaultSparkVersion match {
       //        case spark_X_Y("2", _, _)                => "2.10.6"
