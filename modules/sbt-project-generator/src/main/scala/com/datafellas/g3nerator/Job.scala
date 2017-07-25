@@ -625,7 +625,7 @@ class Job( val project: Project,
   }
 
   implicit class CodeCellImplicits(cell: CodeCell){
-    def isInterpretedCell: Boolean = cell.source.trim.startsWith(":")
+    def isInterpretedCell: Boolean = cell.sourceString.trim.startsWith(":")
     def isRegularCodeCell: Boolean = {
       Seq(None, Some("scala")).contains(cell.language) &&
         // simply ignore fancy interpreted cells for now
@@ -639,8 +639,8 @@ class Job( val project: Project,
     val customVars = loadCustomVars()
     val code = snb.cells.map { cells =>
       val cs = cells.collect {
-        case cell : notebook.NBSerializer.CodeCell if cell.isRegularCodeCell && !isClassDefinition(cell.source)=>
-            cell.metadata.id → cell.source
+        case cell : notebook.NBSerializer.CodeCell if cell.isRegularCodeCell && !isClassDefinition(cell.sourceString)=>
+            cell.metadata.id → cell.sourceString
       }
       val code = cs.map{ case (id, code) => id → code.split("\n").map { s => s"  $s" }.mkString("\n") }
                   .map{ case (id, code) => (s"\n\n  /* -- Code Cell: ${id} -- */ \n\n$code") }
@@ -656,8 +656,8 @@ class Job( val project: Project,
       val imports = snb.metadata.get.customImports.getOrElse(Nil).mkString("\n")
       val code = snb.cells.map { cells =>
         val cs = cells.collect {
-          case cell : notebook.NBSerializer.CodeCell if cell.isRegularCodeCell && isClassDefinition(cell.source)=>
-            cell.metadata.id → cell.source
+          case cell : notebook.NBSerializer.CodeCell if cell.isRegularCodeCell && isClassDefinition(cell.sourceString)=>
+            cell.metadata.id → cell.sourceString
         }
         val code = cs.map{ case (id, code) => (id, code.split("\n").map {s => "  " + s}.mkString("\n")) }
           .map{ case (id, code) => (s"\n\n  /* -- Code Cell: ${id} -- */ \n\n$code") }

@@ -12,6 +12,10 @@ import org.joda.time.format.DateTimeFormat
 class NotebookDeserializationError(msg: String) extends RuntimeException(msg)
 
 object NBSerializer extends Logging {
+  // Shall the notebooks be saved in a backwards compatible SNB/IPYNB format?
+  // (by default it will use the new multiline format which is more diffable)
+  val USE_BACKWARDS_COMPATIBLE_FORMAT = false
+
   val DATETIME_FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
 
   def parseDateTime(str: String): Date = DATETIME_FORMAT.parseDateTime(str).toDate
@@ -112,13 +116,45 @@ object NBSerializer extends Logging {
   case class CodeCell(
     metadata: CellMetadata,
     cell_type: String = "code",
-    source: String,
+    source: List[String],
     language: Option[String],
     prompt_number: Option[Int] = None,
     outputs: Option[List[Output]] = None
-  ) extends Cell
+  ) extends Cell {
+    def sourceString: String = this.source.mkString("")
+  }
 
-  implicit val codeCellFormat = Json.format[CodeCell]
+
+  // read source as a string "line1\nline2" or a ["line1\n", "line2"]
+  val readSourceFromList = (JsPath \ "source").read[List[String]]
+  val readSourceFromString = (JsPath \ "source").read[String]
+    // split by newline, and keep the separator, see https://stackoverflow.com/a/2206432/1276782
+    .map(_.split("(?<=\\n)").toList)
+
+  val sourceFieldReader: Reads[List[String]] = readSourceFromString.or(readSourceFromList)
+
+  val codeCellReadsFromJson: Reads[CodeCell] = (
+    (JsPath \ "metadata").read[CellMetadata] and
+      (JsPath \ "cell_type").readNullable[String].map(_.getOrElse("code")) and
+      sourceFieldReader and
+      (JsPath \ "language").readNullable[String] and
+      (JsPath \ "prompt_number").readNullable[Int] and
+      (JsPath \ "outputs").readNullable[List[Output]]
+    )(CodeCell.apply _)
+
+  private def codeCellWritesMultiline = Json.writes[CodeCell]
+  private def codeCellWritesSingleLine = OWrites { (c: CodeCell) =>
+    Json.obj(
+      "metadata" → c.metadata,
+      "cell_type" → c.cell_type,
+      "source" → c.sourceString,
+      "language" → c.language,
+      "prompt_number" → c.prompt_number,
+      "outputs" → c.outputs
+    )
+  }
+  implicit val codeCellWrites: Writes[CodeCell] = if (USE_BACKWARDS_COMPATIBLE_FORMAT) codeCellWritesSingleLine else codeCellWritesMultiline
+  implicit val codeCellFormat = Format(codeCellReadsFromJson, codeCellWrites)
 
   case class MarkdownCell(
     metadata: CellMetadata,
@@ -274,7 +310,7 @@ object NBSerializer extends Logging {
   }
 
   def toJson(n: Notebook): String = {
-    Json.prettyPrint(notebookFormat.writes(n))
+    import com.fasterxml.jackson.core.util.JsonPrettyPrintHacks
+    JsonPrettyPrintHacks.prettyPrintArrays(notebookFormat.writes(n))
   }
-
 }

@@ -706,7 +706,13 @@ define([
         Cell.prototype.fromJSON.apply(this, arguments);
         if (data.cell_type === 'code') {
             if (data.source !== undefined) {
-                this.set_text(data.source);
+                // for backwards compatibility, code can be both string and array...
+                var sourceCode =  data.source;
+                if (Array.isArray(sourceCode)) {
+                  sourceCode = sourceCode.join("");
+                }
+
+                this.set_text(sourceCode);
                 // make this value the starting point, so that we can only undo
                 // to this state, instead of a blank cell
                 this.code_mirror.clearHistory();

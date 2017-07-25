@@ -63,7 +63,7 @@ object Markdown {
   def isNonEmptyCodeCell(cell: CodeCell) =  {
     val codeCellLanguages = Seq(None, Some("scala"))
     cell.cell_type == "code" &&
-      cell.source.trim.nonEmpty &&
+      cell.sourceString.trim.nonEmpty &&
       codeCellLanguages.contains(cell.language)
   }
 
@@ -81,7 +81,7 @@ object Markdown {
     nb.cells.map { cells =>
       val csFiles:List[(String, Option[List[File]])]= cells.collect {
         case cell: CodeCell if isNonEmptyCodeCell(cell) =>
-          val source = cell.source
+          val source = cell.sourceString
 
           val (t, code) = if (source.startsWith(":sh")) {
             ("sh", source.drop(3))
