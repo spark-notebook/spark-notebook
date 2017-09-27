@@ -1,5 +1,7 @@
 import sbt._
 
+import scala.tools.nsc.settings.Final
+
 object Dependencies {
   val mesosVersion = sys.props.getOrElse("mesos.version", "0.26.0") //todo 1.0.0
 
@@ -12,7 +14,7 @@ object Dependencies {
   // play v2.5 uses jackson "2.7.8" which conflicts with "2.6.5" used in spark
   // otherwise it would give java.lang.NoClassDefFoundError: Could not initialize class org.apache.spark.rdd.RDDOperationScope$
   // FIXME: even better long-term solution would be to separate repl-server and play-ui
-  val jacksonVer = "[2.6.5, 2.6.5]" // as in spark v2.1
+  val jacksonVer = "[2.6.7, 2.6.7]" // as in spark v2.3.0-SNAPSHOT, v2.1.0 and 2.2.0 use jackson 2.6.5.
   val customJacksonScala = Seq(
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVer force() excludeAll ExclusionRule("com.google.guava"),
     "com.fasterxml.jackson.core" % "jackson-annotations" % jacksonVer force() excludeAll ExclusionRule("com.google.guava"),
@@ -21,8 +23,26 @@ object Dependencies {
     "com.fasterxml.jackson.core" % "jackson-core" % jacksonVer force() excludeAll ExclusionRule("com.google.guava"),
     "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % jacksonVer force() excludeAll ExclusionRule("com.google.guava"),
     "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8" % jacksonVer force() excludeAll ExclusionRule("com.google.guava"),
-    "com.fasterxml.jackson.datatype" % "jackson-datatype-joda" % jacksonVer force() excludeAll ExclusionRule("com.google.guava"),
-    "joda-time" % "joda-time" % "2.9.9"
+    "com.fasterxml.jackson.datatype" % "jackson-datatype-joda" % jacksonVer force() excludeAll ExclusionRule("com.google.guava")
+  )
+
+  val jodaTime = Seq("joda-time" % "joda-time" % "2.9.9" force() excludeAll ExclusionRule("joda-time"))
+
+  val netty = Seq("io.netty" % "netty-all" % "4.0.47.Final",
+                  "io.netty" % "netty" % "3.10.6.Final")
+//  val netty = Seq("io.netty" % "netty-all" % "4.0.47.Final" force() excludeAll ExclusionRule("io.netty"),
+//                  "io.netty" % "netty" % "3.10.6.Final" force() excludeAll ExclusionRule("io.netty"))
+//  val netty = Seq("io.netty" % "netty-all" % "4.0.47.Final" excludeAll(nettyExclusions: _*),
+//                  "io.netty" % "netty" % "3.10.6.Final" excludeAll(nettyExclusions: _*))
+
+  val nettyExclusions =  Seq(
+    SbtExclusionRule("io.netty", "netty-buffer"),
+    SbtExclusionRule("io.netty", "netty-codec"),
+    SbtExclusionRule("io.netty", "netty-codec-http"),
+    SbtExclusionRule("io.netty", "netty-common"),
+    SbtExclusionRule("io.netty", "netty-handler"),
+    SbtExclusionRule("io.netty", "netty-transport"),
+    SbtExclusionRule("io.netty", "netty-transport-native-epoll")
   )
 
   val jacksonExclusions =  Seq(

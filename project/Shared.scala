@@ -28,7 +28,10 @@ object Shared {
       ("jline", "2.12")
     }),
     withHive := defaultWithHive,
-    libraryDependencies += guava
+    libraryDependencies += guava,
+    libraryDependencies ++= jodaTime,
+    libraryDependencies ++= netty,
+    excludeDependencies ++= nettyExclusions
   )
 
   val gisSettings: Seq[Def.Setting[_]] = Seq(
