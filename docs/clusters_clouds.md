@@ -8,7 +8,7 @@
          * [Version 4.0](#version-40)
          * [Version 4.2](#version-42)
          * [Version 4.5](#version-45)
-   * [Mesosphere DCOS](#mesosphere-dcos)
+   * [Mesosphere DCOS (Mesos)](#mesosphere-dcos)
 
 # Secured YARN cluster
 
