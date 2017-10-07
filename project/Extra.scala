@@ -1,5 +1,3 @@
-import Dependencies._
-import sbt.Keys._
 import sbt._
 
 import scala.collection.mutable.ListBuffer

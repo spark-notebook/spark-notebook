@@ -36,39 +36,40 @@ object Shared {
   )
 
   val repl: Seq[Def.Setting[_]] = Seq(
-    libraryDependencies <+= (sparkVersion) { sv => sparkRepl(sv) }
+    libraryDependencies += sparkRepl(sparkVersion.value)
   )
 
   val hive: Seq[Def.Setting[_]] = Seq(
-    libraryDependencies <++= (withHive, sparkVersion) { (wh, sv) =>
-      if (wh) List(sparkHive(sv)) else Nil
+    libraryDependencies ++= {
+      if(withHive.value) Seq(sparkHive(sparkVersion.value)) else Seq.empty
     }
   )
 
   val yarnWebProxy: Seq[Def.Setting[_]] = Seq(
-    libraryDependencies <++= (hadoopVersion) { (hv) =>
-      if (!hv.startsWith("1")) List(yarnProxy(hv)) else Nil
+    libraryDependencies ++= {
+      val hv = hadoopVersion.value
+      if (!hv.startsWith("1")) Seq(yarnProxy(hv)) else Seq.empty
     }
   )
 
   lazy val sparkSettings: Seq[Def.Setting[_]] = Seq(
-    libraryDependencies <++= (scalaVersion, sparkVersion, hadoopVersion, jets3tVersion) { (v, sv, hv, jv) =>
+    libraryDependencies ++= {
       val jets3tVersion = sys.props.get("jets3t.version") match {
         case Some(jv) => jets3t(Some(jv), None)
-        case _ => jets3t(None, Some(hv))
+        case None => jets3t(None, Some(hadoopVersion.value))
       }
 
       val jettyVersion = "8.1.14.v20131031"
 
       val libs = Seq(
-        sparkCore(sv),
-        sparkYarn(sv),
-        sparkSQL(sv),
-        hadoopClient(hv),
+        sparkCore(sparkVersion.value),
+        sparkYarn(sparkVersion.value),
+        sparkSQL(sparkVersion.value),
+        hadoopClient(hadoopVersion.value),
         jets3tVersion,
         commonsCodec
       ) ++ (
-            if (!v.startsWith("2.10")) {
+            if (!scalaVersion.value.startsWith("2.10")) {
               // in 2.11
               //Boot.scala → HttpServer → eclipse
               // eclipse → provided boohooo :'-(
@@ -82,7 +83,7 @@ object Shared {
                 "org.eclipse.jetty" % "jetty-server"       % jettyVersion
               )
             } else Nil
-          ) ++ sparkMesos(sv)
+          ) ++ sparkMesos(sparkVersion.value)
       libs
     }
   ) ++ repl ++ hive ++ yarnWebProxy
