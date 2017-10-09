@@ -18,7 +18,7 @@ object DockerProperties extends BuildConf {
     Cmd("RUN", s"apt-get install -y wget curl")
   )
 
-  private val defaultVolumes: Seq[String] = Seq("/opt/docker", "/opt/docker/notebooks", "/opt/docker/logs")
+  private val defaultVolumes: Seq[String] = Seq()
 
   private def asCmdSeq( configs: Seq[Config] ): Seq[Cmd] = {
     configs.flatMap { possibleCmd =>
