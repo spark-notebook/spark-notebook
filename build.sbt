@@ -177,7 +177,7 @@ scalacOptions ++= Seq("-Xmax-classfile-name", "100")
 scriptClasspath in batScriptReplacements := Seq("*")
 
 batScriptExtraDefines += {
-  "set \"APP_CLASSPATH=%CLASSPATH_OVERRIDES%;%YARN_CONF_DIR%;%HADOOP_CONF_DIR%;%EXTRA_CLASSPATH%;%APP_CLASSPATH%\""
+  "set \"APP_CLASSPATH=%CLASSPATH_OVERRIDES%;%YARN_CONF_DIR%;%HADOOP_CONF_DIR%;%EXTRA_CLASSPATH%;%APP_LIB_DIR%\\..\\conf;%APP_CLASSPATH%\""
 }
 batScriptExtraDefines += {
   "set \"VIEWER_MODE="+viewerMode+"\""
