@@ -292,6 +292,15 @@ lazy val sbtProjectGenerator = Project(id = "sbt-project-generator", base = file
     buildInfoPackage := "notebook"
   )
 
+val fullVersion = Def.setting { 
+    Seq(
+      s"${version.in(ThisBuild).value}",
+      s"-scala-${scalaVersion.value}",
+      s"-spark-${sparkVersion.value}",
+      s"-hadoop-${hadoopVersion.value}",
+      if(withHive.value) "-with-hive" else ""
+    ).mkString
+  }
 
 lazy val sparkNotebook = project.in(file(".")).enablePlugins(PlayScala).enablePlugins(SbtWeb)
   // https://www.playframework.com/documentation/2.5.x/SettingsLogger#Using-a-Custom-Logging-Framework
@@ -306,29 +315,9 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(PlayScala).enablePl
     // configure the "universal" distribution package (i.e. spark-notebook.zip)
     mappings in Universal ++= directory("notebooks"),
 
-    version in Universal := Seq(
-      s"${version.in(ThisBuild).value}",
-      s"-scala-${scalaVersion.value}",
-      s"-spark-${sparkVersion.value}",
-      s"-hadoop-${hadoopVersion.value}",
-      if(withHive.value) "-with-hive" else ""
-    ).mkString,
-
-    version in Docker := Seq(
-      s"${version.in(ThisBuild).value}",
-      s"-scala-${scalaVersion.value}",
-      s"-spark-${sparkVersion.value}",
-      s"-hadoop-${hadoopVersion.value}",
-      if(withHive.value) "-with-hive" else ""
-    ).mkString,
-
-    version in Debian := Seq(
-      s"${version.in(ThisBuild).value}",
-      s"-scala-${scalaVersion.value}",
-      s"-spark-${sparkVersion.value}",
-      s"-hadoop-${hadoopVersion.value}",
-      if(withHive.value) "-with-hive" else ""
-    ).mkString,
+    version in Universal := fullVersion.value,
+    version in Docker := fullVersion.value,
+    version in Debian := fullVersion.value,
 
     mappings in Docker ++= directory("notebooks")
   )
