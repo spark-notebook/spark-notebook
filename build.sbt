@@ -373,10 +373,14 @@ lazy val observable = Project(id = "observable", base = file("modules/observable
     Extra.observableSettings
   )
 
+val versionShortWithSpark = Def.setting {
+  s"${sparkVersion.value}_${version.in(ThisBuild).value}"
+}
+
 lazy val common = Project(id = "common", base = file("modules/common"))
   .dependsOn(observable, sbtDependencyManager)
   .settings(
-    version := s"${version.in(ThisBuild).value}_${sparkVersion.value}"
+    version := versionShortWithSpark.value
   )
   .settings(
     libraryDependencies ++= Seq(
@@ -404,7 +408,7 @@ lazy val common = Project(id = "common", base = file("modules/common"))
 lazy val spark = Project(id = "spark", base = file("modules/spark"))
   .dependsOn(common, subprocess, observable)
   .settings(
-    version := s"${version.in(ThisBuild).value}_${sparkVersion.value}"
+    version := versionShortWithSpark.value
   )
   .settings(
     libraryDependencies ++= Seq(
