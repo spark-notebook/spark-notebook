@@ -12,7 +12,7 @@ class AnyPointTest extends FunSuite with TableDrivenPropertyChecks {
   private val javaSqlTimestamp = new java.sql.Timestamp(javaUtilDate.getTime)
   private val javaSqlDate = new java.sql.Date(javaUtilDate.getTime)
 
-  private val expected = "Thu Oct 19 12:30:33 2017"
+  private val expected = "Thu Oct 19 12:30:33 2017 +0200"
 
   test("Date like value is converted to format expected by java script") {
     val testData = Table[Any, Seq[String]](
