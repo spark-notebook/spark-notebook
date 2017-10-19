@@ -12,6 +12,8 @@ define([
     chart_container.attr("id", "custom-c3-chart-"+@genId).appendTo(container)
 
     data = {
+#      https://github.com/d3/d3-time-format/blob/master/README.md#locale_format
+      xFormat: '%a %b %d %H:%M:%S %Y'
     }
 
     prepareData = (data, ds) ->
