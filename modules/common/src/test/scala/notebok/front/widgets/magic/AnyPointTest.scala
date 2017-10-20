@@ -1,5 +1,6 @@
 package notebok.front.widgets.magic
 
+import java.text.SimpleDateFormat
 import java.util.GregorianCalendar
 
 import notebook.front.widgets.magic.AnyPoint
@@ -12,7 +13,9 @@ class AnyPointTest extends FunSuite with TableDrivenPropertyChecks {
   private val javaSqlTimestamp = new java.sql.Timestamp(javaUtilDate.getTime)
   private val javaSqlDate = new java.sql.Date(javaUtilDate.getTime)
 
-  private val expected = "Thu Oct 19 12:30:33 2017 +0200"
+  private val localTimeZone = new SimpleDateFormat("Z").format(javaUtilDate)
+
+  private val expected = s"Thu Oct 19 12:30:33 2017 $localTimeZone"
 
   test("Date like value is converted to format expected by java script") {
     val testData = Table[Any, Seq[String]](
