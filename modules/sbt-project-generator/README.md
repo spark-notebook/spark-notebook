@@ -1,4 +1,4 @@
-# Adalog-deploy-generator
+# sbt-project-generation
 
 This is a library which can generate an SBT project from a [Spark Notebook](https://github.com/andypetrella/spark-notebook/).
 
