@@ -15,7 +15,7 @@ class AnyPointTest extends FunSuite with TableDrivenPropertyChecks {
 
   private val localTimeZone = new SimpleDateFormat("Z").format(javaUtilDate)
 
-  private val expected = s"Thu Oct 19 12:30:33 2017 $localTimeZone"
+  private val expected = s"2017-10-19 12:30:33 Thu $localTimeZone"
 
   test("Date like value is converted to format expected by java script") {
     val testData = Table[Any, Seq[String]](

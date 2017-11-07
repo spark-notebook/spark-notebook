@@ -29,7 +29,7 @@ case class StringPoint(string:String, headers:Seq[String]=Seq("string value")) e
 
 case class AnyPoint(point:Any, header:Option[String]=None) extends MagicRenderPoint {
 
-  private val dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z")
+  private val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss EEE Z")
 
   override val headers = point match {
       case null           => Seq(header.getOrElse("Null"))

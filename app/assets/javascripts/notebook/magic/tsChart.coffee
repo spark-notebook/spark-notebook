@@ -13,7 +13,7 @@ define([
 
     data = {
 #      https://github.com/d3/d3-time-format/blob/master/README.md#locale_format
-      xFormat: '%a %b %d %H:%M:%S %Y %Z'
+      xFormat: '%Y-%m-%d %H:%M:%S %a %Z'
     }
 
     prepareData = (data, ds) ->
