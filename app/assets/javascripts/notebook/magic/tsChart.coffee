@@ -15,8 +15,8 @@ define([
 
     # Datetime data are coming as formatted strings. We need to tell about the format to c3 lib. But we still want
     # to support opening old notebooks with old format (timestamp in miliseconds) without need to regenerate the data.
-    sampleTimeData = @dataInit[0][options.x]
-    if typeof sampleTimeData is 'string'
+    dataHead = @dataInit[0]
+    if dataHead != undefined && typeof dataHead[options.x] is 'string'
       # https://github.com/d3/d3-time-format/blob/master/README.md#locale_format
       data.xFormat = '%Y-%m-%d %H:%M:%S %a %Z'
 
