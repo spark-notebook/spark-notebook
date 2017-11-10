@@ -21,3 +21,4 @@ notebooks/temp
 /bin/
 .cache-main
 .cache-tests
+*.swp

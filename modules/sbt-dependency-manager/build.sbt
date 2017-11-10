@@ -30,10 +30,14 @@ def depsToDownloadDeps(scalaBinaryVersion: String, sbtVersion: String) = scalaBi
 }
 
 //for aether
-libraryDependencies <++= scalaBinaryVersion {
-  case "2.10" => Nil
-    // must exclude as netty moved from org.jboss.netty to io.netty
-  case "2.11" => ("com.ning" % "async-http-client" % "[1.6.5, 1.6.5]" force() exclude("org.jboss.netty", "netty"))::Nil
+libraryDependencies ++= {
+  scalaBinaryVersion.value match {
+    case "2.11" => Seq(
+      // must exclude as netty moved from org.jboss.netty to io.netty
+      "com.ning" % "async-http-client" % "[1.6.5, 1.6.5]" force() exclude("org.jboss.netty", "netty")
+    )
+    case _ => Seq.empty
+  }
 }
 
 libraryDependencies ++= Seq(
@@ -47,16 +51,15 @@ libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.12"
 
 libraryDependencies += "com.typesafe" % "config" % "1.2.1"
 
-libraryDependencies <++= scalaBinaryVersion {
-  case "2.11" => List("org.scala-lang.modules" %% "scala-xml" % "1.0.4")
-  case "2.10" => Nil
+libraryDependencies ++= {
+  if(scalaBinaryVersion.value == "2.11") Seq("org.scala-lang.modules" %% "scala-xml" % "1.0.4") else Seq.empty
 }
 
 unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
 
 buildInfoSettings
 
-sourceGenerators in Compile <+= buildInfo
+sourceGenerators in Compile += buildInfo
 
 buildInfoKeys :=  Seq[BuildInfoKey](
                     scalaVersion,
