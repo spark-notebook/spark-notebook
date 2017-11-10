@@ -31,10 +31,6 @@ import uk.gov.hmrc.gitstamp.GitStampPlugin._
 
 import com.typesafe.sbt.SbtNativePackager.autoImport.NativePackagerHelper._
 
-import com.typesafe.sbt.packager.archetypes.ServerLoader.{SystemV, Upstart, Systemd}
-
-import com.typesafe.sbt.packager.docker._
-
 dockerBaseImage := DockerProperties.baseImage
 
 dockerCommands ++= DockerProperties.commands
@@ -69,7 +65,10 @@ version := sys.props.get("deb-version").getOrElse(version.value)
 
 import DebianConstants._
 maintainerScripts in Debian := maintainerScriptsAppend((maintainerScripts in Debian).value)(
-  Postinst -> s"chown -R ${DebianProperties.daemonUser}:${DebianProperties.daemonGroup} /usr/share/${MainProperties.name}/notebooks/"
+  Postinst -> (
+    s"chown -R ${DebianProperties.daemonUser}:${DebianProperties.daemonGroup} " +
+      s"/usr/share/${MainProperties.name}/notebooks/"
+  )
 )
 
 ivyScala := ivyScala.value map {
@@ -121,7 +120,7 @@ resolvers in ThisBuild ++= Seq(
   // docker
   "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
 ) ++ ((sparkResolver, searchSparkResolver, sparkVersion.value) match {
-  case (Some(x), _, sv) => Seq(
+  case (Some(x), _, _) => Seq(
                     ("spark " + x) at ("https://repository.apache.org/content/repositories/orgapachespark-"+x)
                   )
   case (None, true, sv)  =>
@@ -136,7 +135,10 @@ resolvers in ThisBuild ++= Seq(
     val c = repos.split("\n").toList.filter(!_.contains("<link")).mkString
     val r = scala.xml.parsing.XhtmlParser(scala.io.Source.fromString(c))
     val as = r \\ "a"
-    val sparks:List[Option[String]] = as.filter(_.toString.contains("orgapachespark")).map(_.attribute("href").map(_.head.text)).toList
+    val sparks:List[Option[String]] = as
+      .filter(_.toString.contains("orgapachespark"))
+      .map(_.attribute("href").map(_.head.text))
+      .toList
     val sparkRepos = sparks.collect { case Some(l) =>
       val id = l.reverse.tail.takeWhile(_.isDigit).reverse.toInt
       val u = l + "org/apache/spark/spark-core_2.10/"
@@ -146,11 +148,11 @@ resolvers in ThisBuild ++= Seq(
       val v = (r \\ "table" \\ "a").map(_.text).filter(_ != "Parent Directory").head.replace("/", "")
       (l, id, v)
     }
-    .groupBy(_._3).mapValues(_.sortBy(_._2).last._1)
+    .groupBy(_._3).mapValues(_.maxBy(_._2)._1)
     .map{ case (v, url) => (v == sv, v, url) }
     println("======================================================================== ")
     println("Found these repos")
-    println(sparkRepos.map{case (c, v, url) => s"${if(c) "[x]" else "[ ]" } $v: $url"}.mkString("\n"))
+    println(sparkRepos.map{case (cc, v, url) => s"${if(cc) "[x]" else "[ ]" } $v: $url"}.mkString("\n"))
 
     sparkRepos.filter(_._1).map{ case (_, v, url) => ("spark " + v) at url }
 
@@ -187,7 +189,7 @@ val ClasspathPattern = "declare -r app_classpath=\"(.*)\"\n".r
 
 bashScriptDefines := bashScriptDefines.value.map {
   case ClasspathPattern(classpath) =>
-    s"""declare -r app_classpath="$${CLASSPATH_OVERRIDES}:$${YARN_CONF_DIR}:$${HADOOP_CONF_DIR}:$${EXTRA_CLASSPATH}:${classpath}"\n""" +
+    s"""declare -r app_classpath="$${CLASSPATH_OVERRIDES}:$${YARN_CONF_DIR}:$${HADOOP_CONF_DIR}:$${EXTRA_CLASSPATH}:$classpath"\n""" +
     s"""export VIEWER_MODE=$viewerMode"""
   case entry => entry
 }
@@ -227,12 +229,14 @@ libraryDependencies ++= List(
 )
 
 //for aether and compensating for 2.11 modularization
-libraryDependencies <++= scalaBinaryVersion {
-  case "2.10" => Nil
-  case "2.11" => List(ningAsyncHttpClient,
-    "org.scala-lang.modules" %% "scala-xml" % "1.0.4",
-    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
-  )
+libraryDependencies ++= {
+  scalaBinaryVersion.value match {
+    case "2.10" => Nil
+    case "2.11" => List(ningAsyncHttpClient,
+      "org.scala-lang.modules" %% "scala-xml" % "1.0.4",
+      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
+    )
+  }
 }
 libraryDependencies ~= (_.map(excludeSpecs2))
 
@@ -283,11 +287,20 @@ lazy val sbtProjectGenerator = Project(id = "sbt-project-generator", base = file
 ) // FIXME: buildInfoKeys is now repeated
   .settings(buildInfoSettings: _*)
   .settings(
-    sourceGenerators in Compile <+= buildInfo,
+    sourceGenerators in Compile += buildInfo,
     buildInfoKeys :=  buildInfoValues,
     buildInfoPackage := "notebook"
   )
 
+val fullVersion = Def.setting { 
+    Seq(
+      s"${version.in(ThisBuild).value}",
+      s"-scala-${scalaVersion.value}",
+      s"-spark-${sparkVersion.value}",
+      s"-hadoop-${hadoopVersion.value}",
+      if(withHive.value) "-with-hive" else ""
+    ).mkString
+  }
 
 lazy val sparkNotebook = project.in(file(".")).enablePlugins(PlayScala).enablePlugins(SbtWeb)
   // https://www.playframework.com/documentation/2.5.x/SettingsLogger#Using-a-Custom-Logging-Framework
@@ -296,24 +309,20 @@ lazy val sparkNotebook = project.in(file(".")).enablePlugins(PlayScala).enablePl
   .dependsOn(sparkNotebookCore, gitNotebookProvider, subprocess, observable, sbtProjectGenerator, common, spark, kernel)
   .settings(sharedSettings: _*)
   .settings(
-    bashScriptExtraDefines <+= (organization, version, scalaBinaryVersion, scalaVersion, sparkVersion, hadoopVersion, withHive) map { (org, v, sbv, sv, pv, hv, wh) =>
-      s"""export ADD_JARS="$${ADD_JARS},$${lib_dir}/$$(ls $${lib_dir} | grep ${org}.common | head)""""
-    },
+    bashScriptExtraDefines +=
+      s"""export ADD_JARS="$${ADD_JARS},$${lib_dir}/$$(ls $${lib_dir} | grep ${organization.value}.common | head)"""",
+
     // configure the "universal" distribution package (i.e. spark-notebook.zip)
     mappings in Universal ++= directory("notebooks"),
-    version in Universal <<= (version in ThisBuild, scalaVersion, sparkVersion, hadoopVersion, withHive) { (v, sc, sv, hv, h) =>
-                                s"$v-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "")
-                              },
-    version in Docker <<= (version in ThisBuild, scalaVersion, sparkVersion, hadoopVersion, withHive) { (v, sc, sv, hv, h) =>
-                                s"$v-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "")
-                              },
-    version in Debian <<= (version in ThisBuild, scalaVersion, sparkVersion, hadoopVersion, withHive) { (v, sc, sv, hv, h) =>
-                                s"$v-scala-$sc-spark-$sv-hadoop-$hv" + (if (h) "-with-hive" else "")
-                              },
+
+    version in Universal := fullVersion.value,
+    version in Docker := fullVersion.value,
+    version in Debian := fullVersion.value,
+
     mappings in Docker ++= directory("notebooks")
   )
   .settings(includeFilter in(Assets, LessKeys.less) := "*.less")
-  .settings(unmanagedSourceDirectories in Compile <<= (scalaSource in Compile)(Seq(_))) //avoid app-2.10 and co to be created
+  .settings(unmanagedSourceDirectories in Compile := Seq(scalaSource.in(Compile).value)) //avoid app-2.10 and co to be created
   .settings(
     git.useGitDescribe := true,
     git.baseVersion := SparkNotebookSimpleVersion
@@ -364,10 +373,14 @@ lazy val observable = Project(id = "observable", base = file("modules/observable
     Extra.observableSettings
   )
 
+val versionShortWithSpark = Def.setting {
+  s"${sparkVersion.value}_${version.in(ThisBuild).value}"
+}
+
 lazy val common = Project(id = "common", base = file("modules/common"))
   .dependsOn(observable, sbtDependencyManager)
   .settings(
-    version  <<= (version in ThisBuild, sparkVersion) { (v,sv) => s"${sv}_${v}" }
+    version := versionShortWithSpark.value
   )
   .settings(
     libraryDependencies ++= Seq(
@@ -384,7 +397,7 @@ lazy val common = Project(id = "common", base = file("modules/common"))
   .settings(sparkSettings: _*)
   .settings(buildInfoSettings: _*)
   .settings(
-    sourceGenerators in Compile <+= buildInfo,
+    sourceGenerators in Compile += buildInfo,
     buildInfoKeys := buildInfoValues,
     buildInfoPackage := "notebook"
   )
@@ -395,7 +408,7 @@ lazy val common = Project(id = "common", base = file("modules/common"))
 lazy val spark = Project(id = "spark", base = file("modules/spark"))
   .dependsOn(common, subprocess, observable)
   .settings(
-    version  <<= (version in ThisBuild, sparkVersion) { (v,sv) => s"${v}_$sv" }
+    version := versionShortWithSpark.value
   )
   .settings(
     libraryDependencies ++= Seq(
@@ -409,22 +422,21 @@ lazy val spark = Project(id = "spark", base = file("modules/spark"))
       "org.scala-lang" % "scala-compiler" % scalaVersion.value
     ),
     unmanagedSourceDirectories in Compile += {
-      implicit val versionCompare = Ordering.apply[(Int, Int, Int)]
       def folder(v:String, sv:String) = {
-          val tsv = sv match { case extractVs(v,m,p) => (v.toInt,m.toInt,p.toInt) }
+          val tsv = sv match { case extractVs(major,minor,patch) => (major.toInt,minor.toInt,patch.toInt) }
 
           val scalaVerDir = (sourceDirectory in Compile).value / ("scala_" + v)
 
           tsv match {
             // THIS IS HOW WE CAN DEAL WITH RADICAL CHANGES
-            //case _ if versionCompare.lt(tsv, LAST_WORKING_VERSION) => scalaVerDir / "spark-pre"+LAST_WORKING_VERSION
+            //case _ if Ordering.apply[(Int, Int, Int)].lt(tsv, LAST_WORKING_VERSION) => scalaVerDir / "spark-pre"+LAST_WORKING_VERSION
             case _ => scalaVerDir / "spark-last"
           }
       }
       (scalaBinaryVersion.value, sparkVersion.value.takeWhile(_ != '-')) match {
         case (v, sv) if v startsWith "2.10" => folder("2.10", sv)
         case (v, sv) if v startsWith "2.11" => folder("2.11", sv)
-        case (v, sv) => throw new IllegalArgumentException("Bad scala version: " + v)
+        case (v, _) => throw new IllegalArgumentException("Bad scala version: " + v)
       }
     }
   )
