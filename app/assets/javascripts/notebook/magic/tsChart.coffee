@@ -11,8 +11,13 @@ define([
     chart_container = $("<div>").addClass("custom-c3-chart").attr("width", w+"px").attr("height", h+"px")
     chart_container.attr("id", "custom-c3-chart-"+@genId).appendTo(container)
 
-    data = {
-    }
+    data = {}
+
+    # Datetime data are coming as formatted strings. We need to tell about the format to c3 lib. But we still want
+    # to support opening old notebooks with old format (timestamp in miliseconds) without need to regenerate the data.
+    if (@dataInit.length > 0) && typeof @dataInit[0][options.x] is 'string'
+      # https://github.com/d3/d3-time-format/blob/master/README.md#locale_format
+      data.xFormat = '%Y-%m-%d %H:%M:%S %a %Z'
 
     prepareData = (data, ds) ->
       if options.g
