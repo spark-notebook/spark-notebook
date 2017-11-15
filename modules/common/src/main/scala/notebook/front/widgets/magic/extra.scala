@@ -1,9 +1,8 @@
 package notebook.front.widgets.magic
 
-import org.apache.spark.sql.{DataFrame, Row}
-
-import notebook.front.widgets.magic.Implicits._
 import notebook.front.widgets.isNumber
+import notebook.front.widgets.magic.Implicits._
+import org.apache.spark.sql.{DataFrame, Row}
 
 trait ExtraSamplerImplicits {
   import SamplerImplicits.Sampler

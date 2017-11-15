@@ -1,14 +1,13 @@
 package notebook.front.widgets.magic
 
-import notebook.util.Reflector
-import notebook.front.widgets.isNumber
-import org.apache.spark.sql.{Row}
-
+import java.sql.{Date => SqlDate, Timestamp => SqlTimestamp}
+import java.text.SimpleDateFormat
 import java.util.Date
-import java.sql.{Date => SqlDate}
-import java.sql.{Timestamp => SqlTimestamp}
 
 import com.vividsolutions.jts.geom.Geometry
+import notebook.front.widgets.isNumber
+import notebook.util.Reflector
+import org.apache.spark.sql.Row
 import org.wololo.geojson.GeoJSON
 
 trait MagicRenderPoint { me =>
@@ -27,42 +26,50 @@ trait MagicRenderPoint { me =>
 case class StringPoint(string:String, headers:Seq[String]=Seq("string value")) extends MagicRenderPoint {
   val values  = Seq(string)
 }
-case class AnyPoint(any:Any, header:Option[String]=None) extends MagicRenderPoint {
-  val headers = any match {
+
+case class AnyPoint(point:Any, header:Option[String]=None) extends MagicRenderPoint {
+
+  private val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss EEE Z")
+
+  override val headers = point match {
       case null           => Seq(header.getOrElse("Null"))
-      case v: Int         => Seq(header.getOrElse("Int"))
-      case v: Float       => Seq(header.getOrElse("Float"))
-      case v: Double      => Seq(header.getOrElse("Double"))
-      case v: Long        => Seq(header.getOrElse("Long"))
-      case v: BigDecimal  => Seq(header.getOrElse("BigDecimal"))
-      case v: String      => Seq(header.getOrElse("String"))
-      case v: Boolean     => Seq(header.getOrElse("Boolean"))
-      case v: SqlDate     => Seq(header.getOrElse("Date"))
-      case v: SqlTimestamp => Seq(header.getOrElse("Timestamp"))
-      case v: Date        => Seq(header.getOrElse("Date"))
-      case v: Geometry    => Seq(header.getOrElse("Geometry"))
-      case v: GeoJSON     => Seq(header.getOrElse("GeoJSON"))
-      case v: Any         => Reflector.toFieldNameArray(any)
+      case _: Int         => Seq(header.getOrElse("Int"))
+      case _: Float       => Seq(header.getOrElse("Float"))
+      case _: Double      => Seq(header.getOrElse("Double"))
+      case _: Long        => Seq(header.getOrElse("Long"))
+      case _: BigDecimal  => Seq(header.getOrElse("BigDecimal"))
+      case _: String      => Seq(header.getOrElse("String"))
+      case _: Boolean     => Seq(header.getOrElse("Boolean"))
+      case _: SqlDate     => Seq(header.getOrElse("SqlDate"))
+      case _: SqlTimestamp => Seq(header.getOrElse("SqlTimestamp"))
+      case _: Date        => Seq(header.getOrElse("Date"))
+      case _: Geometry    => Seq(header.getOrElse("Geometry"))
+      case _: GeoJSON     => Seq(header.getOrElse("GeoJSON"))
+      case _: Any         => Reflector.toFieldNameArray(point)
   }
-  val values  = any match {
+
+  /**
+    * Result of this conversion is displayed in widgets (like in [[notebook.front.widgets.charts.TableChart]] for
+    * example. Thus we want to convert points containing dates into human readable format. Otherwise they would be
+    * displayed as timestamps.
+    *
+    * This is also consumed by c3 library when plotting [[notebook.front.widgets.charts.TimeseriesChart]]. So string
+    * format used here needs to be in sync with format used to parse this string there.
+    */
+  override val values  = point match {
       case null           => Seq("<null-value>")
       case v: Int         => Seq(v)
       case v: Float       => Seq(v)
       case v: Double      => Seq(v)
       case v: Long        => Seq(v)
       case v: BigDecimal  => Seq(v)
-      case v: SqlDate     => Seq(v.toString)
-      case v: SqlTimestamp => Seq(v.toString)
-      case v: Date        => Seq(v.toString)
+      case v: Date        => Seq(dateFormat.format(v))
       case v: String      => Seq(v)
       case v: Boolean     => Seq(v)
       case v: Geometry    => Seq(v)
       case v: GeoJSON     => Seq(v)
-      case v: Any         => Reflector.toFieldValueArray(any).map {
-        // convert fields into "human-readable" format
-        case fieldValue @ (_: SqlDate | _: SqlTimestamp | _: Date) =>
-          // otherwise these would be displayed as integer timestamps...
-          fieldValue.toString
+      case v: Any         => Reflector.toFieldValueArray(v).map {
+        case v: Date => dateFormat.format(v)
         case fieldValue => fieldValue
       }
   }
@@ -174,13 +181,13 @@ object Implicits extends ExtraMagicImplicits {
   implicit def ArrayToPoints[T:scala.reflect.ClassTag] = new ToPoints[Array[T]] {
     def apply(x:Array[T], max:Int)(implicit sampler:Sampler[Array[T]]):Seq[MagicRenderPoint] = SeqToPoints(sampler(x,max).toSeq, max)
     def count(x:Array[T]) = x.size.toLong
-    def append(x:Array[T], y:Array[T]) = (x ++ y).toArray
+    def append(x:Array[T], y:Array[T]) = x ++ y
     def mkString(x:Array[T], sep:String="") = x.mkString(sep)
   }
   implicit def VectorToPoints[T:scala.reflect.ClassTag] = new ToPoints[Vector[T]] {
-    def apply(x:Vector[T], max:Int)(implicit sampler:Sampler[Vector[T]]):Seq[MagicRenderPoint] = SeqToPoints(sampler(x,max).toSeq, max)
+    def apply(x:Vector[T], max:Int)(implicit sampler:Sampler[Vector[T]]):Seq[MagicRenderPoint] = SeqToPoints(sampler(x,max), max)
     def count(x:Vector[T]) = x.size.toLong
-    def append(x:Vector[T], y:Vector[T]) = (x ++ y)
+    def append(x:Vector[T], y:Vector[T]) = x ++ y
     def mkString(x:Vector[T], sep:String="") = x.mkString(sep)
   }
   implicit def MapToPoints[K,V] = new ToPoints[Map[K,V]] {
