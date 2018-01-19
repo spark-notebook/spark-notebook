@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory
 import org.sonatype.aether.repository.RemoteRepository
 
 import scala.util.Try
-import scalaz.\/
+import scalaz.{\/, -\/, \/-}
 import scalaz.concurrent.Task
 
 
@@ -83,7 +83,10 @@ object CoursierDeps {
 
   def collectFetchedFiles(localArtifacts: Seq[FileError \/ File]): Seq[File] = {
     localArtifacts.map { artifactOrErr =>
-      artifactOrErr.getOrElse(throw new RuntimeException("Dependency resolution failed"))
+      artifactOrErr   match {
+        case -\/(fileError) => throw new RuntimeException("Dependency resolution failed: " + fileError.describe)
+        case \/-(x) => x
+      }
     }.filterNot(_.getPath.endsWith(".pom"))
   }
 }
