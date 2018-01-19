@@ -103,7 +103,6 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
     //val i = new HackIMain(settings, stdout)
     loop = new org.apache.spark.repl.HackSparkILoop(stdout, outputDir)
 
-
     jars.foreach { jar =>
       import scala.tools.nsc.util.ClassPath
       val f = scala.tools.nsc.io.File(jar).normalize
