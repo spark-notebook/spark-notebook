@@ -646,7 +646,7 @@ define([
                 }
                 var model = {};
 
-                var is_notebook = utils.is_notebook_file(filename);
+                var is_notebook = utils.is_spark_notebook_file(filename);
                 var content_type;
                 if (is_notebook) {
                     model.type = 'notebook';
