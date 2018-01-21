@@ -31,7 +31,8 @@ object Shared {
     libraryDependencies += guava,
     libraryDependencies ++= jodaTime,
     libraryDependencies ++= netty,
-    excludeDependencies ++= nettyExclusions
+    excludeDependencies ++= nettyExclusions,
+    libraryDependencies += jerseyClient
   )
 
   val gisSettings: Seq[Def.Setting[_]] = Seq(
