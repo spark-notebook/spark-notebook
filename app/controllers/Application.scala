@@ -258,7 +258,8 @@ object Application extends Controller {
                                 customArgs.getOrElse(List.empty[String]) :::
                                 AppUtils.proxy.all.map{ case (k,v) => s"""-D$k=$v"""}
                               ),
-                              impersonatedUser)
+                              impersonatedUser,
+                              userName)
       KernelManager.add(kId, kernel)
 
       val service = new CalcWebSocketService(kernelSystem,

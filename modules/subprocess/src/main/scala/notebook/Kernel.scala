@@ -22,7 +22,8 @@ class Kernel(
   kernelId: String,
   notebookPath_ : Option[String] = None,
   customArgs:Option[List[String]],
-  impersonatedUser: Option[String] = None
+  impersonatedUser: Option[String] = None,
+  authUser: Option[String] = None
 ) {
   private[this] var _notebookPath = notebookPath_
 
@@ -51,7 +52,7 @@ class Kernel(
     private var remoteActorSystemm: RemoteActorSystem = null
 
     override def preStart() {
-      remoteActorSystemm = Await.result(RemoteActorSystem.spawn(config, system, "kernel", kernelId, notebookPath, customArgs, impersonatedUser), 1 minutes)
+      remoteActorSystemm = Await.result(RemoteActorSystem.spawn(config, system, "kernel", kernelId, notebookPath, customArgs, impersonatedUser, authUser), 1 minutes)
       remoteDeployPromise.success(remoteActorSystemm.deploy)
     }
 

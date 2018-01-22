@@ -31,6 +31,9 @@ class RemoteActorProcess extends ForkableProcess {
       case _ => cfg
     }
 
+    val user = args(2)
+    sys.props += ("notebook.user" -> user)
+
     _system = ActorSystem("Remote", actualCfg)
 
     val ws = _system.actorOf(Props[notebook.kernel.WebSocketAppender], "remote-logger")
@@ -100,10 +103,12 @@ object RemoteActorSystem {
             kernelId: String,
             notebookPath: Option[String],
             customArgs:Option[List[String]],
-            impersonatedUser: Option[String]): Future[RemoteActorSystem] = {
+            impersonatedUser: Option[String],
+            authUser:Option[String]): Future[RemoteActorSystem] = {
     val cookiePath = ""
+    val user = authUser.orElse(sys.env.get("USER")).getOrElse("unknown")
     new BetterFork[RemoteActorProcess](config, system.dispatcher, customArgs)
-      .execute(kernelId, notebookPath.getOrElse("no-path"), impersonatedUser.getOrElse("NONE"), configFile, cookiePath)
+      .execute(kernelId, notebookPath.getOrElse("no-path"), impersonatedUser.getOrElse("NONE"), configFile, cookiePath, user)
       .map {
         new RemoteActorSystem(system, _)
       }
