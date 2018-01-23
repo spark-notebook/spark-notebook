@@ -253,6 +253,7 @@ object Application extends Controller {
       val kernel = new Kernel(config.kernel.config.underlying,
                               kernelSystem,
                               kId,
+                              _root_.utils.AppUtils.isVersioningSupported,
                               notebookPath,
                               Some(
                                 customArgs.getOrElse(List.empty[String]) :::

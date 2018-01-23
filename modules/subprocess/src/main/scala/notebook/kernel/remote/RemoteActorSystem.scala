@@ -34,6 +34,9 @@ class RemoteActorProcess extends ForkableProcess {
     val user = args(2)
     sys.props += ("notebook.user" -> user)
 
+    val isVersioningSupported = scala.util.Try(args(3).toString.toBoolean).toOption.getOrElse(false)
+    sys.props += ("notebook.git.enabled" -> isVersioningSupported.toString)
+
     _system = ActorSystem("Remote", actualCfg)
 
     val ws = _system.actorOf(Props[notebook.kernel.WebSocketAppender], "remote-logger")
@@ -104,11 +107,12 @@ object RemoteActorSystem {
             notebookPath: Option[String],
             customArgs:Option[List[String]],
             impersonatedUser: Option[String],
-            authUser:Option[String]): Future[RemoteActorSystem] = {
+            authUser:Option[String],
+            isVersioningSupported:Boolean): Future[RemoteActorSystem] = {
     val cookiePath = ""
     val user = authUser.orElse(sys.env.get("USER")).getOrElse("unknown")
     new BetterFork[RemoteActorProcess](config, system.dispatcher, customArgs)
-      .execute(kernelId, notebookPath.getOrElse("no-path"), impersonatedUser.getOrElse("NONE"), configFile, cookiePath, user)
+      .execute(kernelId, notebookPath.getOrElse("no-path"), impersonatedUser.getOrElse("NONE"), configFile, cookiePath, user, isVersioningSupported.toString)
       .map {
         new RemoteActorSystem(system, _)
       }
