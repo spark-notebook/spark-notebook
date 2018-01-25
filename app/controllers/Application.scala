@@ -253,12 +253,14 @@ object Application extends Controller {
       val kernel = new Kernel(config.kernel.config.underlying,
                               kernelSystem,
                               kId,
+                              _root_.utils.AppUtils.isVersioningSupported,
                               notebookPath,
                               Some(
                                 customArgs.getOrElse(List.empty[String]) :::
                                 AppUtils.proxy.all.map{ case (k,v) => s"""-D$k=$v"""}
                               ),
-                              impersonatedUser)
+                              impersonatedUser,
+                              userName)
       KernelManager.add(kId, kernel)
 
       val service = new CalcWebSocketService(kernelSystem,
