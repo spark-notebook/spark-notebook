@@ -2225,7 +2225,7 @@ define([
         var failed, msg;
         // we want cell/cm_config options to be set before creating them from JSON...
         this.writable = data.writable && !this.is_read_only();
-        this.config.cm_config = { readOnly: !this.writable && "nocursor" };
+        this.config.cm_config = { readOnly: !this.writable };
 
         try {
             this.fromJSON(data);

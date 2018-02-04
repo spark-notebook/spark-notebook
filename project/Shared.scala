@@ -28,7 +28,8 @@ object Shared {
       ("jline", "2.12")
     }),
     withHive := defaultWithHive,
-    libraryDependencies += guava
+    libraryDependencies += guava,
+    libraryDependencies += jerseyClient
   )
 
   val gisSettings: Seq[Def.Setting[_]] = Seq(

@@ -126,6 +126,8 @@ object Dependencies {
     ExclusionRule("javax.servlet", "javax.servlet-api")
   )
 
+  val jerseyClient = "com.sun.jersey" % "jersey-client" % "1.19"
+
   val defaultWithMesos = sys.props.getOrElse("with.mesos", "true").toBoolean
 
   def sparkMesos(v: String) = {
