@@ -23,6 +23,7 @@ import scala.util.matching.Regex
   @transient var execMemory = Option(System.getenv("SPARK_EXECUTOR_MEMORY"))
   @transient var sparkHome = Option(System.getenv("SPARK_HOME"))
   @transient var sparkMaster = Option(System.getenv("MASTER"))
+  @transient var hiveMetastoreUri = Option(System.getenv("HIVE_METASTORE_URI"))
 
   /* -------------------  URI Helpers -------------------------- */
   /**
@@ -134,7 +135,15 @@ import scala.util.matching.Regex
     if (sparkSession != null) {
       sparkSession.stop()
     }
-    sparkSession = SparkSession.builder().config(conf).getOrCreate
+        
+    // create session
+    sparkSession = hiveMetastoreUri.map { v =>
+      conf.set("hive.metastore.uris", v)
+      SparkSession.builder().config(conf).enableHiveSupport.getOrCreate
+    } getOrElse {
+      SparkSession.builder().config(conf).getOrCreate
+    }
+    
     sparkContext = sparkSession.sparkContext
     sparkMonitor = Some(new SparkMonitor(sparkContext))
     sparkMonitor.get.start
