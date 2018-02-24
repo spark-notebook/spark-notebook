@@ -26,20 +26,8 @@ class FileSystemNotebookProviderConfigurator extends Configurable[NotebookProvid
   private[FileSystemNotebookProviderConfigurator] class FileSystemNotebookProvider(override val root: Path) extends NotebookProvider {
     override def isVersioningSupported: Boolean = false
 
-    override def delete(path: Path)(implicit ev: ExecutionContext): Future[Notebook] = {
-      get(path).flatMap { notebook =>
-        val res: Future[Unit] = try {
-          val deleted = Files.deleteIfExists(path)
-          if (!deleted) {
-            Future.failed(new NotebookNotFoundException(path.toString))
-          } else {
-            Future.successful(())
-          }
-        } catch {
-          case ex: Throwable => Future.failed(ex)
-        }
-        res.map(_ => notebook)
-      }
+    override def delete(path: Path)(implicit ev: ExecutionContext): Future[Unit] = {
+      Future(FileOperations.recursivelyDeletePath(path))
     }
 
     override def get(path: Path, version: Option[Version] = None)(implicit ev: ExecutionContext): Future[Notebook] = {

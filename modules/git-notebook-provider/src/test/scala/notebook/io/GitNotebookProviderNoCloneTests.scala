@@ -54,7 +54,7 @@ class GitNotebookProviderNoCloneTests extends TestBase {
 
     "delete the file" in {
       whenReady( provider.delete(target) ) { n =>
-        n should be (notebook)
+        n should be ()
         lastLog shouldBe(s"${CommitMessagesConfiguration.DefaultDeleteMessage} ${testName}.snb")
       }
     }

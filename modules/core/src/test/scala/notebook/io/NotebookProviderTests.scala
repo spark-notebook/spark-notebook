@@ -52,7 +52,7 @@ class NotebookProviderTests extends WordSpec with Matchers with BeforeAndAfterAl
     override def isVersioningSupported: Boolean = true
     override def root: Path = rootPath
     override def get(path: Path, version: Option[Version])(implicit ev: ExecutionContext): Future[Notebook] = ???
-    override def delete(path: Path)(implicit ev: ExecutionContext): Future[Notebook] = ???
+    override def delete(path: Path)(implicit ev: ExecutionContext): Future[Unit] = ???
     override def save(path: Path, notebook: Notebook, saveSpec:Option[String] = None)(implicit ev: ExecutionContext): Future[Notebook] = ???
     override def moveInternal(src: Path, dest: Path)(implicit ev: ExecutionContext): Future[Path] = ???
   }
