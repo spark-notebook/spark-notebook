@@ -48,3 +48,9 @@
 # using a reserved parameter. See #184
 # -d -- -d
 
+# variable to set spark.driver.host
+SPARK_LOCAL_IP="localhost"
+
+# MESOS_NATIVE_LIBRARY=/usr/lib/libmesos.so
+# SPARK_HOME=""
+# PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/hadoop/hadoop/sbin:/home/hadoop/hadoop/bin
