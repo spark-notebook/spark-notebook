@@ -67,7 +67,7 @@ import DebianConstants._
 maintainerScripts in Debian := maintainerScriptsAppend((maintainerScripts in Debian).value)(
   Postinst -> (
     s"chown -R ${DebianProperties.daemonUser}:${DebianProperties.daemonGroup} " +
-      s"/usr/share/${MainProperties.name}/notebooks/"
+      s"/usr/share/${MainProperties.name}/"
   )
 )
 
