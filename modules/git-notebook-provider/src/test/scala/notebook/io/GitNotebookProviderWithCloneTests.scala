@@ -101,7 +101,7 @@ class GitNotebookProviderCloneHttpsTests extends TestBase {
     "delete the file" in {
       assume(target.toFile.exists())
       whenReady( provider.delete(target) ) { n =>
-        n shouldBe(notebook)
+        n shouldBe ()
         target.toFile.exists() shouldBe (false)
       }
     }
@@ -172,7 +172,7 @@ class GitNotebookProviderCloneSshTests extends TestBase {
 
     "delete the file" in {
       whenReady( provider.delete(target) ) { n =>
-        n shouldBe(notebook)
+        n shouldBe ()
       }
     }
 

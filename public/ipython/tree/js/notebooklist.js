@@ -323,6 +323,9 @@ define([
         if (model.type !== 'directory' && !this.viewer) {
             this.add_duplicate_button(item);
         }
+        if (model.type == 'directory' && !this.viewer) {
+          this.add_delete_directory_button(item);
+        }
         if (model.type == 'file' && !this.viewer) {
             this.add_delete_button(item);
         } else if (model.type == 'notebook' && !this.viewer) {
@@ -601,6 +604,40 @@ define([
             });
         item.find(item_buttons_selector).append(delete_button);
     };
+
+  NotebookList.prototype.add_delete_directory_button = function (item) {
+    var notebooklist = this;
+    var delete_button = $("<button/>").text("Delete directory").addClass("btn btn-default btn-xs").
+    click(function (e) {
+      // $(this) is the button that was clicked.
+      var that = $(this);
+      // We use the filename from the parent list_item element's
+      // data because the outer scope's values change as we iterate through the loop.
+      var parent_item = that.parents('div.list_item');
+      var name = parent_item.data('name');
+      var path = parent_item.data('path');
+      var message = 'Are you sure you want to permanently delete the directory: ' + name + '?';
+      dialog.modal({
+        title : "Delete directory",
+        body : message,
+        buttons : {
+          Delete : {
+            class: "btn-danger",
+            click: function() {
+              notebooklist.contents.delete(path).then(
+                function() {
+                  notebooklist.notebook_deleted(path);
+                }
+              );
+            }
+          },
+          Cancel : {}
+        }
+      });
+      return false;
+    });
+    item.find(item_buttons_selector).append(delete_button);
+  };
 
     NotebookList.prototype.notebook_deleted = function(path) {
         /**

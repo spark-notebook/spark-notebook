@@ -60,21 +60,15 @@ class ConfigurableGitNotebookProvider(val gitProvider: GitProvider, commitMsgs: 
     } yield notebook
   }
 
-  // check exists => fs.delete => git.delete
-  override def delete(path: Path)(implicit ev: ExecutionContext): Future[Notebook] = {
+  // Delete a file or a directory
+  // check exists => fs.deleteRecursively => git.delete
+  override def delete(path: Path)(implicit ev: ExecutionContext): Future[Unit] = {
     val relativePathStr = relativize(path).toString
     for {
-      notebook <- get(path)
-      _ <- {
-        val deleted = Files.deleteIfExists(path)
-        if (deleted) {
-          gitProvider.remove(relativePathStr, s"${commitMsgs.delete} $relativePathStr")
-        } else {
-          Future.failed(new NotebookNotFoundException(relativePathStr))
-        }
-      }
+      _ <- Future.successful()
+      _ <- { FileOperations.recursivelyDeletePath(path); gitProvider.remove(relativePathStr, s"${commitMsgs.delete} $relativePathStr") }
       _ <- gitProvider.push()
-    } yield notebook
+    } yield ()
   }
 
   override def versions(path:Path)(implicit ev: ExecutionContext): Future[List[Version]] = {

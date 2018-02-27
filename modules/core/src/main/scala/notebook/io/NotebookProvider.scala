@@ -22,7 +22,7 @@ trait NotebookProvider {
 
   def listingPolicy: File => Boolean = NotebookProvider.DefaultListingPolicy
 
-  def delete(path: Path)(implicit ev: ExecutionContext): Future[Notebook]
+  def delete(path: Path)(implicit ev: ExecutionContext): Future[Unit]
 
   def get(path: Path, version: Option[Version] = None)(implicit ev: ExecutionContext): Future[Notebook]
 
