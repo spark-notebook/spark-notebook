@@ -39,7 +39,7 @@ GET            /api/contents/*path                       controllers.Application
 POST           /api/contents/*path                       controllers.Application.newContent(path:String)
 PATCH          /api/contents/*path                       controllers.Application.renameNotebook(path:String)
 PUT            /api/contents/*path                       controllers.Application.saveNotebook(path:String)
-DELETE         /api/contents/*path                       controllers.Application.deleteNotebook(path:String)
+DELETE         /api/contents/*path                       controllers.Application.deletePath(path:String)
 
 # The presentation parameter is optional. E.g. /notebooks/abc.snb?presentation=report
 GET            /notebooks/$snb<.+\.snb>                  controllers.Application.openNotebook(snb:String, presentation: Option[String], read_only: Option[Int])

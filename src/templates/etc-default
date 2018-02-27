@@ -12,7 +12,7 @@
 # Setting JAVA_OPTS
 # -----------------
 # JAVA_OPTS="-Xms2048m -Xmx2048m $JAVA_OPTS"
-JAVA_OPTS="-Dpidfile.path=/var/run/${{app_name}}/play.pid $JAVA_OPTS"
+# JAVA_OPTS="-Dpidfile.path=/var/run/${{app_name}}/play.pid $JAVA_OPTS"
 # JAVA_OPTS="-Dconfig.file=/etc/${{app_name}}/env.conf $JAVA_OPTS"
 # JAVA_OPTS="-DapplyEvolutions.default=false $JAVA_OPTS"
 # JAVA_OPTS="-Dhttp.port=9001 $JAVA_OPTS"
@@ -48,3 +48,9 @@ JAVA_OPTS="-Dpidfile.path=/var/run/${{app_name}}/play.pid $JAVA_OPTS"
 # using a reserved parameter. See #184
 # -d -- -d
 
+# variable to set spark.driver.host
+SPARK_LOCAL_IP="localhost"
+
+# MESOS_NATIVE_LIBRARY=/usr/lib/libmesos.so
+# SPARK_HOME=""
+# PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/hadoop/hadoop/sbin:/home/hadoop/hadoop/bin
