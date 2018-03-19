@@ -50,10 +50,10 @@ object Dependencies {
     "com.typesafe.play" %% "play-json" % "2.5.15" withSources() excludeAll(playExclusions: _*)
   ) ++ customJacksonScala
 
-  val pac4jVersion = "2.1.0-SNAPSHOT"
+  val pac4jVersion = "2.1.0"
   // see https://github.com/pac4j/play-pac4j-scala-demo/blob/20ccf821bc557347ca2e555fb1c85d4afea92366/build.sbt#L9-L29
   val pac4jSecurity = Seq(
-    "org.pac4j" % "play-pac4j" % "3.0.1-SNAPSHOT" changing() excludeAll(ExclusionRule("org.pac4j", "pac4j-core")),
+    "org.pac4j" % "play-pac4j" % "3.0.1" changing() excludeAll(ExclusionRule("org.pac4j", "pac4j-core")),
     "org.pac4j" % "pac4j"  % pac4jVersion changing(),
     "org.pac4j" % "pac4j-kerberos" % pac4jVersion changing(),
     "org.pac4j" % "pac4j-core" % pac4jVersion changing(),
