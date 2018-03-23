@@ -395,6 +395,12 @@ val versionShortWithSpark = Def.setting {
   s"${sparkVersion.value}_${version.in(ThisBuild).value}"
 }
 
+val commonProjSparkDir = sparkVersionTuple match {
+  case _ if Ordering.apply[(Int, Int, Int)].lt(sparkVersionTuple, (2, 3, 0)) =>
+    "spark-pre-2.3"
+  case _ => "spark-post-2.3"
+}
+
 lazy val common = Project(id = "common", base = file("modules/common"))
   .dependsOn(observable, sbtDependencyManager)
   .settings(
@@ -406,7 +412,8 @@ lazy val common = Project(id = "common", base = file("modules/common"))
       log4j
     ),
     libraryDependencies += scalaTest,
-    unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
+    unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value),
+    unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / commonProjSparkDir
   )
   .settings(
     gisSettings
