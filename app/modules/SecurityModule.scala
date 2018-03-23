@@ -76,6 +76,8 @@ class SecurityModule(environment: Environment, configuration: Configuration) ext
     // bind(classOf[PlaySessionStore]).to(classOf[PlayCacheSessionStore])
     import play.cache.CacheApi
     val playCacheSessionStore: PlayCacheSessionStore = new PlayCacheSessionStore(getProvider(classOf[CacheApi]))
+    val sessionTimeout = configuration.getInt(s"notebook.server.auth.timeout").getOrElse(3600*100)
+    playCacheSessionStore.setTimeout(sessionTimeout)
     ApplicationHacks.playPac4jSessionStoreOption = Some(playCacheSessionStore)
     bind(classOf[PlaySessionStore]).toInstance(playCacheSessionStore)
 

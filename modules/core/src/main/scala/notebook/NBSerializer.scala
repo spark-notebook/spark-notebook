@@ -310,7 +310,9 @@ object NBSerializer extends Logging {
   }
 
   def toJson(n: Notebook): String = {
-    import com.fasterxml.jackson.core.util.JsonPrettyPrintHacks
-    JsonPrettyPrintHacks.prettyPrintArrays(notebookFormat.writes(n))
+    //import com.fasterxml.jackson.core.util.JsonPrettyPrintHacks
+    //JsonPrettyPrintHacks.prettyPrintArrays(notebookFormat.writes(n))
+
+    Json.prettyPrint(notebookFormat.writes(n))
   }
 }

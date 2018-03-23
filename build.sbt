@@ -232,7 +232,7 @@ libraryDependencies ++= List(
 libraryDependencies ++= {
   scalaBinaryVersion.value match {
     case "2.10" => Nil
-    case "2.11" => List(ningAsyncHttpClient,
+    case "2.11" => List( //ningAsyncHttpClient, maybe not needed anymore after migration to faster deps downloading
       "org.scala-lang.modules" %% "scala-xml" % "1.0.4",
       "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
     )
@@ -302,7 +302,25 @@ val fullVersion = Def.setting {
     ).mkString
   }
 
-lazy val sparkNotebook = project.in(file(".")).enablePlugins(PlayScala).enablePlugins(SbtWeb)
+val playRemoveNetty = {
+  val result = sparkVersionTuple match {
+    case _ if Ordering.apply[(Int, Int, Int)].lt(sparkVersionTuple, (2, 3, 0)) => false
+    case _ => true
+  }
+  println(s"playRemoveNetty: $result")
+  result
+}
+
+
+// in spark 2.3.0 dont use PlayNetty to prevent a Netty conflict
+def rootProject = {
+  val root = project.in(file("."))
+  if (playRemoveNetty)
+    root.enablePlugins(PlayScala, PlayAkkaHttpServer).disablePlugins(PlayNettyServer)
+  else root.enablePlugins(PlayScala)
+}
+
+lazy val sparkNotebook = rootProject.enablePlugins(SbtWeb)
   // https://www.playframework.com/documentation/2.5.x/SettingsLogger#Using-a-Custom-Logging-Framework
   .disablePlugins(PlayLogback)
   .aggregate(sparkNotebookCore, gitNotebookProvider, sbtDependencyManager, sbtProjectGenerator, subprocess, observable, common, spark, kernel)
@@ -377,6 +395,12 @@ val versionShortWithSpark = Def.setting {
   s"${sparkVersion.value}_${version.in(ThisBuild).value}"
 }
 
+val commonProjSparkDir = sparkVersionTuple match {
+  case _ if Ordering.apply[(Int, Int, Int)].lt(sparkVersionTuple, (2, 3, 0)) =>
+    "spark-pre-2.3"
+  case _ => "spark-post-2.3"
+}
+
 lazy val common = Project(id = "common", base = file("modules/common"))
   .dependsOn(observable, sbtDependencyManager)
   .settings(
@@ -388,7 +412,8 @@ lazy val common = Project(id = "common", base = file("modules/common"))
       log4j
     ),
     libraryDependencies += scalaTest,
-    unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
+    unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value),
+    unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / commonProjSparkDir
   )
   .settings(
     gisSettings
