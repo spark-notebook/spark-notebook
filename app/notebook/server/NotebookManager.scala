@@ -107,7 +107,7 @@ class NotebookManager(val notebookConfig: NotebookConfig) {
       val newPath = incrementFileName(Notebook.notebookName(nb.path))
       val newName = getName(newPath)
       val readExistingAndSaveNewNb: Future[String] = Notebook.deserializeFuture(nb.data).map { oldNB =>
-        val newNb = Notebook(oldNB.metadata.map(_.copy(id = Notebook.getNewUUID, name = newName)), oldNB.cells, oldNB.worksheets, oldNB.autosaved, None)
+        val newNb = Notebook(oldNB.metadata.map(_.copy(id = Notebook.getNewUUID, name = newName)), oldNB.cells, oldNB.worksheets, oldNB.autosaved, oldNB.nbformat, oldNB.nbformat_minor)
         save(newPath,newNb, overwrite = false)
         newPath
       }

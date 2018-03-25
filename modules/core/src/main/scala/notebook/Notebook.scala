@@ -9,7 +9,8 @@ case class Notebook(
                      cells: Option[List[Cell]] = Some(Nil),
                      worksheets: Option[List[Worksheet]] = None,
                      autosaved: Option[List[Worksheet]] = None,
-                     nbformat: Option[Int] = None
+                     nbformat: Option[Int] = None,
+                     nbformat_minor: Option[Int] = None
                    ) {
   def name = metadata.map(_.name).getOrElse("Anonymous")
   def normalizedName: String = {

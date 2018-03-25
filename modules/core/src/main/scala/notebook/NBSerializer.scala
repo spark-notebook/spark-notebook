@@ -280,7 +280,7 @@ object NBSerializer extends Logging {
     json.validate[Notebook] match {
       case s: JsSuccess[Notebook] =>
         s.get match {
-          case Notebook(None, None, None, None, None) =>
+          case Notebook(None, None, None, None, None, None) =>
             logWarn("Nothing in the notebook data.")
             throw new NotebookDeserializationError("Got an empty notebook")
 
