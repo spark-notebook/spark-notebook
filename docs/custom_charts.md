@@ -86,8 +86,8 @@ It has to declare the original dataset which needs to be a wrapper (`List`, `Arr
   * `f` the function to call when the snippet will be executed
   * `o` a JSON object that will be provided to the above function at execution time. Here we define which field has to be used for the name and duration.
 
-  ```scala
-  import notebook.front.widgets._
+```scala
+import notebook.front.widgets._
 import notebook.front.widgets.magic._
 import notebook.front.widgets.magic.Implicits._
 import notebook.front.widgets.magic.SamplerImplicits._
