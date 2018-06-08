@@ -515,6 +515,10 @@ object Application extends Controller {
     }
   )
 
+  def getInfoKernel(kernelId: String) = Action { request =>
+    KernelManager.get(kernelId).map(_ => Ok(s"""{ "id" : "$kernelId", "name" : "spark" }""")).getOrElse(NotFound(s"""{ "$kernelId" : "missing" }"""))
+  }
+
   def terminateKernel(kernelId: String) = Action { request =>
     closeKernel(kernelId)
     Ok(s"""{"$kernelId": "closed"}""")
