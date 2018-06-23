@@ -18,6 +18,7 @@ POST           /api/sessions                             controllers.Application
 GET            /api/sessions                             controllers.Application.sessions()
 GET            /api/sessions/path/*path                  controllers.Application.getSession(path:String)
 
+GET            /api/kernels/:kernelId                    controllers.Application.getInfoKernel(kernelId:String)
 POST           /api/kernels/:kernelId/interrupt          controllers.Application.terminateKernel(kernelId:String)
 POST           /api/kernels/:kernelId/restart            controllers.Application.restartKernel(kernelId:String)
 
