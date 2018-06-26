@@ -90,8 +90,7 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
       gurls
     }
 
-    val classpath = urls// map {_.toString}
-    settings.classpath.value = classpath.distinct.mkString(java.io.File.pathSeparator)
+    val classpath = urls.toList
 
     //bootclasspath → settings.classpath.isDefault = false → settings.classpath is used
     settings.bootclasspath.value += scala.tools.util.PathResolver.Environment.javaBootClassPath
@@ -103,11 +102,13 @@ class Repl(val compilerOpts: List[String], val jars:List[String]=Nil) extends Re
     //val i = new HackIMain(settings, stdout)
     loop = new org.apache.spark.repl.HackSparkILoop(stdout, outputDir)
 
-    jars.foreach { jar =>
+    val fps = jars.map{ jar =>
       import scala.tools.nsc.util.ClassPath
       val f = scala.tools.nsc.io.File(jar).normalize
-      loop.addedClasspath = ClassPath.join(loop.addedClasspath, f.path)
+      //loop.addedClasspath = ClassPath.join(loop.addedClasspath, f.path)
+      f.path
     }
+    settings.classpath.value=(classpath.distinct ::: fps).mkString(java.io.File.pathSeparator)
 
     loop.process(settings)
     _classServerUri = Some(loop.outputDir.getAbsolutePath)
