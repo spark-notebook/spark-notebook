@@ -1,0 +1,12 @@
+docker {
+  maintainer = "Luis Azazel Cypher"
+  registry = "eu.gcr.io/spark-kubernetes-666666"
+  commands = [
+    { cmd = USER, arg = root },
+    { cmd = RUN, arg = "apt-get update --fix-missing && apt-get install -y -t jessie-backports --no-install-recommends openjdk-8-jdk" },
+    { cmd = ENV, arg = "JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64" },
+    { cmd = RUN, arg = "apt-get install -y wget curl"},
+    { cmd = ADD, arg = "https://storage.googleapis.com/kubernetes-release/release/v1.6.4/bin/linux/amd64/kubectl /usr/local/bin/kubectl" },
+    { cmd = RUN, arg = "chmod +x /usr/local/bin/kubectl" }
+  ]
+}
