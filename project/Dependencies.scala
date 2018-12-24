@@ -92,6 +92,21 @@ object Dependencies {
       case spark_X_Y(_, _, _) => x
     }
   }
+  val defaultWithKubernetes = sys.props.getOrElse("with.kubernetes", "false").toBoolean
+  def sparkKubernetes(v: String) = {
+    if (!defaultWithKubernetes) {
+      Seq()
+    } else {
+      defaultSparkVersion match {
+        case spark_X_Y("2", minor, _) if minor.toInt >= 4 => Seq("org.apache.spark" %% "spark-kubernetes" % v)
+        case spark_X_Y(_, _, _) => throw new IllegalArgumentException(
+          "Kubernetes client mode is only supported in Spark >= 2.4.0.\n" +
+          "Use -Dspark.version=2.4.0 -Dwith.kubernetes=true"
+        )
+      }
+
+    }
+  }
 
   def sparkCore(v: String) = "org.apache.spark" %% "spark-core" % v excludeAll(
     ExclusionRule("org.apache.hadoop"),
