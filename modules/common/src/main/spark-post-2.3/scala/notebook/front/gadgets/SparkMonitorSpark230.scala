@@ -22,7 +22,13 @@ case class JobInfo(jobId: Int,
 
 // Dummy at the moment to make things work. no actual progress is reported
 class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends Logging {
-  def sparkUiLink = None
+  def sparkUiLink: Option[String] = sparkContext.master match {
+    case m if m.startsWith("yarn") =>
+      sys.env.get("YARN_JOB_PROXY_URL")
+        .map(yarnProxyURL => s"${yarnProxyURL}/${sparkContext.applicationId}")
+    case _ =>
+      sparkContext.ui.map(sparkUI => sparkUI.webUrl)
+  }
 
   val connection = notebook.JSBus.createConnection("jobsProgress")
 
