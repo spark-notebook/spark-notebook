@@ -41,10 +41,16 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends
       job.stageIds().flatMap(sc.statusTracker.getStageInfo)
     }
 
-    val taskCount = stages.map(_.numTasks).sum
-    val completedTaskCount = stages.map(_.numCompletedTasks).sum
+    val totalTasks = stages.map(_.numTasks).sum
+    val activeTasks = stages.map(_.numActiveTasks()).sum
+    val completedTasks = stages.map(_.numCompletedTasks).sum + stages.map(_.numFailedTasks()).sum
+    // numTasks include skipped tasks too while completedTasks do not include it
+    val bestGuessCompleted = Math.max(completedTasks, totalTasks - activeTasks)
+    // P.S. it's not well documented what numCompletedTasks & numFailedTasks exactly mean
+    // so at least for now lets do a bit of math to be sure we return a meaningful result
+    val completedTaskCount = Math.min(bestGuessCompleted, totalTasks)
 
-    JobGroupInfo(jobGroup = jobGroup, completedTasks = completedTaskCount, totalTasks = taskCount)
+    JobGroupInfo(jobGroup = jobGroup, completedTasks = completedTaskCount, totalTasks = totalTasks)
   }
 
   def fetchAllJobStatus: Seq[JsObject] = {
