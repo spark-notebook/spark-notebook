@@ -31,7 +31,7 @@ addSbtPlugin("uk.gov.hmrc" % "sbt-git-stamp" % "5.2.0")
   * better and faster dependency resolution
   * @see https://github.com/alexarchambault/coursier
   */
-addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.0.0-RC4")
+addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.0.3")
 
 /**
   * sbt-updates
