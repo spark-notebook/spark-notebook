@@ -104,7 +104,7 @@ class SparkMonitor(sparkContext:SparkContext, checkInterval:Long = 1000) extends
               completedTasks = j1.completedTasks + j2.completedTasks,
               totalTasks = j1.totalTasks + j2.totalTasks,
               submissionTime = minOption(j1.submissionTime ++ j2.submissionTime),
-              completionTime = maxOption(j1.submissionTime ++ j2.submissionTime)
+              completionTime = maxOption(j1.completionTime ++ j2.completionTime)
             )
           }
         }.toSeq
