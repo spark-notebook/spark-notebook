@@ -36,7 +36,7 @@ define([
       function findCells(id) {
         var f = ".cell[data-cell-id"+(id?"='"+id+"'":"")+"]";
         var cells = $(IPython.notebook.element).find(f);
-        return _.object(_.map(cells, function(cell) {return [$(cell).data("cell-id"), cell]}));
+        return _.object(_.map(cells, function(cell) {return [$(cell).attr("data-cell-id"), cell]}));
       }
 
       progress.subscribe(function(status) {
@@ -60,15 +60,18 @@ define([
           var totalTasks = sum(_.pluck(jobs, 'total_tasks'));
           var cellProgress = Math.min(Math.floor(completedTasks * 100.0 / totalTasks), 100);
           if (cell_id) {
-            var cell = $(cells[cell_id]).data("cell");
-            var cellProgressBar = $(cells[cell_id]).find('div.progress-bar');
-            cellProgressBar.css("width", Math.max(cellProgress, 5) + "%");
-            if (cellProgress == 100) {
-              cellProgressBar.removeClass("active").removeClass("progress-bar-striped");
-              if (cell) cell.hideCancelCellBtn();
-            } else {
-              cellProgressBar.addClass("active").addClass("progress-bar-striped");
-              if (cell) cell.addCancelCellBtn();
+            // now old cell runs have cell ids which are non-existent anymore (as each run gets new cell id)
+            if (cells[cell_id] !== undefined) {
+              var cell = $(cells[cell_id]).data("cell");
+              var cellProgressBar = $(cells[cell_id]).find('div.progress-bar');
+              cellProgressBar.css("width", Math.max(cellProgress, 5) + "%");
+              if (cellProgress == 100) {
+                cellProgressBar.removeClass("active").removeClass("progress-bar-striped");
+                if (cell) cell.hideCancelCellBtn();
+              } else {
+                cellProgressBar.addClass("active").addClass("progress-bar-striped");
+                if (cell) cell.addCancelCellBtn();
+              }
             }
           }
         });

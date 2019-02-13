@@ -480,6 +480,14 @@ define([
         var callbacks = this.get_callbacks();
 
         var old_msg_id = this.last_msg_id;
+
+        // update cell UUID at each run (so spark job progress is reported only for the most recent run)
+        this.cell_id = utils.uuid();
+        // update cell metadata which triggers the update of data-cell-id DOM attribute
+        var md = this.metadata;
+        md.id = this.cell_id;
+        this.metadata = md;
+
         var cell_id = this.cell_id;
         this.last_msg_id = this.kernel.execute(
           this.get_text(),
