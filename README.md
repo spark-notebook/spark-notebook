@@ -2,7 +2,6 @@ Spark Notebook
 ==============
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/andypetrella/spark-notebook?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![CircleCI](https://circleci.com/gh/spark-notebook/spark-notebook.svg?style=svg&circle-token=3f0257d998ab75f5432d385bd11c4365f8961d8d)](https://circleci.com/gh/spark-notebook/spark-notebook)
 
 The Spark Notebook is the open source notebook aimed at enterprise environments, providing Data Scientists and Data Engineers with  an interactive web-based editor that can combine Scala code, SQL queries, Markup and JavaScript in a collaborative manner to explore, analyse and learn from massive data sets.
 
