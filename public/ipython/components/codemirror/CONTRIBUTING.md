@@ -74,3 +74,8 @@ should be asked on the
 - CodeMirror does *not* follow JSHint or JSLint prescribed style.
   Patches that try to 'fix' code to pass one of these linters will be
   unceremoniously discarded.
+
+
+### Issue triage [![Open Source Helpers](https://www.codetriage.com/andypetrella/spark-notebook/badges/users.svg)](https://www.codetriage.com/andypetrella/spark-notebook)
+
+- You can triage issues which may include reproducing bug reports or asking for vital information, such as version numbers or reproduction instructions. If you would like to start triaging issues, one easy way to get started is to [subscribe to spark-notebook on CodeTriage](https://www.codetriage.com/andypetrella/spark-notebook).
